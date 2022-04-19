@@ -1,0 +1,16 @@
+{
+    "project_name": "My New Project",
+    "project_slug": "{{ cookiecutter.project_name|lower|replace(' ', '-') }}",
+    "repo_name": "{{ cookiecutter.project_slug }}",
+    "pkg_name": "{{ cookiecutter.project_slug|replace('-', '_') }}",
+    "full_name": "John Doe",
+    "author": "{{ cookiecutter.full_name }}",
+    "author_email": "john_doe@protonmail.com",
+    "github_username": "john-doe-gh-account-name",
+    "project_short_description": "Create artificial artwork using AI.",
+    "pypi_subtitle": "{{ cookiecutter.project_short_description }}",
+    "release_date": "{% now 'utc', '%Y-%m-%d' %}",
+    "year": "{% now 'utc', '%Y' %}",
+    "version": "0.0.1",
+    "initialize_git_repo": ["yes", "no"]
+}

@@ -1,0 +1,13 @@
+*.bak
+*\.pyc
+*__pycache__*
+\.idea
+*\.egg-info
+\.tox
+dist
+py*-env
+\.vscode
+*/build/*
+*\.coverage
+*test-results
+*pydoer-dependency-graphs/
