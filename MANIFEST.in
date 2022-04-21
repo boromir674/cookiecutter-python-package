@@ -12,5 +12,6 @@ recursive-include src *.rst
 recursive-include src *.toml
 recursive-include src *.typed
 recursive-include src *.yaml
+recursive-include src *.txt
 recursive-include tests *.json
 recursive-include tests *.txt

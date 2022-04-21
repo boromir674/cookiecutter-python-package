@@ -4,9 +4,9 @@
 
 .. start-badges
 
-| |circleci| |codecov|
+.. | |circleci| |codecov|
 | |release_version| |wheel| |supported_versions| |commits_since|
-| |better_code_hub| |sc1|
+.. | |better_code_hub| |sc1|
 
 |
 | **Source Code:** https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}
