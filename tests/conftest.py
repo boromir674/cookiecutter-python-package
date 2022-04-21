@@ -6,12 +6,9 @@ from typing import Callable, Any
 
 @pytest.fixture
 def production_template():
-    import cookiecutter_python_package as cpp
+    import cookiecutter_python as cpp
     path = os.path.dirname(cpp.__file__)
     return path
-    # MY_DIR = os.path.dirname(os.path.realpath(__file__))
-    # TEST_DATA_DIR = os.path.join(MY_DIR, 'data')
-    # return os.path.join(TEST_DATA_DIR, 'test_cookiecutter.json')
 
 
 @pytest.fixture
@@ -94,14 +91,3 @@ def get_cli_invocation():
 @pytest.fixture
 def invoke_tox_cli_to_run_test_suite(get_cli_invocation):
     return get_cli_invocation('python', '-m', 'tox', '-vv')
-
-
-# ASSERTIONS
-
-@pytest.fixture
-def assert_cli_passed():
-    def _assert_cli_passed(runtime_result, expected_result):
-        assert runtime_result == expected_result
-    return _assert_cli_passed
-
-

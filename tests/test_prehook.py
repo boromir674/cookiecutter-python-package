@@ -8,7 +8,7 @@ TEST_DATA_DIR = os.path.join(MY_DIR, 'data')
 
 @pytest.fixture
 def is_valid_python_module_name():
-    from cookiecutter_python_package.hooks.pre_gen_project import is_valid_python_module_name
+    from cookiecutter_python.hooks.pre_gen_project import is_valid_python_module_name
     return is_valid_python_module_name
 
 
