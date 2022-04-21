@@ -3,12 +3,12 @@
 Cookiecutter post generation hook script that handles operations after the
 template project is used to generate a target project.
 """
-
 import os
 import shlex
 import subprocess
 import sys
 from collections import OrderedDict
+
 
 PROJECT_DIRECTORY = os.path.realpath(os.path.curdir)
 
@@ -30,7 +30,6 @@ REQUEST = type('PostGenProjectRequest', (), {
     'author_email': AUTHOR_EMAIL,
     'initialize_git_repo': {'yes': True}.get(INITIALIZE_GIT_REPO_FLAG, False),
 })
-
 
 
 def initialize_git_repo(request):
