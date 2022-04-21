@@ -1,0 +1,19 @@
+{
+  "cookiecutter": {
+    "project_name": "Pytest Object Getter",
+    "project_slug": "pytest-object-getter",
+    "repo_name": "pytest-object-getter",
+    "pkg_name": "pytest_object_getter",
+    "full_name": "Konstantinos Lampridis",
+    "author": "Konstantinos Lampridis",
+    "author_email": "k.lampridis@hotmail.com",
+    "github_username": "boromir674",
+    "project_short_description": "Import any object from a 3rd party module while mocking its namespace on demand.",
+    "pypi_subtitle": "Import any object from a 3rd party module while mocking its namespace on demand.",
+    "release_date": "2022-04-19",
+    "year": "2022",
+    "version": "0.0.1",
+    "initialize_git_repo": "yes",
+    "_template": "."
+  }
+}

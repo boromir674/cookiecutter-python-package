@@ -1,0 +1,17 @@
+absl
+artificial_artwork
+coverage
+_distutils_hack
+google_auth_oauthlib
+h5py
+PIL
+py
+pyasn1
+pyasn1_modules
+__pycache__
+pyparsing
+_pytest
+pytest_cov
+rsa
+six
+urllib3
