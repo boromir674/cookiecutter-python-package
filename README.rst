@@ -38,18 +38,18 @@ Python Package (pypi) Cookiecutter, with emphasis on CI/CD and automation.
     :alt: Supported Python versions
     :target: https://pypi.org/project/cookiecutter_python
 
-.. |commits_since_specific_tag_on_master| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/v0.5.0/master?color=blue&logo=github
+.. |commits_since_specific_tag_on_master| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/v0.5.2/master?color=blue&logo=github
     :alt: GitHub commits since tagged version (branch)
-    :target: https://github.com/boromir674/cookiecutter-python-package/compare/v0.5.0..master
+    :target: https://github.com/boromir674/cookiecutter-python-package/compare/v0.5.2..master
 
 .. |commits_since_latest_release| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/latest?color=blue&logo=semver&sort=semver
     :alt: GitHub commits since latest release (by SemVer)
-    :target: https://github.com/boromir674/cookiecutter-python-package/compare/v0.5.0..master
+    :target: https://github.com/boromir674/cookiecutter-python-package/compare/v0.5.2..master
 
 
-.. |commits_since| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/v0.5.0/master?logo=github
+.. |commits_since| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/v0.5.2/master?logo=github
     :alt: GitHub commits on branch, since tagged version
-    :target: https://github.com/boromir674/cookiecutter-python-package/compare/v0.5.0..master
+    :target: https://github.com/boromir674/cookiecutter-python-package/compare/v0.5.2..master
 
 
 
