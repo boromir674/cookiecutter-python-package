@@ -5,7 +5,7 @@ Python Package (pypi) Cookiecutter, with emphasis on CI/CD and automation.
 
 .. start-badges
 
-| |release_version| |wheel| |supported_versions| |commits_since_specific_tag_on_master| |commits_since_latest_release|
+| |build| |release_version| |wheel| |supported_versions| |commits_since_specific_tag_on_master| |commits_since_latest_release|
 
 
 |
@@ -13,6 +13,14 @@ Python Package (pypi) Cookiecutter, with emphasis on CI/CD and automation.
 | **Pypi Package:** https://pypi.org/project/cookiecutter-python/
 |
 
+
+.. Test Workflow Status on Github Actions for specific branch <branch>
+
+.. |build| image:: https://img.shields.io/github/workflow/status/boromir674/cookiecutter-python-package/Test%20Python%20Package/master?label=build&logo=github-actions&logoColor=%233392FF
+    :alt: GitHub Workflow Status (branch)
+    :target: https://github.com/boromir674/cookiecutter-python-package/actions/workflows/test.yaml?query=branch%3Amaster
+
+.. above url to workflow runs, filtered by the specified branch
 
 .. |release_version| image:: https://img.shields.io/pypi/v/cookiecutter_python
     :alt: Production Version
