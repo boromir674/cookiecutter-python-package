@@ -1,7 +1,33 @@
-from __future__ import annotations
 import os
 import pytest
 from typing import Callable, Any
+from abc import ABC, abstractmethod
+
+
+class AbstractCLIResult(ABC):
+
+    @property
+    @abstractmethod
+    def exit_code(self) -> int:
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def stdout(self) -> str:
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def stderr(self) -> str:
+        raise NotImplementedError
+
+    def __eq__(self, o) -> bool:
+        equal_exit_code = self.exit_code == o.get('exit_code', self.exit_code)
+        equal_stdout = self.stdout == o.get('stdout', self.stdout)
+        equal_stderr = self.stderr == o.get('stderr', self.stderr)
+
+        return equal_exit_code and equal_stdout and equal_stderr
+
 
 
 @pytest.fixture
@@ -60,24 +86,25 @@ def generate_project():
 @pytest.fixture
 def get_cli_invocation():
     import subprocess
-    class CLIResult:
+    class CLIResult(AbstractCLIResult):
         exit_code: int
         stdout: str
         stderr: str
         def __init__(self, completed_process: subprocess.CompletedProcess):
-            self.exit_code = int(completed_process.returncode)
-            self.stdout = str(completed_process.stdout)
-            self.stderr = str(completed_process.stderr)
-
-        def __eq__(self, o) -> bool:
-            equal_exit_code = self.exit_code == o.get('exit_code', self.exit_code)
-            equal_stdout = self.stdout == o.get('stdout', self.stdout)
-            equal_stderr = self.stderr == o.get('stderr', self.stderr)
-
-            return equal_exit_code and equal_stdout and equal_stderr
-
-    def get_callable(executable: str, *args, **kwargs) -> Callable[[], CLIResult]:
-        def _callable() -> CLIResult:
+            self._exit_code = int(completed_process.returncode)
+            self._stdout = str(completed_process.stdout)
+            self._stderr = str(completed_process.stderr)
+        @property
+        def exit_code(self) -> int:
+            return self._exit_code
+        @property
+        def stdout(self) -> str:
+            return self._stdout
+        @property
+        def stderr(self) -> str:
+            return self._stderr
+    def get_callable(executable: str, *args, **kwargs) -> Callable[[], AbstractCLIResult]:
+        def _callable() -> AbstractCLIResult:
             completed_process = subprocess.run(
                 [executable] + list(args),
                 env=kwargs.get('env', {}),
