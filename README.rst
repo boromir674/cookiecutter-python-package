@@ -5,7 +5,7 @@ Python Package (pypi) Cookiecutter, with emphasis on CI/CD and automation.
 
 .. start-badges
 
-| |build| |release_version| |wheel| |supported_versions| |commits_since_specific_tag_on_master| |commits_since_latest_release|
+| |build| |release_version| |wheel| |supported_versions| |commits_since_specific_tag_on_master| |commits_since_latest_github_release|
 
 
 |
@@ -34,38 +34,21 @@ Python Package (pypi) Cookiecutter, with emphasis on CI/CD and automation.
     :alt: Supported Python versions
     :target: https://pypi.org/project/cookiecutter_python
 
-.. |supported_versions_old| image:: https://img.shields.io/pypi/pyversions/cookiecutter_python.svg
-    :alt: Supported Python versions
-    :target: https://pypi.org/project/cookiecutter_python
-
-.. |commits_since_specific_tag_on_master| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/v0.5.4/master?color=blue&logo=github
+.. |commits_since_specific_tag_on_master| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/v0.6.1/master?color=blue&logo=github
     :alt: GitHub commits since tagged version (branch)
-    :target: https://github.com/boromir674/cookiecutter-python-package/compare/v0.5.4..master
+    :target: https://github.com/boromir674/cookiecutter-python-package/compare/v0.6.1..master
 
-.. |commits_since_latest_release| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/latest?color=blue&logo=semver&sort=semver
+.. |commits_since_latest_github_release| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/latest?color=blue&logo=semver&sort=semver
     :alt: GitHub commits since latest release (by SemVer)
-    :target: https://github.com/boromir674/cookiecutter-python-package/compare/v0.5.4..master
 
-
-.. |commits_since| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/v0.5.4/master?logo=github
-    :alt: GitHub commits on branch, since tagged version
-    :target: https://github.com/boromir674/cookiecutter-python-package/compare/v0.5.4..master
-
-
-
-.. |circleci| image:: https://circleci.com/gh/boromir674/cookiecutter-python-package/tree/master.svg?style=shield
-    :alt: CircleCI
-    :target: https://circleci.com/gh/boromir674/cookiecutter-python-package/tree/master
 
 .. |codecov| image:: https://img.shields.io/codecov/c/github/boromir674/cookiecutter-python-package/master?logo=codecov
     :alt: Codecov
     :target: https://codecov.io/gh/boromir674/cookiecutter-python-package
 
-
 .. |better_code_hub| image:: https://bettercodehub.com/edge/badge/boromir674/cookiecutter-python-package?branch=master
     :alt: Better Code Hub
     :target: https://bettercodehub.com/
-
 
 .. |sc1| image:: https://img.shields.io/scrutinizer/quality/g/boromir674/cookiecutter-python-package/master?logo=scrutinizer&style=flat
     :alt: Scrutinizer code quality
@@ -92,11 +75,16 @@ Check the `Cookiecutter documentation`_ pages for more on Cookiecutter.
 
 Usage
 =====
+
+Simply, get (clone) the code and generate a Project based on the (downloaded) template.
+
 Open a console/terminal and run:
 
 .. code-block:: sh
 
-    cookiecutter gh:boromir674/cookiecutter-python-package
+    git clone git@github.com:boromir674/cookiecutter-python-package.git
+
+    cookiecutter cookiecutter-python-package/src/cookiecutter_python
 
 
 This will generate a new `Python Package Project` (in the currect dir), using the template from github.

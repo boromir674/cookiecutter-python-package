@@ -4,64 +4,48 @@
 
 .. start-badges
 
-| |circleci| |codecov|
-| |release_version| |wheel| |supported_versions| |commits_since|
-| |better_code_hub| |sc1|
+| |build| |release_version| |wheel| |supported_versions| |commits_since_specific_tag_on_master| |commits_since_latest_github_release|
+
 
 |
 | **Source Code:** https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}
+| **Pypi Package:** https://pypi.org/project/{{ cookiecutter.pkg_name }}/
 |
 
+
+.. Test Workflow Status on Github Actions for specific branch <branch>
+
+.. |build| image:: https://img.shields.io/github/workflow/status/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}/Test%20Python%20Package/master?label=build&logo=github-actions&logoColor=%233392FF
+    :alt: GitHub Workflow Status (branch)
+    :target: https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}/actions/workflows/test.yaml?query=branch%3Amaster
+
+.. above url to workflow runs, filtered by the specified branch
 
 .. |release_version| image:: https://img.shields.io/pypi/v/{{ cookiecutter.pkg_name }}
     :alt: Production Version
     :target: https://pypi.org/project/{{ cookiecutter.pkg_name }}/
 
-.. |wheel| image:: https://img.shields.io/pypi/wheel/{{ cookiecutter.pkg_name }}.svg
-    :alt: Python Wheel
+.. |wheel| image:: https://img.shields.io/pypi/wheel/{{ cookiecutter.pkg_name|replace('_', '-') }}?color=green&label=wheel
+    :alt: PyPI - Wheel
     :target: https://pypi.org/project/{{ cookiecutter.pkg_name }}
 
-.. |supported_versions| image:: https://img.shields.io/pypi/pyversions/{{ cookiecutter.pkg_name }}.svg
+.. |supported_versions| image:: https://img.shields.io/pypi/pyversions/{{ cookiecutter.pkg_name|replace('_', '-') }}?color=blue&label=python&logo=python&logoColor=%23ccccff
     :alt: Supported Python versions
     :target: https://pypi.org/project/{{ cookiecutter.pkg_name }}
 
-.. |commits_since| image:: https://img.shields.io/github/commits-since/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}/v{{ cookiecutter.version }}/master?logo=github
-    :alt: GitHub commits on branch, since tagged version
+.. |commits_since_specific_tag_on_master| image:: https://img.shields.io/github/commits-since/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}/v{{ cookiecutter.version }}/master?color=blue&logo=github
+    :alt: GitHub commits since tagged version (branch)
     :target: https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}/compare/v{{ cookiecutter.version }}..master
 
+.. |commits_since_latest_github_release| image:: https://img.shields.io/github/commits-since/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}/latest?color=blue&logo=semver&sort=semver
+    :alt: GitHub commits since latest release (by SemVer)
 
 
-.. |circleci| image:: https://circleci.com/gh/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}/tree/master.svg?style=shield
-    :alt: CircleCI
-    :target: https://circleci.com/gh/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}/tree/master
-
-.. |codecov| image:: https://img.shields.io/codecov/c/github/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}/master?logo=codecov
-    :alt: Codecov
-    :target: https://codecov.io/gh/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}
-
-
-.. |better_code_hub| image:: https://bettercodehub.com/edge/badge/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}?branch=master
-    :alt: Better Code Hub
-    :target: https://bettercodehub.com/
-
-
-.. |sc1| image:: https://img.shields.io/scrutinizer/quality/g/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}/master?logo=scrutinizer&style=flat
-    :alt: Scrutinizer code quality
-    :target: https://scrutinizer-ci.com/g/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}/?branch=master
-
-
-
-Featuring
+Features
+========
 
 - TODO-feature 1
 - TODO-feature 2
-
-
-========
-Overview
-========
-
-* Free software: Affero GNU General Public License v3.0
 
 Prerequisites
 =============
@@ -73,9 +57,17 @@ Installation
 
 Using `pip` is the approved way for installing `{{ cookiecutter.pkg_name }}`.
 
+.. code-block:: sh
+
+    python3 -m pip install {{ cookiecutter.pkg_name }}
+
 
 Usage
 =====
 
-How it works
-============
+TODO
+
+License
+=======
+
+* Free software: Affero GNU General Public License v3.0
