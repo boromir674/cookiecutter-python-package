@@ -92,11 +92,16 @@ Check the `Cookiecutter documentation`_ pages for more on Cookiecutter.
 
 Usage
 =====
+
+Simply, get (clone) the code and generate a Project based on the (downloaded) template.
+
 Open a console/terminal and run:
 
 .. code-block:: sh
 
-    cookiecutter gh:boromir674/cookiecutter-python-package
+    git clone git@github.com:boromir674/cookiecutter-python-package.git
+
+    cookiecutter cookiecutter-python-package/src/cookiecutter_python
 
 
 This will generate a new `Python Package Project` (in the currect dir), using the template from github.
