@@ -44,16 +44,36 @@
 Features
 ========
 
-- TODO-feature 1
-- TODO-feature 2
+
+1. **{{ cookiecutter.pkg_name }}** `python package`
+
+   a. **Great Feature**
+   b. **Nice Feature**
+
+2. **Test Suite** using `Pytest`
+3. **Parallel Execution** of Unit Tests, on multiple cpu's
+4. **Automation**, using `tox`
+
+   a. **Code Coverage** measuring
+   b. **Build Command**, using the `build` python package
+   c. **Pypi Deploy Command**, supporting upload to both `pypi.org` and `test.pypi.org` servers
+   d. **Type Check Command**, using `mypy`
+5. **CI Pipeline**, running on `Github Actions`
+
+   a. **Job Matrix**, spanning different `platform`'s and `python version`'s
+
+      1. Platfroms: `ubuntu-latest`, `macos-latest`
+      2. Python Iterpreters: `3.6`, `3.7`, `3.8`, `3.9`, `3.10`
+   b. **Parallel Job** execution, generated from the `matrix`, that runs the `Test Suite`
+
 
 Prerequisites
 =============
 
-You need to have Python installed.
+You need to have `Python` installed.
 
-Installation
-============
+Quickstart
+==========
 
 Using `pip` is the approved way for installing `{{ cookiecutter.pkg_name }}`.
 
@@ -62,10 +82,7 @@ Using `pip` is the approved way for installing `{{ cookiecutter.pkg_name }}`.
     python3 -m pip install {{ cookiecutter.pkg_name }}
 
 
-Usage
-=====
-
-TODO
+TODO demonstrate a use case
 
 License
 =======
