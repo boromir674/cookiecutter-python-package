@@ -7,7 +7,6 @@ Python Package (pypi) Cookiecutter, with emphasis on CI/CD and automation.
 
 | |build| |release_version| |wheel| |supported_versions| |commits_since_specific_tag_on_master| |commits_since_latest_github_release|
 
-
 |
 | **Source Code:** https://github.com/boromir674/cookiecutter-python-package
 | **Pypi Package:** https://pypi.org/project/cookiecutter-python/
@@ -57,10 +56,15 @@ Python Package (pypi) Cookiecutter, with emphasis on CI/CD and automation.
 Features
 ========
 
-1. Fresh `Python Package Project` **generation** by invoking an `interactive cli` (see `Quickstart`_)
-2. `Python Package Template` (source code at `src/cookiecutter_python/`_) implemented as a `Cookiecutter`
-3. Tested on python versions 3.6 till 3.10, for both `Linux-family` and `Macos` platforms (see `Test Workflow` on `CI`_)
+1. Fresh **Python Package Project Generation**, "packaged" with a **Test Suite** and a **CI** Pipeline (see `Quickstart`_)
+2. **Python Package Template** (source code at `src/cookiecutter_python/`_) implemented as a `Cookiecutter`
+3. **Tested** on python versions **3.6, 2.7, 3.8, 3.9 and 3.10**, for both **"Linux"** and **"MacOS"** platforms (see `Test Workflow` on `CI`_)
 
+See the **Biskotaki** *Python Package Project*, which was entirely generated using this **Python Package Template:**
+
+* **Source Code** hosted on *Github* at https://github.com/boromir674/biskotaki
+* **Python Package** hosted on *pypi.org* at https://pypi.org/project/biskotaki/
+* **CI Pipeline** hosted on *Github Actions* at https://github.com/boromir674/biskotaki/actions
 
 Generated Python Package Features
 ---------------------------------
@@ -142,13 +146,13 @@ For instance:
 
          .. code-block:: sh
 
-             TWINE_USERNAME=username TWINE_PASSWROD=password PACKAGE_DIST_VERSION=1.0.0 tox -e deploy
+             TWINE_USERNAME=username TWINE_PASSWORD=password PACKAGE_DIST_VERSION=1.0.0 tox -e deploy
 
       2. Deploy to **production**, using the `production` pypi (index) server at `pypi.org`_:
 
          .. code-block:: sh
 
-             TWINE_USERNAME=username TWINE_PASSWROD=password PACKAGE_DIST_VERSION=1.0.0 PYPI_SERVER=pypi tox -e deploy
+             TWINE_USERNAME=username TWINE_PASSWORD=password PACKAGE_DIST_VERSION=1.0.0 PYPI_SERVER=pypi tox -e deploy
 
          .. note::
             Setting PYPI_SERVER=pypi indicates to deploy to `pypi.org` (instead of `test.pypi.org`).
@@ -166,7 +170,7 @@ For instance:
 
     `Trigger` the **Test Workflow** on the **CI server**, by `pushing` a git commit to a remote branch (ie `master` on github).
 
-    `Navigate` to the `CI Pipeline web interface`_ (hosted on `Github Actions`) and inspect the **build** results!
+    `Navigate` to the `CI Pipeline web interface` (hosted on `Github Actions`) and inspect the **build** results!
 
 
    .. note::
@@ -218,5 +222,3 @@ For more complex use cases, you can modify the Template and also leverage all of
 .. _src/cookiecutter_python/: https://github.com/boromir674/cookiecutter-python-package/tree/master/src/cookiecutter_python
 
 .. _Template: https://github.com/boromir674/cookiecutter-python-package/tree/master/src/cookiecutter_python
-
-.. _CI Pipeline web interface: https://github.com/boromir674/cookiecutter-python-package/actions
