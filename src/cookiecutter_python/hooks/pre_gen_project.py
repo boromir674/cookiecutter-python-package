@@ -30,6 +30,17 @@ def check_version_is_semver(version: str):
         sys.exit(1)
 
 
+def available_package_name(package_name: str) -> str:
+    try:
+        from ask_pypi import is_pypi_project
+        return {True: 'not-available', False: 'available'}[is_pypi_project(package_name)]
+    except ImportError:
+        return 'unknown'
+    except Exception as error:
+        print(str(error), file=sys.stderr)
+        return 'unknown'
+
+
 def main(request):
     # CHECK Package Name
     if not is_valid_python_module_name(request.package_name):
@@ -39,6 +50,16 @@ def main(request):
 
     # CHECK Version
     check_version_is_semver(request.package_version_string)
+
+    search_result = available_package_name(request.package_name)
+
+    print('Package Found?', search_result)
+    if search_result == 'not-available':
+        print("Package with name '{name}' already EXISTS on pypi.org!".format(name=request.package_name))
+        print("You will have to rename your Python Package in order to publish it on pypi!")
+    elif search_result == 'available':
+        print("Name '{name}' IS available on pypi.org!".format(name=request.package_name))
+        print("You will be able to publish your Python Package on pypi as it is!")
 
 
 if __name__ == "__main__":
