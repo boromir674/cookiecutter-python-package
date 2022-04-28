@@ -5,13 +5,13 @@ Python Package (pypi) Cookiecutter, with emphasis on CI/CD and automation.
 
 .. start-badges
 
-| |build| |docs-s| |docs-m| |release_version| |wheel| |supported_versions| |commits_since_specific_tag_on_master| |commits_since_latest_github_release|
+| |build| |docs| |release_version| |wheel| |supported_versions| |commits_since_specific_tag_on_master| |commits_since_latest_github_release|
 
 |
-| **Source Code:** https://github.com/boromir674/cookiecutter-python-package
-| **Documentation:** https://python-package-generator.readthedocs.io/en/master/
-| **Pypi Package:** https://pypi.org/project/cookiecutter-python/
-| **CI Pipeline:** https://github.com/boromir674/cookiecutter-python-package/actions/
+| **Source:** https://github.com/boromir674/cookiecutter-python-package
+| **Docs:** https://python-package-generator.readthedocs.io/en/master/
+| **PyPI:** https://pypi.org/project/cookiecutter-python/
+| **CI:** https://github.com/boromir674/cookiecutter-python-package/actions/
 
 
 Features
@@ -140,13 +140,9 @@ For more complex use cases, you can modify the Template and also leverage all of
 
 .. above url to workflow runs, filtered by the specified branch
 
-.. |docs-m| image:: https://img.shields.io/readthedocs/cookiecutter-python/master?logo=readthedocs
-    :target: https://python-package-generator.readthedocs.io/en/stable/?badge=stable
+.. |docs| image:: https://img.shields.io/readthedocs/python-package-generator/master?logo=readthedocs&logoColor=lightblue
     :alt: Read the Docs (version)
-
-.. |docs-s| image:: https://readthedocs.org/projects/python-package-generator/badge/?version=stable
-    :alt: Documentation Status
-    :target: https://python-package-generator.readthedocs.io/en/stable/?badge=stable
+    :target: https://python-package-generator.readthedocs.io/en/master/
 
 .. |release_version| image:: https://img.shields.io/pypi/v/cookiecutter_python
     :alt: Production Version
