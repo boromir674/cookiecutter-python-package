@@ -5,7 +5,7 @@ Python Package (pypi) Cookiecutter, with emphasis on CI/CD and automation.
 
 .. start-badges
 
-| |build| |docs| |release_version| |wheel| |supported_versions| |commits_since_specific_tag_on_master| |commits_since_latest_github_release|
+| |build| |docs| |release_version| |wheel| |supported_versions| |commits_since_specific_tag_on_master| |commits_since_latest_github_release| |ossf|
 
 |
 | **Source:** https://github.com/boromir674/cookiecutter-python-package
@@ -174,3 +174,7 @@ For more complex use cases, you can modify the Template and also leverage all of
 .. |better_code_hub| image:: https://bettercodehub.com/edge/badge/boromir674/cookiecutter-python-package?branch=master
     :alt: Better Code Hub
     :target: https://bettercodehub.com/
+
+.. |ossf| image:: https://bestpractices.coreinfrastructure.org/projects/5988/badge
+    :alt: OpenSSF
+    :target: https://bestpractices.coreinfrastructure.org/en/projects/5988
