@@ -5,52 +5,13 @@ Python Package (pypi) Cookiecutter, with emphasis on CI/CD and automation.
 
 .. start-badges
 
-| |build| |release_version| |wheel| |supported_versions| |commits_since_specific_tag_on_master| |commits_since_latest_github_release|
+| |build| |docs-s| |docs-m| |release_version| |wheel| |supported_versions| |commits_since_specific_tag_on_master| |commits_since_latest_github_release|
 
 |
 | **Source Code:** https://github.com/boromir674/cookiecutter-python-package
+| **Documentation:** https://python-package-generator.readthedocs.io/en/master/
 | **Pypi Package:** https://pypi.org/project/cookiecutter-python/
 | **CI Pipeline:** https://github.com/boromir674/cookiecutter-python-package/actions/
-
-.. Test Workflow Status on Github Actions for specific branch <branch>
-
-.. |build| image:: https://img.shields.io/github/workflow/status/boromir674/cookiecutter-python-package/Test%20Python%20Package/master?label=build&logo=github-actions&logoColor=%233392FF
-    :alt: GitHub Workflow Status (branch)
-    :target: https://github.com/boromir674/cookiecutter-python-package/actions/workflows/test.yaml?query=branch%3Amaster
-
-.. above url to workflow runs, filtered by the specified branch
-
-.. |release_version| image:: https://img.shields.io/pypi/v/cookiecutter_python
-    :alt: Production Version
-    :target: https://pypi.org/project/cookiecutter_python/
-
-.. |wheel| image:: https://img.shields.io/pypi/wheel/cookiecutter-python?color=green&label=wheel
-    :alt: PyPI - Wheel
-    :target: https://pypi.org/project/cookiecutter_python
-
-.. |supported_versions| image:: https://img.shields.io/pypi/pyversions/cookiecutter-python?color=blue&label=python&logo=python&logoColor=%23ccccff
-    :alt: Supported Python versions
-    :target: https://pypi.org/project/cookiecutter_python
-
-.. |commits_since_specific_tag_on_master| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/v0.7.2/master?color=blue&logo=github
-    :alt: GitHub commits since tagged version (branch)
-    :target: https://github.com/boromir674/cookiecutter-python-package/compare/v0.7.2..master
-
-.. |commits_since_latest_github_release| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/latest?color=blue&logo=semver&sort=semver
-    :alt: GitHub commits since latest release (by SemVer)
-
-
-.. |codecov| image:: https://img.shields.io/codecov/c/github/boromir674/cookiecutter-python-package/master?logo=codecov
-    :alt: Codecov
-    :target: https://codecov.io/gh/boromir674/cookiecutter-python-package
-
-.. |better_code_hub| image:: https://bettercodehub.com/edge/badge/boromir674/cookiecutter-python-package?branch=master
-    :alt: Better Code Hub
-    :target: https://bettercodehub.com/
-
-.. |sc1| image:: https://img.shields.io/scrutinizer/quality/g/boromir674/cookiecutter-python-package/master?logo=scrutinizer&style=flat
-    :alt: Scrutinizer code quality
-    :target: https://scrutinizer-ci.com/g/boromir674/cookiecutter-python-package/?branch=master
 
 
 Features
@@ -166,3 +127,55 @@ For more complex use cases, you can modify the Template and also leverage all of
 .. _src/cookiecutter_python/: https://github.com/boromir674/cookiecutter-python-package/tree/master/src/cookiecutter_python
 
 .. _Template: https://github.com/boromir674/cookiecutter-python-package/tree/master/src/cookiecutter_python
+
+
+
+.. BADGE ALIASES
+
+.. Test Workflow Status on Github Actions for specific branch <branch>
+
+.. |build| image:: https://img.shields.io/github/workflow/status/boromir674/cookiecutter-python-package/Test%20Python%20Package/master?label=build&logo=github-actions&logoColor=%233392FF
+    :alt: GitHub Workflow Status (branch)
+    :target: https://github.com/boromir674/cookiecutter-python-package/actions/workflows/test.yaml?query=branch%3Amaster
+
+.. above url to workflow runs, filtered by the specified branch
+
+.. |docs-m| image:: https://img.shields.io/readthedocs/cookiecutter-python/master?logo=readthedocs
+    :target: https://python-package-generator.readthedocs.io/en/stable/?badge=stable
+    :alt: Read the Docs (version)
+
+.. |docs-s| image:: https://readthedocs.org/projects/python-package-generator/badge/?version=stable
+    :alt: Documentation Status
+    :target: https://python-package-generator.readthedocs.io/en/stable/?badge=stable
+
+.. |release_version| image:: https://img.shields.io/pypi/v/cookiecutter_python
+    :alt: Production Version
+    :target: https://pypi.org/project/cookiecutter_python/
+
+.. |wheel| image:: https://img.shields.io/pypi/wheel/cookiecutter-python?color=green&label=wheel
+    :alt: PyPI - Wheel
+    :target: https://pypi.org/project/cookiecutter_python
+
+.. |supported_versions| image:: https://img.shields.io/pypi/pyversions/cookiecutter-python?color=blue&label=python&logo=python&logoColor=%23ccccff
+    :alt: Supported Python versions
+    :target: https://pypi.org/project/cookiecutter_python
+
+.. |commits_since_specific_tag_on_master| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/v0.7.2/master?color=blue&logo=github
+    :alt: GitHub commits since tagged version (branch)
+    :target: https://github.com/boromir674/cookiecutter-python-package/compare/v0.7.2..master
+
+.. |commits_since_latest_github_release| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/latest?color=blue&logo=semver&sort=semver
+    :alt: GitHub commits since latest release (by SemVer)
+
+
+.. |codecov| image:: https://img.shields.io/codecov/c/github/boromir674/cookiecutter-python-package/master?logo=codecov
+    :alt: Codecov
+    :target: https://codecov.io/gh/boromir674/cookiecutter-python-package
+
+.. |better_code_hub| image:: https://bettercodehub.com/edge/badge/boromir674/cookiecutter-python-package?branch=master
+    :alt: Better Code Hub
+    :target: https://bettercodehub.com/
+
+.. |sc1| image:: https://img.shields.io/scrutinizer/quality/g/boromir674/cookiecutter-python-package/master?logo=scrutinizer&style=flat
+    :alt: Scrutinizer code quality
+    :target: https://scrutinizer-ci.com/g/boromir674/cookiecutter-python-package/?branch=master
