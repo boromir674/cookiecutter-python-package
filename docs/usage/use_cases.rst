@@ -1,3 +1,5 @@
+.. _Use Cases:
+
 ============================
 New Python Package Use Cases
 ============================
@@ -62,3 +64,10 @@ For instance:
       and in that case, the **Test Workflow** should have already started running!
 
       Out-of-the-box, `triggering` the **Test Workflow** happens only when pushing to the `master` or `dev` branch.
+
+
+.. LINK DEFINITIONS
+
+.. _pypi.org: https://pypi.org/
+
+.. _test.pypi.org: https://test.pypi.org/

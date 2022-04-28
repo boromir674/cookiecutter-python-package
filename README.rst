@@ -115,77 +115,14 @@ Now, you should have generated a new Project for a Python Package, based on the 
 | Develop your package's **Source Code** (`business logic`) inside `src/my_great_python_package` dir :)
 | Develop your package's **Test Suite** (ie `unit-tests`, `integration tests`) inside `tests` dir :-)
 
-Run Test Suite:
+
+Try Running the Test Suite!
 
     .. code-block:: shell
         
         tox
 
-
-Try yourself!
-^^^^^^^^^^^^^
-
-You are ready to enjoy some of the package's **features** available out-of-the-box!
-
-For instance:
-
-1. Leverage the supplied `tox environments` to automate various **Testing** and **DevOps** related activities.
-
-   Assuming you have `tox` installed (example installation command: `python3 -m pip install --user tox`)
-   and you have done a `cd` into the newly generated Project directory, you can do for example:
-
-   a. Run the **Test Suite** against different combinations of `Python versions` (ie 3.7, 3.8) and different ways of installing (ie 'dev', 'sdist', 'wheel') the `<my_great_python_package>` package:
-
-      .. code-block:: sh
-
-         tox -e "py{3.7, 3.8}-{dev, sdist, wheel}"
-
-   b. Check the code for **compliance** with **best practises** of the `Python packaging ecosystem` (ie PyPI, pip),
-      build `sdist` and `wheel` distributions and store them in the `dist` directory:
-
-      .. code-block:: sh
-
-           tox -e check && tox -e build
-
-   c. **Deploy** the package's distributions in a `pypi` (index) server:
-
-      1. Deploy to **staging**, using the `test` pypi (index) server at `test.pypi.org`_:
-
-         .. code-block:: sh
-
-             TWINE_USERNAME=username TWINE_PASSWORD=password PACKAGE_DIST_VERSION=1.0.0 tox -e deploy
-
-      2. Deploy to **production**, using the `production` pypi (index) server at `pypi.org`_:
-
-         .. code-block:: sh
-
-             TWINE_USERNAME=username TWINE_PASSWORD=password PACKAGE_DIST_VERSION=1.0.0 PYPI_SERVER=pypi tox -e deploy
-
-         .. note::
-            Setting PYPI_SERVER=pypi indicates to deploy to `pypi.org` (instead of `test.pypi.org`).
-
-      .. note::
-         Please modify the TWINE_USERNAME, TWINE_PASSWORD and PACKAGE_DIST_VERSION envronment variables, accordingly.
-
-         TWINE_USERNAME & TWINE_PASSWORD are used to authenticate (user credentials) with the targeted pypi server.
-
-         PACKAGE_DIST_VERSION is used to avoid accidentally uploading distributions of different versions than intented.
-
-
-2. Leverage the **CI Pipeline** and its **build matrix** to run the **Test Suite** against a combination of
-   different Platforms, different Python interpreter versions and different ways of installing the subject Python Package:
-
-    `Trigger` the **Test Workflow** on the **CI server**, by `pushing` a git commit to a remote branch (ie `master` on github).
-
-    `Navigate` to the `CI Pipeline web interface` (hosted on `Github Actions`) and inspect the **build** results!
-
-
-   .. note::
-      You might have already `pushed`, in case you answered `yes`, in the `initialize_git_repo` prompt, while generating the Python Package,
-      and in that case, the **Test Workflow** should have already started running!
-
-      Out-of-the-box, `triggering` the **Test Workflow** happens only when pushing to the `master` or `dev` branch.
-
+For more **use cases** see :ref:`Use Cases`.
 
 License
 =======
@@ -200,7 +137,7 @@ Currently, since the actual `cookiecutter` template does not reside on the `root
 of the repository (but rather in `src/cookiecutter_python`), 'cloning' the repository
 locally is required at first.
 
-This was demonstrated in the `quickstart` section, as well.
+This was demonstrated in the `Quickstart` section, as well.
 
 For more complex use cases, you can modify the Template and also leverage all of
 `cookiecutter`'s features, according to your needs.
