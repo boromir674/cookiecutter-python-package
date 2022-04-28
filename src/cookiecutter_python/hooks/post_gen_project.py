@@ -12,32 +12,33 @@ from collections import OrderedDict
 
 PROJECT_DIRECTORY = os.path.realpath(os.path.curdir)
 
-# Templated Variables should be centralized here for easier inspection
-COOKIECUTTER = (
-    OrderedDict()
-)  # We init the variable to the same type that will be set in the next line.
-COOKIECUTTER = {{ cookiecutter }}
-AUTHOR = "{{ cookiecutter.author }}"
-AUTHOR_EMAIL = "{{ cookiecutter.author_email }}"
-AUTHOR_INFO = AUTHOR + ' ' + AUTHOR_EMAIL
-INITIALIZE_GIT_REPO_FLAG = "{{ cookiecutter.initialize_git_repo|lower }}"
+def get_templated_vars():
+    # Templated Variables should be centralized here for easier inspection
+    COOKIECUTTER = (
+        OrderedDict()
+    )  # We init the variable to the same type that will be set in the next line.
+    COOKIECUTTER = {{ cookiecutter }}
+    AUTHOR = "{{ cookiecutter.author }}"
+    AUTHOR_EMAIL = "{{ cookiecutter.author_email }}"
+    INITIALIZE_GIT_REPO_FLAG = "{{ cookiecutter.initialize_git_repo|lower }}"
+
+    REQUEST = type('PostGenProjectRequest', (), {
+        'cookiecutter': COOKIECUTTER,
+        'project_dir': PROJECT_DIRECTORY,
+        'author': AUTHOR,
+        'author_email': AUTHOR_EMAIL,
+        'initialize_git_repo': {'yes': True}.get(INITIALIZE_GIT_REPO_FLAG, False),
+    })
+
+    return REQUEST
 
 
-REQUEST = type('PostGenProjectRequest', (), {
-    'cookiecutter': COOKIECUTTER,
-    'project_dir': PROJECT_DIRECTORY,
-    'author': AUTHOR,
-    'author_email': AUTHOR_EMAIL,
-    'initialize_git_repo': {'yes': True}.get(INITIALIZE_GIT_REPO_FLAG, False),
-})
-
-
-def initialize_git_repo(request):
+def initialize_git_repo(project_dir: str):
     """
     Initialize the Git repository in the generated project.
     """
     subprocess.check_output(
-        "git init", stderr=subprocess.STDOUT, shell=True, cwd=request.project_dir
+        "git init", stderr=subprocess.STDOUT, shell=True, cwd=project_dir
     )
 
 
@@ -47,12 +48,12 @@ def grant_basic_permissions(project_dir: str):
     )
 
 
-def git_add(request):
+def git_add(project_dir: str):
     """
     Do a Git add operation on the generated project.
     """
     subprocess.check_output(
-        "git add --all", stderr=subprocess.STDOUT, shell=True, cwd=request.project_dir
+        "git add --all", stderr=subprocess.STDOUT, shell=True, cwd=project_dir
     )
 
 
@@ -126,13 +127,14 @@ def is_git_repo_clean(project_directory: str):
 
 def main(request):
     if request.initialize_git_repo:
-        initialize_git_repo(request)
+        initialize_git_repo(request.project_dir)
         grant_basic_permissions(request.project_dir)
         if not is_git_repo_clean(request.project_dir):
-            git_add(request)
+            git_add(request.project_dir)
             git_commit(request)
     sys.exit(0)
 
 
 if __name__ == "__main__":
+    REQUEST = get_templated_vars()
     main(REQUEST)

@@ -5,13 +5,13 @@ Python Package (pypi) Cookiecutter, with emphasis on CI/CD and automation.
 
 .. start-badges
 
-| |build| |docs-s| |docs-m| |release_version| |wheel| |supported_versions| |commits_since_specific_tag_on_master| |commits_since_latest_github_release|
+| |build| |docs| |release_version| |wheel| |supported_versions| |commits_since_specific_tag_on_master| |commits_since_latest_github_release|
 
 |
-| **Source Code:** https://github.com/boromir674/cookiecutter-python-package
-| **Documentation:** https://python-package-generator.readthedocs.io/en/master/
-| **Pypi Package:** https://pypi.org/project/cookiecutter-python/
-| **CI Pipeline:** https://github.com/boromir674/cookiecutter-python-package/actions/
+| **Source:** https://github.com/boromir674/cookiecutter-python-package
+| **Docs:** https://python-package-generator.readthedocs.io/en/master/
+| **PyPI:** https://pypi.org/project/cookiecutter-python/
+| **CI:** https://github.com/boromir674/cookiecutter-python-package/actions/
 
 
 Features
@@ -44,7 +44,7 @@ Generated Python Package Features
 
    a. **Job Matrix**, spanning different `platform`'s and `python version`'s
 
-      1. Platfroms: `ubuntu-latest`, `macos-latest`
+      1. Platforms: `ubuntu-latest`, `macos-latest`
       2. Python Interpreters: `3.6`, `3.7`, `3.8`, `3.9`, `3.10`
    b. **Parallel Job** execution, generated from the `matrix`, that runs the `Test Suite`
 
@@ -83,7 +83,9 @@ Try Running the Test Suite!
         
         tox
 
-For more **use cases** see :ref:`Use Cases`.
+
+Read the Documentation's `Use Cases`_ section for more on how to leverage your generated Python Package features.
+
 
 License
 =======
@@ -128,6 +130,7 @@ For more complex use cases, you can modify the Template and also leverage all of
 
 .. _Template: https://github.com/boromir674/cookiecutter-python-package/tree/master/src/cookiecutter_python
 
+.. _Use Cases: https://python-package-generator.readthedocs.io/en/master/usage/use_cases.html
 
 
 .. BADGE ALIASES
@@ -140,25 +143,21 @@ For more complex use cases, you can modify the Template and also leverage all of
 
 .. above url to workflow runs, filtered by the specified branch
 
-.. |docs-m| image:: https://img.shields.io/readthedocs/cookiecutter-python/master?logo=readthedocs
-    :target: https://python-package-generator.readthedocs.io/en/stable/?badge=stable
+.. |docs| image:: https://img.shields.io/readthedocs/python-package-generator/master?logo=readthedocs&logoColor=lightblue
     :alt: Read the Docs (version)
-
-.. |docs-s| image:: https://readthedocs.org/projects/python-package-generator/badge/?version=stable
-    :alt: Documentation Status
-    :target: https://python-package-generator.readthedocs.io/en/stable/?badge=stable
+    :target: https://python-package-generator.readthedocs.io/en/master/
 
 .. |release_version| image:: https://img.shields.io/pypi/v/cookiecutter_python
     :alt: Production Version
-    :target: https://pypi.org/project/cookiecutter_python/
+    :target: https://pypi.org/project/cookiecutter-python/
 
 .. |wheel| image:: https://img.shields.io/pypi/wheel/cookiecutter-python?color=green&label=wheel
     :alt: PyPI - Wheel
-    :target: https://pypi.org/project/cookiecutter_python
+    :target: https://pypi.org/project/cookiecutter-python
 
 .. |supported_versions| image:: https://img.shields.io/pypi/pyversions/cookiecutter-python?color=blue&label=python&logo=python&logoColor=%23ccccff
     :alt: Supported Python versions
-    :target: https://pypi.org/project/cookiecutter_python
+    :target: https://pypi.org/project/cookiecutter-python
 
 .. |commits_since_specific_tag_on_master| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/v0.7.2/master?color=blue&logo=github
     :alt: GitHub commits since tagged version (branch)
@@ -170,12 +169,8 @@ For more complex use cases, you can modify the Template and also leverage all of
 
 .. |codecov| image:: https://img.shields.io/codecov/c/github/boromir674/cookiecutter-python-package/master?logo=codecov
     :alt: Codecov
-    :target: https://codecov.io/gh/boromir674/cookiecutter-python-package
+    :target: https://app.codecov.io/gh/boromir674/cookiecutter-python-package
 
 .. |better_code_hub| image:: https://bettercodehub.com/edge/badge/boromir674/cookiecutter-python-package?branch=master
     :alt: Better Code Hub
     :target: https://bettercodehub.com/
-
-.. |sc1| image:: https://img.shields.io/scrutinizer/quality/g/boromir674/cookiecutter-python-package/master?logo=scrutinizer&style=flat
-    :alt: Scrutinizer code quality
-    :target: https://scrutinizer-ci.com/g/boromir674/cookiecutter-python-package/?branch=master
