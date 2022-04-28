@@ -1,0 +1,37 @@
+virtualenv
+macOS
+conda
+
+Quickstart
+Submodules
+Subpackages
+
+# python modules/object names
+utils
+metaclass
+args
+kwargs
+Iterable
+json
+len
+
+# Software Engineering
+runnable
+instantiation
+subclasses
+
+deserialization
+discretization
+interpretable
+pre
+accomodate
+eg
+ie
+iterable
+indexable
+nb
+quantisized
+runtime
+
+# 2nd, 3rd
+nd

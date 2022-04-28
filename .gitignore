@@ -3,3 +3,6 @@
 .tox/
 .idea/
 .coverage
+docs/_build/
+node_modules
+dist/
