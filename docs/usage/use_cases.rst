@@ -4,7 +4,7 @@
 New Python Package Use Cases
 ============================
 
-Ready to enjoy some of your newly generated Python Pacakge Project **features** available out-of-the-box!?
+Ready to enjoy some of your newly generated Python Package Project **features** available out-of-the-box!?
 
 For instance:
 
@@ -44,11 +44,11 @@ For instance:
             Setting PYPI_SERVER=pypi indicates to deploy to `pypi.org` (instead of `test.pypi.org`).
 
       .. note::
-         Please modify the TWINE_USERNAME, TWINE_PASSWORD and PACKAGE_DIST_VERSION envronment variables, accordingly.
+         Please modify the TWINE_USERNAME, TWINE_PASSWORD and PACKAGE_DIST_VERSION environment variables, accordingly.
 
          TWINE_USERNAME & TWINE_PASSWORD are used to authenticate (user credentials) with the targeted pypi server.
 
-         PACKAGE_DIST_VERSION is used to avoid accidentally uploading distributions of different versions than intented.
+         PACKAGE_DIST_VERSION is used to avoid accidentally uploading distributions of different versions than intended.
 
 
 2. Leverage the **CI Pipeline** and its **build matrix** to run the **Test Suite** against a combination of

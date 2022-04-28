@@ -19,6 +19,8 @@ len
 runnable
 instantiation
 subclasses
+dev
+templating
 
 deserialization
 discretization
@@ -35,3 +37,14 @@ runtime
 
 # 2nd, 3rd
 nd
+
+cookiecutter
+pypi
+sdist
+cpu
+
+# Github
+github
+
+# Open Source Software Licences
+affero
