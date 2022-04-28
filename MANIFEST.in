@@ -6,6 +6,8 @@ include README.rst
 recursive-include tests *.py
 recursive-include src *.py
 
+recursive-include docs *.rst
+
 recursive-include src *.in
 recursive-include src *.json
 recursive-include src *.rst
