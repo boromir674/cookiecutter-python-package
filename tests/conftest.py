@@ -1,6 +1,6 @@
 import os
 import pytest
-from typing import Callable, Any
+from typing import Callable
 from abc import ABC, abstractmethod
 
 
@@ -27,7 +27,6 @@ class AbstractCLIResult(ABC):
         equal_stderr = self.stderr == o.get('stderr', self.stderr)
 
         return equal_exit_code and equal_stdout and equal_stderr
-
 
 
 @pytest.fixture
