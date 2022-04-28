@@ -1,6 +1,6 @@
-************
+============
 Introduction
-************
+============
 
 | This is **Cookiecutter Python Package**, a *Template Project* used to *generate* fresh new open source *Python Package*'s.
 | The Template is implemented as a *cookiecutter* and it is available both as source code and as a Python Package in itself.

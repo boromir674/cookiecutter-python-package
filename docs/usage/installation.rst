@@ -1,12 +1,13 @@
-************
+------------
 Installation
-************
+------------
 
 | **Cookiecutter Python Package** is available directly as source code on github, but also being a Python Package Generator/Template,
 | available on pypi too.
 
+
 Get Code from Github
-====================
+--------------------
 
 .. code-block:: shell
 
@@ -14,7 +15,7 @@ Get Code from Github
 
 
 Install PyPI package (in current environment)
-=============================================
+---------------------------------------------
 
 .. code-block:: shell
 

@@ -1,14 +1,17 @@
 Welcome to Cookiecutter Python Package documentation!
 =====================================================
 
+.. include:: ../README.rst
+
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   intendent_audience
+   introduction
    why_this_library
-   usage/installation
-   usage/quickstart
+   usage/generate_project
+   usage/use_cases
    modules
 
 

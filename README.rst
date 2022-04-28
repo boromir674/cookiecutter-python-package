@@ -60,11 +60,13 @@ Features
 2. **Python Package Template** (source code at `src/cookiecutter_python/`_) implemented as a `Cookiecutter`
 3. **Tested** on python versions **3.6, 2.7, 3.8, 3.9 and 3.10**, for both **"Linux"** and **"MacOS"** platforms (see `Test Workflow` on `CI`_)
 
-See the **Biskotaki** *Python Package Project*, which was entirely generated using this **Python Package Template:**
+You can check the **Biskotaki** *Python Package Project*, which was entirely generated using this **Python Package Template:**
 
-* **Source Code** hosted on *Github* at https://github.com/boromir674/biskotaki
-* **Python Package** hosted on *pypi.org* at https://pypi.org/project/biskotaki/
-* **CI Pipeline** hosted on *Github Actions* at https://github.com/boromir674/biskotaki/actions
+
+| **Source Code** hosted on *Github* at https://github.com/boromir674/biskotaki
+| **Python Package** hosted on *pypi.org* at https://pypi.org/project/biskotaki/
+| **CI Pipeline** hosted on *Github Actions* at https://github.com/boromir674/biskotaki/actions
+
 
 Generated Python Package Features
 ---------------------------------
@@ -110,9 +112,14 @@ Now, you should have generated a new Project for a Python Package, based on the 
 
     Just 'enter' (`cd` into) the newly created directory, ie `cd <my-great-python-package>`.
 
-Develop your package's **Source Code** (`business logic`) inside `src/my_great_python_package` dir :)
+| Develop your package's **Source Code** (`business logic`) inside `src/my_great_python_package` dir :)
+| Develop your package's **Test Suite** (ie `unit-tests`, `integration tests`) inside `tests` dir :-)
 
-Develop your package's **Test Suite** (ie `unit-tests`, `integration tests`) inside `tests` dir :)
+Run Test Suite:
+
+    .. code-block:: shell
+        
+        tox
 
 
 Try yourself!
