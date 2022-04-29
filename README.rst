@@ -159,9 +159,9 @@ For more complex use cases, you can modify the Template and also leverage all of
     :alt: Supported Python versions
     :target: https://pypi.org/project/cookiecutter-python
 
-.. |commits_since_specific_tag_on_master| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/v0.8.2/master?color=blue&logo=github
+.. |commits_since_specific_tag_on_master| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/v0.8.3/master?color=blue&logo=github
     :alt: GitHub commits since tagged version (branch)
-    :target: https://github.com/boromir674/cookiecutter-python-package/compare/v0.8.2..master
+    :target: https://github.com/boromir674/cookiecutter-python-package/compare/v0.8.3..master
 
 .. |commits_since_latest_github_release| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/latest?color=blue&logo=semver&sort=semver
     :alt: GitHub commits since latest release (by SemVer)
