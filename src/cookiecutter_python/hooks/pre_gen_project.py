@@ -1,6 +1,11 @@
 import re
 import sys
 
+try:
+    from ask_pypi import is_pypi_project
+except ImportError:
+    is_pypi_project = None
+
 
 # Templated Variables should be centralized here for easier inspection
 
@@ -24,21 +29,19 @@ def is_valid_python_module_name(module: str):
 
 
 def check_version_is_semver(version: str):
-    REGEX = re.compile('^(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$')
+    REGEX = re.compile(r'^(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$')
     if not REGEX.match(version):
         print('ERROR: %s is not a valid Semantic Version!' % version)
         sys.exit(1)
 
 
 def available_package_name(package_name: str) -> str:
-    try:
-        from ask_pypi import is_pypi_project
-        return {True: 'not-available', False: 'available'}[is_pypi_project(package_name)]
-    except ImportError:
-        return 'unknown'
-    except Exception as error:
-        print(str(error), file=sys.stderr)
-        return 'unknown'
+    if is_pypi_project:
+        try:
+            return {True: 'not-available', False: 'available'}[is_pypi_project(package_name)]
+        except Exception as error:  # ie network failure
+            print(str(error), file=sys.stderr)
+    return 'unknown'
 
 
 def main(request):

@@ -22,7 +22,7 @@ def get_templated_vars():
     AUTHOR_EMAIL = "{{ cookiecutter.author_email }}"
     INITIALIZE_GIT_REPO_FLAG = "{{ cookiecutter.initialize_git_repo|lower }}"
 
-    REQUEST = type('PostGenProjectRequest', (), {
+    request = type('PostGenProjectRequest', (), {
         'cookiecutter': COOKIECUTTER,
         'project_dir': PROJECT_DIRECTORY,
         'author': AUTHOR,
@@ -30,7 +30,7 @@ def get_templated_vars():
         'initialize_git_repo': {'yes': True}.get(INITIALIZE_GIT_REPO_FLAG, False),
     })
 
-    return REQUEST
+    return request
 
 
 def initialize_git_repo(project_dir: str):
@@ -58,13 +58,7 @@ def git_add(project_dir: str):
 
 
 def git_commit(request):
-    """
-    Commit the staged changes in the generated project.
-    """
-    # cookiecutter_config_str = ""
-    # for key, val in request.cookiecutter.items():  # noqa pylint: disable=no-member
-    #     cookiecutter_config_str += f"  {key}: {val}\n"
-
+    """Commit the staged changes in the generated project."""
     cookiecutter_config_str = '\n'.join((f"  {key}: {val}" for key, val in request.cookiecutter.items())) + '\n'
     commit_message = (
         "Template applied from"
@@ -93,27 +87,49 @@ def git_commit(request):
         raise
 
 
+def python37_n_above_run_params(project_directory: str):
+    return [shlex.split("git status --porcelain")], dict(
+        capture_output=True,
+        cwd=project_directory,
+        check=True,
+    )
+
+
+def python36_n_below_run_params(project_directory: str):
+    return (shlex.split("git status --porcelain"),), dict(
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        cwd=project_directory,
+        check=True,
+    )
+
+
+def _get_run_parameters(python3_minor: int):
+    def run(args: list, kwargs: dict):
+        return subprocess.run(*args, **kwargs)
+    return {
+        'legacy': lambda project_dir: run(*python36_n_below_run_params(project_dir)),
+        # 'legacy': lambda project_dir: python36_n_below_run_params(project_dir),
+        # 'new': lambda project_dir: python37_n_above_run_params(project_dir),
+        'new': lambda project_dir: run(*python37_n_above_run_params(project_dir)),
+    }[{
+        True: 'legacy',
+        False: 'new'
+    }[
+        python3_minor < 7  # is legacy Python 3.x version (ie 3.5 or 3.6) ?
+    ]]
+
+
 def is_git_repo_clean(project_directory: str):
     """
     Check to confirm if the Git repository is clean and has no uncommitted
     changes. If its clean return True otherwise False.
     """
+
     try:
-        if sys.version_info.minor >= 7:
-            git_status = subprocess.run(
-                shlex.split("git status --porcelain"),
-                capture_output=True,
-                cwd=project_directory,
-                check=True,
-            )
-        elif sys.version_info.minor < 7:
-            git_status = subprocess.run(
-                shlex.split("git status --porcelain"),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                cwd=project_directory,
-                check=True,
-            )
+        git_status = _get_run_parameters(sys.version_info.minor)(
+            project_directory
+        )
     except subprocess.CalledProcessError as error:
         print(f"** Git repository in {project_directory} cannot get status")
         print('Exception: ' + str(error))
