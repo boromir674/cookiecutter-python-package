@@ -1,0 +1,63 @@
+# output-format: json
+
+strictness: high
+test-warnings: true
+doc-warnings: false
+member-warnings: false
+inherits:
+  - default
+ignore-paths:
+  - docs
+ignore-patterns:
+  - (^|/)skip(this)?(/|$)
+  - src/cookiecutter_python/{{ cookiecutter.project_slug }}/tests/smoke_test.py
+autodetect: false
+max-line-length: 120
+
+
+# TOOLS
+
+pyflakes:
+  run: true
+  disable:
+# we disable F821 this since the {{ cookiecutter }} templated python dict is technically an undefined name,
+# while pyflakes conducts static code analysis
+    - F821
+
+pyroma:
+  run: true
+  disable:
+    - PYR15
+    - PYR18
+
+dodgy:
+  run: true
+
+mccabe:
+  run: true
+  options:
+    max-complexity: 12
+
+
+# INACTIVE
+
+pylint:
+  run: false
+
+bandit:
+  run: false
+
+frosted:
+  run: false
+
+pep8:
+  run: false
+
+pep257:
+  run: false
+
+mypy:
+  run: false
+
+vulture:
+  run: false
