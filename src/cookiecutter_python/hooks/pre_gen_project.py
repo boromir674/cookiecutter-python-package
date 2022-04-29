@@ -1,10 +1,16 @@
 import re
 import sys
+from typing import Callable, Union
+
+
+is_python_package: Union[Callable[[str], bool], None]
+
 
 try:
     from ask_pypi import is_pypi_project
+    is_python_package = is_pypi_project
 except ImportError:
-    is_pypi_project = None
+    is_python_package = None
 
 
 # Templated Variables should be centralized here for easier inspection
@@ -36,9 +42,9 @@ def check_version_is_semver(version: str):
 
 
 def available_package_name(package_name: str) -> str:
-    if is_pypi_project:
+    if is_python_package is not None:
         try:
-            return {True: 'not-available', False: 'available'}[is_pypi_project(package_name)]
+            return {True: 'not-available', False: 'available'}[is_python_package(package_name)]
         except Exception as error:  # ie network failure
             print(str(error), file=sys.stderr)
     return 'unknown'
