@@ -22,7 +22,7 @@ def get_templated_vars():
     AUTHOR_EMAIL = "{{ cookiecutter.author_email }}"
     INITIALIZE_GIT_REPO_FLAG = "{{ cookiecutter.initialize_git_repo|lower }}"
 
-    REQUEST = type('PostGenProjectRequest', (), {
+    request = type('PostGenProjectRequest', (), {
         'cookiecutter': COOKIECUTTER,
         'project_dir': PROJECT_DIRECTORY,
         'author': AUTHOR,
@@ -30,7 +30,7 @@ def get_templated_vars():
         'initialize_git_repo': {'yes': True}.get(INITIALIZE_GIT_REPO_FLAG, False),
     })
 
-    return REQUEST
+    return request
 
 
 def initialize_git_repo(project_dir: str):
