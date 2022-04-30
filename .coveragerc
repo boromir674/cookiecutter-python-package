@@ -1,6 +1,6 @@
 [run]
 source =
-    cookiecutter_python_package
+    cookiecutter_python
     tests
 
 [report]
