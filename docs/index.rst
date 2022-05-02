@@ -8,11 +8,10 @@ Welcome to Cookiecutter Python Package documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   introduction
-   why_this_library
-   usage/generate_project
-   usage/use_cases
-   modules
+   contents/10_introduction
+   contents/20_why_this_package
+   contents/30_usage/index
+   contents/40_modules
 
 
 Indices and tables
