@@ -23,8 +23,8 @@ Features
 3. **Tested** on python versions **3.6, 2.7, 3.8, 3.9 and 3.10**, for both **"Linux"** and **"MacOS"** platforms (see `Test Workflow` on `CI`_)
 
 
-Auto Generatated Sample Package **Biskotaki**
----------------------------------------------
+Auto Generated Sample Package **Biskotaki**
+-------------------------------------------
 
 Check the **Biskotaki** *Python Package Project*, for a taste of the project structure and capabilities this Template can generate!
 
