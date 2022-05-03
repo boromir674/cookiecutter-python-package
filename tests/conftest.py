@@ -98,10 +98,7 @@ def project_dir(generate_project, test_project_generation_request, production_te
     expected_files = os.listdir(production_templated_project) + ['.git']
     assert set(expected_files) == set(runtime_files)
     assert len(expected_files) == len(runtime_files)
-    yield proj_dir
-    import shutil
-    if os.path.exists(proj_dir):
-        shutil.rmtree(proj_dir)
+    return proj_dir
 
 
 # HELPERS
@@ -268,13 +265,3 @@ def object_getter_adapter_class(object_getter_class):
 @pytest.fixture
 def get_object(object_getter_adapter_class):
     return object_getter_adapter_class()
-
-    class ObjectGetterAdapter(object_getter_class):
-
-        def __call__(self, symbol_ref: str, module: str):
-            return super().__call__(
-                type('RequestLike', (), {
-                    'symbol_name': symbol_ref,
-                    'object_module_string': module})
-            )
-    return ObjectGetterAdapter
