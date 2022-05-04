@@ -1,6 +1,6 @@
 import re
 import sys
-from typing import Callable, Union
+from typing import Callable, Union, Pattern
 import json
 import logging
 
@@ -35,7 +35,7 @@ def get_request():
 
 
 def verify_regex_and_log(message_getter):
-    def _verify_regex_and_log(regex: re.Pattern, string: str):
+    def _verify_regex_and_log(regex: Pattern, string: str):
         if not regex.match(string):
             msg = "RegEx Miss Match Error"
             logger.error(message_getter(msg, regex, string))
@@ -44,7 +44,7 @@ def verify_regex_and_log(message_getter):
 
 
 def verify_input_with_regex_callback(verify_callback, exception_message=None):
-    def verify_input_with_regex(regex: re.Pattern, string: str):
+    def verify_input_with_regex(regex: Pattern, string: str):
         try:
             verify_callback(regex, string)
         except RegExMissMatchError as not_matching_regex:
@@ -53,7 +53,7 @@ def verify_input_with_regex_callback(verify_callback, exception_message=None):
 
 
 def verify_callback(error_message, log_message_getter):
-    def _verify_regex(regex: re.Pattern, string: str):
+    def _verify_regex(regex: Pattern, string: str):
         c1 = verify_input_with_regex_callback(
             verify_regex_and_log(log_message_getter), exception_message=error_message)
         c1(regex, string)
