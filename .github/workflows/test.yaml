@@ -18,6 +18,7 @@ jobs:
     strategy:
       matrix:
         platform: [ubuntu-latest, macos-latest]
+        # python-version: ["3.6", "3.10"]
         python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
 
     steps:
@@ -30,11 +31,45 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install tox tox-gh-actions
+
     - name: Do Type Checking
       run: tox -e type --skip-missing-interpreters false -vv
+
+    - name: Check for compliance with Python Best Practices
+      run: tox -e check -vv
+
     - name: Specify current package version to assist build tool
       run: echo "PKG_VERSION=$(python scripts/parse_version.py)" >> $GITHUB_ENV
+
     - name: Run Test Suite
       run: tox --skip-missing-interpreters false -vv
       env:
         PLATFORM: ${{ matrix.platform }}
+
+    - name: Aggregate Test Suite Coverage Data
+      run: tox -e combine -vv
+
+    # TODO Delegate uploading to codecov to a another Job
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v2
+      with:
+        directory: ./tox/
+        env_vars: OS,PYTHON
+        fail_ci_if_error: true
+        files: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        path_to_write_report: ./codecov_report.txt
+        verbose: true
+
+    - name: Build Source and Wheel Distributions
+      run: tox -e build -vv
+
+    # - run: mkdir -p path/to/artifact
+
+    # - run: echo hello > path/to/artifact/world.txt
+
+    # - uses: actions/upload-artifact@v2
+    #   with:
+    #     name: my-artifact
+    #     path: path/to/artifact/world.txt
