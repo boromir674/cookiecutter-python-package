@@ -6,3 +6,5 @@
 docs/_build/
 node_modules
 dist/
+build/
+.vscode/

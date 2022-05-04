@@ -1,8 +1,9 @@
 import os
-import pytest
 from typing import Callable
 from abc import ABC, abstractmethod
 
+import pytest
+from software_patterns import SubclassRegistry
 
 class AbstractCLIResult(ABC):
 
@@ -54,7 +55,7 @@ def test_context_file():
 
 
 @pytest.fixture
-def test_context(load_context_json, test_context_file):
+def test_context(load_context_json, test_context_file) -> dict:
     return load_context_json(test_context_file)
 
 
@@ -265,3 +266,48 @@ def object_getter_adapter_class(object_getter_class):
 @pytest.fixture
 def get_object(object_getter_adapter_class):
     return object_getter_adapter_class()
+
+
+@pytest.fixture
+def hook_request():
+    def __init__(self, **kwargs):
+        self.module_name = kwargs.get('module_name', 'awesome_novelty_python_library')
+        self.pypi_package = kwargs.get('pypi_package', self.module_name.replace('_', '-'))
+        self.package_version_string = kwargs.get('package_version_string', '0.0.1')
+    return type('PreGenProjectRequest', (), {'__init__': __init__})
+
+
+@pytest.fixture
+def emulated_production_cookiecutter_dict(production_template, test_context):
+    import json
+    with open(os.path.join(production_template, 'cookiecutter.json'), 'r') as fp:
+        return dict(json.load(fp), **test_context)
+
+
+@pytest.fixture
+def request_factory(emulated_production_cookiecutter_dict):
+    class HookRequest(metaclass=SubclassRegistry):
+        pass
+
+    @HookRequest.register_as_subclass('pre')
+    class PreGenProjectRequest:
+        def __init__(self, **kwargs):
+            self.module_name = kwargs.get('module_name', 'awesome_novelty_python_library')
+            self.pypi_package = kwargs.get('pypi_package', self.module_name.replace('_', '-'))
+            self.package_version_string = kwargs.get('package_version_string', '0.0.1')
+    @HookRequest.register_as_subclass('post')
+    class PostGenProjectRequest:
+        def __init__(self, **kwargs):
+            self.project_dir = kwargs['project_dir']
+            self.cookiecutter = kwargs.get('cookiecutter', emulated_production_cookiecutter_dict) 
+            self.author = kwargs.get('author', 'Konstantinos Lampridis')
+            self.author_email = kwargs.get('author_email', 'boromir674@hotmail.com')
+            self.initialize_git_repo = kwargs.get('initialize_git_repo', True)
+    def create_request_callback(type_id: str):
+        def _create_request(**kwargs):
+            return HookRequest.create(type_id, **kwargs)
+        return _create_request
+    return type('RequestFactory', (), {
+        'pre': create_request_callback('pre'),
+        'post': create_request_callback('post'),
+    })
