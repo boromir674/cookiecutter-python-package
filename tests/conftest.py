@@ -5,8 +5,8 @@ from abc import ABC, abstractmethod
 import pytest
 from software_patterns import SubclassRegistry
 
-class AbstractCLIResult(ABC):
 
+class AbstractCLIResult(ABC):
     @property
     @abstractmethod
     def exit_code(self) -> int:
@@ -33,6 +33,7 @@ class AbstractCLIResult(ABC):
 @pytest.fixture
 def production_template():
     import cookiecutter_python as cpp
+
     path = os.path.dirname(cpp.__file__)
     return path
 
@@ -40,10 +41,12 @@ def production_template():
 @pytest.fixture
 def load_context_json():
     import json
+
     def _load_context_json(file_path: str) -> dict:
         with open(file_path, 'r') as fp:
             data = json.load(fp)
         return data
+
     return _load_context_json
 
 
@@ -61,16 +64,21 @@ def test_context(load_context_json, test_context_file) -> dict:
 
 @pytest.fixture
 def test_project_generation_request(production_template, test_context, tmpdir):
-    return type('GenerationRequest', (), {
-        'template': production_template,
-        'destination': tmpdir,
-        'default_dict': test_context,
-    })
+    return type(
+        'GenerationRequest',
+        (),
+        {
+            'template': production_template,
+            'destination': tmpdir,
+            'default_dict': test_context,
+        },
+    )
 
 
 @pytest.fixture
 def generate_project():
     from cookiecutter.main import cookiecutter
+
     def _generate_project(generate_request):
         return cookiecutter(
             generate_request.template,
@@ -79,6 +87,7 @@ def generate_project():
             overwrite_if_exists=True,
             default_config=generate_request.default_dict,
         )
+
     return _generate_project
 
 
@@ -88,7 +97,9 @@ def production_templated_project(production_template):
 
 
 @pytest.fixture
-def project_dir(generate_project, test_project_generation_request, production_templated_project):
+def project_dir(
+    generate_project, test_project_generation_request, production_templated_project
+):
     """Generate a Fresh new Project using the production cookiecutter template and
     the tests/data/test_cookiecutter.json file as default dict."""
     proj_dir: str = generate_project(test_project_generation_request)
@@ -106,32 +117,41 @@ def project_dir(generate_project, test_project_generation_request, production_te
 @pytest.fixture
 def get_cli_invocation():
     import subprocess
+
     class CLIResult(AbstractCLIResult):
         exit_code: int
         stdout: str
         stderr: str
+
         def __init__(self, completed_process: subprocess.CompletedProcess):
             self._exit_code = int(completed_process.returncode)
             self._stdout = str(completed_process.stdout)
             self._stderr = str(completed_process.stderr)
+
         @property
         def exit_code(self) -> int:
             return self._exit_code
+
         @property
         def stdout(self) -> str:
             return self._stdout
+
         @property
         def stderr(self) -> str:
             return self._stderr
-    def get_callable(executable: str, *args, **kwargs) -> Callable[[], AbstractCLIResult]:
+
+    def get_callable(
+        executable: str, *args, **kwargs
+    ) -> Callable[[], AbstractCLIResult]:
         def _callable() -> AbstractCLIResult:
             completed_process = subprocess.run(
                 [executable] + list(args),
                 env=kwargs.get('env', {}),
             )
             return CLIResult(completed_process)
+
         return _callable
-    
+
     return get_callable
 
 
@@ -143,13 +163,12 @@ def invoke_tox_cli_to_run_test_suite(get_cli_invocation):
 @pytest.fixture
 def generic_object_getter_class(monkeypatch):
     """Class instances can extract a requested object from within a module and optionally patch any object in the module's namespace at runtime."""
-    from typing import Any, Generic, TypeVar, Callable, Dict
+    from typing import Any, Generic, TypeVar
     from importlib import import_module
 
     T = TypeVar('T')
 
     class AbstractGenericObjectGetter(Generic[T]):
-
         def __init__(self, debug_message=None):
             # if True we want to patch one or more objects, found in the same module's namespace as the object that is requested at runtime
             # if False we want the object as it is computed in the production code
@@ -158,20 +177,19 @@ def generic_object_getter_class(monkeypatch):
                 True: self._get_production_object,
                 False: self._build_object,
             }
-            self._debug_message = debug_message
-
-        def _bool_key(self, kwargs_dict: dict) -> bool:
-            return bool(kwargs_dict.get('overrides'))
+            if debug_message:
+                self._runtime_exception_args = [str(debug_message)]
+            else:
+                self._runtime_exception_args = []
 
         def __call__(self, *args: Any, **kwargs: Any) -> Any:
             return self.get(*args, **kwargs)
 
         def get(self, request: T, overrides={}):
-            return self._get(request, overrides=overrides)
-
-        def _get(self, request: T, **kwargs):
-            use_production_object: bool = not self._bool_key(kwargs)
-            return self._get_object_callback[use_production_object](request, **kwargs)
+            # use_production_object: bool = not self._bool_key({'overrides': overrides})
+            d = {'overrides': overrides}
+            use_production_object: bool = not bool(d.get('overrides'))
+            return self._get_object_callback[use_production_object](request, **d)
 
         def _get_production_object(self, request: T, **kwargs):
             object_module = self._get_object_module(request)
@@ -196,15 +214,12 @@ def generic_object_getter_class(monkeypatch):
             """Extract the name of the reference (symbol in code) that points to the object requested for getting at runtime."""
             raise NotImplementedError
 
-        def _runtime_exception_args(self):
-            if self._debug_message:
-                return [str(self._debug_message)]
-            return []
-
         def _get_object(self, request: T, object_module):
-            object_reference = getattr(object_module, self._extract_object_symbol_name(request))
+            object_reference = getattr(
+                object_module, self._extract_object_symbol_name(request)
+            )
             if object_reference is None:
-                raise RuntimeError(*self._runtime_exception_args())
+                raise RuntimeError(*self._runtime_exception_args)
             return object_reference
 
     return AbstractGenericObjectGetter
@@ -249,26 +264,30 @@ def object_getter_class(generic_object_getter_class):
 
         def _extract_object_symbol_name(self, request) -> str:
             return request.symbol_name
+
     return ObjectGetter
 
 
 @pytest.fixture
 def object_getter_adapter_class(object_getter_class):
-    """Adapter Class of the ObjectGetter class, see object_getter_class fixture. 
+    """Adapter Class of the ObjectGetter class, see object_getter_class fixture.
 
     Returns:
         ObjectGetterAdapter: the Adapter Class
     """
-    class ObjectGetterAdapter(object_getter_class):
 
+    class ObjectGetterAdapter(object_getter_class):
         def __call__(self, symbol_ref: str, module: str, **kwargs):
             return super().__call__(
-                type('RequestLike', (), {
-                    'symbol_name': symbol_ref,
-                    'object_module_string': module}),
-                    **kwargs,
-                    # overrides=kwargs.get('overrides', {})
-                )
+                type(
+                    'RequestLike',
+                    (),
+                    {'symbol_name': symbol_ref, 'object_module_string': module},
+                ),
+                **kwargs,
+                # overrides=kwargs.get('overrides', {})
+            )
+
     return ObjectGetterAdapter
 
 
@@ -281,14 +300,18 @@ def get_object(object_getter_adapter_class):
 def hook_request():
     def __init__(self, **kwargs):
         self.module_name = kwargs.get('module_name', 'awesome_novelty_python_library')
-        self.pypi_package = kwargs.get('pypi_package', self.module_name.replace('_', '-'))
+        self.pypi_package = kwargs.get(
+            'pypi_package', self.module_name.replace('_', '-')
+        )
         self.package_version_string = kwargs.get('package_version_string', '0.0.1')
+
     return type('PreGenProjectRequest', (), {'__init__': __init__})
 
 
 @pytest.fixture
 def emulated_production_cookiecutter_dict(production_template, test_context):
     import json
+
     with open(os.path.join(production_template, 'cookiecutter.json'), 'r') as fp:
         return dict(json.load(fp), **test_context)
 
@@ -304,21 +327,33 @@ def hook_request_new(emulated_production_cookiecutter_dict):
     @BaseHookRequest.register_as_subclass('pre')
     class PreGenProjectRequest(HookRequest):
         def __init__(self, **kwargs):
-            self.module_name = kwargs.get('module_name', 'awesome_novelty_python_library')
-            self.pypi_package = kwargs.get('pypi_package', self.module_name.replace('_', '-'))
+            self.module_name = kwargs.get(
+                'module_name', 'awesome_novelty_python_library'
+            )
+            self.pypi_package = kwargs.get(
+                'pypi_package', self.module_name.replace('_', '-')
+            )
             self.package_version_string = kwargs.get('package_version_string', '0.0.1')
+
     @BaseHookRequest.register_as_subclass('post')
     class PostGenProjectRequest(HookRequest):
         def __init__(self, **kwargs):
             self.project_dir = kwargs['project_dir']
-            self.cookiecutter = kwargs.get('cookiecutter', emulated_production_cookiecutter_dict) 
+            self.cookiecutter = kwargs.get(
+                'cookiecutter', emulated_production_cookiecutter_dict
+            )
             self.author = kwargs.get('author', 'Konstantinos Lampridis')
             self.author_email = kwargs.get('author_email', 'boromir674@hotmail.com')
             self.initialize_git_repo = kwargs.get('initialize_git_repo', True)
-    return type('RequestInfra', (), {
-        'class_ref': HookRequest,
-        'registry': BaseHookRequest,
-    })
+
+    return type(
+        'RequestInfra',
+        (),
+        {
+            'class_ref': HookRequest,
+            'registry': BaseHookRequest,
+        },
+    )
 
 
 @pytest.fixture
@@ -326,8 +361,14 @@ def request_factory(hook_request_new):
     def create_request_callback(type_id: str):
         def _create_request(**kwargs):
             return hook_request_new.registry.create(type_id, **kwargs)
+
         return _create_request
-    return type('RequestFactory', (), {
-        'pre': create_request_callback('pre'),
-        'post': create_request_callback('post'),
-    })
+
+    return type(
+        'RequestFactory',
+        (),
+        {
+            'pre': create_request_callback('pre'),
+            'post': create_request_callback('post'),
+        },
+    )

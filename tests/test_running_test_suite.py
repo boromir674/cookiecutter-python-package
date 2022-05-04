@@ -16,7 +16,8 @@ def test_running_pytest(
         '-vv',
         env={
             'PYTHONPATH': f'{str(os.path.join(project_dir, "src"))}',
-        })()
+        },
+    )()
     assert result.exit_code == 0
     assert result.stderr == 'None'
 
@@ -42,6 +43,7 @@ def test_running_tox(
         env={
             'PYTHONPATH': f'{str(os.path.join(project_dir, "src"))}',
             'PATH': '',
-        })()
+        },
+    )()
     assert result.exit_code == 0
     assert result.stderr == 'None'

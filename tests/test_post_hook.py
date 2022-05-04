@@ -1,4 +1,3 @@
-import os
 import pytest
 
 
@@ -10,12 +9,15 @@ def get_main_with_mocked_template(get_object, request_factory):
             'cookiecutter_python.hooks.post_gen_project',
             # overrides=dict({
             #     'get_request': lambda: lambda: request_factory.post()}, **overrides)
+        )
+        return lambda: main_method(
+            request_factory.post(
+                project_dir='dummy_folder',  # TODO find out if we can use a temp dir
+                initialize_git_repo=False,
             )
-        return lambda: main_method(request_factory.post(
-            project_dir='dummy_folder', # TODO find out if we can use a temp dir
-            initialize_git_repo=False,
-        ))
+        )
         # return main_method
+
     return get_pre_gen_hook_project_main
 
 
