@@ -1,7 +1,11 @@
-global-exclude *.py[cod] __pycache__ *.so *.dylib *.log
-
 include LICENSE
 include README.rst
+include CONTRIBUTING.md
+include CHANGELOG.rst
+
+recursive-include src *.py
+recursive-include src *.pyi
 
 recursive-include tests *.py
-recursive-include src *.py
+
+recursive-include docs *.rst

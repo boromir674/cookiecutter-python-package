@@ -4,10 +4,8 @@ import sys
 
 def test_running_pytest(
     get_cli_invocation,
-    generate_project,
-    test_project_generation_request,
+    project_dir,
 ):
-    project_dir = generate_project(test_project_generation_request)
     result = get_cli_invocation(
         sys.executable,
         '-m',
@@ -16,6 +14,27 @@ def test_running_pytest(
         '-vv',
         env={
             'PYTHONPATH': f'{str(os.path.join(project_dir, "src"))}',
+        })()
+    assert result.exit_code == 0
+    assert result.stderr == 'None'
+
+
+def test_running_pytest_through_tox(
+    get_cli_invocation,
+    project_dir,
+):
+    result = get_cli_invocation(
+        sys.executable,
+        '-m',
+        'tox',
+        '-c',
+        os.path.join(project_dir, 'tox.ini'),
+        '-e',
+        'py310-dev',
+        '-vv',
+        env={
+            'PYTHONPATH': f'{str(os.path.join(project_dir, "src"))}',
+            'PATH': '',
         })()
     assert result.exit_code == 0
     assert result.stderr == 'None'

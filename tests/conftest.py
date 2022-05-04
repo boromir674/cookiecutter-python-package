@@ -81,6 +81,29 @@ def generate_project():
     return _generate_project
 
 
+@pytest.fixture
+def production_templated_project(production_template):
+    return os.path.join(production_template, r'{{ cookiecutter.project_slug }}')
+
+
+@pytest.fixture
+def project_dir(generate_project, test_project_generation_request, production_templated_project):
+    """Generate a Fresh new Project using the production cookiecutter template and
+    the tests/data/test_cookiecutter.json file as default dict."""
+    proj_dir: str = generate_project(test_project_generation_request)
+    runtime_files = os.listdir(proj_dir)
+    # we add '.git' since the project we generate for testing purposes
+    # uses a 'test_context' that instructs cookiecutter to initialiaze a git
+    # repo (see post_gen_project.py hook)
+    expected_files = os.listdir(production_templated_project) + ['.git']
+    assert set(expected_files) == set(runtime_files)
+    assert len(expected_files) == len(runtime_files)
+    yield proj_dir
+    import shutil
+    if os.path.exists(proj_dir):
+        shutil.rmtree(proj_dir)
+
+
 # HELPERS
 @pytest.fixture
 def get_cli_invocation():
@@ -117,3 +140,141 @@ def get_cli_invocation():
 @pytest.fixture
 def invoke_tox_cli_to_run_test_suite(get_cli_invocation):
     return get_cli_invocation('python', '-m', 'tox', '-vv')
+
+
+
+@pytest.fixture
+def generic_object_getter_class(monkeypatch):
+    """Class instances can extract a requested object from within a module and optionally patch any object in the module's namespace at runtime."""
+    from typing import Any, Generic, TypeVar, Callable, Dict
+    from importlib import import_module
+
+    T = TypeVar('T')
+
+    class GenericObjectGetter(Generic[T]):
+        def __init__(self, debug_message=None):
+            # if True we want to patch one or more objects, found in the same module's namespace as the object that is requested at runtime
+            # if False we want the object as it is computed in the production code
+
+            self._get_object_callback = {
+                True: self._get_production_object,
+                False: self._build_object,
+            }
+            self._debug_message = debug_message
+
+        def _bool_key(self, kwargs_dict: dict) -> bool:
+            return bool(kwargs_dict.get('overrides'))
+
+        def __call__(self, *args: Any, **kwargs: Any) -> Any:
+            return self.get(*args, **kwargs)
+
+        def get(self, request: T, overrides={}):
+            return self._get(request, overrides=overrides)
+
+        def _get(self, request: T, **kwargs):
+            use_production_object: bool = not self._bool_key(kwargs)
+            return self._get_object_callback[use_production_object](request, **kwargs)
+
+        def _get_production_object(self, request: T, **kwargs):
+            object_module = self._get_object_module(request)
+            computed_object = self._get_object(request, object_module)
+            return computed_object
+
+        def _build_object(self, request: T, overrides={}):
+            object_module = self._get_object_module(request)
+            for symbol_name, factory in overrides.items():
+                monkeypatch.setattr(object_module, symbol_name, factory())
+            computed_object = self._get_object(request, object_module)
+            return computed_object
+
+        def _get_object_module(self, request: T):
+            return import_module(self._extract_module_string(request))
+
+        def _extract_module_string(self, request: T) -> str:
+            """Extract the module 'path' from the request as dot (.) separated words (module/subpackages names)."""
+            raise NotImplementedError
+
+        def _extract_object_symbol_name(self, request: T) -> str:
+            """Extract the name of the reference (symbol in code) that points to the object requested for getting at runtime."""
+            raise NotImplementedError
+
+        def _runtime_exception_args(self):
+            if self._debug_message:
+                return [str(self._debug_message)]
+            return []
+
+        def _get_object(self, request: T, object_module):
+            object_reference = getattr(object_module, self._extract_object_symbol_name(request))
+            if object_reference is None:
+                raise RuntimeError(*self._runtime_exception_args())
+            return object_reference
+
+    return GenericObjectGetter
+
+
+@pytest.fixture
+def object_getter_class(generic_object_getter_class):
+    """Do a dynamic import of a module and get an object from its namespace.
+
+    This fixture returns a Python Class that can do a dynamic import of a module
+    and get an object from its namespace.
+
+    Instances of this class are callable's (they implement the __call__ protocol
+    ) and uppon calling the return a reference to the object "fetched" from the
+    namespace.
+
+    Callable instances arguments:
+    * 1st: object with the 'symbol_namel': str and 'object_module_string': str
+        attributes expected "on it"
+
+    Returns:
+        ObjectGetter: Class that can do a dynamic import and get an object
+    """
+    from typing import Protocol
+
+    class Request(Protocol):
+        symbol_name: str  # how the object (ie a get_job method) is imported into the namespace of a module (ie a metadata_provider module)
+        object_module_string: str  # the module (in a \w+\.\w+\.\w+ kind of format) where the object reference is present/computed
+
+    class ObjectGetter(generic_object_getter_class[Request]):
+        def _extract_module_string(self, request) -> str:
+            return request.object_module_string
+
+        def _extract_object_symbol_name(self, request) -> str:
+            return request.symbol_name
+    return ObjectGetter
+
+
+@pytest.fixture
+def object_getter_adapter_class(object_getter_class):
+    """Adapter Class of the ObjectGetter class, see object_getter_class fixture. 
+
+    Returns:
+        ObjectGetterAdapter: the Adapter Class
+    """
+    class ObjectGetterAdapter(object_getter_class):
+
+        def __call__(self, symbol_ref: str, module: str, **kwargs):
+            return super().__call__(
+                type('RequestLike', (), {
+                    'symbol_name': symbol_ref,
+                    'object_module_string': module}),
+                    **kwargs,
+                    # overrides=kwargs.get('overrides', {})
+                )
+    return ObjectGetterAdapter
+
+
+@pytest.fixture
+def get_object(object_getter_adapter_class):
+    return object_getter_adapter_class()
+
+    class ObjectGetterAdapter(object_getter_class):
+
+        def __call__(self, symbol_ref: str, module: str):
+            return super().__call__(
+                type('RequestLike', (), {
+                    'symbol_name': symbol_ref,
+                    'object_module_string': module})
+            )
+    return ObjectGetterAdapter

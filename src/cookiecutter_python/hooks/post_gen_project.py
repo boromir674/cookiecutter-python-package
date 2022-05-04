@@ -43,9 +43,12 @@ def initialize_git_repo(project_dir: str):
 
 
 def grant_basic_permissions(project_dir: str):
-    subprocess.check_output(
-        f"git config --global --add safe.directory {project_dir}", stderr=subprocess.STDOUT, shell=True, cwd=project_dir
-    )
+    try:
+        subprocess.check_output(
+            f"git config --global --add safe.directory {project_dir}", stderr=subprocess.STDOUT, shell=True, cwd=project_dir
+        )
+    except Exception as error:
+        print('WARNING')
 
 
 def git_add(project_dir: str):

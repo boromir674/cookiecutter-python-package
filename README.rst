@@ -90,7 +90,15 @@ Read the Documentation's `Use Cases`_ section for more on how to leverage your g
 License
 =======
 
-* Free software: Affero GNU General Public License v3.0
+|gh-lic|
+
+* `GNU Affero General Public License v3.0`_
+
+
+Free/Libre and Open Source Software (FLOSS)
+-------------------------------------------
+
+|ossf|
 
 
 Notes
@@ -131,6 +139,8 @@ For more complex use cases, you can modify the Template and also leverage all of
 .. _Template: https://github.com/boromir674/cookiecutter-python-package/tree/master/src/cookiecutter_python
 
 .. _Use Cases: https://python-package-generator.readthedocs.io/en/master/usage/use_cases.html
+
+.. _GNU Affero General Public License v3.0: https://github.com/boromir674/cookiecutter-python-package/blob/master/LICENSE
 
 
 .. BADGE ALIASES
@@ -174,6 +184,13 @@ For more complex use cases, you can modify the Template and also leverage all of
 .. |better_code_hub| image:: https://bettercodehub.com/edge/badge/boromir674/cookiecutter-python-package?branch=master
     :alt: Better Code Hub
     :target: https://bettercodehub.com/
+
+
+.. Github License (eg AGPL, MIT)
+.. |gh-lic| image:: https://img.shields.io/github/license/boromir674/cookiecutter-python-package
+    :alt: GitHub
+    :target: https://github.com/boromir674/cookiecutter-python-package/blob/master/LICENSE
+
 
 .. |ossf| image:: https://bestpractices.coreinfrastructure.org/projects/5988/badge
     :alt: OpenSSF
