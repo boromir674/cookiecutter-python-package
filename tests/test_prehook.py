@@ -65,6 +65,15 @@ def get_main_with_mocked_template(get_object, hook_request):
 
 
 def test_main(get_main_with_mocked_template):
+    result = get_main_with_mocked_template(overrides={
+        'is_python_package': lambda: lambda x: False  # we mock to avoid dependency on network
+        # we also indicate the package name is NOT found already on pypi
+    })()
+    assert result == 0  # 0 indicates successfull executions (as in a shell)
+
+
+@pytest.mark.network_bound
+def test_main_with_network(get_main_with_mocked_template):
     result = get_main_with_mocked_template()()
     assert result == 0  # 0 indicates successfull executions (as in a shell)
 
@@ -95,6 +104,14 @@ def test_main_with_invalid_version(get_main_with_mocked_template, hook_request):
     assert result == 1  # exit code of 1 indicates failed execution
 
 
+def test_main_with_mocked_found_pre_existing_pypi_package(get_main_with_mocked_template, hook_request):
+    result = get_main_with_mocked_template(overrides={
+        'is_python_package': lambda: lambda: True,
+    })()
+    assert result == 0  # exit code of 1 indicates failed execution
+
+
+@pytest.mark.network_bound
 def test_main_with_found_pre_existing_pypi_package(get_main_with_mocked_template, hook_request):
     result = get_main_with_mocked_template(overrides={
         'get_request': lambda: lambda: hook_request(module_name='so_magic')

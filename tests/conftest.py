@@ -140,7 +140,6 @@ def invoke_tox_cli_to_run_test_suite(get_cli_invocation):
     return get_cli_invocation('python', '-m', 'tox', '-vv')
 
 
-
 @pytest.fixture
 def generic_object_getter_class(monkeypatch):
     """Class instances can extract a requested object from within a module and optionally patch any object in the module's namespace at runtime."""
@@ -149,7 +148,8 @@ def generic_object_getter_class(monkeypatch):
 
     T = TypeVar('T')
 
-    class GenericObjectGetter(Generic[T]):
+    class AbstractGenericObjectGetter(Generic[T]):
+
         def __init__(self, debug_message=None):
             # if True we want to patch one or more objects, found in the same module's namespace as the object that is requested at runtime
             # if False we want the object as it is computed in the production code
@@ -207,7 +207,7 @@ def generic_object_getter_class(monkeypatch):
                 raise RuntimeError(*self._runtime_exception_args())
             return object_reference
 
-    return GenericObjectGetter
+    return AbstractGenericObjectGetter
 
 
 @pytest.fixture
@@ -228,13 +228,22 @@ def object_getter_class(generic_object_getter_class):
     Returns:
         ObjectGetter: Class that can do a dynamic import and get an object
     """
-    from typing import Protocol
+    from abc import ABC, abstractmethod
 
-    class Request(Protocol):
-        symbol_name: str  # how the object (ie a get_job method) is imported into the namespace of a module (ie a metadata_provider module)
-        object_module_string: str  # the module (in a \w+\.\w+\.\w+ kind of format) where the object reference is present/computed
+    class RequestLike(ABC):
+        @property
+        @abstractmethod
+        def symbol_name(self) -> str:
+            # how the object (ie a get_job method) is imported into the namespace of a module (ie a metadata_provider module)
+            raise NotImplementedError
 
-    class ObjectGetter(generic_object_getter_class[Request]):
+        @property
+        @abstractmethod
+        def object_module_string(self) -> str:
+            # the module (in a \w+\.\w+\.\w+ kind of format) where the object reference is present/computed
+            raise NotImplementedError
+
+    class ObjectGetter(generic_object_getter_class[RequestLike]):
         def _extract_module_string(self, request) -> str:
             return request.object_module_string
 
@@ -285,27 +294,38 @@ def emulated_production_cookiecutter_dict(production_template, test_context):
 
 
 @pytest.fixture
-def request_factory(emulated_production_cookiecutter_dict):
-    class HookRequest(metaclass=SubclassRegistry):
+def hook_request_new(emulated_production_cookiecutter_dict):
+    class HookRequest(object):
         pass
 
-    @HookRequest.register_as_subclass('pre')
-    class PreGenProjectRequest:
+    class BaseHookRequest(metaclass=SubclassRegistry):
+        pass
+
+    @BaseHookRequest.register_as_subclass('pre')
+    class PreGenProjectRequest(HookRequest):
         def __init__(self, **kwargs):
             self.module_name = kwargs.get('module_name', 'awesome_novelty_python_library')
             self.pypi_package = kwargs.get('pypi_package', self.module_name.replace('_', '-'))
             self.package_version_string = kwargs.get('package_version_string', '0.0.1')
-    @HookRequest.register_as_subclass('post')
-    class PostGenProjectRequest:
+    @BaseHookRequest.register_as_subclass('post')
+    class PostGenProjectRequest(HookRequest):
         def __init__(self, **kwargs):
             self.project_dir = kwargs['project_dir']
             self.cookiecutter = kwargs.get('cookiecutter', emulated_production_cookiecutter_dict) 
             self.author = kwargs.get('author', 'Konstantinos Lampridis')
             self.author_email = kwargs.get('author_email', 'boromir674@hotmail.com')
             self.initialize_git_repo = kwargs.get('initialize_git_repo', True)
+    return type('RequestInfra', (), {
+        'class_ref': HookRequest,
+        'registry': BaseHookRequest,
+    })
+
+
+@pytest.fixture
+def request_factory(hook_request_new):
     def create_request_callback(type_id: str):
         def _create_request(**kwargs):
-            return HookRequest.create(type_id, **kwargs)
+            return hook_request_new.registry.create(type_id, **kwargs)
         return _create_request
     return type('RequestFactory', (), {
         'pre': create_request_callback('pre'),
