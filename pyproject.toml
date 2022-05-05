@@ -5,3 +5,16 @@ requires = ["setuptools >= 40.6.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 # TODO switch setuptools build backend to something like 'poetry' or 'build'
+
+
+
+# TOOLS
+
+[tool.black]
+line-length = 88
+include = '\.pyi?$'
+extend-exclude = '''
+# A regex preceded with ^/ will apply only to files and directories
+# in the root of the project.
+^/foo.py  # exclude a file named foo.py in the root of the project (in addition to the defaults)
+'''
