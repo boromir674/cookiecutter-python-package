@@ -14,7 +14,13 @@ build-backend = "setuptools.build_meta"
 line-length = 95
 include = '\.pyi?$'
 extend-exclude = '''
-# A regex preceded with ^/ will apply only to files and directories
+# A regex preceeded with ^/ will apply only to files and directories
 # in the root of the project.
-^/foo.py  # exclude a file named foo.py in the root of the project (in addition to the defaults)
+# ^/foo.py  # exclude a file named foo.py in the root of the project (in addition to the defaults)
+# src/cookiecutter_python/\{\{\ cookiecutter.project_slug\ \}\}/tests/smoke_test.py
+tests/smoke_test.py
 '''
+
+
+[tool.isort]
+profile = 'black'

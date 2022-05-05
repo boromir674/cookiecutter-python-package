@@ -133,9 +133,7 @@ def get_cli_invocation():
         def stderr(self) -> str:
             return self._stderr
 
-    def get_callable(
-        executable: str, *args, **kwargs
-    ) -> Callable[[], AbstractCLIResult]:
+    def get_callable(executable: str, *args, **kwargs) -> Callable[[], AbstractCLIResult]:
         def _callable() -> AbstractCLIResult:
             completed_process = subprocess.run(
                 [executable] + list(args), env=kwargs.get('env', {})
@@ -232,9 +230,7 @@ def generic_object_getter_class(attribute_getter, monkeypatch):
             raise NotImplementedError
 
         def _get_object(self, request: T, object_module):
-            return self._attr_getter(
-                object_module, self._extract_object_symbol_name(request)
-            )
+            return self._attr_getter(object_module, self._extract_object_symbol_name(request))
 
     return AbstractGenericObjectGetter
 
@@ -324,12 +320,8 @@ def hook_request_new(emulated_production_cookiecutter_dict):
     @BaseHookRequest.register_as_subclass('pre')
     class PreGenProjectRequest(HookRequest):
         def __init__(self, **kwargs):
-            self.module_name = kwargs.get(
-                'module_name', 'awesome_novelty_python_library'
-            )
-            self.pypi_package = kwargs.get(
-                'pypi_package', self.module_name.replace('_', '-')
-            )
+            self.module_name = kwargs.get('module_name', 'awesome_novelty_python_library')
+            self.pypi_package = kwargs.get('pypi_package', self.module_name.replace('_', '-'))
             self.package_version_string = kwargs.get('package_version_string', '0.0.1')
 
     @BaseHookRequest.register_as_subclass('post')
@@ -343,9 +335,7 @@ def hook_request_new(emulated_production_cookiecutter_dict):
             self.author_email = kwargs.get('author_email', 'boromir674@hotmail.com')
             self.initialize_git_repo = kwargs.get('initialize_git_repo', True)
 
-    return type(
-        'RequestInfra', (), {'class_ref': HookRequest, 'registry': BaseHookRequest}
-    )
+    return type('RequestInfra', (), {'class_ref': HookRequest, 'registry': BaseHookRequest})
 
 
 @pytest.fixture

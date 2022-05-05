@@ -1,6 +1,5 @@
 from typing import Optional
 
-
 def cookiecutter(
     template: str,
     checkout: Optional[str],

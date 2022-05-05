@@ -9,7 +9,6 @@ import subprocess
 import sys
 from collections import OrderedDict
 
-
 PROJECT_DIRECTORY = os.path.realpath(os.path.curdir)
 
 def get_templated_vars():
@@ -37,15 +36,16 @@ def initialize_git_repo(project_dir: str):
     """
     Initialize the Git repository in the generated project.
     """
-    subprocess.check_output(
-        "git init", stderr=subprocess.STDOUT, shell=True, cwd=project_dir
-    )
+    subprocess.check_output("git init", stderr=subprocess.STDOUT, shell=True, cwd=project_dir)
 
 
 def grant_basic_permissions(project_dir: str):
     try:
         subprocess.check_output(
-            f"git config --global --add safe.directory {project_dir}", stderr=subprocess.STDOUT, shell=True, cwd=project_dir
+            f"git config --global --add safe.directory {project_dir}",
+            stderr=subprocess.STDOUT,
+            shell=True,
+            cwd=project_dir,
         )
     except Exception:
         print('WARNING')
@@ -62,7 +62,9 @@ def git_add(project_dir: str):
 
 def git_commit(request):
     """Commit the staged changes in the generated project."""
-    cookiecutter_config_str = '\n'.join((f"  {key}: {val}" for key, val in request.cookiecutter.items())) + '\n'
+    cookiecutter_config_str = (
+        '\n'.join((f"  {key}: {val}" for key, val in request.cookiecutter.items())) + '\n'
+    )
     commit_message = (
         "Template applied from"
         " https://github.com/boromir674/cookiecutter-python-"
@@ -110,17 +112,17 @@ def python36_n_below_run_params(project_directory: str):
 def _get_run_parameters(python3_minor: int):
     def run(args: list, kwargs: dict):
         return subprocess.run(*args, **kwargs)
+
     return {
         'legacy': lambda project_dir: run(*python36_n_below_run_params(project_dir)),
         # 'legacy': lambda project_dir: python36_n_below_run_params(project_dir),
         # 'new': lambda project_dir: python37_n_above_run_params(project_dir),
         'new': lambda project_dir: run(*python37_n_above_run_params(project_dir)),
-    }[{
-        True: 'legacy',
-        False: 'new'
     }[
-        python3_minor < 7  # is legacy Python 3.x version (ie 3.5 or 3.6) ?
-    ]]
+        {True: 'legacy', False: 'new'}[
+            python3_minor < 7  # is legacy Python 3.x version (ie 3.5 or 3.6) ?
+        ]
+    ]
 
 
 def is_git_repo_clean(project_directory: str):
@@ -130,9 +132,7 @@ def is_git_repo_clean(project_directory: str):
     """
 
     try:
-        git_status = _get_run_parameters(sys.version_info.minor)(
-            project_directory
-        )
+        git_status = _get_run_parameters(sys.version_info.minor)(project_directory)
     except subprocess.CalledProcessError as error:
         print(f"** Git repository in {project_directory} cannot get status")
         print('Exception: ' + str(error))
