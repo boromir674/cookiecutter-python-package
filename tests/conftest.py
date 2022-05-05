@@ -145,8 +145,7 @@ def get_cli_invocation():
     ) -> Callable[[], AbstractCLIResult]:
         def _callable() -> AbstractCLIResult:
             completed_process = subprocess.run(
-                [executable] + list(args),
-                env=kwargs.get('env', {}),
+                [executable] + list(args), env=kwargs.get('env', {})
             )
             return CLIResult(completed_process)
 
@@ -161,7 +160,24 @@ def invoke_tox_cli_to_run_test_suite(get_cli_invocation):
 
 
 @pytest.fixture
-def generic_object_getter_class(monkeypatch):
+def attribute_getter():
+    from typing import Any
+
+    class AttributeGetter(object):
+        def __init__(self, debug_message_factory):
+            self.debug_message_factory = debug_message_factory
+
+        def get(self, object_ref: Any, attribute: str) -> Any:
+            object_reference = getattr(object_ref, attribute)
+            if object_reference is None:
+                raise RuntimeError(self.debug_message_factory(object_ref, attribute))
+            return object_reference
+
+    return AttributeGetter
+
+
+@pytest.fixture
+def generic_object_getter_class(attribute_getter, monkeypatch):
     """Class instances can extract a requested object from within a module and optionally patch any object in the module's namespace at runtime."""
     from typing import Any, Generic, TypeVar
     from importlib import import_module
@@ -178,9 +194,17 @@ def generic_object_getter_class(monkeypatch):
                 False: self._build_object,
             }
             if debug_message:
-                self._runtime_exception_args = [str(debug_message)]
+                self._attr_getter = attribute_getter(
+                    lambda _object, name: "{msg}. Did not find {name} on object of type {type}".format(
+                        msg=debug_message, name=name, type=type(_object).__name__
+                    )
+                )
             else:
-                self._runtime_exception_args = []
+                self._attr_getter = attribute_getter(
+                    lambda _object, name: "Did not find {name} on object of type {type}".format(
+                        name=name, type=type(_object).__name__
+                    )
+                )
 
         def __call__(self, *args: Any, **kwargs: Any) -> Any:
             return self.get(*args, **kwargs)
@@ -215,12 +239,9 @@ def generic_object_getter_class(monkeypatch):
             raise NotImplementedError
 
         def _get_object(self, request: T, object_module):
-            object_reference = getattr(
+            return self._attr_getter(
                 object_module, self._extract_object_symbol_name(request)
             )
-            if object_reference is None:
-                raise RuntimeError(*self._runtime_exception_args)
-            return object_reference
 
     return AbstractGenericObjectGetter
 
@@ -347,12 +368,7 @@ def hook_request_new(emulated_production_cookiecutter_dict):
             self.initialize_git_repo = kwargs.get('initialize_git_repo', True)
 
     return type(
-        'RequestInfra',
-        (),
-        {
-            'class_ref': HookRequest,
-            'registry': BaseHookRequest,
-        },
+        'RequestInfra', (), {'class_ref': HookRequest, 'registry': BaseHookRequest}
     )
 
 

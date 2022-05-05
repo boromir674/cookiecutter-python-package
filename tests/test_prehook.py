@@ -121,9 +121,7 @@ def test_main_with_mocked_found_pre_existing_pypi_package(
     get_main_with_mocked_template, hook_request
 ):
     result = get_main_with_mocked_template(
-        overrides={
-            'is_python_package': lambda: lambda: True,
-        }
+        overrides={'is_python_package': lambda: lambda: True}
     )()
     assert result == 0  # exit code of 1 indicates failed execution
 

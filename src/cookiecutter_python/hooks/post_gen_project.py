@@ -47,7 +47,7 @@ def grant_basic_permissions(project_dir: str):
         subprocess.check_output(
             f"git config --global --add safe.directory {project_dir}", stderr=subprocess.STDOUT, shell=True, cwd=project_dir
         )
-    except Exception as error:
+    except Exception:
         print('WARNING')
 
 
