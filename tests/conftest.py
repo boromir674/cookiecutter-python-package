@@ -22,13 +22,6 @@ class AbstractCLIResult(ABC):
     def stderr(self) -> str:
         raise NotImplementedError
 
-    def __eq__(self, o) -> bool:
-        equal_exit_code = self.exit_code == o.get('exit_code', self.exit_code)
-        equal_stdout = self.stdout == o.get('stdout', self.stdout)
-        equal_stderr = self.stderr == o.get('stderr', self.stderr)
-
-        return equal_exit_code and equal_stdout and equal_stderr
-
 
 @pytest.fixture
 def production_template():
@@ -167,7 +160,7 @@ def attribute_getter():
         def __init__(self, debug_message_factory):
             self.debug_message_factory = debug_message_factory
 
-        def get(self, object_ref: Any, attribute: str) -> Any:
+        def __call__(self, object_ref: Any, attribute: str) -> Any:
             object_reference = getattr(object_ref, attribute)
             if object_reference is None:
                 raise RuntimeError(self.debug_message_factory(object_ref, attribute))
@@ -290,50 +283,33 @@ def object_getter_class(generic_object_getter_class):
 
 
 @pytest.fixture
-def object_getter_adapter_class(object_getter_class):
-    """Adapter Class of the ObjectGetter class, see object_getter_class fixture.
-
-    Returns:
-        ObjectGetterAdapter: the Adapter Class
-    """
-
+def get_object(object_getter_class):
     class ObjectGetterAdapter(object_getter_class):
+        """Adapter Class of the ObjectGetter class, see object_getter_class fixture.
+
+        Returns:
+            ObjectGetterAdapter: the Adapter Class
+        """
+
         def __call__(self, symbol_ref: str, module: str, **kwargs):
             return super().__call__(
                 type(
-                    'RequestLike',
+                    "RequestLike",
                     (),
-                    {'symbol_name': symbol_ref, 'object_module_string': module},
+                    {"symbol_name": symbol_ref, "object_module_string": module},
                 ),
                 **kwargs,
                 # overrides=kwargs.get('overrides', {})
             )
 
-    return ObjectGetterAdapter
-
-
-@pytest.fixture
-def get_object(object_getter_adapter_class):
-    return object_getter_adapter_class()
-
-
-@pytest.fixture
-def hook_request():
-    def __init__(self, **kwargs):
-        self.module_name = kwargs.get('module_name', 'awesome_novelty_python_library')
-        self.pypi_package = kwargs.get(
-            'pypi_package', self.module_name.replace('_', '-')
-        )
-        self.package_version_string = kwargs.get('package_version_string', '0.0.1')
-
-    return type('PreGenProjectRequest', (), {'__init__': __init__})
+    return ObjectGetterAdapter()
 
 
 @pytest.fixture
 def emulated_production_cookiecutter_dict(production_template, test_context):
     import json
 
-    with open(os.path.join(production_template, 'cookiecutter.json'), 'r') as fp:
+    with open(os.path.join(production_template, "cookiecutter.json"), "r") as fp:
         return dict(json.load(fp), **test_context)
 
 
