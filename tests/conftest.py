@@ -1,6 +1,6 @@
 import os
-from typing import Callable
 from abc import ABC, abstractmethod
+from typing import Callable
 
 import pytest
 from software_patterns import SubclassRegistry
@@ -172,8 +172,8 @@ def attribute_getter():
 @pytest.fixture
 def generic_object_getter_class(attribute_getter, monkeypatch):
     """Class instances can extract a requested object from within a module and optionally patch any object in the module's namespace at runtime."""
-    from typing import Any, Generic, TypeVar
     from importlib import import_module
+    from typing import Any, Generic, TypeVar
 
     T = TypeVar('T')
 

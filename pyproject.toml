@@ -11,7 +11,7 @@ build-backend = "setuptools.build_meta"
 # TOOLS
 
 [tool.black]
-line-length = 88
+line-length = 95
 include = '\.pyi?$'
 extend-exclude = '''
 # A regex preceded with ^/ will apply only to files and directories

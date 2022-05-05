@@ -1,6 +1,6 @@
 import os
-import pytest
 
+import pytest
 
 MY_DIR = os.path.dirname(os.path.realpath(__file__))
 TEST_DATA_DIR = os.path.join(MY_DIR, 'data')
@@ -9,8 +9,8 @@ TEST_DATA_DIR = os.path.join(MY_DIR, 'data')
 @pytest.fixture
 def is_valid_python_module_name():
     from cookiecutter_python.hooks.pre_gen_project import (
-        verify_templated_module_name,
         InputValueError,
+        verify_templated_module_name,
     )
 
     def _is_valid_python_module_name(name: str):
