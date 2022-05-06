@@ -90,20 +90,54 @@ git checkout -b name-of-your-bugfix-or-feature
 
 Now you can make your changes locally.
 
-1. When you're done making changes, check that your changes pass the tests locally:
+Probably, you should start by writting test case(s) and then the production code.
+
+
+1. When you're done making changes, check that your changes pass the tests locally.
+
+Please install tox first:
 
 ```bash
-pip install tox
-tox
+python3 -m pip install --user tox
 ```
 
-Please note that tox runs test test suite against multiple python versions if they are found available on the host machine.
+For a **quick feedback loop** run tests in `dev` setup, against your installed python version:
+Assuming you are using python3.8:
 
-If you feel like running the check environment, please use the following command:
+```bash
+tox -e py38-dev -vv
+```
+
+Run all Test Suite under Python3.8 and test against different ways of doing a 'python installation':
+
+```bash
+tox -e py38 -vv
+```
+
+For more extensive testing, run the Test Suite against multiple python versions if they are found available on the host machine:
+
+```bash
+tox -vv
+```
+
+For checking against all of our Lint Rules, run:
+
+```bash
+tox -e lint
+```
+
+For refactoring the code to match all of our Lint Rules, run:
+
+```bash
+APPLY_LINT= tox -e lint
+```
+
+For checking compliance with Best Practises for Packaging Python code, run:
 
 ```bash
 tox -e check
 ```
+
 
 1. Ensure that your feature or commit is fully covered by tests. Check the coverage report that should be visible on the console when you run tox
 
