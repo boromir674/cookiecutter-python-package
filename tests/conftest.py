@@ -280,6 +280,46 @@ def object_getter_class(generic_object_getter_class):
 
 @pytest.fixture
 def get_object(object_getter_class):
+    """Import an object from a module and optionally mock any object in its namespace.
+
+    A callable that can import an object, given a reference (str), from a module
+    , given its "path" (string represented as 'dotted' modules: same way python
+    code imports modules), and provide the capability to monkeypatch/mock any
+    object found in the module's namespace at runtime.
+
+    The client code must supply the first 2 arguments at runtime, correspoding
+    to the object's symbol name (str) and module "path" (str).
+
+    The client code can optionally use the 'overrides' kwarg to supply a python
+    dictionary to specify what runtime objects to mock and how.
+
+    Each dictionary entry should model your intention to monkeypatch one of the
+    module namespace' objects with a custom 'mock' value.
+
+    Each dictionary key should be a string corresponding to an object's
+    reference name (present in the module's namespace) and each value should be
+    a callable that can construct the 'mock' value.
+    The callable should take no arguments and acts as a "factory", that when
+    called should provide the 'mock' value.
+
+    Example:
+
+        def mocked_request_get()
+        business_method = get_object(
+            "business_method",
+            "business_package.methods",
+            overrides={"production": lambda: 'mocked'}
+        )
+
+    Args:
+        symbol (str): the object's reference name
+        module (str): the module 'path' represented as module names "joined" by
+            "." (dots)
+        overrides (dict, optional): declare what to monkeypatch and with what "mocks". Defaults to None.
+
+    Returns:
+        Any: the object imported from the module with its namespace potentially mocked
+    """
     class ObjectGetterAdapter(object_getter_class):
         """Adapter Class of the ObjectGetter class, see object_getter_class fixture.
 
