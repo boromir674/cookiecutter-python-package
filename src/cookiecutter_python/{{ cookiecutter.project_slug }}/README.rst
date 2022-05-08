@@ -19,8 +19,8 @@ Features
 
 1. **{{ cookiecutter.pkg_name }}** `python package`
 
-   a. **Great Feature**
-   b. **Nice Feature**
+   a. TODO **Great Feature**
+   b. TODO **Nice Feature**
 
 2. **Test Suite** using `Pytest`
 3. **Parallel Execution** of Unit Tests, on multiple cpu's
@@ -30,6 +30,7 @@ Features
    b. **Build Command**, using the `build` python package
    c. **Pypi Deploy Command**, supporting upload to both `pypi.org` and `test.pypi.org` servers
    d. **Type Check Command**, using `mypy`
+   e. **Lint** *Check* and `Apply` commands, using `isort`_ and `black`_
 5. **CI Pipeline**, running on `Github Actions`
 
    a. **Job Matrix**, spanning different `platform`'s and `python version`'s
@@ -111,3 +112,7 @@ License
 .. LINKS
 
 .. _GNU Affero General Public License v3.0: https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}/blob/master/LICENSE
+
+.. _isort: https://pycqa.github.io/isort/
+
+.. _black: https://black.readthedocs.io/en/stable/

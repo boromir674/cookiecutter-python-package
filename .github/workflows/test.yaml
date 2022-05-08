@@ -17,10 +17,10 @@ jobs:
     runs-on: ${{ matrix.platform }}
     strategy:
       matrix:
-        # platform: [ubuntu-latest, macos-latest]
-        platform: [ubuntu-latest]
-        python-version: ["3.6", "3.10"]
-        # python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
+        platform: [ubuntu-latest, macos-latest]
+        # platform: [ubuntu-latest]
+        # python-version: ["3.6", "3.10"]
+        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
 
     steps:
     - uses: actions/checkout@v1
@@ -42,30 +42,30 @@ jobs:
     - name: Check for compliance with Python Best Practices
       run: tox -e check -s false -vv
 
-    - name: Specify current package version to assist build tool
-      run: echo "PKG_VERSION=$(python scripts/parse_version.py)" >> $GITHUB_ENV
+    # - name: Specify current package version to assist build tool
+    #   run: echo "PKG_VERSION=$(python scripts/parse_version.py)" >> $GITHUB_ENV
 
-    - name: Run Test Suite
-      run: tox -s false -vv
-      env:
-        PLATFORM: ${{ matrix.platform }}
+    # - name: Run Test Suite
+    #   run: tox -s false -vv
+    #   env:
+    #     PLATFORM: ${{ matrix.platform }}
 
-    - name: Install coverage.py
-      run: python -m pip install coverage
+    # - name: Install coverage.py
+    #   run: python -m pip install coverage
 
-    - name: Aggregate Test Suite Coverage Data
-      run: tox -e coverage -s false --sitepackages -vv
+    # - name: Aggregate Test Suite Coverage Data
+    #   run: tox -e coverage -s false --sitepackages -vv
 
-    # TODO Delegate uploading to codecov to a another Job
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v2
-      with:
-        directory: ./.tox/
-        env_vars: OS,PYTHON
-        fail_ci_if_error: true
-        files: ./.tox/coverage.xml
-        flags: unittests
-        name: codecov-umbrella
-        verbose: true
+    # # TODO Delegate uploading to codecov to a another Job
+    # - name: Upload coverage to Codecov
+    #   uses: codecov/codecov-action@v2
+    #   with:
+    #     directory: ./.tox/
+    #     env_vars: OS,PYTHON
+    #     fail_ci_if_error: true
+    #     files: ./.tox/coverage.xml
+    #     flags: unittests
+    #     name: codecov-umbrella
+    #     verbose: true
 
     # TODO find build tar.gz whl files and upload as artefacts

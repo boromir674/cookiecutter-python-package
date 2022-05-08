@@ -40,6 +40,7 @@ Generated Python Package Features
    b. **Build Command**, using the `build`_ python package
    c. **Pypi Deploy Command**, supporting upload to both `pypi.org`_ and `test.pypi.org`_ servers
    d. **Type Check Command**, using `mypy`_
+   e. **Lint** *Check* and `Apply` commands, using `isort`_ and `black`_
 4. **CI Pipeline**, running on `Github Actions`_
 
    a. **Job Matrix**, spanning different `platform`'s and `python version`'s
@@ -141,6 +142,10 @@ For more complex use cases, you can modify the Template and also leverage all of
 .. _Use Cases: https://python-package-generator.readthedocs.io/en/master/usage/use_cases.html
 
 .. _GNU Affero General Public License v3.0: https://github.com/boromir674/cookiecutter-python-package/blob/master/LICENSE
+
+.. _isort: https://pycqa.github.io/isort/
+
+.. _black: https://black.readthedocs.io/en/stable/
 
 
 .. BADGE ALIASES
