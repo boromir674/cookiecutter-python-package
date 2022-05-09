@@ -4,6 +4,9 @@ Changelog
 0.9.1 (2022-05-09)
 ------------------
 
+Added some "juicy" 'code badges' in README, to demonstrate the status reported by
+the various CI services that this github repository integrates with.
+
 documentation
 ^^^^^^^^^^^^^
 - add badges demonstrating code coverage percentage & code quality reported CI services
