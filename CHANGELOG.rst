@@ -40,10 +40,6 @@ ci
 - enable for pushes to the 'ci' branch
 
 
-0.8.4
------
-
-
 0.8.3 (2022-04-29)
 ------------------
 
