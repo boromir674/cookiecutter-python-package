@@ -17,9 +17,9 @@ You can contribute in many ways:
 
 ### Report Bugs
 
-Report bugs at [https://github.com/boromir674/cookiecutter-python-package/issues](https://github.com/boromir674/cookiecutter-python-package/issues).
-
-Stmbling upon a Bug means encountering different behaviour than the expected/advertised one. When you are reporting a bug, please include the following infromation by filling in [the template](https://github.com/boromir674/cookiecutter-python-package/.github/blob/master/.github/ISSUE_TEMPLATE/bug_report.md).
+Report bugs at [https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}/issues](https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}/issues).
+W
+Stambling upon a Bug means encountering different behaviour than the expected/advertised one. When you are reporting a bug, please include the following infromation by filling in [the template](https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}/.github/blob/master/.github/ISSUE_TEMPLATE/bug_report.md).
 
 * Your operating system name and version.
 * Any details about your local setup that might be helpful in troubleshooting.
@@ -40,7 +40,7 @@ See [Contributor Setup](#Setting-Up-the-Code-for-Local-Development) to get start
 
 ### Write Documentation
 
-Cookiecutter Python Package could always use more documentation, whether as part of the official Cookiecutter Python Package docs, in docstrings, etc.
+{{ cookiecutter.project_name }} could always use more documentation, whether as part of the official {{ cookiecutter.project_name }} docs, in docstrings, etc.
 
 If you want to review your changes on the documentation locally, you can do:
 
@@ -54,7 +54,7 @@ You can open it in your browser at http://127.0.0.1:8000 !
 
 ### Submit Feedback
 
-The best way to send feedback is to file an issue at [https://github.com/boromir674/cookiecutter-python-package/issues](https://github.com/boromir674/cookiecutter-python-package/issues).
+The best way to send feedback is to file an issue at [https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}/issues](https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}/issues).
 
 If you are proposing a feature:
 
@@ -64,21 +64,22 @@ If you are proposing a feature:
 
 ## Setting Up the Code for Local Development
 
-Here's how to set up `cookiecutter-python-package` for local development.
+Here's how to set up `{{ cookiecutter.repo_name }}` for local development.
 
-1. Fork the `cookiecutter-python-package` repo on GitHub.
+1. Fork the `{{ cookiecutter.repo_name }}` repo on GitHub.
 2. Clone your fork locally:
 
 ```bash
-git clone git@github.com:boromir674/cookiecutter-python-package.git
+git clone git@github.com:{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}.git
+cd {{ cookiecutter.repo_name }}
 ```
 
 3. Install your local copy into a virtualenv. Assuming you have virtualenv installed, this is how you set up your fork for local development:
 
 ```bash
 cd cookiecutter-python-packge
-virtualenv cookie-pypi --python=python3
-source cookie-pypi/bin/activate
+virtualenv env --python=python3
+source env/bin/activate
 pip install -e .
 ```
 
@@ -90,54 +91,21 @@ git checkout -b name-of-your-bugfix-or-feature
 
 Now you can make your changes locally.
 
-Probably, you should start by writting test case(s) and then the production code.
-
-
-1. When you're done making changes, check that your changes pass the tests locally.
-
-Please install tox first:
+1. When you're done making changes, check that your changes pass the tests locally:
 
 ```bash
-python3 -m pip install --user tox
+pip install tox
+alias tox='PKG_VERSION=$(./scripts/parse_version.py) tox'
+tox
 ```
 
-For a **quick feedback loop** run tests in `dev` setup, against your installed python version:
-Assuming you are using python3.8:
+Please note that tox runs test test suite against multiple python versions, if they are found available on the host machine.
+
+If you want to produce a built tar.gz and wheel distributions:
 
 ```bash
-tox -e py38-dev -vv
+tox -e check && tox -e build
 ```
-
-Run all Test Suite under Python3.8 and test against different ways of doing a 'python installation':
-
-```bash
-tox -e py38 -vv
-```
-
-For more extensive testing, run the Test Suite against multiple python versions if they are found available on the host machine:
-
-```bash
-tox -vv
-```
-
-For checking against all of our Lint Rules, run:
-
-```bash
-tox -e lint
-```
-
-For refactoring the code to match all of our Lint Rules, run:
-
-```bash
-APPLY_LINT= tox -e lint
-```
-
-For checking compliance with Best Practises for Packaging Python code, run:
-
-```bash
-tox -e check
-```
-
 
 1. Ensure that your feature or commit is fully covered by tests. Check the coverage report that should be visible on the console when you run tox
 
@@ -169,7 +137,7 @@ Before you submit a pull request, check that it meets these guidelines:
 
 * Single Responsibility of Units
 * Modularity
-* Compisition over Inheritance
+* Composition over Inheritance
 
 
 ## Testing with tox
@@ -194,7 +162,7 @@ tox -e py38
 To only run test cases matching the string 'smoke_test', using python 3.8:
 
 ```bash
-tox -e py38 -k 'smoke_test'
+tox -e py38 -- -k 'smoke_test'
 ```
 
 
@@ -207,16 +175,12 @@ Core committers, use this section to:
 * Guide your instinct and decisions as a core committer
 * Limit the codebase from growing infinitely
 
-#### Command-Line Accessible
-
-* Provides a command-line utility that creates a Python Package Project
-* Easy to use without having to think too hard
-* Flexible for more complex use cases
-* Easily extensible
-
 #### API Accessible
 
 * Modular API striving for statelessness
+* Easy to use without having to think too hard
+* Flexible for more complex use cases
+* Easily extensible
 
 #### Extensible
 
@@ -226,10 +190,10 @@ Core committers, use this section to:
 
 #### Fast and Focused
 
-Cookiecutter Python Package is designed to do one thing, and do that one thing very well.
+{{ cookiecutter.project_name }} is designed to do one thing, and do that one thing very well.
 
 * Cover the important use cases and as little as possible beyond that :)
-* Generate Python Package's from the command-line or API, nothing more
+
 
 #### Inclusive
 
@@ -267,7 +231,7 @@ For other issues: encourage friendly discussion, moderate debate, offer your tho
 
 ### Process: Roadmap
 
-The roadmap located [here](https://github.com/boromir674/cookiecutter-python-package/milestones?direction=desc&sort=due_date&state=open)
+The roadmap located [here](https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}/milestones?direction=desc&sort=due_date&state=open)
 
 Due dates are flexible.
 

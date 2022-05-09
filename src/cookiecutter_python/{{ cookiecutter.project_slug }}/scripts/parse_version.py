@@ -27,7 +27,8 @@ def main():
                 f"Expected to find the '[semantic_release]' section, in the '{SETUP_CFG}' file, with key "
                 f"'version_variable'.\nFor example:\n[semantic_release]\nversion_variable = "
                 f"src/package_name/__init__.py:__version__\n indicated that the version string should be looked up in "
-                f"the src/package_name/__init__.py file registered under the __version__ 'name'")
+                f"the src/package_name/__init__.py file registered under the __version__ 'name'"
+            )
 
     # (it does not have to be a.py file)
     # to indicate that the version is stored in the '__version__'
@@ -35,10 +36,10 @@ def main():
         raise FileNotFoundError(
             f"Path '{file_with_version_string} does not appear to be valid. Please go to the '{SETUP_CFG}' file, at the"
             f" [semantic_release] section and set the 'version_variable' key with a valid file path (to look for the "
-            f"version string)")
+            f"version string)"
+        )
 
     reg_string = r'\s*=\s*[\'\"]([^\'\"]*)[\'\"]'
-
 
     with open(file_with_version_string, 'r') as _file:
         content = _file.read()
@@ -47,7 +48,9 @@ def main():
         if match:
             _version = match.group(1)
             return _version
-        raise AttributeError(f"Could not find a match for regex {reg} when applied to:\n{content}")
+        raise AttributeError(
+            f"Could not find a match for regex {reg} when applied to:\n{content}"
+        )
 
 
 if __name__ == '__main__':

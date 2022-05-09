@@ -12,7 +12,7 @@ ignore-patterns:
   - (^|/)skip(this)?(/|$)
   - src/cookiecutter_python/{{ cookiecutter.project_slug }}/tests/smoke_test.py
 autodetect: false
-max-line-length: 120
+max-line-length: 95
 
 
 # TOOLS

@@ -40,6 +40,7 @@ Generated Python Package Features
    b. **Build Command**, using the `build`_ python package
    c. **Pypi Deploy Command**, supporting upload to both `pypi.org`_ and `test.pypi.org`_ servers
    d. **Type Check Command**, using `mypy`_
+   e. **Lint** *Check* and `Apply` commands, using `isort`_ and `black`_
 4. **CI Pipeline**, running on `Github Actions`_
 
    a. **Job Matrix**, spanning different `platform`'s and `python version`'s
@@ -90,7 +91,15 @@ Read the Documentation's `Use Cases`_ section for more on how to leverage your g
 License
 =======
 
-* Free software: Affero GNU General Public License v3.0
+|gh-lic|
+
+* `GNU Affero General Public License v3.0`_
+
+
+Free/Libre and Open Source Software (FLOSS)
+-------------------------------------------
+
+|ossf|
 
 
 Notes
@@ -132,6 +141,12 @@ For more complex use cases, you can modify the Template and also leverage all of
 
 .. _Use Cases: https://python-package-generator.readthedocs.io/en/master/usage/use_cases.html
 
+.. _GNU Affero General Public License v3.0: https://github.com/boromir674/cookiecutter-python-package/blob/master/LICENSE
+
+.. _isort: https://pycqa.github.io/isort/
+
+.. _black: https://black.readthedocs.io/en/stable/
+
 
 .. BADGE ALIASES
 
@@ -159,9 +174,9 @@ For more complex use cases, you can modify the Template and also leverage all of
     :alt: Supported Python versions
     :target: https://pypi.org/project/cookiecutter-python
 
-.. |commits_since_specific_tag_on_master| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/v0.8.4/master?color=blue&logo=github
+.. |commits_since_specific_tag_on_master| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/v0.9.0/master?color=blue&logo=github
     :alt: GitHub commits since tagged version (branch)
-    :target: https://github.com/boromir674/cookiecutter-python-package/compare/v0.8.4..master
+    :target: https://github.com/boromir674/cookiecutter-python-package/compare/v0.9.0..master
 
 .. |commits_since_latest_github_release| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/latest?color=blue&logo=semver&sort=semver
     :alt: GitHub commits since latest release (by SemVer)
@@ -174,6 +189,13 @@ For more complex use cases, you can modify the Template and also leverage all of
 .. |better_code_hub| image:: https://bettercodehub.com/edge/badge/boromir674/cookiecutter-python-package?branch=master
     :alt: Better Code Hub
     :target: https://bettercodehub.com/
+
+
+.. Github License (eg AGPL, MIT)
+.. |gh-lic| image:: https://img.shields.io/github/license/boromir674/cookiecutter-python-package
+    :alt: GitHub
+    :target: https://github.com/boromir674/cookiecutter-python-package/blob/master/LICENSE
+
 
 .. |ossf| image:: https://bestpractices.coreinfrastructure.org/projects/5988/badge
     :alt: OpenSSF

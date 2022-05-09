@@ -11,6 +11,7 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here
 import os
 import sys
+
 sys.path.insert(0, os.path.abspath('../src/cookiecutter_python'))
 
 # Please use the Sphinx format for writting docstrings (other fornats include Google and Numpy which require the 'napoleon' extension). 
@@ -22,7 +23,7 @@ copyright = '2022, Konstantinos Lampridis'
 author = 'Konstantinos Lampridis'
 
 # The full version, including alpha/beta/rc tags
-release = '0.6.0'
+release = '0.9.0'
 
 # -- General configuration ---------------------------------------------------
 
