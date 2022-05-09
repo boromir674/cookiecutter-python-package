@@ -1,6 +1,14 @@
 Changelog
 =========
 
+0.9.1 (2022-05-09)
+------------------
+
+documentation
+^^^^^^^^^^^^^
+- add badges demonstrating code coverage percentage & code quality reported CI services
+
+
 0.9.0 (2022-05-09)
 ------------------
 
