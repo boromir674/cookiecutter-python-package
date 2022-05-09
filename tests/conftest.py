@@ -320,6 +320,7 @@ def get_object(object_getter_class):
     Returns:
         Any: the object imported from the module with its namespace potentially mocked
     """
+
     class ObjectGetterAdapter(object_getter_class):
         """Adapter Class of the ObjectGetter class, see object_getter_class fixture.
 
