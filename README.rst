@@ -5,7 +5,8 @@ Python Package (pypi) Cookiecutter, with emphasis on CI/CD and automation.
 
 .. start-badges
 
-| |build| |docs| |release_version| |wheel| |supported_versions| |commits_since_specific_tag_on_master| |commits_since_latest_github_release| |ossf|
+| |build| |docs| |coverage| |ossf| |maintainability| |better_code_hub| |tech-debt|
+| |release_version| |wheel| |supported_versions| |gh-lic| |commits_since_specific_tag_on_master| |commits_since_latest_github_release|
 
 |
 | **Source:** https://github.com/boromir674/cookiecutter-python-package
@@ -148,6 +149,7 @@ For more complex use cases, you can modify the Template and also leverage all of
 .. _black: https://black.readthedocs.io/en/stable/
 
 
+
 .. BADGE ALIASES
 
 .. Test Workflow Status on Github Actions for specific branch <branch>
@@ -156,11 +158,19 @@ For more complex use cases, you can modify the Template and also leverage all of
     :alt: GitHub Workflow Status (branch)
     :target: https://github.com/boromir674/cookiecutter-python-package/actions/workflows/test.yaml?query=branch%3Amaster
 
-.. above url to workflow runs, filtered by the specified branch
+.. Code Coverage
+.. Codecov CI
+
+.. |coverage| image:: https://img.shields.io/codecov/c/github/boromir674/cookiecutter-python-package/master?logo=codecov
+    :alt: Codecov
+    :target: https://app.codecov.io/gh/boromir674/cookiecutter-python-package
 
 .. |docs| image:: https://img.shields.io/readthedocs/python-package-generator/master?logo=readthedocs&logoColor=lightblue
     :alt: Read the Docs (version)
     :target: https://python-package-generator.readthedocs.io/en/master/
+
+
+.. PyPI
 
 .. |release_version| image:: https://img.shields.io/pypi/v/cookiecutter_python
     :alt: Production Version
@@ -174,6 +184,9 @@ For more complex use cases, you can modify the Template and also leverage all of
     :alt: Supported Python versions
     :target: https://pypi.org/project/cookiecutter-python
 
+
+.. Github Releases & Tags
+
 .. |commits_since_specific_tag_on_master| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/v0.9.0/master?color=blue&logo=github
     :alt: GitHub commits since tagged version (branch)
     :target: https://github.com/boromir674/cookiecutter-python-package/compare/v0.9.0..master
@@ -182,21 +195,39 @@ For more complex use cases, you can modify the Template and also leverage all of
     :alt: GitHub commits since latest release (by SemVer)
 
 
-.. |codecov| image:: https://img.shields.io/codecov/c/github/boromir674/cookiecutter-python-package/master?logo=codecov
-    :alt: Codecov
-    :target: https://app.codecov.io/gh/boromir674/cookiecutter-python-package
+.. LICENSE (eg AGPL, MIT)
+.. Github License
+
+.. |gh-lic| image:: https://img.shields.io/github/license/boromir674/cookiecutter-python-package
+    :alt: GitHub
+    :target: https://github.com/boromir674/cookiecutter-python-package/blob/master/LICENSE
+
+
+.. Free/Libre Open Source Software
+.. Open Source Software Best Practices
+
+.. |ossf| image:: https://bestpractices.coreinfrastructure.org/projects/5988/badge
+    :alt: OpenSSF
+    :target: https://bestpractices.coreinfrastructure.org/en/projects/5988
+
+
+.. CODE QUALITY
+
+.. Better Code Hub
+.. Software Design Patterns
 
 .. |better_code_hub| image:: https://bettercodehub.com/edge/badge/boromir674/cookiecutter-python-package?branch=master
     :alt: Better Code Hub
     :target: https://bettercodehub.com/
 
 
-.. Github License (eg AGPL, MIT)
-.. |gh-lic| image:: https://img.shields.io/github/license/boromir674/cookiecutter-python-package
-    :alt: GitHub
-    :target: https://github.com/boromir674/cookiecutter-python-package/blob/master/LICENSE
+.. Code Climate CI
+.. Code maintainability & Technical Debt
 
+.. |maintainability| image:: https://api.codeclimate.com/v1/badges/1d347d7dfaa134fd944e/maintainability
+   :alt: Maintainability
+   :target: https://codeclimate.com/github/boromir674/cookiecutter-python-package/maintainability
 
-.. |ossf| image:: https://bestpractices.coreinfrastructure.org/projects/5988/badge
-    :alt: OpenSSF
-    :target: https://bestpractices.coreinfrastructure.org/en/projects/5988
+.. |tech-debt| image:: https://img.shields.io/codeclimate/tech-debt/boromir674/cookiecutter-python-package
+    :alt: Code Climate technical debt
+    :target: https://codeclimate.com/github/boromir674/cookiecutter-python-package/maintainability
