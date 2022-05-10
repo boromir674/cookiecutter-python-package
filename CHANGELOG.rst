@@ -4,11 +4,42 @@ Changelog
 0.9.1 (2022-05-09)
 ------------------
 
-Added some "juicy" 'code badges' in README, to demonstrate the status reported by
-the various CI services that this github repository integrates with.
+Enhance the Template's project generated CI config, by adding extra `checks` in Test Jobs and
+automating the `integration` with the `codecov.io` hosting service.
+
+Added `checks`
+--------------
+
+- Doing a 'Lint check' on the code
+- Doing a 'Compliance check' of the resulting packaged distro against python best practices
+- Gathering and sending the Test Suite results to the codecov.io service
+
+Code Coverage
+-------------
+
+Include `step` in all Test Jobs to gather and send Code Coverage data resulting from running
+the Test Suite.
+
+    `Codecov` is to Code Coverage, as `GA` is to Continuous Integration.
+
+    Upon granting permission, `codecov` will start accepting the accumulated results (such as
+    Code Coverage data) from all `Test Jobs` during a `build` and provide a web UI featuring
+    interactive visualization of the python code and its `coverage` on user-defined granularity
+    level, interactive charts of the `coverage` evolution and more.
+
+ci
+^^
+Apply the same CI additions as the ones added for the Template project (see above)!
+Namely:
+
+- extra `checks` in the `Test Jobs`
+- `integration` with the `codecov.io` Code Coverage hosting service
 
 documentation
 ^^^^^^^^^^^^^
+Add some "juicy" **code badges** in `README`, to demonstrate the `status` reported by
+the various `CI services` that this repository integrates with.
+
 - add badges demonstrating code coverage percentage & code quality reported CI services
 
 
