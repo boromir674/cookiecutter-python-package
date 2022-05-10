@@ -1,6 +1,28 @@
 Changelog
 =========
 
+0.10.0 (2022-05-11)
+-------------------
+
+feature
+^^^^^^^
+- enable lint, distro packaging QA & test results transimission to codecov.io CI service
+
+fix
+^^^
+- fix generated tox ini that had a hard coded value!
+
+documentation
+^^^^^^^^^^^^^
+- add the changes introduced in this release
+- add Codacy Badge to quickly show the reported Code Quality
+
+ci
+^^
+- enable test workflow for tags matching pattern "v*", pull requests to dev & pushes to ci branch
+- add job to generate the Biskotaki Python Package from this Template
+
+
 0.9.1 (2022-05-09)
 ------------------
 
