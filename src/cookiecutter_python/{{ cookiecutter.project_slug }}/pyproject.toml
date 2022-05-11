@@ -4,9 +4,6 @@
 requires = ["setuptools >= 40.6.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
-# TODO switch setuptools build backend to something like 'poetry' or 'build'
-
-
 
 # TOOLS
 

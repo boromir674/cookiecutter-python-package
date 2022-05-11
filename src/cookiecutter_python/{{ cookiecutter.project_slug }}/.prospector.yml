@@ -10,19 +10,15 @@ ignore-paths:
   - docs
 ignore-patterns:
   - (^|/)skip(this)?(/|$)
-  - tests/test_commands.py
-  - tests/test_mediator.py
-  - tests/test_notification.py
-  - tests/test_phi.py
 autodetect: false
-max-line-length: 120
+max-line-length: 95
 
+
+# TOOLS
 
 pyflakes:
   run: true
-  disable:
-    - F403
-    - F810
+
 
 pyroma:
   run: true
@@ -38,41 +34,26 @@ mccabe:
   options:
     max-complexity: 12
 
+
+# INACTIVE
+
 pylint:
   run: false
 
 bandit:
   run: false
-  options:
-    config: bandit.yml
 
 frosted:
   run: false
-  disable:
-    - E103
-    - E306
 
 pep8:
   run: false
-  disable:
-    - W602
-    - W603
-  enable:
-    - W601
-  options:
-    max-line-length: 79
 
 pep257:
   run: false
-  disable:
-    - D100
-    - D101
 
 mypy:
   run: false
-  options:
-    ignore-missing-imports: true
-    follow-imports: skip
 
 vulture:
   run: false
