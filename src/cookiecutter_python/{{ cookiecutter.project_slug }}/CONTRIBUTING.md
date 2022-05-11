@@ -71,13 +71,12 @@ Here's how to set up `{{ cookiecutter.repo_name }}` for local development.
 
 ```bash
 git clone git@github.com:{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}.git
-cd {{ cookiecutter.repo_name }}
 ```
 
 3. Install your local copy into a virtualenv. Assuming you have virtualenv installed, this is how you set up your fork for local development:
 
 ```bash
-cd cookiecutter-python-packge
+cd {{ cookiecutter.repo_name }}
 virtualenv env --python=python3
 source env/bin/activate
 pip install -e .

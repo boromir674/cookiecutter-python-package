@@ -76,7 +76,7 @@ git clone git@github.com:boromir674/cookiecutter-python-package.git
 3. Install your local copy into a virtualenv. Assuming you have virtualenv installed, this is how you set up your fork for local development:
 
 ```bash
-cd cookiecutter-python-packge
+cd cookiecutter-python-package
 virtualenv cookie-pypi --python=python3
 source cookie-pypi/bin/activate
 pip install -e .

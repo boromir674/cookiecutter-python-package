@@ -5,7 +5,7 @@ Python Package (pypi) Cookiecutter, with emphasis on CI/CD and automation.
 
 .. start-badges
 
-| |build| |docs| |coverage| |ossf| |maintainability| |better_code_hub| |tech-debt|
+| |build| |docs| |coverage| |ossf| |maintainability| |better_code_hub| |codacy| |tech-debt|
 | |release_version| |wheel| |supported_versions| |gh-lic| |commits_since_specific_tag_on_master| |commits_since_latest_github_release|
 
 |
@@ -187,9 +187,9 @@ For more complex use cases, you can modify the Template and also leverage all of
 
 .. Github Releases & Tags
 
-.. |commits_since_specific_tag_on_master| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/v0.9.1/master?color=blue&logo=github
+.. |commits_since_specific_tag_on_master| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/v0.10.0/master?color=blue&logo=github
     :alt: GitHub commits since tagged version (branch)
-    :target: https://github.com/boromir674/cookiecutter-python-package/compare/v0.9.1..master
+    :target: https://github.com/boromir674/cookiecutter-python-package/compare/v0.10.0..master
 
 .. |commits_since_latest_github_release| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/latest?color=blue&logo=semver&sort=semver
     :alt: GitHub commits since latest release (by SemVer)
@@ -219,6 +219,14 @@ For more complex use cases, you can modify the Template and also leverage all of
 .. |better_code_hub| image:: https://bettercodehub.com/edge/badge/boromir674/cookiecutter-python-package?branch=master
     :alt: Better Code Hub
     :target: https://bettercodehub.com/
+
+
+.. Codacy
+.. Code Quality, Style, Security
+
+.. |codacy| image:: https://app.codacy.com/project/badge/Grade/5be4a55ff1d34b98b491dc05e030f2d7
+    :alt: Codacy
+    :target: https://www.codacy.com/gh/boromir674/cookiecutter-python-package/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=boromir674/cookiecutter-python-package&amp;utm_campaign=Badge_Grade
 
 
 .. Code Climate CI
