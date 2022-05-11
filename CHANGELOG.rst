@@ -2,6 +2,29 @@
 Changelog
 =========
 
+0.11.0 (2022-05-11)
+===================
+
+The `Project Generator` now scaffolds a reasonably minimum website for your documentation pages!
+
+The (html) website is built out of .rst files using `sphinx` and is ready to be hosted on
+readthedocs.org, with just a few clicks' :)
+
+
+feature
+"""""""
+- add templated documentation pages & configure website building and hosting on rtd server
+
+fix
+"""
+- fix integration, by using a config file
+
+documentation
+"""""""""""""
+- add word 'env' to know spelling list
+- improve visibility of Biskotaki pypi package, which is generated from this Template
+
+
 0.10.1 (2022-05-11)
 -------------------
 

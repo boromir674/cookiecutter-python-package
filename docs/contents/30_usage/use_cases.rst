@@ -1,8 +1,3 @@
-.. _Use Cases:
-
-============================
-New Python Package Use Cases
-============================
 
 Ready to enjoy some of your newly generated Python Package Project **features** available out-of-the-box!?
 

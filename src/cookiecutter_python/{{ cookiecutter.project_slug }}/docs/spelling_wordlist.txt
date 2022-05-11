@@ -9,6 +9,7 @@ Submodules
 Subpackages
 
 # python modules/object names
+{{ cookiecutter.pkg_name }}
 utils
 metaclass
 args
