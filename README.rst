@@ -39,16 +39,17 @@ It it entirely generated using this **Python Package Template:**
 Generated Python Package Features
 ---------------------------------
 
-1. **Test Suite** using `pytest`_
+1. **Test Suite**, using `pytest`_, located in `tests`_ dir
 2. **Parallel Execution** of Unit Tests, on multiple cpu's
-3. **Automation**, using `tox`_
+3. **Documentation Pages**, hosted on `readthedocs` server, located in `docs`_ dir
+4. **Automation**, using `tox`_, driven by single `tox.ini`_ file
 
    a. **Code Coverage** measuring
    b. **Build Command**, using the `build`_ python package
    c. **Pypi Deploy Command**, supporting upload to both `pypi.org`_ and `test.pypi.org`_ servers
    d. **Type Check Command**, using `mypy`_
    e. **Lint** *Check* and `Apply` commands, using `isort`_ and `black`_
-4. **CI Pipeline**, running on `Github Actions`_
+5. **CI Pipeline**, running on `Github Actions`_, defined in `.github/`_
 
    a. **Job Matrix**, spanning different `platform`'s and `python version`'s
 
@@ -158,23 +159,25 @@ For more complex use cases, you can modify the Template and also leverage all of
 
 .. BADGE ALIASES
 
-.. Test Workflow Status on Github Actions for specific branch <branch>
+.. Build Status
+.. Github Actions: Test Workflow Status for specific branch <branch>
 
 .. |build| image:: https://img.shields.io/github/workflow/status/boromir674/cookiecutter-python-package/Test%20Python%20Package/master?label=build&logo=github-actions&logoColor=%233392FF
     :alt: GitHub Workflow Status (branch)
     :target: https://github.com/boromir674/cookiecutter-python-package/actions/workflows/test.yaml?query=branch%3Amaster
 
-.. Code Coverage
-.. Codecov CI
 
-.. |coverage| image:: https://img.shields.io/codecov/c/github/boromir674/cookiecutter-python-package/master?logo=codecov
-    :alt: Codecov
-    :target: https://app.codecov.io/gh/boromir674/cookiecutter-python-package
+.. Documentation
 
 .. |docs| image:: https://img.shields.io/readthedocs/python-package-generator/master?logo=readthedocs&logoColor=lightblue
     :alt: Read the Docs (version)
     :target: https://python-package-generator.readthedocs.io/en/master/
 
+.. Code Coverage
+
+.. |coverage| image:: https://img.shields.io/codecov/c/github/boromir674/cookiecutter-python-package/master?logo=codecov
+    :alt: Codecov
+    :target: https://app.codecov.io/gh/boromir674/cookiecutter-python-package
 
 .. PyPI
 
