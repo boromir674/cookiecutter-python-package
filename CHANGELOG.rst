@@ -2,6 +2,15 @@
 Changelog
 =========
 
+0.10.1 (2022-05-11)
+-------------------
+
+ci
+^^
+- add rules for automatic Pull Request labelling, with tags: template, ci, test & docs
+- add pull request automatic labeling workflow
+
+
 0.10.0 (2022-05-11)
 ===================
 
