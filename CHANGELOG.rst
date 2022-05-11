@@ -2,6 +2,33 @@
 Changelog
 =========
 
+1.0.0 (2022-05-11)
+==================
+
+Releasing v1.0.0, the first ever v1.* version!
+We are confident that the user-facing "interface" of this package is stable
+and commit to (continue to) follow `Semantic Versioning`.
+
+As far as changes are concerned, invoking the `project generator`
+now adds several new `status badges` in your README, which automatically update based on
+their corresponding CI services!
+
+Changes
+^^^^^^^
+
+feature
+"""""""
+- add new status badges and slightly improve content
+
+fix
+"""
+- clean files and configs
+
+documentation
+"""""""""""""
+- explain which generated file governs which component (ie ci code, tests code, etc)
+
+
 0.11.0 (2022-05-11)
 ===================
 
