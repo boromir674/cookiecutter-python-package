@@ -1,6 +1,3 @@
-===================================
-Generate New Python Package Project
-===================================
 
 | The most common way to generate a new Python Package Project (in the current working directory),
 | is to invoke the *cookiecutter* cli (while supplying the necessary initial information when prompted)
@@ -19,5 +16,3 @@ Open a console (ie terminal) and run:
   # Generate a new Python Package Project locally
   cookiecutter cookiecutter-python-package/src/cookiecutter_python
 
-
-.. include:: installation.rst
