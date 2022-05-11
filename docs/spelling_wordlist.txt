@@ -2,6 +2,7 @@ virtualenv
 macOS
 Macos
 conda
+env
 
 Quickstart
 Submodules
