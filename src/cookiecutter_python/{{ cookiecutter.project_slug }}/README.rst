@@ -28,17 +28,17 @@ Development
 -----------
 Here are some useful notes related to doing development on this project.
 
-1. **Test Suite**, using `pytest`_, located in `tests`_ dir
+1. **Test Suite**, using `pytest`_, located in `tests` dir
 2. **Parallel Execution** of Unit Tests, on multiple cpu's
-3. **Documentation Pages**, hosted on `readthedocs` server, located in `docs`_ dir
-4. **Automation**, using `tox`_, driven by single `tox.ini`_ file
+3. **Documentation Pages**, hosted on `readthedocs` server, located in `docs` dir
+4. **Automation**, using `tox`_, driven by single `tox.ini` file
 
    a. **Code Coverage** measuring
    b. **Build Command**, using the `build`_ python package
    c. **Pypi Deploy Command**, supporting upload to both `pypi.org`_ and `test.pypi.org`_ servers
    d. **Type Check Command**, using `mypy`_
    e. **Lint** *Check* and `Apply` commands, using `isort`_ and `black`_
-5. **CI Pipeline**, running on `Github Actions`_, defined in `.github/`_
+5. **CI Pipeline**, running on `Github Actions`_, defined in `.github/`
 
    a. **Job Matrix**, spanning different `platform`'s and `python version`'s
 
