@@ -1,5 +1,5 @@
-Welcome to Cookiecutter Python Package documentation!
-=====================================================
+Welcome to {{ cookiecutter.project_name }}  documentation!
+=========================================================================================
 
 .. include:: ../README.rst
 
@@ -10,7 +10,7 @@ Welcome to Cookiecutter Python Package documentation!
 
    contents/10_introduction
    contents/20_why_this_package
-   contents/30_usage/index
+   contents/30_usage
    contents/40_modules
 
 

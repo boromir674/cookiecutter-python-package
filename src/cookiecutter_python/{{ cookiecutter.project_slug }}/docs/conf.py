@@ -1,7 +1,8 @@
 # Configuration file for the Sphinx documentation builder.
 #
 # This file configures the readthedocs.org server that Continuously
-# builds the documentation pages of the Cookiecutter Python Package repository.
+# builds the documentation pages of the {{ cookiecutter.project_name }}
+# project.
 
 # Docstrings in the source code should be written in
 # the 'Google' format.
@@ -19,18 +20,40 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath('../src/cookiecutter_python'))
 
-# Please use the Sphinx format for writting docstrings (other fornats include Google and Numpy which require the 'napoleon' extension). 
+def get_templated_vars():
+    return type(
+        'TemplatedVariables',
+        (),
+        dict(
+            project_slug='{{ cookiecutter.project_slug }}',
+            package_name='{{ cookiecutter.pkg_name }}',
+            author_name='{{ cookiecutter.full_name }}',
+            year='{{ cookiecutter.year }}',
+            version='{{ cookiecutter.version }}',
+            github_username='{{ cookiecutter.github_username }}',
+            repo_name='{{ cookiecutter.repo_name }}',
+        ),
+    )
+
+
+variables = get_templated_vars()
+
+# Add package to PYTHONPATH
+sys.path.insert(0, os.path.abspath(os.path.join('..', 'src', variables.package_name)))
+
 
 # -- Project information -----------------------------------------------------
 
-project = 'cookiecutter-python-package'
-copyright = '2022, Konstantinos Lampridis'
-author = 'Konstantinos Lampridis'
+project = variables.project_slug
+copyright = '{year}, {name}'.format(
+    year=variables.year,
+    name=variables.author_name,
+)
+author = variables.author_name
 
 # The full version, including alpha/beta/rc tags
-release = '0.9.0'
+release = variables.version
 
 # -- General configuration ---------------------------------------------------
 
@@ -43,12 +66,12 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.coverage',
     'sphinx.ext.doctest',
-    'sphinx.ext.extlinks',
+    'sphinx.ext.extlinks',  # External Links Configuration: Dynamic Urls
     'sphinx.ext.ifconfig',
-    'sphinx.ext.napoleon',
+    'sphinx.ext.napoleon',  # Allow parsing of docstrings using Google format
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
-    'sphinxcontrib.spelling'
+    'sphinxcontrib.spelling',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -84,14 +107,17 @@ if not on_rtd:  # only set the theme if we're building docs locally
 # directive :issue:`5`, to dynamically render a link with text 'issue 5'.
 # The link shall be 'clickable' and shall redirect to your issues page on github
 # and specifically point to issue number 5
-# https://github.com/boromir674/cookiecutter-python-package/issues/5
+# https://github.com/{username}/{repository}/issues/5
 
 # Mapping of link identifiers/keys to:
 # 2-length tuples with 1st item the url and 2nd the prefix (the "text string")
 # You can add etries here, according to your use case(s).
 extlinks = {
     'issue': (
-        f'https://github.com/boromir674/{project}/issues/'
+        'https://github.com/{username}/{repository}/issues/'.format(
+            username=variables.github_username,
+            repository=variables.repo_name,
+        )
         + '%s',
         'issue ',
     ),

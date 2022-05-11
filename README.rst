@@ -22,7 +22,13 @@ Features
 2. **Python Package Template** (source code at `src/cookiecutter_python/`_) implemented as a `Cookiecutter`
 3. **Tested** on python versions **3.6, 2.7, 3.8, 3.9 and 3.10**, for both **"Linux"** and **"MacOS"** platforms (see `Test Workflow` on `CI`_)
 
-You can check the **Biskotaki** *Python Package Project*, which was entirely generated using this **Python Package Template:**
+
+Auto Generated Sample Package **Biskotaki**
+-------------------------------------------
+
+Check the **Biskotaki** *Python Package Project*, for a taste of the project structure and capabilities this Template can generate!
+
+It it entirely generated using this **Python Package Template:**
 
 
 | **Source Code** hosted on *Github* at https://github.com/boromir674/biskotaki
