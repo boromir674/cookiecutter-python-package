@@ -2,6 +2,14 @@
 Changelog
 =========
 
+0.10.1 (2022-05-11)
+-------------------
+
+ci
+^^
+- add pull request automatic labeling workflow
+
+
 0.10.0 (2022-05-11)
 ===================
 
