@@ -1,30 +1,9 @@
+=========
 Changelog
 =========
 
 0.10.0 (2022-05-11)
--------------------
-
-feature
-^^^^^^^
-- enable lint, distro packaging QA & test results transimission to codecov.io CI service
-
-fix
-^^^
-- fix generated tox ini that had a hard coded value!
-
-documentation
-^^^^^^^^^^^^^
-- add the changes introduced in this release
-- add Codacy Badge to quickly show the reported Code Quality
-
-ci
-^^
-- enable test workflow for tags matching pattern "v*", pull requests to dev & pushes to ci branch
-- add job to generate the Biskotaki Python Package from this Template
-
-
-0.9.1 (2022-05-09)
-------------------
+===================
 
 Enhance the Template's project generated CI config, by adding extra `checks` in Test Jobs and
 automating the `integration` with the `codecov.io` hosting service.
@@ -50,7 +29,7 @@ the Test Suite.
     level, interactive charts of the `coverage` evolution and more.
 
 ci
-^^
+--
 Apply the same CI additions as the ones added for the Template project (see above)!
 Namely:
 
@@ -58,41 +37,65 @@ Namely:
 - `integration` with the `codecov.io` Code Coverage hosting service
 
 documentation
-^^^^^^^^^^^^^
+-------------
 Add some "juicy" **code badges** in `README`, to demonstrate the `status` reported by
-the various `CI services` that this repository integrates with.
+the various `CI services` that this repository integrates with. The badges are updated
+automatically, as their respective status reporting (web) service `continuously integrates`
+(ie triggers per commit) with the `cookiecutter-python-package` Project.
 
-- add badges demonstrating code coverage percentage & code quality reported CI services
+Changes
+^^^^^^^
+
+feature
+"""""""
+- enable lint, distro packaging QA & test results transimission to codecov.io CI service
+
+fix
+"""
+- fix generated tox ini that had a hard coded value!
+
+documentation
+"""""""""""""
+- add the changes introduced in this release
+- add Codacy Badge to quickly show the reported Code Quality
+
+ci
+""
+- enable test workflow for tags matching pattern "v*", pull requests to dev & pushes to ci branch
+- add job to generate the Biskotaki Python Package from this Template
 
 
 0.9.0 (2022-05-09)
-------------------
+==================
+
+Changes
+^^^^^^^
 
 feature
-^^^^^^^
+"""""""
 - update generated .gitignore
 - add lint check and lint apply tox envs in the generated project
 - document the project structure, test infra and ci as changelog entry
 
 fix
-^^^
+"""
 - fix the generated tox ini multifactor environments
 - add contributing and license rules for generated package
 
 test
-^^^^
+""""
 - skip test cases needing internet connection for default Test Suite execution
 - add test case for running without initializing git repository
 - define a test case where we run tox for a newly generated project
 - 73% code coverage
 
 documentation
-^^^^^^^^^^^^^
+"""""""""""""
 - document the get_object fixture
 - add instructions on how to Check Lint Rules and apply Lint fixes to satisfy them
 
 ci
-^^
+""
 - ignore post_gen_project.py script because the templated vars make black complain
 - add lint check in Test Workflow
 - add lint environment, which can check & fix code following our Code Style/Linting strategy
@@ -105,17 +108,20 @@ ci
 
 
 0.8.3 (2022-04-29)
-------------------
+==================
+
+Changes
+^^^^^^^
 
 docs
-^^^^
+""""
 - add CONTRIBUTING.md
 
 dev
-^^^
+"""
 - add configuration for code static analysis with `pylint`
 - add configuration for code static analysis with `prospector`
 
 ci
-^^
+""
 - add type checking all CI Jobs
