@@ -69,7 +69,7 @@ def test_main(get_main_with_mocked_template):
         overrides={
             # we mock the IS_PYTHON_PACKAGE callable, to avoid dependency on network
             # we also indicate the package name is NOT found already on pypi
-            'IS_PYTHON_PACKAGE': lambda: lambda x: False
+            'available_on_pypi': lambda: lambda x: None
         }
     )()
     assert result == 0  # 0 indicates successfull executions (as in a shell)
@@ -81,9 +81,11 @@ def test_main_with_network(get_main_with_mocked_template):
     assert result == 0  # 0 indicates successfull executions (as in a shell)
 
 
-def test_main_without_ask_pypi_installed(get_main_with_mocked_template):
-    result = get_main_with_mocked_template(overrides={"IS_PYTHON_PACKAGE": lambda: None})()
-    assert result == 0  # 0 indicates successfull executions (as in a shell)
+# def test_main_without_ask_pypi_installed(get_main_with_mocked_template):
+#     def _is_registered_on_pypi(package_name: str):
+#         raise ImportError
+#     result = get_main_with_mocked_template(overrides={"is_registered_on_pypi": lambda: _is_registered_on_pypi})()
+#     assert result == 0  # 0 indicates successfull executions (as in a shell)
 
 
 def test_main_with_invalid_module_name(get_main_with_mocked_template, request_factory):
@@ -108,7 +110,7 @@ def test_main_with_mocked_found_pre_existing_pypi_package(
     get_main_with_mocked_template,
 ):
     result = get_main_with_mocked_template(
-        overrides={"IS_PYTHON_PACKAGE": lambda: lambda: True}
+        overrides={"available_on_pypi": lambda: lambda x: None}
     )()
     assert result == 0  # exit code of 1 indicates failed execution
 
