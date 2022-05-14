@@ -1,5 +1,3 @@
-
-
 # Commands:
 # - generate
 # should expose the cookiecutter cli interface

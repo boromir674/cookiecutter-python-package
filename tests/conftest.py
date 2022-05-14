@@ -71,7 +71,6 @@ def test_project_generation_request(production_template, test_context, tmpdir):
 @pytest.fixture
 def generate_project():
     from cookiecutter_python.backend import cookiecutter
-    # from cookiecutter.main import cookiecutter
 
     def _generate_project(generate_request):
         return cookiecutter(

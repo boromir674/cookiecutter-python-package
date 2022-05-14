@@ -1,45 +1,13 @@
-import json
-import logging
-import re
-import sys
-from typing import Pattern
 import asyncio
-from codetiming import Timer
-from requests_futures.sessions import FuturesSession
-from requests.exceptions import ConnectionError
-# from cookiecutter_python.backend.check_pypi import is_registered_on_pypi
+import sys
+
 from software_patterns import SubclassRegistry
-from cookiecutter_python.backend.input_sanitization import InputValueError
 
-from cookiecutter_python.backend.check_pypi_handler import available_on_pypi, handle_availability
-from cookiecutter_python.backend.input_sanitization import get_verify_callback
-from cookiecutter_python.backend.input_sanitization import build_input_verification
-
-
-logger = logging.getLogger(__name__)
-
-
-session = FuturesSession()
-
-async def is_on_pypi(package_name: str):
-    # first request is started in background
-    try:
-        # exists_on_pypi = is_registered_on_pypi(package_name)
-        future_one = session.get(f'https://pypi.org/project/{package_name}')
-        exists_on_pypi = future_one.result().status_code == 200
-        # await asyncio.sleep(4)
-        handle_availability(
-            registered_on_pypi=exists_on_pypi,
-            package_name=package_name,
-        )
-    except ConnectionError as error:  # ie network/wifi not working  
-        print(error, file=sys.stderr)
-        print("Could not establish connection to pypi.")
-        print(f"Could not determine whether the selected pypi name '{package_name}' is already taken.")
-
-
-class Task(metaclass=SubclassRegistry):
-    pass
+from cookiecutter_python.backend.check_pypi_handler import available_on_pypi
+from cookiecutter_python.backend.input_sanitization import (
+    InputValueError,
+    build_input_verification,
+)
 
 
 def get_request():
@@ -75,76 +43,99 @@ def input_sanitization(request):
     try:
         verify_templated_module_name(request.module_name)
     except InputValueError as error:
-        raise InputValueError('ERROR: %s is not a valid Python module name!', request.module_name) from error
+        raise InputValueError(
+            'ERROR: %s is not a valid Python module name!', request.module_name
+        ) from error
 
     # CHECK Version
     try:
         verify_templated_semantic_version(request.package_version_string)
     except InputValueError as error:
-        raise InputValueError('ERROR: %s is not a valid Semantic Version!', request.package_version_string) from error
-    print("Sanitized Input Variables :)")
-    return 0
+        raise InputValueError(
+            'ERROR: %s is not a valid Semantic Version!', request.package_version_string
+        ) from error
 
 
-
-# Synchronous Task
-
-def hook_main(request):
+def handle_input(request):
     try:
         input_sanitization(request)
     except InputValueError as error:
         print(error)
         return 1
+    print("Sanitized Input Variables :)")
+    return 0
+
+
+# Synchronous Task
+
+
+def hook_main(request):
+    exit_code = handle_input(request)
+    if exit_code:
+        return exit_code
 
     # CHECK if given package name is already registered on pypi
-    timer = Timer(text="\nPyPi Check elapsed time: " + "{:.5f}")
-    timer.start()
-    available_on_pypi(request.pypi_package)  # does not raise an exception
-    timer.stop()
+    print("Checking PyPi over the internet..")
+    print(" CTRL +X to skip this optional step, if it takes too long.")
+    try:
+        available_on_pypi(request.pypi_package)  # does not raise an exception
+    except KeyboardInterrupt:
+        print("Skipped!")
 
     return 0
 
 
 # Asynchronous Tasks
 
+
+class Task(metaclass=SubclassRegistry):
+    """Asynchronous Task.
+
+    Each subclass must implement an async run method that can include
+    both typical synchronous statements and "awaited" async statements.
+    """
+
+    pass
+
+
+# Async Task 1
+
+
 @Task.register_as_subclass('main')
 class MainTask(Task):
-
     async def run(self, *args):
-        return await async_input_sanitization(*args)
+        return handle_input(*args)
+
 
 # Async Task 2
+
+
 @Task.register_as_subclass('is-on-pypi')
 class PypiTask:
-
     async def run(self, *args):
-        return await is_on_pypi(*args)
+        return available_on_pypi(*args)
+
 
 # ASYNC Infra
-
-async def async_input_sanitization(request):
-    return input_sanitization(request)
-
 class WorkDesign:
     def __init__(self, data):
         self.data = data
 
 
+class TaskDesign:
+    def __init__(self, name: str, work: WorkDesign) -> None:
+        self.name = name
+        self.work = work
+
+    def to_asyncio_task(self, work_queue):
+        return asyncio.create_task(task(self.name, work_queue))
+
+
 async def task(name, work_queue):
-    # timer = Timer(text=f"Task {name} elapsed time: " + "{:.5f}")
     while not work_queue.empty():
         work = await work_queue.get()
-        # print(f"Task {name} running")
         task_instance = Task.create(name)
-        # timer.start()
-        try:
-            res = await task_instance.run(work.data)
-        except InputValueError as error:
-            print(error)
-            res = 1
-            # sys.exit(1)
-        # timer.stop()
-        return res
+        return await task_instance.run(work.data)
 
 
 async def async_main(request):
@@ -154,15 +145,20 @@ async def async_main(request):
     # Create the queue of work
     work_queue = asyncio.Queue()
 
+    tasks = [
+        TaskDesign(name, WorkDesign(work))
+        for name, work in (
+            ('is-on-pypi', request.pypi_package),
+            ('main', request),
+        )
+    ]
     # Put some work in the queue
-    for work in [request.pypi_package, request]:
-        await work_queue.put(WorkDesign(work))
+    for task_design in tasks:
+        await work_queue.put(task_design.work)
 
     # Run the tasks
-    # with Timer(text="\nTotal elapsed time: {:.5f}"):
     is_on_pypi, exit_code = await asyncio.gather(
-        asyncio.create_task(task("is-on-pypi", work_queue)),
-        asyncio.create_task(task("main", work_queue)),
+        *[task.to_asyncio_task(work_queue) for task in tasks]
     )
 
     return exit_code
@@ -170,6 +166,7 @@ async def async_main(request):
 
 # TODO Remove ASYNC SWITCH
 async_on = 1
+
 
 def _main():
     request = get_request()
@@ -180,6 +177,7 @@ def _main():
 
 # MAIN
 
+
 def main():
     exit_code = _main()
     if exit_code == 0:
@@ -188,5 +186,4 @@ def main():
 
 
 if __name__ == "__main__":
-    with Timer(text="Total elapsed time: {:.5f}"):
-        main()
+    main()

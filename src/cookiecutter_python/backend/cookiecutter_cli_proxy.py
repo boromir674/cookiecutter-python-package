@@ -3,13 +3,12 @@
 This module contains boilerplate code to supply the Proxy structural software
 design pattern, to the client code."""
 
-from typing import Callable, Any, Optional
 import json
 import logging
+from typing import Any, Callable
 
-from software_patterns import Proxy
-from software_patterns import ProxySubject
-from cookiecutter.cli import main as cookiecutter_main
+from cookiecutter.cli import main as cookiecutter_cli
+from software_patterns import Proxy, ProxySubject
 
 from .singleton import Singleton
 
@@ -32,21 +31,29 @@ class CookiecutterMainProxy(Proxy[str]):
         Returns:
             str: [description]
         """
-        logger.info('Invocation cookiecutter.cli.main invocation: %s', json.dumps({
-            'args': '[{arg_values}]'.format(arg_values=', '.join([f"'{str(x)}'" for x in args])),
-            'kwargs': '{{{key_value_pairs}}}'.format(key_value_pairs=json.dumps({k: str(v) for k, v in kwargs.items()})),
-        }))
+        logger.info(
+            'Invocation cookiecutter.cli.main invocation: %s',
+            json.dumps(
+                {
+                    'args': '[{arg_values}]'.format(
+                        arg_values=', '.join([f"'{str(x)}'" for x in args])
+                    ),
+                    'kwargs': '{{{key_value_pairs}}}'.format(
+                        key_value_pairs=json.dumps({k: str(v) for k, v in kwargs.items()})
+                    ),
+                }
+            ),
+        )
         output_dir: str = super().request(*args, **kwargs)
         return output_dir
 
 
 # Singleton and Adapter of Cookiecutter Proxy
 class CookiecutterMainProxySingleton(metaclass=Singleton):
-
     def __init__(self) -> None:
         super().__init__()
         # wrapper around 'proxied' object; cookiecutter in this case
-        cookiecutter_subject = CookiecutterMainSubject(cookiecutter_main)
+        cookiecutter_subject = CookiecutterMainSubject(cookiecutter_cli)
         self._proxy = CookiecutterMainProxy(cookiecutter_subject)
 
     def __call__(self, *args: Any, **kwds: Any) -> str:

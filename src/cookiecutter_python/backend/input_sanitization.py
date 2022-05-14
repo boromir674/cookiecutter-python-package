@@ -1,12 +1,11 @@
-from abc import ABC
-from typing import Tuple
+import json
 import logging
 import re
+from abc import ABC
 from re import Pattern
-import json
+from typing import Tuple
 
 from software_patterns.subclass_registry import SubclassRegistry
-
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +25,8 @@ def verify_input_with_regex_callback(verify_callback, exception_message=None):
         try:
             verify_callback(regex, string)
         except RegExMissMatchError as not_matching_regex:
-            raise InputValueError(exception_message if exception_message else ''
+            raise InputValueError(
+                exception_message if exception_message else ''
             ) from not_matching_regex
 
     return verify_input_with_regex
@@ -51,7 +51,8 @@ class AbstractSanitizer(SanitizerInterface):
     regex: Pattern
     exception_msg: str
 
-    def log_message(self, error, x) -> Tuple[str]: ...
+    def log_message(self, error, x) -> Tuple[str]:
+        ...
 
     def __call__(self, *args, **kwargs):
         self.verify(self.regex, *args)
@@ -64,7 +65,7 @@ class BaseSanitizer(AbstractSanitizer):
         self._log_func = log_message
         self.verify = get_verify_callback(
             error_message=self.exception_msg,
-            log_message_getter=lambda err, reg ,x: self.log_message(err, x),
+            log_message_getter=lambda err, reg, x: self.log_message(err, x),
         )
 
     def log_message(self, error, x) -> Tuple[str]:
@@ -78,7 +79,9 @@ class BaseSanitizer(AbstractSanitizer):
 class SanitizerBuilder:
     @staticmethod
     def build(sanitization_type: str):
-        sanitizer_instance = BaseSanitizer.from_input_sanitizer_class(InputSanitizer.subclasses[sanitization_type])
+        sanitizer_instance = BaseSanitizer.from_input_sanitizer_class(
+            InputSanitizer.subclasses[sanitization_type]
+        )
         return sanitizer_instance
 
 
@@ -100,9 +103,12 @@ class ModuleNameInputSanitizer(InputSanitizer):
                 {
                     'module_name_regex': str(cls.regex.pattern),
                     'module_name': str(module),
-                }
+                },
+                indent=2,
+                sort_keys=True,
             ),
-        )
+        )  # TODO Improvement: add indent & sort (as above) to all log messages
+
 
 @InputSanitizer.register_as_subclass('semantic-version')
 class VersionInputSanitizer(InputSanitizer):

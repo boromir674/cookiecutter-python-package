@@ -10,7 +10,7 @@ class Singleton(type):
 
         >>> reg1 = ObjectDict()
         >>> reg1.objects['a'] = 1
-        
+
         >>> reg2 = ObjectRegistry()
         >>> reg2.objects['b'] = 2
 
@@ -29,6 +29,7 @@ class Singleton(type):
         >>> id(reg1) == id(reg2) == id(reg3)
         True
     """
+
     _instances = {}
 
     def __call__(cls, *args, **kwargs):

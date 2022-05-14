@@ -21,3 +21,6 @@ dependency-graphs/
 test-results/
 uml-diagrams/
 pydoer-graphs/
+
+package-lock\.json
+package\.json
