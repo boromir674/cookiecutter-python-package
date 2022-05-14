@@ -96,13 +96,14 @@ def test_main_with_invalid_module_name(get_main_with_mocked_template, request_fa
 
 
 def test_main_with_invalid_version(get_main_with_mocked_template, request_factory):
-    result = get_main_with_mocked_template(
+    main = get_main_with_mocked_template(
         overrides={
             "get_request": lambda: lambda: request_factory.pre(
                 package_version_string="gg0.0.1"
             )
         }
-    )()
+    )
+    result = main()
     assert result == 1  # exit code of 1 indicates failed execution
 
 

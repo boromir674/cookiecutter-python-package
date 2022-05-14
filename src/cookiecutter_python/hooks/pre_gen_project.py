@@ -6,10 +6,14 @@ from typing import Pattern
 import asyncio
 from codetiming import Timer
 from requests_futures.sessions import FuturesSession
-
+from requests.exceptions import ConnectionError
+# from cookiecutter_python.backend.check_pypi import is_registered_on_pypi
 from software_patterns import SubclassRegistry
+from cookiecutter_python.backend.input_sanitization import InputValueError
 
 from cookiecutter_python.backend.check_pypi_handler import available_on_pypi, handle_availability
+from cookiecutter_python.backend.input_sanitization import get_verify_callback
+from cookiecutter_python.backend.input_sanitization import build_input_verification
 
 
 logger = logging.getLogger(__name__)
@@ -19,8 +23,19 @@ session = FuturesSession()
 
 async def is_on_pypi(package_name: str):
     # first request is started in background
-    future_one = session.get(f'https://pypi.org/project/{package_name}')
-    return future_one.result().status_code == 200
+    try:
+        # exists_on_pypi = is_registered_on_pypi(package_name)
+        future_one = session.get(f'https://pypi.org/project/{package_name}')
+        exists_on_pypi = future_one.result().status_code == 200
+        # await asyncio.sleep(4)
+        handle_availability(
+            registered_on_pypi=exists_on_pypi,
+            package_name=package_name,
+        )
+    except ConnectionError as error:  # ie network/wifi not working  
+        print(error, file=sys.stderr)
+        print("Could not establish connection to pypi.")
+        print(f"Could not determine whether the selected pypi name '{package_name}' is already taken.")
 
 
 class Task(metaclass=SubclassRegistry):
@@ -46,164 +61,69 @@ def get_request():
     )
 
 
-def verify_regex_and_log(message_getter):
-    def _verify_regex_and_log(regex: Pattern, string: str):
-        if not regex.match(string):
-            msg = "RegEx Miss Match Error"
-            logger.error(message_getter(msg, regex, string))
-            raise RegExMissMatchError(msg)
+verify_templated_module_name = build_input_verification(
+    'module-name',
+)
 
-    return _verify_regex_and_log
-
-
-def verify_input_with_regex_callback(verify_callback, exception_message=None):
-    def verify_input_with_regex(regex: Pattern, string: str):
-        try:
-            verify_callback(regex, string)
-        except RegExMissMatchError as not_matching_regex:
-            raise InputValueError(
-                exception_message if exception_message else ''
-            ) from not_matching_regex
-
-    return verify_input_with_regex
+verify_templated_semantic_version = build_input_verification(
+    'semantic-version',
+)
 
 
-def get_verify_callback(error_message, log_message_getter):
-    def _verify_regex(regex: Pattern, string: str):
-        verify_input_with_regex_callback(
-            verify_regex_and_log(log_message_getter), exception_message=error_message
-        )(regex, string)
-
-    return _verify_regex
-
-
-def verify_templated_semantic_version(version: str):
-    REGEX = re.compile(
-        r'^(?P<major>0|[1-9]\d*)'
-        r'\.'
-        r'(?P<minor>0|[1-9]\d*)'
-        r'\.'
-        r'(?P<patch>0|[1-9]\d*)'
-        r'(?:-'
-        r'(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)'
-        r'(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?'
-        r'(?:\+'
-        r'(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$'
-    )
-
-    def log_message(error, regex, string):
-        return (
-            "%s: %s",
-            str(error),
-            json.dumps(
-                {
-                    'semver_regex': str(regex.pattern),
-                    'version_string': str(string),
-                }
-            ),
-        )
-
-    get_verify_callback(
-        error_message='Expected a Semantic Version value',
-        log_message_getter=log_message,
-    )(REGEX, version)
-
-
-def verify_templated_module_name(module: str):
-    REGEX = re.compile(r'^[_a-zA-Z][_a-zA-Z0-9]+$')
-
-    def log_message(error, regex, module):
-        return (
-            "%s: %s",
-            str(error),
-            json.dumps(
-                {
-                    'module_name_regex': str(regex.pattern),
-                    'module_name': str(module),
-                }
-            ),
-        )
-
-    get_verify_callback(
-        error_message='Expected a valid Python Module name value',
-        log_message_getter=log_message,
-    )(REGEX, module)
-
-
-def hook_main(request):
+def input_sanitization(request):
     # CHECK Package Name
     try:
         verify_templated_module_name(request.module_name)
-    except InputValueError:
-        print('ERROR: %s is not a valid Python module name!' % request.module_name)
-        return request, 1
+    except InputValueError as error:
+        raise InputValueError('ERROR: %s is not a valid Python module name!', request.module_name) from error
 
     # CHECK Version
     try:
         verify_templated_semantic_version(request.package_version_string)
-    except InputValueError:
-        print('ERROR: %s is not a valid Semantic Version!' % request.package_version_string)
-        return request, 1
-
-    # CHECK if given package name is already registerered on pypi
-    available_on_pypi(request.pypi_package)  # does not raise an exception
-    
-    print("Pre Gen Hook: Finished :)")
-    return request, 0
-
-
-def _main():
-    request = get_request()
-    # SYNC
-    return hook_main(request)[1]
-    # ASYNC
-    # return asyncio.run(async_main(request))
-
-
-async def _async_main(request):
-    asyncio.sleep(0)
-    # CHECK Package Name
-    try:
-        verify_templated_module_name(request.module_name)
-    except InputValueError:
-        print('ERROR: %s is not a valid Python module name!' % request.module_name)
-        return 1
-
-    # CHECK Version
-    try:
-        verify_templated_semantic_version(request.package_version_string)
-    except InputValueError:
-        print('ERROR: %s is not a valid Semantic Version!' % request.package_version_string)
-        return 1
-    
-    print("Pre Gen Hook: Finished :)")
+    except InputValueError as error:
+        raise InputValueError('ERROR: %s is not a valid Semantic Version!', request.package_version_string) from error
+    print("Sanitized Input Variables :)")
     return 0
 
+
+
+# Synchronous Task
+
+def hook_main(request):
+    try:
+        input_sanitization(request)
+    except InputValueError as error:
+        print(error)
+        return 1
+
+    # CHECK if given package name is already registered on pypi
+    timer = Timer(text="\nPyPi Check elapsed time: " + "{:.5f}")
+    timer.start()
+    available_on_pypi(request.pypi_package)  # does not raise an exception
+    timer.stop()
+
+    return 0
+
+
+# Asynchronous Tasks
 
 @Task.register_as_subclass('main')
 class MainTask(Task):
 
     async def run(self, *args):
-        return await _async_main(*args)
+        return await async_input_sanitization(*args)
 
+# Async Task 2
 @Task.register_as_subclass('is-on-pypi')
 class PypiTask:
 
     async def run(self, *args):
         return await is_on_pypi(*args)
 
+# ASYNC Infra
 
-def main():
-    sys.exit(_main())
-
-
-
-class RegExMissMatchError(Exception):
-    pass
-
-
-class InputValueError(Exception):
-    pass
+async def async_input_sanitization(request):
+    return input_sanitization(request)
 
 class WorkDesign:
     def __init__(self, data):
@@ -211,14 +131,19 @@ class WorkDesign:
 
 
 async def task(name, work_queue):
-    timer = Timer(text=f"Task {name} elapsed time: " + "{:.1f}")
+    # timer = Timer(text=f"Task {name} elapsed time: " + "{:.5f}")
     while not work_queue.empty():
         work = await work_queue.get()
-        print(f"Task {name} running")
+        # print(f"Task {name} running")
         task_instance = Task.create(name)
-        timer.start()
-        res = await task_instance.run(work.data)
-        timer.stop()
+        # timer.start()
+        try:
+            res = await task_instance.run(work.data)
+        except InputValueError as error:
+            print(error)
+            res = 1
+            # sys.exit(1)
+        # timer.stop()
         return res
 
 
@@ -230,23 +155,38 @@ async def async_main(request):
     work_queue = asyncio.Queue()
 
     # Put some work in the queue
-    for work in [request, request.pypi_package]:
+    for work in [request.pypi_package, request]:
         await work_queue.put(WorkDesign(work))
 
     # Run the tasks
-    with Timer(text="\nTotal elapsed time: {:.1f}"):
-        exit_code, (request, is_on_pypi) = await asyncio.gather(
-            asyncio.create_task(task("main", work_queue)),
-            asyncio.create_task(task("is-on-pypi", work_queue)),
-        )
+    # with Timer(text="\nTotal elapsed time: {:.5f}"):
+    is_on_pypi, exit_code = await asyncio.gather(
+        asyncio.create_task(task("is-on-pypi", work_queue)),
+        asyncio.create_task(task("main", work_queue)),
+    )
 
-        handle_availability(
-            registered_on_pypi=is_on_pypi,
-            package_name=request.pypi_package
-        )
     return exit_code
 
 
+# TODO Remove ASYNC SWITCH
+async_on = 1
+
+def _main():
+    request = get_request()
+    if async_on:
+        return asyncio.run(async_main(request))
+    return hook_main(request)
+
+
+# MAIN
+
+def main():
+    exit_code = _main()
+    if exit_code == 0:
+        print('Finished Pre Gen Hook :)')
+    sys.exit(exit_code)
+
+
 if __name__ == "__main__":
-    main()
-    # asyncio.run(async_main())
+    with Timer(text="Total elapsed time: {:.5f}"):
+        main()

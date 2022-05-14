@@ -1,7 +1,7 @@
+import sys
 from .check_pypi import is_registered_on_pypi
 
-
-
+__all__ = ['handle_availability', 'available_on_pypi']
 
 def handle_availability(registered_on_pypi: bool, package_name: str) -> None:
     if registered_on_pypi:
