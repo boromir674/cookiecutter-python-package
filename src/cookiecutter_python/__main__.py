@@ -1,11 +1,8 @@
-from .backend import cookiecutter_main
+# -*- coding: utf-8 -*-
+"""Allow python generator to be executable through `python -m generate-python`."""
+from __future__ import absolute_import
 
-# from .backend import cookiecutter, cookiecutter_main
+from cookiecutter_python.cli import main
 
-
-def main():
-    cookiecutter_main()
-
-
-if __name__ == '__main__':
-    cookiecutter_main(prog_name='python-generator')
+if __name__ == "__main__":  # pragma: no cover
+    main(prog_name='generate-python')

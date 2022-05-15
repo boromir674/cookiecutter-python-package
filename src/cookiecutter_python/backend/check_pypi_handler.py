@@ -20,7 +20,8 @@ def available_on_pypi(package_name: str):
         print(error, file=sys.stderr)
         print("Could not establish connection to pypi.")
         print(
-            f"Could not determine whether the selected pypi name '{package_name}' is already taken."
+            "Could not determine whether the selected pypi name "
+            f"'{package_name}' is already taken."
         )
 
     except Exception as error:  # ie network failure
