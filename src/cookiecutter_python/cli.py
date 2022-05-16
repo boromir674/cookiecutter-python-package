@@ -95,7 +95,7 @@ def version_msg():
 def main(
     no_input,
     checkout,
-    # verbose,
+    verbose,
     replay,
     overwrite,
     output_dir,
@@ -153,5 +153,5 @@ def main(
         sys.exit(1)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     main()

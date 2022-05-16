@@ -56,7 +56,9 @@ def input_sanitization(request):
         ) from error
 
 
-def handle_input(request):
+# Synchronous Task
+
+def hook_main(request):
     try:
         input_sanitization(request)
     except InputValueError as error:
@@ -66,27 +68,7 @@ def handle_input(request):
     return 0
 
 
-# Synchronous Task
-
-
-def hook_main(request):
-    exit_code = handle_input(request)
-    if exit_code:
-        return exit_code
-
-    # CHECK if given package name is already registered on pypi
-    print("Checking PyPi over the internet..")
-    print(" CTRL +X to skip this optional step, if it takes too long.")
-    try:
-        available_on_pypi(request.pypi_package)  # does not raise an exception
-    except KeyboardInterrupt:
-        print("Skipped!")
-
-    return 0
-
-
 # Asynchronous Tasks
-
 
 class Task(metaclass=SubclassRegistry):
     """Asynchronous Task.
@@ -104,14 +86,13 @@ class Task(metaclass=SubclassRegistry):
 @Task.register_as_subclass('main')
 class MainTask(Task):
     async def run(self, *args):
-        return handle_input(*args)
+        return hook_main(*args)
 
 
 # Async Task 2
 
-
 @Task.register_as_subclass('is-on-pypi')
-class PypiTask:
+class PypiTask(Task):
     async def run(self, *args):
         return available_on_pypi(*args)
 
@@ -165,7 +146,7 @@ async def async_main(request):
 
 
 # TODO Remove ASYNC SWITCH
-async_on = 1
+async_on = 0
 
 
 def _main():

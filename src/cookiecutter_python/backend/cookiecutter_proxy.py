@@ -1,13 +1,9 @@
-"""Proxy structural software pattern.
-
-This module contains boilerplate code to supply the Proxy structural software
-design pattern, to the client code."""
-
+import os
 import json
 import logging
 from typing import Any, Callable, Optional
 
-from cookiecutter.main import cookiecutter as cookiecutter_main_handler
+from cookiecutter.main import cookiecutter as cookiecutter_main_handler, get_user_config, generate_context
 from software_patterns import Proxy, ProxySubject
 
 from .singleton import Singleton
@@ -15,6 +11,8 @@ from .singleton import Singleton
 __all__ = ['cookiecutter']
 
 logger = logging.getLogger(__name__)
+
+my_dir = os.path.dirname(os.path.realpath(__file__))
 
 
 cookiecutter_type = Callable[
@@ -66,14 +64,14 @@ class CookiecutterProxy(Proxy[str]):
 
 # Singleton and Adapter of Cookiecutter Proxy
 class CookiecutterProxySingleton(metaclass=Singleton):
-    def __init__(self) -> None:
+    def __init__(self, proxy_factory) -> None:
         super().__init__()
-        # wrapper around 'proxied' object; cookiecutter in this case
-        cookiecutter_subject = CookiecutterSubject(cookiecutter_main_handler)
-        self._proxy = CookiecutterProxy(cookiecutter_subject)
+        self._proxy = proxy_factory()
 
     def __call__(self, *args: Any, **kwds: Any) -> str:
         return self._proxy.request(*args, **kwds)
 
 
-cookiecutter = CookiecutterProxySingleton()
+cookiecutter = CookiecutterProxySingleton(
+    lambda: CookiecutterProxy(CookiecutterSubject(cookiecutter_main_handler))
+)

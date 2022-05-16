@@ -151,6 +151,8 @@ def main(request):
         if not is_git_repo_clean(request.project_dir):
             git_add(request.project_dir)
             git_commit(request)
+
+    print("Finished Python Generation !!")
     sys.exit(0)
 
 
