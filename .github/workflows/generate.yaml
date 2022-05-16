@@ -87,8 +87,9 @@ jobs:
 
       - name: Generate Biskotaki from Template
         run: |
+          pip install --user -e .
           echo "    version: \"${{ env.BISKOTAKI_VERSION }}\"" >> .github/biskotaki.yaml
-          cookiecutter ./src/cookiecutter_python -o gen --config-file ./.github/biskotaki.yaml --no-input
+          generate-python -o gen --config-file ./.github/biskotaki.yaml --no-input
 
       # - name: Test against multiple 'installation' scenarios
       #   run: |
