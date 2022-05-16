@@ -61,11 +61,12 @@ Generated Python Package Features
 Quickstart
 ==========
 
-Prerequisites
--------------
+Installation
+------------
 
-You need to have Cookiecutter installed.
-Check the `Cookiecutter documentation`_ pages for more on Cookiecutter.
+    .. code-block: shell
+
+        pip install --user cookiecutter-python
 
 
 Usage
@@ -75,8 +76,7 @@ Open a console/terminal and run:
 
   .. code-block:: sh
 
-      git clone git@github.com:boromir674/cookiecutter-python-package.git
-      cookiecutter cookiecutter-python-package/src/cookiecutter_python
+      generate-python
 
 Now, you should have generated a new Project for a Python Package, based on the `Template`_!
 
@@ -89,7 +89,7 @@ Now, you should have generated a new Project for a Python Package, based on the 
 Try Running the Test Suite!
 
     .. code-block:: shell
-        
+
         tox
 
 
@@ -147,7 +147,7 @@ For more complex use cases, you can modify the Template and also leverage all of
 
 .. _Template: https://github.com/boromir674/cookiecutter-python-package/tree/master/src/cookiecutter_python
 
-.. _Use Cases: https://python-package-generator.readthedocs.io/en/master/usage/use_cases.html
+.. _Use Cases: https://python-package-generator.readthedocs.io/en/master/contents/30_usage/index.html#new-python-package-use-cases
 
 .. _GNU Affero General Public License v3.0: https://github.com/boromir674/cookiecutter-python-package/blob/master/LICENSE
 
@@ -235,7 +235,7 @@ For more complex use cases, you can modify the Template and also leverage all of
 
 .. |codacy| image:: https://app.codacy.com/project/badge/Grade/5be4a55ff1d34b98b491dc05e030f2d7
     :alt: Codacy
-    :target: https://www.codacy.com/gh/boromir674/cookiecutter-python-package/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=boromir674/cookiecutter-python-package&amp;utm_campaign=Badge_Grade
+    :target: https://app.codacy.com/gh/boromir674/cookiecutter-python-package/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=boromir674/cookiecutter-python-package&amp;utm_campaign=Badge_Grade
 
 
 .. Code Climate CI
@@ -243,8 +243,8 @@ For more complex use cases, you can modify the Template and also leverage all of
 
 .. |maintainability| image:: https://api.codeclimate.com/v1/badges/1d347d7dfaa134fd944e/maintainability
    :alt: Maintainability
-   :target: https://codeclimate.com/github/boromir674/cookiecutter-python-package/maintainability
+   :target: https://codeclimate.com/github/boromir674/cookiecutter-python-package/
 
 .. |tech-debt| image:: https://img.shields.io/codeclimate/tech-debt/boromir674/cookiecutter-python-package
     :alt: Code Climate technical debt
-    :target: https://codeclimate.com/github/boromir674/cookiecutter-python-package/maintainability
+    :target: https://codeclimate.com/github/boromir674/cookiecutter-python-package/

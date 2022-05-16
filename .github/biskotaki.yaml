@@ -2,7 +2,7 @@ default_context:
     project_name: Biskotaki
     project_slug: biskotaki
     repo_name: biskotaki
-    pkg_name: biskotaki
+    pkg_name: "biskotaki"
     full_name: Konstantinos Lampridis
     author: Konstantinos Lampridis
     email: k.lampridis@hotmail.com

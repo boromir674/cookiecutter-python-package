@@ -5,6 +5,8 @@ from typing import Callable
 import pytest
 from software_patterns import SubclassRegistry
 
+my_dir = os.path.dirname(os.path.realpath(os.path.abspath(__file__)))
+
 
 class AbstractCLIResult(ABC):
     @property
@@ -70,7 +72,7 @@ def test_project_generation_request(production_template, test_context, tmpdir):
 
 @pytest.fixture
 def generate_project():
-    from cookiecutter.main import cookiecutter
+    from cookiecutter_python.backend import cookiecutter
 
     def _generate_project(generate_request):
         return cookiecutter(
@@ -395,3 +397,53 @@ def request_factory(hook_request_new):
             'post': create_request_callback('post'),
         },
     )
+
+
+@pytest.fixture
+def generate_python_args():
+    """Get a list of objects that can be passed in the `generate` function.
+
+    Returns a callable that upon invocation creates a list of objects suitable
+    for passing into the `generate` method. The callable accepts **kwargs that
+    allow to provide values to override the defaults.
+
+    Returns:
+        callable: the callable that creates `generate` arguments lists
+    """
+
+    class Args:
+        args = [
+            ('--no-input', False),
+            ('--checkout', False),
+            ('--verbose', False),
+            ('--replay', False),
+            ('--overwrite', False),
+            ('--output-dir', '.'),
+            ('--config-file', os.path.join(my_dir, '..', '.github', 'biskotaki.yaml')),
+            ('--default-config', False),
+            ('--directory', None),
+            ('--skip-if-file-exists', False),
+        ]
+
+        def __init__(self, **kwargs) -> None:
+            for k, v in Args.args:
+                setattr(self, k, kwargs.get(k, v))
+
+        def __iter__(self):
+            return iter([(k, getattr(self, k)) for k, _ in Args.args])
+
+        def keys(self):
+            return iter([k for k, _ in iter(self)])
+
+    def parameters(*args, **kwargs):
+        args_obj = Args(**kwargs)
+        from functools import reduce
+
+        return (
+            reduce(
+                lambda i, j: i + j, [[key, value] for key, value in iter(args_obj) if value]
+            ),
+            {},
+        )
+
+    return parameters

@@ -24,6 +24,9 @@ subclasses
 dev
 templating
 
+# Open Source
+libre
+
 deserialization
 discretization
 interpretable
