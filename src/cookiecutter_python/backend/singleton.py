@@ -1,3 +1,8 @@
+import typing as t
+
+T = t.TypeVar('T')
+
+
 class Singleton(type):
     """Singleton Metaclass.
 
@@ -30,9 +35,9 @@ class Singleton(type):
         True
     """
 
-    _instances = {}
+    _instances: t.Dict[t.Type, t.Any] = {}
 
-    def __call__(cls, *args, **kwargs):
+    def __call__(cls: t.Type, *args, **kwargs) -> t.Any:
         instance = cls._instances.get(cls)
         if not instance:
             instance = super(Singleton, cls).__call__(*args, **kwargs)

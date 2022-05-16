@@ -5,7 +5,6 @@ from typing import Callable
 import pytest
 from software_patterns import SubclassRegistry
 
-
 my_dir = os.path.dirname(os.path.realpath(os.path.abspath(__file__)))
 
 
@@ -407,10 +406,11 @@ def generate_python_args():
     Returns a callable that upon invocation creates a list of objects suitable
     for passing into the `generate` method. The callable accepts **kwargs that
     allow to provide values to override the defaults.
-   
+
     Returns:
         callable: the callable that creates `generate` arguments lists
     """
+
     class Args:
         args = [
             ('--no-input', False),
@@ -424,17 +424,26 @@ def generate_python_args():
             ('--directory', None),
             ('--skip-if-file-exists', False),
         ]
+
         def __init__(self, **kwargs) -> None:
             for k, v in Args.args:
                 setattr(self, k, kwargs.get(k, v))
+
         def __iter__(self):
             return iter([(k, getattr(self, k)) for k, _ in Args.args])
+
         def keys(self):
             return iter([k for k, _ in iter(self)])
 
     def parameters(*args, **kwargs):
         args_obj = Args(**kwargs)
         from functools import reduce
-        return reduce(lambda i,j: i+ j, [[key, value] for key, value in iter(args_obj) if value]), {}
+
+        return (
+            reduce(
+                lambda i, j: i + j, [[key, value] for key, value in iter(args_obj) if value]
+            ),
+            {},
+        )
 
     return parameters

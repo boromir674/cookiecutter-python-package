@@ -1,9 +1,9 @@
-import os
 import json
 import logging
+import os
 from typing import Any, Callable, Optional
 
-from cookiecutter.main import cookiecutter as cookiecutter_main_handler, get_user_config, generate_context
+from cookiecutter.main import cookiecutter as cookiecutter_main_handler
 from software_patterns import Proxy, ProxySubject
 
 from .singleton import Singleton
@@ -34,7 +34,7 @@ cookiecutter_type = Callable[
 ]
 
 
-class CookiecutterSubject(ProxySubject[cookiecutter_type]):
+class CookiecutterSubject(ProxySubject[str]):
     pass
 
 

@@ -19,9 +19,8 @@ from cookiecutter.exceptions import (
 )
 
 from cookiecutter_python import __version__
-from cookiecutter_python.backend.main import generate, CheckPypiError
 from cookiecutter_python.backend.check_pypi import ContextVariableDoesNotExist
-
+from cookiecutter_python.backend.main import CheckPypiError, generate
 
 this_file_location = os.path.dirname(os.path.realpath(os.path.abspath(__file__)))
 

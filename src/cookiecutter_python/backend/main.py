@@ -1,11 +1,12 @@
-
-import os
 import logging
-from typing import Dict, Optional
+import os
+
 from requests.exceptions import ConnectionError
-from cookiecutter_python.backend.check_pypi_handler import handler
-from .cookiecutter_proxy import cookiecutter
+
 from cookiecutter_python.backend.check_pypi import check_pypi
+from cookiecutter_python.backend.check_pypi_handler import handler
+
+from .cookiecutter_proxy import cookiecutter
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,6 @@ def generate(
     check_future, pkg_name = check_pypi(config_file, default_config)
 
     template: str = os.path.join(my_dir, '..')
-    extra_context: Optional[Dict] = None
 
     project_dir = cookiecutter(
         template,

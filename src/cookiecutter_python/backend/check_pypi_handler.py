@@ -1,9 +1,9 @@
 import sys
-from typing import Callable, Any
+from typing import Callable
+
 from requests.exceptions import ConnectionError
 
-
-__all__ = ['available_on_pypi']
+__all__ = ['handler']
 
 
 def _available_on_pypi(callback, package_name: str):
@@ -38,7 +38,8 @@ def _available_on_pypi(callback, package_name: str):
             print("You will be able to publish your Python Package on pypi as it is!")
 
 
-def handler(callback: Callable[[str], Any]) -> None:
-    def _handler(package_name: str):
+def handler(callback: Callable[[str], bool]) -> Callable[[str], None]:
+    def _handler(package_name: str) -> None:
         _available_on_pypi(callback, package_name)
+
     return _handler

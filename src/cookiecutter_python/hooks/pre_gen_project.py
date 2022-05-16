@@ -1,7 +1,4 @@
-import asyncio
 import sys
-
-from software_patterns import SubclassRegistry
 
 from cookiecutter_python.backend.input_sanitization import (
     InputValueError,
@@ -63,7 +60,6 @@ def hook_main(request):
         print(error)
         return 1
     return 0
-
 
 
 def _main():

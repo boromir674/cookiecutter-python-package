@@ -1,8 +1,9 @@
-import logging
 import json
-from requests_futures.sessions import FuturesSession
-from cookiecutter_python.backend.cookiecutter_proxy import get_user_config
+import logging
 
+from requests_futures.sessions import FuturesSession
+
+from cookiecutter_python.backend.user_config_proxy import get_user_config
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +14,8 @@ def check_pypi(config_file, default_config):
         # TODO Improvement: enable feature regardless of default_config
 
         default_context = get_user_config(
-            config_file=config_file, default_config=default_config,
+            config_file=config_file,
+            default_config=default_config,
         )['default_context']
         variable_name = 'pkg_name'
         try:
@@ -21,17 +23,29 @@ def check_pypi(config_file, default_config):
         except KeyError as error:
             error_msg = "Attempted to retrieve non-existant variable"
             variables = tuple(sorted([str(x) for x in default_context.keys()]))
-            logger.debug(f"{error_msg}: %s", json.dumps({
-                    'variable_name': str(variable_name),
-                    'available_variables': variables,
-                }, indent=4, sort_keys=True))
+            logger.debug(
+                f"{error_msg}: %s",
+                json.dumps(
+                    {
+                        'variable_name': str(variable_name),
+                        'available_variables': variables,
+                    },
+                    indent=4,
+                    sort_keys=True,
+                ),
+            )
             raise ContextVariableDoesNotExist(
-                f"{error_msg}: %s", json.dumps({
-                    'variable_name': str(variable_name),
-                    'available_variables': '[{keys}]'.format(
-                        keys=', '.join(variables),
-                    ),
-                }, indent=4, sort_keys=True)
+                f"{error_msg}: %s",
+                json.dumps(
+                    {
+                        'variable_name': str(variable_name),
+                        'available_variables': '[{keys}]'.format(
+                            keys=', '.join(variables),
+                        ),
+                    },
+                    indent=4,
+                    sort_keys=True,
+                ),
             ) from error
         else:
             check_pypi_future = session.get(f'http://pypi.org/project/{name}')
