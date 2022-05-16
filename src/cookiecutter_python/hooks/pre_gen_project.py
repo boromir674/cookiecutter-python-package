@@ -53,9 +53,8 @@ def input_sanitization(request):
         raise InputValueError(
             'ERROR: %s is not a valid Semantic Version!', request.package_version_string
         ) from error
+    print("Sanitized Input Variables :)")
 
-
-# Synchronous Task
 
 def hook_main(request):
     try:
@@ -63,99 +62,13 @@ def hook_main(request):
     except InputValueError as error:
         print(error)
         return 1
-    print("Sanitized Input Variables :)")
     return 0
 
-
-# Asynchronous Tasks
-
-class Task(metaclass=SubclassRegistry):
-    """Asynchronous Task.
-
-    Each subclass must implement an async run method that can include
-    both typical synchronous statements and "awaited" async statements.
-    """
-
-    pass
-
-
-# Async Task 1
-
-
-@Task.register_as_subclass('main')
-class MainTask(Task):
-    async def run(self, *args):
-        return hook_main(*args)
-
-
-# Async Task 2
-
-@Task.register_as_subclass('is-on-pypi')
-class PypiTask(Task):
-    async def run(self, *args):
-        return available_on_pypi(*args)
-
-
-# ASYNC Infra
-class WorkDesign:
-    def __init__(self, data):
-        self.data = data
-
-
-class TaskDesign:
-    def __init__(self, name: str, work: WorkDesign) -> None:
-        self.name = name
-        self.work = work
-
-    def to_asyncio_task(self, work_queue):
-        return asyncio.create_task(task(self.name, work_queue))
-
-
-async def task(name, work_queue):
-    while not work_queue.empty():
-        work = await work_queue.get()
-        task_instance = Task.create(name)
-        return await task_instance.run(work.data)
-
-
-async def async_main(request):
-    """
-    This is the main entry point for the program
-    """
-    # Create the queue of work
-    work_queue = asyncio.Queue()
-
-    tasks = [
-        TaskDesign(name, WorkDesign(work))
-        for name, work in (
-            ('is-on-pypi', request.pypi_package),
-            ('main', request),
-        )
-    ]
-    # Put some work in the queue
-    for task_design in tasks:
-        await work_queue.put(task_design.work)
-
-    # Run the tasks
-    is_on_pypi, exit_code = await asyncio.gather(
-        *[task.to_asyncio_task(work_queue) for task in tasks]
-    )
-
-    return exit_code
-
-
-# TODO Remove ASYNC SWITCH
-async_on = 0
 
 
 def _main():
     request = get_request()
-    if async_on:
-        return asyncio.run(async_main(request))
     return hook_main(request)
-
-
-# MAIN
 
 
 def main():
