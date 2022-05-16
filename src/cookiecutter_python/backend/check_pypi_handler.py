@@ -1,15 +1,14 @@
 import sys
-
+from typing import Callable, Any
 from requests.exceptions import ConnectionError
 
-from .check_pypi import is_registered_on_pypi
 
 __all__ = ['available_on_pypi']
 
 
-def available_on_pypi(package_name: str):
+def _available_on_pypi(callback, package_name: str):
     try:
-        res: bool = is_registered_on_pypi(package_name)
+        res: bool = callback(package_name)
     except ImportError as error:
         print(error)
         print(
@@ -37,3 +36,9 @@ def available_on_pypi(package_name: str):
         else:
             print("Name '{name}' IS available on pypi.org!".format(name=package_name))
             print("You will be able to publish your Python Package on pypi as it is!")
+
+
+def handler(callback: Callable[[str], Any]) -> None:
+    def _handler(package_name: str):
+        _available_on_pypi(callback, package_name)
+    return _handler

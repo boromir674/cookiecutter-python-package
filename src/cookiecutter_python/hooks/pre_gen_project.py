@@ -3,7 +3,6 @@ import sys
 
 from software_patterns import SubclassRegistry
 
-from cookiecutter_python.backend.check_pypi_handler import available_on_pypi
 from cookiecutter_python.backend.input_sanitization import (
     InputValueError,
     build_input_verification,

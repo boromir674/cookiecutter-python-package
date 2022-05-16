@@ -5,7 +5,6 @@
 import json
 import os
 import sys
-from typing import Dict, Optional
 
 import click
 from cookiecutter.exceptions import (
@@ -20,7 +19,9 @@ from cookiecutter.exceptions import (
 )
 
 from cookiecutter_python import __version__
-from cookiecutter_python.backend import cookiecutter
+from cookiecutter_python.backend.main import generate, CheckPypiError
+from cookiecutter_python.backend.check_pypi import ContextVariableDoesNotExist
+
 
 this_file_location = os.path.dirname(os.path.realpath(os.path.abspath(__file__)))
 
@@ -31,14 +32,6 @@ def version_msg():
     message = u'Python Generator %(version)s from {} (Python {})'
     location = os.path.dirname(this_file_location)
     return message.format(location, python_version)
-
-
-# Commands:
-# - generate
-# should expose the cookiecutter cli interface
-# - check
-# should check if the given name is available in pypi server
-# required argument as positional argument
 
 
 @click.command(context_settings=dict(help_option_names=[u'-h', u'--help']))
@@ -106,26 +99,21 @@ def main(
 ):
     """Create a Project from the project template.
 
-    Cookiecutter Python Package is free and open source software. If you would
-    like to get in touh please see
+    Cookiecutter Python Package is Free/Libre Open Source Software. If you would
+    like to get in touch, please see
     https://github.com/boromir674/cookiecutter-python-package.
     """
-
-    template: str = os.path.join(this_file_location)
-    extra_context: Optional[Dict] = None
 
     # TODO Improvement: add logging configuration
     # from cookiecutter.log import configure_logger
     # configure_logger(stream_level='DEBUG' if verbose else 'INFO', debug_file=debug_file)
 
     try:
-        cookiecutter(
-            template,
+        project: str = generate(
             checkout,
             no_input,
-            extra_context=extra_context,
             replay=replay,
-            overwrite_if_exists=overwrite,
+            overwrite=overwrite,
             output_dir=output_dir,
             config_file=config_file,
             default_config=default_config,
@@ -133,7 +121,9 @@ def main(
             directory=directory,
             skip_if_file_exists=skip_if_file_exists,
         )
-    except (
+    except CheckPypiError as error:
+        click.echo(error)
+    except (  # cookiecutter exceptions
         OutputDirExistsException,
         InvalidModeException,
         FailedHookException,
@@ -141,6 +131,8 @@ def main(
         InvalidZipRepository,
         RepositoryNotFound,
         RepositoryCloneFailed,
+        # python generator exceptions
+        ContextVariableDoesNotExist,
     ) as error:
         click.echo(error)
         sys.exit(1)
@@ -151,6 +143,7 @@ def main(
         context_str = json.dumps(undefined_err.context, indent=4, sort_keys=True)
         click.echo('Context: {}'.format(context_str))
         sys.exit(1)
+    return project
 
 
 if __name__ == "__main__":  # pragma: no cover
