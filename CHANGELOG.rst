@@ -3,20 +3,26 @@ Changelog
 =========
 
 1.1.0 (2022-05-17)
-------------------
+==================
+
+Wrapping everything in a *command line interface* (cli).
+Speed up performance by using *futures* for http requests.
+
+Changes
+^^^^^^^
 
 feature
-^^^^^^^
+"""""""
 - allow user to control parameters of the project generation process
 - expose project generator through an interactive cli
 - add async capabilities to the pre_gen_project.py for faster network bound operations
 
 documentation
-^^^^^^^^^^^^^
+"""""""""""""
 - demonstrate how to install and use the cli
 
 ci
-^^
+""
 - update workflow to install and use the 'generate-python' cli
 
 
