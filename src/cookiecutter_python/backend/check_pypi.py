@@ -24,7 +24,8 @@ def check_pypi(config_file, default_config):
             error_msg = "Attempted to retrieve non-existant variable"
             variables = tuple(sorted([str(x) for x in default_context.keys()]))
             logger.debug(
-                f"{error_msg}: %s",
+                "%s: %s",
+                error_msg,
                 json.dumps(
                     {
                         'variable_name': str(variable_name),
@@ -35,16 +36,18 @@ def check_pypi(config_file, default_config):
                 ),
             )
             raise ContextVariableDoesNotExist(
-                f"{error_msg}: %s",
-                json.dumps(
-                    {
-                        'variable_name': str(variable_name),
-                        'available_variables': '[{keys}]'.format(
-                            keys=', '.join(variables),
-                        ),
-                    },
-                    indent=4,
-                    sort_keys=True,
+                "{msg}: {data}".format(
+                    msg=error_msg,
+                    data=json.dumps(
+                        {
+                            'variable_name': str(variable_name),
+                            'available_variables': '[{keys}]'.format(
+                                keys=', '.join(variables),
+                            ),
+                        },
+                        indent=4,
+                        sort_keys=True,
+                    ),
                 ),
             ) from error
         else:

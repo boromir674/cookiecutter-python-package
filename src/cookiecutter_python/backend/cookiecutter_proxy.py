@@ -1,7 +1,6 @@
 import json
 import logging
 import os
-from typing import Any, Callable, Optional
 
 from cookiecutter.main import cookiecutter as cookiecutter_main_handler
 from software_patterns import Proxy, ProxySubject
@@ -13,25 +12,6 @@ __all__ = ['cookiecutter']
 logger = logging.getLogger(__name__)
 
 my_dir = os.path.dirname(os.path.realpath(__file__))
-
-
-cookiecutter_type = Callable[
-    [
-        str,
-        Optional[str],
-        bool,
-        Optional[dict],
-        bool,
-        bool,
-        Optional[str],
-        Optional[str],
-        bool,
-        Optional[str],
-        Optional[str],
-        bool,
-    ],
-    str,
-]
 
 
 class CookiecutterSubject(ProxySubject[str]):
@@ -68,7 +48,7 @@ class CookiecutterProxySingleton(metaclass=Singleton):
         super().__init__()
         self._proxy = proxy_factory()
 
-    def __call__(self, *args: Any, **kwds: Any) -> str:
+    def __call__(self, *args, **kwds) -> str:
         return self._proxy.request(*args, **kwds)
 
 

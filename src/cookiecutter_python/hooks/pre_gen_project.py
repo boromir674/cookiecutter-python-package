@@ -40,7 +40,7 @@ def input_sanitization(request):
         verify_templated_module_name(request.module_name)
     except InputValueError as error:
         raise InputValueError(
-            'ERROR: %s is not a valid Python module name!', request.module_name
+            f'ERROR: {request.module_name} is not a valid Python module name!'
         ) from error
 
     # CHECK Version
@@ -48,7 +48,7 @@ def input_sanitization(request):
         verify_templated_semantic_version(request.package_version_string)
     except InputValueError as error:
         raise InputValueError(
-            'ERROR: %s is not a valid Semantic Version!', request.package_version_string
+            f'ERROR: {request.package_version_string} is not a valid Semantic Version!'
         ) from error
     print("Sanitized Input Variables :)")
 

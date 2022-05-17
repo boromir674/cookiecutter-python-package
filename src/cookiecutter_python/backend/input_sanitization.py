@@ -2,8 +2,7 @@ import json
 import logging
 import re
 from abc import ABC
-from re import Pattern
-from typing import Tuple
+from typing import Any, Callable, Pattern, Tuple
 
 from software_patterns.subclass_registry import SubclassRegistry
 
@@ -50,9 +49,10 @@ class SanitizerInterface(ABC):
 class AbstractSanitizer(SanitizerInterface):
     regex: Pattern
     exception_msg: str
+    verify: Callable[[Any], None]
 
-    def log_message(self, error, x) -> Tuple[str]:
-        ...
+    def log_message(self, error, data) -> Tuple[str]:
+        raise NotImplementedError
 
     def __call__(self, *args, **kwargs):
         self.verify(self.regex, *args)
@@ -68,8 +68,8 @@ class BaseSanitizer(AbstractSanitizer):
             log_message_getter=lambda err, reg, x: self.log_message(err, x),
         )
 
-    def log_message(self, error, x) -> Tuple[str]:
-        return self._log_func(error, x)
+    def log_message(self, error, data) -> Tuple[str]:
+        return self._log_func(error, data)
 
     @staticmethod
     def from_input_sanitizer_class(sanitizer):

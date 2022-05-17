@@ -1,5 +1,5 @@
 import os
-from typing import Any, Callable, MutableMapping, Optional
+from typing import Any, MutableMapping
 
 from cookiecutter.config import get_user_config as cookie_get_config
 from software_patterns import Proxy, ProxySubject
@@ -12,20 +12,14 @@ __all__ = ['get_user_config']
 my_dir = os.path.dirname(os.path.realpath(__file__))
 
 
-get_user_config_type = Callable[
-    [
-        Optional[str],
-        Optional[bool],
-    ],
-    MutableMapping[str, Any],
-]
+ReturnValueType = MutableMapping[str, Any]
 
 
-class GetUserConfigSubject(ProxySubject[MutableMapping[str, Any]]):
+class GetUserConfigSubject(ProxySubject[ReturnValueType]):
     pass
 
 
-class GetUserConfigProxy(Proxy[MutableMapping[str, Any]]):
+class GetUserConfigProxy(Proxy[ReturnValueType]):
     pass
 
 
@@ -35,7 +29,7 @@ class GetUserConfigProxySingleton(metaclass=Singleton):
         super().__init__()
         self._proxy = proxy_factory()
 
-    def __call__(self, *args: Any, **kwds: Any) -> MutableMapping[str, Any]:
+    def __call__(self, *args: Any, **kwds: Any) -> ReturnValueType:
         return self._proxy.request(*args, **kwds)
 
 

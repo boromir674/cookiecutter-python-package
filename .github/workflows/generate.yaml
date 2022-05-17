@@ -91,19 +91,19 @@ jobs:
           echo "    version: \"${{ env.BISKOTAKI_VERSION }}\"" >> .github/biskotaki.yaml
           generate-python -o gen --config-file ./.github/biskotaki.yaml --no-input
 
-      # - name: Test against multiple 'installation' scenarios
-      #   run: |
-      #     cd gen/biskotaki
-      #     tox -e "py38{, -path, -sdist, -wheel, -dev}"
-      #   env:
-      #     PKG_VERSION: ${{ env.BISKOTAKI_VERSION }}
-    #   - name: Test Operations such as 'build process' and 'linting'
-    #     run: |
-    #       cd gen/biskotaki
-    #       tox -e check
-    #       tox -e build
-    #       tox -e lint
-    #       tox -e graphs
+      - name: Test against multiple 'installation' scenarios
+        run: |
+          cd gen/biskotaki
+          tox -e "py38{, -path, -sdist, -wheel, -dev}"
+        env:
+          PKG_VERSION: ${{ env.BISKOTAKI_VERSION }}
+      - name: Test Operations such as 'build process' and 'linting'
+        run: |
+          cd gen/biskotaki
+          tox -e check
+          tox -e build
+          tox -e lint
+          tox -e graphs
 
       - name: Push to dedicated branch in biskotaki repo
         uses: cpina/github-action-push-to-another-repository@main
