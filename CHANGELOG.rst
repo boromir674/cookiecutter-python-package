@@ -2,6 +2,14 @@
 Changelog
 =========
 
+1.1.1 (2022-05-17)
+------------------
+
+documentation
+^^^^^^^^^^^^^
+- document installation and cli usage
+
+
 1.1.0 (2022-05-17)
 ==================
 
