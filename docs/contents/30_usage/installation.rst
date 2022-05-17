@@ -6,46 +6,77 @@
 Install as PyPi package
 -----------------------
 
+Installing `cookiecutter-python` with `pip` is the way to go, for getting the
+`generate-python` cli onto your machine. Here we demonstrate how to do that using a
+
 
 In virtual environment (recommended)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The recommended way of installing any python package, is use a *python virtual environment*.
+As with any Python Package, it is recommended to install *cookiecutter-python* inside a
+python *virtual environment*. You can use any of `virtualenv`, `venv`, `pyenv` of the
+tool of your choice. Here we demonstrate, using `virtualenv`, by running the following commands
+in a console (aka terminal):
+
+1. Create a virtual environment
+
+  .. code-block:: shell
+
+    virtualenv env --python=python3
 
 Open a console (aka terminal) and run:
 
-.. code-block:: shell
+2. Activate environment
 
-  virtualenv env --python=python3
-  source env/bin/activate
+  .. code-block:: shell
 
-  pip install cookiecutter-python
+    source env/bin/activate
 
-  deactivate
+3. Install `cookiecutter-python`
 
-  ln -s env/bin/generate-python ~/.local/bin/generate-python
+  .. code-block:: shell
+
+    pip install cookiecutter-python
+
+4. Create symbolic link for the (current) user
+
+  .. code-block:: shell
+
+    ln -s env/bin/generate-python ~/.local/bin/generate-python
+
 
 Now the *generate-python* executable should be available (assuming ~/.local/bin is in your PATH)!
 
 
-For user 
-^^^^^^^^
+For user (option 2)
+^^^^^^^^^^^^^^^^^^^
 
 One could also opt for a *user* installation of *cookiecutter-python* package:
 
-.. code-bloack: shell
+.. code-block:: shell
 
   python3 -m pip install --user cookiecutter-python
 
 
-For all users
-^^^^^^^^^^^^^
+For all users (option 3)
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 The least recommended way of installing *cookiecutter-python* package is to
 *directly* install in the *host* machine:
 
-.. code-bloack: shell
+.. code-block:: shell
 
   sudo python3 -m pip install cookiecutter-python
 
 Note the need to invoke using *sudo*, hence not that much recommended.
+
+
+Check installation
+------------------
+
+| Now the `generate-python` cli should be available!
+| You can verify by running the following:
+
+.. code-block:: shell
+
+  generate-python --version

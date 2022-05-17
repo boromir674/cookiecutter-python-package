@@ -5,7 +5,7 @@ Python Package (pypi) Cookiecutter, with emphasis on CI/CD and automation.
 
 .. start-badges
 
-| |build| |docs| |coverage| |ossf| |maintainability| |better_code_hub| |codacy| |tech-debt|
+| |build| |docs| |coverage| |ossf| |maintainability| |better_code_hub| |codacy| |tech-debt| |black|
 | |release_version| |wheel| |supported_versions| |gh-lic| |commits_since_specific_tag_on_master| |commits_since_latest_github_release|
 
 |
@@ -248,3 +248,10 @@ For more complex use cases, you can modify the Template and also leverage all of
 .. |tech-debt| image:: https://img.shields.io/codeclimate/tech-debt/boromir674/cookiecutter-python-package
     :alt: Code Climate technical debt
     :target: https://codeclimate.com/github/boromir674/cookiecutter-python-package/
+
+
+.. Code Style with Black
+
+.. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :alt: Black
+    :target: https://github.com/psf/black
