@@ -1,8 +1,9 @@
+=========
 Changelog
 =========
 
 0.0.1 ({{ cookiecutter.release_date }})
----------------------------------------
+=======================================
 
 | This is the first ever release of the **{{ cookiecutter.pkg_name }}** Python Package.
 | The package is open source and is part of the **{{ cookiecutter.project_name }}** Project.
