@@ -6,6 +6,7 @@ include CHANGELOG.rst
 recursive-include src *.py
 recursive-include src *.pyi
 
+recursive-include src *.ini
 recursive-include src *.in
 recursive-include src *.json
 recursive-include src *.rst

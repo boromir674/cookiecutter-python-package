@@ -105,6 +105,7 @@ def project_dir(
     expected_files = os.listdir(production_templated_project) + ['.git']
     assert set(expected_files) == set(runtime_files)
     assert len(expected_files) == len(runtime_files)
+    assert all(['tox.ini' in x for x in (expected_files, runtime_files)])
     return proj_dir
 
 
