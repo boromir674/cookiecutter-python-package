@@ -61,6 +61,7 @@ jobs:
         python -m pip install coverage
         tox -e coverage --sitepackages -vv -s false
 
+    - name: Code Coverage Data as Artefacts
     - uses: actions/upload-artifact@v2
       with:
         name: coverage-xml-data
@@ -70,10 +71,11 @@ jobs:
     needs: test_suite
     runs-on: ubuntu-latest
     steps:
+    - name: Download Code Coverage Data
     - uses: actions/download-artifact@v2
       with:
         name: coverage-xml-data
-    - name: Upload coverage to Codecov
+    - name: Send Coverage Data to Codecov
       uses: codecov/codecov-action@v2
       with:
         directory: .
