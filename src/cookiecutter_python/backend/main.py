@@ -46,7 +46,7 @@ def generate(
         skip_if_file_exists=skip_if_file_exists,
     )
 
-    if check_future:
+    if pkg_name:
         # eval future by waiting only if needed!
         try:
             handler(lambda x: check_future.result().status_code == 200)(pkg_name)
