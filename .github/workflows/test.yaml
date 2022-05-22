@@ -20,8 +20,10 @@ jobs:
     runs-on: ${{ matrix.platform }}
     strategy:
       matrix:
-        platform: [ubuntu-latest, macos-latest]
-        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
+        # platform: [ubuntu-latest, macos-latest]
+        platform: [ubuntu-latest]
+        python-version: ["3.8"]
+        # python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
 
     steps:
     - uses: actions/checkout@v1
@@ -59,14 +61,27 @@ jobs:
         python -m pip install coverage
         tox -e coverage --sitepackages -vv -s false
 
-    # TODO Delegate uploading to codecov to a another Job
-    - name: Upload coverage to Codecov
+    - name: Code Coverage Data as Artefacts
+    - uses: actions/upload-artifact@v2
+      with:
+        name: coverage-xml-data
+        path: ./.tox/coverage.xml
+
+  host_coverage_results:
+    needs: test_suite
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download Code Coverage Data
+    - uses: actions/download-artifact@v2
+      with:
+        name: coverage-xml-data
+    - name: Send Coverage Data to Codecov
       uses: codecov/codecov-action@v2
       with:
-        directory: ./.tox/
+        directory: .
         env_vars: OS,PYTHON
         fail_ci_if_error: true
-        files: ./.tox/coverage.xml
+        files: coverage.xml
         flags: unittests
         name: codecov-umbrella
         verbose: true

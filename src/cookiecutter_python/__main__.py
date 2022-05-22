@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-"""Allow python generator to be executable through `python -m generate-python`."""
+"""Allow to run Python Generator also through `python -m cookiecutter_python`.
+
+Allows Python Generator to be executed through `python -m cookiecutter_python`.
+"""
 from __future__ import absolute_import
 
 from cookiecutter_python.cli import main
