@@ -7,6 +7,7 @@ on:
       - master
       - dev
       - ci
+      - poetry
   pull_request:
     branches:
       - master
@@ -42,9 +43,6 @@ jobs:
     - name: Do Type Checking
       run: tox -e type -vv -s false
 
-    - name: Check for compliance with Python Best Practices
-      run: tox -e check -vv -s false
-
     - name: Specify current package version to assist build tool
       run: echo "PKG_VERSION=$(python scripts/parse_version.py)" >> $GITHUB_ENV
 
@@ -53,16 +51,22 @@ jobs:
       env:
         PLATFORM: ${{ matrix.platform }}
 
-    - name: Install coverage.py
-      run: python -m pip install coverage
+    - name: Check for compliance with Python Best Practices
+      run: |
+        DIST_DIR=dist
+        ls -l ".tox/${DIST_DIR}"
+        mkdir "$DIST_DIR"
+        mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}.tar.gz" "${DIST_DIR}"
+        mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}-py3-none-any.whl" "${DIST_DIR}"
+        tox -e check -vv -s false
 
-    - name: Aggregate Test Suite Coverage Data
+    - name: Aggregate Test Coverage Data
       run: |
         python -m pip install coverage
         tox -e coverage --sitepackages -vv -s false
 
-    - name: Code Coverage Data as Artefacts
-    - uses: actions/upload-artifact@v2
+    - name: Upload Coverage Data as Artefacts
+      uses: actions/upload-artifact@v2
       with:
         name: coverage-xml-data
         path: ./.tox/coverage.xml
@@ -71,8 +75,8 @@ jobs:
     needs: test_suite
     runs-on: ubuntu-latest
     steps:
-    - name: Download Code Coverage Data
-    - uses: actions/download-artifact@v2
+    - name: Download Coverage Data
+      uses: actions/download-artifact@v2
       with:
         name: coverage-xml-data
     - name: Send Coverage Data to Codecov
