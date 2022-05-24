@@ -2,6 +2,36 @@
 Changelog
 =========
 
+1.2.0 (2022-05-24)
+==================
+
+Changes
+^^^^^^^
+
+feature
+"""""""
+- migrate to poetry from setuptools as 'build-backend'
+
+fix
+"""
+- add rule in MANIFEST to match tox.ini similar to *.md, etc non-python files
+- replace hardcoded values with templated variables
+
+test
+""""
+- sanity check to double check that 'tox.ini' gets put in generated dir
+
+documentation
+"""""""""""""
+- rewrite module docstring
+
+ci
+""
+- use checkout@v3 instead of @v1
+- upload sdist & wheel as artefacts
+- separate codecov data exchange into dedicated job
+
+
 1.1.1 (2022-05-17)
 ==================
 
