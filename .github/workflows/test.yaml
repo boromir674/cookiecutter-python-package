@@ -37,11 +37,11 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install tox tox-gh-actions
 
-    - name: Do Lint Checking
-      run: tox -e lint -vv -s false
+    # - name: Do Lint Checking
+    #   run: tox -e lint -vv -s false
 
-    - name: Do Type Checking
-      run: tox -e type -vv -s false
+    # - name: Do Type Checking
+    #   run: tox -e type -vv -s false
 
     - name: Specify current package version to assist build tool
       run: echo "PKG_VERSION=$(python scripts/parse_version.py)" >> $GITHUB_ENV
