@@ -21,10 +21,10 @@ jobs:
     runs-on: ${{ matrix.platform }}
     strategy:
       matrix:
-        # platform: [ubuntu-latest, macos-latest]
-        platform: [ubuntu-latest]
-        python-version: ["3.8"]
-        # python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
+        platform: [ubuntu-latest, macos-latest]
+        # platform: [ubuntu-latest]
+        # python-version: ["3.8"]
+        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
 
     steps:
     - uses: actions/checkout@v1
@@ -54,11 +54,22 @@ jobs:
     - name: Check for compliance with Python Best Practices
       run: |
         DIST_DIR=dist
-        ls -l ".tox/${DIST_DIR}"
+        echo "DIST_DIR=dist" >> $GITHUB_ENV
+
         mkdir "$DIST_DIR"
         mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}.tar.gz" "${DIST_DIR}"
         mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}-py3-none-any.whl" "${DIST_DIR}"
+        ls -l "${DIST_DIR}"
+
         tox -e check -vv -s false
+
+    - name: Upload Source & Wheel distributions as Artefacts
+      uses: actions/upload-artifact@v2
+      with:
+        # name: dist-${{ env.OS }}-${{ env.PYTHON }}  # TODO enable this
+        name: dist-${{ matrix.platform }}-${{ matrix.python-version }}
+        path: ${{ env.DIST_DIR }}
+        if-no-files-found: error
 
     - name: Aggregate Test Coverage Data
       run: |
@@ -70,6 +81,7 @@ jobs:
       with:
         name: coverage-xml-data
         path: ./.tox/coverage.xml
+        if-no-files-found: error
 
   host_coverage_results:
     needs: test_suite
