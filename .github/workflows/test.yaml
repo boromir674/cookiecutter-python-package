@@ -7,7 +7,7 @@ on:
       - master
       - dev
       - ci
-      - poetry
+      - fix-ci
   pull_request:
     branches:
       - master
