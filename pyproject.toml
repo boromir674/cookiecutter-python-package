@@ -1,14 +1,182 @@
 # BUILD
 
 [build-system]
-requires = ["setuptools >= 40.6.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
 
-# TODO switch setuptools build backend to something like 'poetry' or 'build'
+# Poetry
+
+# Information required for building (sdist/wheel)
+## Also renders on pypi as 'subtitle'
+[tool.poetry]
+name = "cookiecutter_python"
+version = "1.1.1"
+description = "Yet another modern Python Package (pypi) with emphasis in CI/CD and automation."
+authors = ["Konstantinos Lampridis <k.lampridis@hotmail.com>"]
+maintainers = ["Konstantinos Lampridis <k.lampridis@hotmail.com>"]
+license = "AGPL-3.0-only"
+readme = "README.rst"
+
+homepage = "https://github.com/boromir674/cookiecutter-python-package"
+repository = "https://github.com/boromir674/cookiecutter-python-package"
+documentation = "https://python-package-generator.readthedocs.io/"
+
+keywords = [
+    "python package generator",
+    "python package template",
+    "cookiecutter",
+    "python package",
+    "automation"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU Affero General Public License v3",
+    "Natural Language :: English",
+    "Operating System :: Unix",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Software Development",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Software Distribution",
+    "Typing :: Typed"
+]
+
+packages = [
+    { include = "cookiecutter_python", from = "src" },
+]
+
+
+include = [
+    { path = "tests", format = "sdist" },
+    { path = "docs/**/*.rst", format = "sdist" },
+    { path = "docs/conf.py", format = "sdist" },
+    { path = "src/**/*.typed", format = "sdist" },
+    { path = "src/stubs/*.pyi", format = "sdist" },
+    "pyproject.toml",
+    "LICENSE",
+    "README.rst",
+    "CONTRIBUTING.md",
+    "CHANGELOG.rst",
+]
+
+exclude = [
+    "docs/*",
+    "requirements/*",
+    "scripts/*.py",
+    "tox.ini",
+    ".bettercodehub.yml",
+    ".circleci/config.yml",
+    ".coveragerc",
+    ".DS_Store",
+    ".gitignore",
+    ".prospector.yml",
+    ".pylintrc",
+    ".readthedocs.yml",
+    ".scrutinizer.yml",
+    ".travis.yml"
+]
+
+
+[tool.poetry.scripts]
+generate-python = 'cookiecutter_python.__main__:main'
+
+
+[tool.poetry.dependencies]
+python = "^3.6"
+click = "^8"
+cookiecutter = "^1.7.3"
+software-patterns = "^1.2.1"
+requests-futures = "^1.0.0"
+
+
+# A list of all of the optional dependencies, some of which are included in the
+# below `extras`. They can be opted into by apps.
+
+# Test: packages imported in test code and packages required for the "test runner"
+pytest = { version = ">= 6.2.4", optional = true }
+pytest-click = { version = "~= 1.1.0", optional = true }
+pytest-cov = { version = ">= 2.12", optional = true }
+pytest-explicit = { version = "~= 1.0.1", optional = true }
+pytest-xdist = { version = ">= 1.34", optional = true }
+
+# Docs: development and build dependencies
+sphinx = { version = "~= 4.0", optional = true }
+sphinx-autodoc-typehints = { version = ">= 1.10", optional = true }
+sphinx-rtd-theme = { version = "== 0.5.0", optional = true }
+sphinxcontrib-spelling = { version = "~= 7.3.3", optional = true }
+
+# Type Checking: packages required for the type check (ie mypy) to pass
+mypy = { version = "~= 0.950", optional = true }
+types-requests = { version = "~= 2.27.26", optional = true }
+
+[tool.poetry.extras]
+test = [
+    "pytest",
+    "pytest-click",
+    "pytest-cov",
+    "pytest-explicit",
+    "pytest-xdist",
+]
+docs = [
+    "sphinx",
+    "sphinx-autodoc-typehints",
+    "sphinx-rtd-theme",
+    "sphinxcontrib-spelling",
+]
+typing = [
+    "mypy",
+    "types-requests",
+    "pytest",
+    "pytest-click",
+]
+
+
+# PyPi url links, that appear in 'Project Links' section
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/boromir674/cookiecutter-python-package/issues"
+"CI: Github Actions" = "https://github.com/boromir674/cookiecutter-python-package/actions"
+"Documentation" = "https://python-package-generator.readthedocs.io/"
+"Source Code" = "https://github.com/boromir674/cookiecutter-python-package"
+# TODO Improve: add changelog in Docs and use that link below
+# https://cookiecutter-python-package.readthedocs.io/en/stable/changelog.html
+"Changelog" = "https://github.com/boromir674/cookiecutter-python-package/blob/master/CHANGELOG.rst"
+"Code of Conduct" = "https://github.com/boromir674/cookiecutter-python-package/blob/master/CONTRIBUTING.rst"
+# Mailing lists =
 
 
 
 # TOOLS
+
+## Pytest & Plugins
+
+[tool.pytest.ini_options]
+minversion = "6.2"
+addopts = "--strict-markers"
+markers = [
+    "slow: Marks a slow test",
+    "integration: Tests applicable to a newly Generated Project, running with tox",
+    "network_bound: Require internet connection",
+]
+testpaths = [
+    "tests",
+]
+explicit-only = [
+    "slow",
+    "integration",
+    "network_bound",
+]
+
+
+## Black formatting/linting
 
 [tool.black]
 line-length = 95
