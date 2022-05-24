@@ -54,7 +54,6 @@ packages = [
     { include = "cookiecutter_python", from = "src" },
 ]
 
-
 include = [
     { path = "tests", format = "sdist" },
     { path = "docs/**/*.rst", format = "sdist" },
@@ -170,7 +169,6 @@ testpaths = [
     "tests",
 ]
 explicit-only = [
-    "slow",
     "integration",
     "network_bound",
 ]

@@ -58,7 +58,6 @@ jobs:
         mkdir "$DIST_DIR"
         mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}.tar.gz" "${DIST_DIR}"
         mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}-py3-none-any.whl" "${DIST_DIR}"
-        ls -l "${DIST_DIR}"
 
         tox -e check -vv -s false
 
