@@ -7,7 +7,6 @@ on:
       - master
       - dev
       - ci
-      - fix-ci
   pull_request:
     branches:
       - master
@@ -21,10 +20,10 @@ jobs:
     runs-on: ${{ matrix.platform }}
     strategy:
       matrix:
-        # platform: [ubuntu-latest, macos-latest]
-        platform: [macos-latest]
-        python-version: ["3.6"]
-        # python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
+        platform: [ubuntu-latest, macos-latest]
+        # platform: [macos-latest]
+        # python-version: ["3.6"]
+        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
 
     steps:
     - uses: actions/checkout@v3
@@ -37,11 +36,11 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install tox tox-gh-actions
 
-    # - name: Do Lint Checking
-    #   run: tox -e lint -vv -s false
+    - name: Do Lint Checking
+      run: tox -e lint -vv -s false
 
-    # - name: Do Type Checking
-    #   run: tox -e type -vv -s false
+    - name: Do Type Checking
+      run: tox -e type -vv -s false
 
     - name: Specify current package version to assist build tool
       run: echo "PKG_VERSION=$(python scripts/parse_version.py)" >> $GITHUB_ENV
