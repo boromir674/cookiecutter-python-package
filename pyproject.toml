@@ -190,3 +190,7 @@ hooks/post_gen_project.py
 
 [tool.isort]
 profile = 'black'
+
+
+[tool.software-release]
+version_variable = "src/cookiecutter_python/__init__.py:__version__"

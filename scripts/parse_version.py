@@ -4,10 +4,10 @@ import os
 import re
 import sys
 
-my_dir = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
+my_dir = os.path.dirname(os.path.realpath(__file__))
 
 SOFTWARE_RELEASE_CFG_FILE = 'pyproject.toml'
-SOFTWARE_RELEASE_CFG = os.path.join(os.path.dirname(my_dir), SOFTWARE_RELEASE_CFG_FILE)
+SOFTWARE_RELEASE_CFG = os.path.abspath(os.path.join(os.path.dirname(my_dir), SOFTWARE_RELEASE_CFG_FILE))
 
 
 def parse_version(software_release_cfg: str):
@@ -23,7 +23,7 @@ def parse_version(software_release_cfg: str):
             variable_holding_version_value = match.group(2)
         else:
             raise RuntimeError(
-                f"Expected to find the '[software-release]' section, in the '{software_release_cfg}' file, with key "
+                f"Expected to find the '[tool.software-release]' section, in the '{software_release_cfg}' file, with key "
                 f"'version_variable'.\nFor example:\n[tool.software-release]\nversion_variable = "
                 f"src/package_name/__init__.py:__version__\n indicated that the version string should be looked up in "
                 f"the src/package_name/__init__.py file registered under the __version__ 'name'"
