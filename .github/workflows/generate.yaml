@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'develop'
+      - update-generate
   pull_request:
     branches:
       - 'master'
@@ -13,7 +14,7 @@ jobs:
   generate:
     runs-on: ubuntu-latest
     env:
-      branch: apply-cookiecutter-python-package-template
+      branch: auto-generated
       SUPER_SECRET: ${{ secrets.BISKOTAKI_GH_TOKEN }}
       # GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -71,25 +72,25 @@ jobs:
           sudo apt update -y && sudo apt install -y aptitude
           sudo aptitude install -y graphviz
           python -m pip install --upgrade pip
-          python -m pip install cookiecutter tox
+          python -m pip install tox
 
       - name: Clone Biskotaki repo
         uses: actions/checkout@v3
         with:
           repository: boromir674/biskotaki
+          ref: ${{ env.branch }}
           path: 'cloned/biskotaki'
 
       - name: Find Biskotaki version
         run: |
           cd cloned/biskotaki
-          chmod +x ./scripts/parse_version.py
-          echo "PKG_VERSION=$(scripts/parse_version.py)" >> $GITHUB_ENV
+          echo "PKG_VERSION=$(python scripts/parse_version.py)" >> $GITHUB_ENV
 
       - name: Generate Biskotaki from Template
         run: |
           pip install --user -e .
           echo "    version: \"${{ env.PKG_VERSION }}\"" >> .github/biskotaki.yaml
-          generate-python -o gen --config-file ./.github/biskotaki.yaml --no-input
+          generate-python -o gen --config-file ./.github/biskotaki.yaml --no-input -f
 
       - name: Test against multiple 'installation' scenarios
         run: |
