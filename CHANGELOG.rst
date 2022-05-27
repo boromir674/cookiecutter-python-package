@@ -5,6 +5,9 @@ Changelog
 1.2.1 (2022-05-27)
 ==================
 
+Compeltely migrate away from *setup.cfg*.
+Add Issue Templates, as markdown files, to help create well documented Issues on github.
+
 Changes
 ^^^^^^^
 
