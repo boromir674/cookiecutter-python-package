@@ -91,7 +91,8 @@ def parse_version(software_release_cfg: str) -> str:
     file_name_with_version, version_variable_name = \
         software_release_parser(software_release_cfg, regex)
 
-    file_with_version_string = os.path.abspath(os.path.join(my_dir, '../', file_name_with_version))
+    file_with_version_string = \
+        os.path.abspath(os.path.join(my_dir, '../', file_name_with_version))
 
     if not os.path.isfile(file_with_version_string):
         raise FileNotFoundError(
