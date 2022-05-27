@@ -7,7 +7,9 @@ import sys
 my_dir = os.path.dirname(os.path.realpath(__file__))
 
 SOFTWARE_RELEASE_CFG_FILE = 'pyproject.toml'
-SOFTWARE_RELEASE_CFG = os.path.abspath(os.path.join(os.path.dirname(my_dir), SOFTWARE_RELEASE_CFG_FILE))
+SOFTWARE_RELEASE_CFG = os.path.abspath(
+    os.path.join(os.path.dirname(my_dir), SOFTWARE_RELEASE_CFG_FILE)
+)
 
 
 def parse_version(software_release_cfg: str):
