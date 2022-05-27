@@ -92,11 +92,12 @@ jobs:
           echo "    version: \"${{ env.PKG_VERSION }}\"" >> .github/biskotaki.yaml
           generate-python -o gen --config-file ./.github/biskotaki.yaml --no-input -f
 
-      - name: Test against multiple 'installation' scenarios
+      - name: Test distributions 'Source', 'Built' and 'edit' (dev env) mode installation
         run: |
           cd gen/biskotaki
-          tox -e "py38{-path, -sdist, -wheel, -dev}"
-      - name: Test Operations such as 'build process' and 'linting'
+          tox -e "py38{-sdist, -wheel, -dev}"
+          tox -e coverage
+      - name: Run Lint, Type Check, Build, Pyroma and PyDeps commands
         run: |
           cd gen/biskotaki
           tox -e lint
