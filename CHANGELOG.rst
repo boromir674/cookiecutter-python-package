@@ -2,6 +2,23 @@
 Changelog
 =========
 
+1.2.1 (2022-05-27)
+==================
+
+Compeltely migrate away from *setup.cfg*.
+Add Issue Templates, as markdown files, to help create well documented Issues on github.
+
+Changes
+^^^^^^^
+
+ci
+""
+- do not run py38-path tox env & improve ci steps names
+- push generated package to 'auto-generated' branch on 'origin' remote
+- do not initialize a git repository after package generation
+- refactor parse script to read from pyproject.toml
+
+
 1.2.0 (2022-05-24)
 ==================
 
