@@ -37,7 +37,7 @@ def generate(
 
     # interpreters the user desires to have their package support
     # interpreters = get_interpreters()['supported-interpreters']
-    interpreters = get_interpreters()
+    interpreters = get_interpreters(no_input=no_input)
 
     if extra_context:
         new_context = dict(extra_context, **{
