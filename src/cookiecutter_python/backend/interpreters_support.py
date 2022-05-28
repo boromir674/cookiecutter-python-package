@@ -1,6 +1,5 @@
 import typing as t
 
-
 InterpretersSequence = t.Sequence[str]
 
 
@@ -34,10 +33,12 @@ def verify_input_interpreters(interpreters: InterpretersSequence) -> None:
     if not user_interpreters_set.issubset(SUPPORTED):
         # not all user requested interpreters are included in the supported ones
         raise InvalidInterpretersError(
-            "Unsupported interpreter given Error!\n" + \
-            "Given interpreters: [{given}]\n".format(given=', '.join(interpreters)) + \
-            "Supported interpreters: [{supported}]\n".format(supported=', '.join(SUPPORTED)) + \
-            "Unsupported interpreters: [{unsupported}]".format(unsupported=', '.join(iter(unsupported_interpreters(interpreters))))
+            "Unsupported interpreter given Error!\n"
+            + "Given interpreters: [{given}]\n".format(given=', '.join(interpreters))
+            + "Supported interpreters: [{supported}]\n".format(supported=', '.join(SUPPORTED))
+            + "Unsupported interpreters: [{unsupported}]".format(
+                unsupported=', '.join(iter(unsupported_interpreters(interpreters)))
+            )
         )
 
 

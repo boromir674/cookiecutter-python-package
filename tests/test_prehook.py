@@ -51,6 +51,9 @@ def test_correct_module_name(correct_module_name, is_valid_python_module_name):
 
 @pytest.fixture
 def get_main_with_mocked_template(get_object, request_factory):
+    # def get_request()
+
+
     def get_pre_gen_hook_project_main(overrides={}):
         main_method = get_object(
             "_main",
@@ -64,27 +67,10 @@ def get_main_with_mocked_template(get_object, request_factory):
     return get_pre_gen_hook_project_main
 
 
-# def test_main(get_main_with_mocked_template):
-#     result = get_main_with_mocked_template(
-#         overrides={
-#             # we mock the IS_PYTHON_PACKAGE callable, to avoid dependency on network
-#             # we also indicate the package name is NOT found already on pypi
-#             'available_on_pypi': lambda: lambda x: None
-#         }
-#     )()
-#     assert result == 0  # 0 indicates successfull executions (as in a shell)
-
-
-def test_main(get_main_with_mocked_template):
-    result = get_main_with_mocked_template()()
+def test_main(get_main_with_mocked_template, request_factory):
+    main = get_main_with_mocked_template()
+    result = main()
     assert result == 0  # 0 indicates successfull executions (as in a shell)
-
-
-# def test_main_without_ask_pypi_installed(get_main_with_mocked_template):
-#     def _is_registered_on_pypi(package_name: str):
-#         raise ImportError
-#     result = get_main_with_mocked_template(overrides={"is_registered_on_pypi": lambda: _is_registered_on_pypi})()
-#     assert result == 0  # 0 indicates successfull executions (as in a shell)
 
 
 def test_main_with_invalid_module_name(get_main_with_mocked_template, request_factory):

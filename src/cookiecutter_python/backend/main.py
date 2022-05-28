@@ -5,12 +5,9 @@ from requests.exceptions import ConnectionError
 
 from cookiecutter_python.backend.check_pypi import check_pypi
 from cookiecutter_python.backend.check_pypi_handler import handler
-from cookiecutter_python.handle.interpreters_support import (
-    handle as get_interpreters
-)
+from cookiecutter_python.handle.interpreters_support import handle as get_interpreters
 
 from .cookiecutter_proxy import cookiecutter
-
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +27,7 @@ def generate(
     directory=None,
     skip_if_file_exists=False,
 ) -> str:
+    print('______ DEBUG 1')
     # first request is started in background
     check_future, pkg_name = check_pypi(config_file, default_config)
 
@@ -38,11 +36,14 @@ def generate(
     # interpreters the user desires to have their package support
     # interpreters = get_interpreters()['supported-interpreters']
     interpreters = get_interpreters(no_input=no_input)
-
+    print('______ DEBUG')
     if extra_context:
-        new_context = dict(extra_context, **{
-            'interpreters': interpreters,
-        })
+        new_context = dict(
+            extra_context,
+            **{
+                'interpreters': interpreters,
+            }
+        )
     else:
         new_context = {
             'interpreters': interpreters,
