@@ -5,8 +5,12 @@ from requests.exceptions import ConnectionError
 
 from cookiecutter_python.backend.check_pypi import check_pypi
 from cookiecutter_python.backend.check_pypi_handler import handler
+from cookiecutter_python.handle.interpreters_support import (
+    handle as get_interpreters
+)
 
 from .cookiecutter_proxy import cookiecutter
+
 
 logger = logging.getLogger(__name__)
 
@@ -31,11 +35,24 @@ def generate(
 
     template: str = os.path.join(my_dir, '..')
 
+    # interpreters the user desires to have their package support
+    # interpreters = get_interpreters()['supported-interpreters']
+    interpreters = get_interpreters()
+
+    if extra_context:
+        new_context = dict(extra_context, **{
+            'interpreters': interpreters,
+        })
+    else:
+        new_context = {
+            'interpreters': interpreters,
+        }
+
     project_dir = cookiecutter(
         template,
         checkout,
         no_input,
-        extra_context=extra_context,
+        extra_context=new_context,
         replay=replay,
         overwrite_if_exists=overwrite,
         output_dir=output_dir,

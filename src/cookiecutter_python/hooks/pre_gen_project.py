@@ -5,6 +5,11 @@ from cookiecutter_python.backend.input_sanitization import (
     build_input_verification,
 )
 
+from cookiecutter_python.backend.interpreters_support import (
+    verify_input_interpreters,
+    InvalidInterpretersError,
+)
+
 
 def get_request():
     # Templated Variables should be centralized here for easier inspection
@@ -12,6 +17,16 @@ def get_request():
     # due to the templated (dynamically injected) code in this file
 
     # the name the client code should use to import the generated package/module
+    from collections import OrderedDict
+    COOKIECUTTER = (
+        OrderedDict()
+    )  # We init the variable to the same type that will be set in the next line.
+    COOKIECUTTER = {{ cookiecutter }}
+    interpreters = {{ cookiecutter.interpreters }}
+
+    print('\n--- TEMPLATE VARS ---\n')
+    print('\ndata\n' + '\n'.join([f"{k}: {v}" for k, v in COOKIECUTTER.items()]))
+
     module_name = '{{ cookiecutter.pkg_name }}'
 
     return type(
@@ -21,6 +36,7 @@ def get_request():
             'module_name': module_name,
             'pypi_package': module_name.replace('_', '-'),
             'package_version_string': '{{ cookiecutter.version }}',
+            'interpreters': interpreters['supported-interpreters'],
         },
     )
 
@@ -50,13 +66,20 @@ def input_sanitization(request):
         raise InputValueError(
             f'ERROR: {request.package_version_string} is not a valid Semantic Version!'
         ) from error
+    
+    try:
+        verify_input_interpreters(request.interpreters)
+    except InvalidInterpretersError as error:
+        # TODO log maybe
+        raise error
+
     print("Sanitized Input Variables :)")
 
 
 def hook_main(request):
     try:
         input_sanitization(request)
-    except InputValueError as error:
+    except (InputValueError, InvalidInterpretersError) as error:
         print(error)
         return 1
     return 0
