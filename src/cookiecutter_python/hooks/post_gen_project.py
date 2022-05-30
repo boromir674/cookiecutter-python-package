@@ -11,7 +11,7 @@ from collections import OrderedDict
 
 PROJECT_DIRECTORY = os.path.realpath(os.path.curdir)
 
-def get_templated_vars():
+def get_request():
     # Templated Variables should be centralized here for easier inspection
     COOKIECUTTER = (
         OrderedDict()
@@ -115,8 +115,6 @@ def _get_run_parameters(python3_minor: int):
 
     return {
         'legacy': lambda project_dir: run(*python36_n_below_run_params(project_dir)),
-        # 'legacy': lambda project_dir: python36_n_below_run_params(project_dir),
-        # 'new': lambda project_dir: python37_n_above_run_params(project_dir),
         'new': lambda project_dir: run(*python37_n_above_run_params(project_dir)),
     }[
         {True: 'legacy', False: 'new'}[
@@ -144,18 +142,31 @@ def is_git_repo_clean(project_directory: str):
     return False
 
 
-def main(request):
+def _post_hook():
+    print('\n --- POST GEN SCRIPT')
+    request = get_request()
+    print('Computed Templated Vars for Post Script')
     if request.initialize_git_repo:
-        initialize_git_repo(request.project_dir)
-        grant_basic_permissions(request.project_dir)
-        if not is_git_repo_clean(request.project_dir):
-            git_add(request.project_dir)
-            git_commit(request)
+        try:
+            initialize_git_repo(request.project_dir)
+            grant_basic_permissions(request.project_dir)
+            if not is_git_repo_clean(request.project_dir):
+                git_add(request.project_dir)
+                git_commit(request)
+        except Exception as error:
+            print(error)
+            print('ERROR in Post Script.\nExiting with 1')
+            return 1
+    return 0
 
-    print("Finished Python Generation !!")
-    sys.exit(0)
+
+def post_hook():
+    sys.exit(_post_hook())
+
+
+def main():
+    post_hook()
 
 
 if __name__ == "__main__":
-    REQUEST = get_templated_vars()
-    main(REQUEST)
+    main()
