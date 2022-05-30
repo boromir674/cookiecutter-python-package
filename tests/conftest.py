@@ -273,8 +273,14 @@ def request_factory(hook_request_new) -> RequestFactoryType:
 PythonType = t.Union[bool, str, None]
 
 @pytest.fixture
-def generate_python_args() -> t.Callable[[t.Any], t.Sequence[t.Union[str, PythonType]]]:
-    """Get a list of objects that can be passed in the `generate` function.
+def cli_invoker_params() -> t.Callable[[t.Any], t.Sequence[t.Union[str, PythonType]]]:
+    """Create parameters for running a test that invokes a cli program.
+
+    Use to generate the cli (string) arguments (positional and optional), as
+    well other optional information to be passed into a 'cli test invocation'
+    function.
+
+    Get a list of objects that can be passed in the `generate` function.
 
     Returns a callable that upon invocation creates a list of objects suitable
     for passing into the `generate` method. The callable accepts **kwargs that
@@ -283,8 +289,16 @@ def generate_python_args() -> t.Callable[[t.Any], t.Sequence[t.Union[str, Python
     Returns:
         callable: the callable that creates `generate` arguments lists
     """
+    from copy import deepcopy
+    from functools import reduce
+    from collections import OrderedDict
+
+    CLIOverrideData = t.Optional[t.Dict[str, PythonType]]
+
     class Args:
-        args = [
+        args = [ # these flags and default values emulate the 'generate-python'
+        # cli (exception is the '--config-file' flag where we pass the 
+        # biskotaki yaml by default, instead of None)
             ('--no-input', False),
             ('--checkout', False),
             ('--verbose', False),
@@ -292,7 +306,7 @@ def generate_python_args() -> t.Callable[[t.Any], t.Sequence[t.Union[str, Python
             ('--overwrite', False),
             ('--output-dir', '.'),
             (
-                '--config-file',
+                '--config-file',  # biskotaki yaml as default instead of None
                 os.path.abspath(os.path.join(my_dir, '..', '.github', 'biskotaki.yaml'))
             ),
             ('--default-config', False),
@@ -300,32 +314,54 @@ def generate_python_args() -> t.Callable[[t.Any], t.Sequence[t.Union[str, Python
             ('--skip-if-file-exists', False),
         ]
 
-        def __init__(self, **kwargs) -> None:
-            for k, v in Args.args:
-                setattr(self, k, kwargs.get(k, v))
+        def __init__(self, args_with_default: CLIOverrideData = None, **kwargs) -> None:
+            self.cli_defaults = OrderedDict(Args.args)
+            # self.map = OrderedDict(Args.args, **dict(args_with_default if args_with_default else {}))
 
-        def __iter__(self) -> t.Iterator[t.Tuple[str, PythonType]]:
-            return iter([(k, getattr(self, k)) for k, _ in Args.args])
+            if args_with_default is None:
+                self.map = deepcopy(self.cli_defaults)
+            else:
+                assert all([k in self.cli_defaults for k in args_with_default])
+                self.map = OrderedDict(self.cli_defaults, **dict(args_with_default))
+            assert [k for k in self.map] == [k for k, _ in Args.args] == [k for k in self.cli_defaults]
 
-        def keys(self):
-            return iter([k for k, _ in iter(self)])
+        def __iter__(self) -> t.Iterator[str]:
+            for cli_arg, default_value in self.map.items():
+                if bool(default_value):
+                    yield cli_arg
+                    if type(self.cli_defaults[cli_arg]) != bool:
+                        yield default_value
 
-    def parameters(*args, **kwargs) -> t.Sequence[t.Union[str, PythonType]]:
-        args_obj = Args(**kwargs)
-        from functools import reduce
+    def parameters(
+        optional_cli_args: CLIOverrideData = None
+    ) -> t.Tuple[t.Sequence[str], t.Dict]:
+        """Generate parameters for running a test that invokes a cli program.
+        
+        Parameters of a test that invokes a cli program are distinguished in two
+        types:
+        
+        - the actual cli parameters, as a list of strings
+            these would function the same as if the program was invoked in a
+            shell script or in an interactive console/terminal.
+        - optional information to be passed to the cli invoker as required
+            per test case, as **kwargs
 
-        return (
-            reduce(
-                lambda i, j: i + j, [[key, value] for key, value in iter(args_obj) if value]
-            ),
-            {},
-        )
+        Generate, positional and/or optional (ie flags) cli arguments.
+
+        Input kwargs can be used to overide the default values for the flags
+        specified in class Args (see above).
+
+        Args:
+            optional_cli_args (CLIOverrideData, optional): cli optional
+                arguments to override. Defaults to None.
+
+        Returns:
+            t.Tuple[t.Sequence[str], t.Dict]: the requested cli invoker test
+                parameters
+        """
+        return list(Args(args_with_default=optional_cli_args)), {}
 
     return parameters
-
-
-
-
 
 
 # HELPERS

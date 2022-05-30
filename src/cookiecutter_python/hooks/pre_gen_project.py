@@ -1,4 +1,5 @@
 import sys
+import json
 
 from cookiecutter_python.backend.input_sanitization import (
     InputValueError,
@@ -17,9 +18,15 @@ def get_request():
 
     # the name the client code should use to import the generated package/module
     print('\n--- Pre Hook Get Request')
+    from collections import OrderedDict
+    cookiecutter = OrderedDict()
+    cookiecutter = {{ cookiecutter }}
 
-    interpreters = {{ cookiecutter.interpreters }}
-
+    print('\n', type(cookiecutter['interpreters']))
+    interpreters = cookiecutter['interpreters']
+    if type(interpreters) == str:  # we assume it is json
+        interpreters = json.loads(interpreters)
+        cookiecutter['interpreters'] = interpreters
     module_name = '{{ cookiecutter.pkg_name }}'
 
     return type(
@@ -80,7 +87,7 @@ def hook_main(request):
 def _main():
     request = get_request()
     # print(request)
-    # print('Computed Variables:\n{req}'.format(req=str(request)))
+    print('Computed Variables:\n{req}'.format(req=str(request)))
     return hook_main(request)
 
 

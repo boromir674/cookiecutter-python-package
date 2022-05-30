@@ -1,9 +1,8 @@
 import typing as t
 
-from PyInquirer import prompt
-
 INTERPRETERS_ATTR = 'interpreters'
 
+from .dialogs.interpreters import dialog
 
 choices = [
     {'name': 'py35', 'checked': False},
@@ -16,24 +15,20 @@ choices = [
 ]
 
 
-class WithUserInterpreters(t.Protocol):
-    interpreters: t.Optional[t.Sequence[str]]
+def handle() -> t.Sequence[str]:
+    """Hande request to create the 'supported interpreters' used in the Project generationfor the generate a project with supporting python interpreters.
 
+    Args:
+        request (t.Optional[WithUserInterpreters], optional): [description]. Defaults to None.
+        no_input (bool, optional): [description]. Defaults to False.
 
-def handle(
-    request: t.Optional[WithUserInterpreters] = None,
-    no_input: bool = False,
-) -> t.Sequence[str]:
-    if request and hasattr(request, INTERPRETERS_ATTR):
-        return getattr(request, INTERPRETERS_ATTR)
-    if no_input:
-        interpreters = {'supported-interpreters': [x['name'] for x in choices if x['checked']]}
-    else:
-        interpreters = dialog()
-    print('\nHANDLE:\n')
-    print(interpreters)
+    Returns:
+        t.Sequence[str]: [description]
+    """
     return {
-        'supported-interpreters': transform_interpreters(interpreters)
+        'supported-interpreters': transform_interpreters(
+            dialog(choices)['supported-interpreters']
+        )
     }
 
 
@@ -42,19 +37,6 @@ def transform_interpreters(interpreters: t.Sequence[str]) -> t.Sequence[str]:
     for name in interpreters:
         b = name.replace('py', '')
         interpreter_aliases.append(b[0] + '.' + b[1:])
+    print('ALIASES:', interpreter_aliases)
     return interpreter_aliases
 
-
-def dialog() -> t.Sequence[str]:
-
-    return prompt(
-        [
-            # Question 1
-            {
-                'type': 'checkbox',
-                'name': 'supported-interpreters',
-                'message': 'Select the python Interpreters you wish to support',
-                'choices': choices,
-            },
-        ]
-    )
