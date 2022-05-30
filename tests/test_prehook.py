@@ -49,6 +49,11 @@ def test_correct_module_name(correct_module_name, is_valid_python_module_name):
     assert result == True
 
 
+def test_incorrect_module_name(is_valid_python_module_name):
+    result = is_valid_python_module_name('23numpy')
+    assert result == False
+
+
 @pytest.fixture
 def get_main_with_mocked_template(get_object, request_factory):
 

@@ -34,43 +34,35 @@ def supported_interpreters(config_file, no_input) -> t.Sequence[str]:
             print(sys.version_info)
             print(sys.version_info < (3, 10))
             if sys.version_info < (3, 10):
-                # with cookie allowed/selected interpreters
                 return check_box_dialog()
             # else let cookiecutter cli handle!
         else:
-            # TODO: with user's allowed/selected interpreters
-            # try running dialog with defaults loaded from users config
-            # except: check_box_dialog with cookiecutter defaults
             return check_box_dialog(config_file=config_file)
 
     else:  # non-interactive
         if not config_file:  # use cookiecutter.json for values
             return None
         else:
-            data = load_yaml(config_file)
-            context = data['default_context']
-            try:  # use user's config yaml for values
-                interpreters_data = json.loads(context['interpreters'])
-                return {'supported-interpreters': interpreters_data['supported-interpreters']}
-            except (KeyError, JSONDecodeError, Exception) as error:
-                print(error)
-                print("Could not read the expected 'interpreters' data format")
-                return None  # use cookiecutter.json for values
+            return get_interpreters_from_yaml(config_file)
 
 
 def check_box_dialog(config_file=None) -> t.Mapping[str, t.Sequence[str]]:
     from cookiecutter_python.handle.interpreters_support import handle as get_interpreters
     defaults = None
     if config_file:
-        data = load_yaml(config_file)
-        context = data['default_context']
-        try:  # use user's config yaml for default values in checkbox dialog
-            interpreters_data = json.loads(context['interpreters'])
-            defaults = interpreters_data['supported-interpreters']
-        except (KeyError, JSONDecodeError, Exception) as error:
-            print(error)
-            print("Could not find 'interpreters' in user's config yaml")
+        defaults = get_interpreters_from_yaml(config_file)['supported-interpreters']
     return get_interpreters(choices=defaults)
+
+
+def get_interpreters_from_yaml(config_file: str) -> t.Optional[t.Mapping[str, t.Sequence[str]]]:
+    data = load_yaml(config_file)
+    context = data['default_context']
+    try:  # use user's config yaml for default values in checkbox dialog
+        interpreters_data = json.loads(context['interpreters'])
+        return {'supported-interpreters': interpreters_data['supported-interpreters']}
+    except (KeyError, JSONDecodeError, Exception) as error:
+        print(error)
+        print("Could not find 'interpreters' in user's config yaml")
 
 
 def generate(
