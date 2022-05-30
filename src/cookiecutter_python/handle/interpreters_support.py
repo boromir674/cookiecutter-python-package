@@ -4,18 +4,19 @@ INTERPRETERS_ATTR = 'interpreters'
 
 from .dialogs.interpreters import dialog
 
-choices = [
-    {'name': 'py35', 'checked': False},
-    {'name': 'py36', 'checked': True},
-    {'name': 'py37', 'checked': True},
-    {'name': 'py38', 'checked': True},
-    {'name': 'py39', 'checked': True},
-    {'name': 'py310', 'checked': True},
-    {'name': 'py311', 'checked': False},
+CHOICES = [  # this should match the cookiecutter.json
+# TODO Improvement: dynamically read from cookiecutter.json
+    {'name': '3.6', 'checked': True},
+    {'name': '3.7', 'checked': True},
+    {'name': '3.8', 'checked': True},
+    {'name': '3.9', 'checked': True},
+    {'name': '3.10', 'checked': True},
+    {'name': '3.11', 'checked': False},
+    {'name': '3.12', 'checked': False},
 ]
 
 
-def handle() -> t.Sequence[str]:
+def handle(choices: t.Optional[t.Sequence[str]] = None) -> t.Sequence[str]:
     """Hande request to create the 'supported interpreters' used in the Project generationfor the generate a project with supporting python interpreters.
 
     Args:
@@ -25,18 +26,5 @@ def handle() -> t.Sequence[str]:
     Returns:
         t.Sequence[str]: [description]
     """
-    return {
-        'supported-interpreters': transform_interpreters(
-            dialog(choices)['supported-interpreters']
-        )
-    }
-
-
-def transform_interpreters(interpreters: t.Sequence[str]) -> t.Sequence[str]:
-    interpreter_aliases = []
-    for name in interpreters:
-        b = name.replace('py', '')
-        interpreter_aliases.append(b[0] + '.' + b[1:])
-    print('ALIASES:', interpreter_aliases)
-    return interpreter_aliases
-
+    return {'supported-interpreters': dialog(
+        [{'name': version, 'checked': True} for version in choices] if choices else CHOICES)['supported-interpreters']}

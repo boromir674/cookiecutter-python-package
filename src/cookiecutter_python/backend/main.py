@@ -29,48 +29,48 @@ def load_yaml(config_file):
     return yaml_dict
 
 def supported_interpreters(config_file, no_input) -> t.Sequence[str]:
-    if not no_input:
+    if not no_input:  # interactive
         if not config_file:
             print(sys.version_info)
             print(sys.version_info < (3, 10))
             if sys.version_info < (3, 10):
                 # with cookie allowed/selected interpreters
                 return check_box_dialog()
+            # else let cookiecutter cli handle!
         else:
             # TODO: with user's allowed/selected interpreters
             # try running dialog with defaults loaded from users config
             # except: check_box_dialog with cookiecutter defaults
+            return check_box_dialog(config_file=config_file)
 
-            data = load_yaml(config_file)
-            context = data['default_context']
-            try:
-                interpreters_data = json.loads(context['interpreters'])
-                return {'supported-interpreters': interpreters_data['supported-interpreters']}
-            except (KeyError, JSONDecodeError, Exception) as error:
-                print(error)
-                print("Could not read the expected 'interpreters' data format")
-                return check_box_dialog()
-    else:
-        if not config_file:
-            # TODO load cookiecutter and return interpreters
+    else:  # non-interactive
+        if not config_file:  # use cookiecutter.json for values
             return None
         else:
             data = load_yaml(config_file)
             context = data['default_context']
-            try:
+            try:  # use user's config yaml for values
                 interpreters_data = json.loads(context['interpreters'])
                 return {'supported-interpreters': interpreters_data['supported-interpreters']}
             except (KeyError, JSONDecodeError, Exception) as error:
                 print(error)
                 print("Could not read the expected 'interpreters' data format")
-                # TODO load cookiecutter and return interpreters
-                return None
+                return None  # use cookiecutter.json for values
 
 
-def check_box_dialog():
+def check_box_dialog(config_file=None) -> t.Mapping[str, t.Sequence[str]]:
     from cookiecutter_python.handle.interpreters_support import handle as get_interpreters
-    interpreters = get_interpreters()
-    return interpreters
+    defaults = None
+    if config_file:
+        data = load_yaml(config_file)
+        context = data['default_context']
+        try:  # use user's config yaml for default values in checkbox dialog
+            interpreters_data = json.loads(context['interpreters'])
+            defaults = interpreters_data['supported-interpreters']
+        except (KeyError, JSONDecodeError, Exception) as error:
+            print(error)
+            print("Could not find 'interpreters' in user's config yaml")
+    return get_interpreters(choices=defaults)
 
 
 def generate(
@@ -88,16 +88,15 @@ def generate(
 ) -> str:
     print('Start Python Generator !')
     # first request is started in background
-    # check_future, pkg_name = check_pypi(config_file, default_config)
+    check_future, pkg_name = check_pypi(config_file, default_config)
 
     template: str = os.path.abspath(os.path.join(my_dir, '..'))
 
     # we handle the interactive input from user here, since cookiecutter does
     # not provide a user-friendly interface for (our use case) the
     # 'interpreters' template variable
-    print(config_file, no_input)
     interpreters = supported_interpreters(config_file, no_input)
-    print('Computed Interpreters to pass to Generator:', interpreters)
+    print('Interpreters Data:', interpreters)
 
     if interpreters:  # update extra_context
         # supported interpreters supplied either from yaml or from user's input
@@ -114,6 +113,7 @@ def generate(
             }
     else:
         new_context = extra_context
+
     project_dir = cookiecutter(
         template,
         checkout=checkout,
@@ -129,12 +129,12 @@ def generate(
         skip_if_file_exists=skip_if_file_exists,
     )
 
-    # if pkg_name:
-    #     # eval future by waiting only if needed!
-    #     try:
-    #         handler(lambda x: check_future.result().status_code == 200)(pkg_name)
-    #     except ConnectionError as error:
-    #         raise CheckPypiError("Connection error while checking PyPi") from error
+    if pkg_name:
+        # eval future by waiting only if needed!
+        try:
+            handler(lambda x: check_future.result().status_code == 200)(pkg_name)
+        except ConnectionError as error:
+            raise CheckPypiError("Connection error while checking PyPi") from error
     print('Finished :)')
     return project_dir
 
