@@ -12,5 +12,15 @@
     "release_date": "{% now 'utc', '%Y-%m-%d' %}",
     "year": "{% now 'utc', '%Y' %}",
     "version": "0.0.1",
-    "initialize_git_repo": ["yes", "no"]
+    "initialize_git_repo": ["yes", "no"],
+    "interpreters": {
+        "supported-interpreters": [
+            "3.6",
+            "3.7",
+            "3.8",
+            "3.9",
+            "3.10",
+            "3.11"
+        ]
+    }
 }

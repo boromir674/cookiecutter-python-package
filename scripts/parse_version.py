@@ -22,13 +22,11 @@ TOML = 'pyproject.toml'
 TOML_FILE = os.path.abspath(os.path.join(my_dir, '..', TOML))
 
 DEMO_SECTION: str = (
-    "[tool.software-release]\nversion_variable = "
-    "src/package_name/__init__.py:__version__"
+    "[tool.software-release]\nversion_variable = " "src/package_name/__init__.py:__version__"
 )
 
 
 def build_client_callback(data: MatchData, factory: ExceptionFactory) -> ClientCallback:
-
     def client_callback(file_path: str, regex: str) -> t.Tuple:
         with open(file_path, 'r') as _file:
             contents = _file.read()
@@ -38,38 +36,44 @@ def build_client_callback(data: MatchData, factory: ExceptionFactory) -> ClientC
             return extracted_tuple
         else:
             raise factory(file_path, regex, contents)
+
     return client_callback
 
 
 # PARSERS
 
-software_release_parser = build_client_callback((
-    'search',
-    [re.MULTILINE,],
-    lambda match: (match.group(1), match.group(2))
-),
+software_release_parser = build_client_callback(
+    (
+        'search',
+        [
+            re.MULTILINE,
+        ],
+        lambda match: (match.group(1), match.group(2)),
+    ),
     lambda file_path, reg, string: RuntimeError(
-                "Expected to find the '[tool.software-release]' section, in "
-                f"the '{file_path}' file, with key "
-                "'version_variable'.\nFor example:\n"
-                f"{DEMO_SECTION}\n "
-                "indicates that the version string should be looked up in "
-                f"the src/package_name/__init__.py file and specifically "
-                "a '__version__ = 1.2.3' kind of line is expected to be found."
-            )
+        "Expected to find the '[tool.software-release]' section, in "
+        f"the '{file_path}' file, with key "
+        "'version_variable'.\nFor example:\n"
+        f"{DEMO_SECTION}\n "
+        "indicates that the version string should be looked up in "
+        f"the src/package_name/__init__.py file and specifically "
+        "a '__version__ = 1.2.3' kind of line is expected to be found."
+    ),
 )
 
 
-version_file_parser = build_client_callback((
-    'search',
-    [re.MULTILINE,],
-    lambda match: (match.group(1),)
-),
+version_file_parser = build_client_callback(
+    (
+        'search',
+        [
+            re.MULTILINE,
+        ],
+        lambda match: (match.group(1),),
+    ),
     lambda file_path, reg, string: AttributeError(
-            "Could not find a match for regex {regex} when applied to:".format(
-                regex=reg
-            ) + "\n{content}".format(content=string)
-        )
+        "Could not find a match for regex {regex} when applied to:".format(regex=reg)
+        + "\n{content}".format(content=string)
+    ),
 )
 
 
@@ -84,15 +88,18 @@ def parse_version(software_release_cfg: str) -> str:
     """
     header = r'\[tool\.software-release\]'
     sep = r'[\w\s=/\.:\d]+'  # in some cases accounts for miss-typed characters!
-    version_specification = \
+    version_specification = (
         r"version_variable[\ \t]*=[\ \t]*['\"]?([\w\.]+(?:/[\w\.]+)*):(\w+)['\"]?"
+    )
     regex = f"{header}{sep}{version_specification}"
 
-    file_name_with_version, version_variable_name = \
-        software_release_parser(software_release_cfg, regex)
+    file_name_with_version, version_variable_name = software_release_parser(
+        software_release_cfg, regex
+    )
 
-    file_with_version_string = \
-        os.path.abspath(os.path.join(my_dir, '../', file_name_with_version))
+    file_with_version_string = os.path.abspath(
+        os.path.join(my_dir, '../', file_name_with_version)
+    )
 
     if not os.path.isfile(file_with_version_string):
         raise FileNotFoundError(
@@ -104,7 +111,7 @@ def parse_version(software_release_cfg: str) -> str:
         )
 
     reg = f'^{version_variable_name}' + r'\s*=\s*[\'\"]([^\'\"]*)[\'\"]'
-    version, = version_file_parser(file_with_version_string, reg)
+    (version,) = version_file_parser(file_with_version_string, reg)
     return version
 
 
