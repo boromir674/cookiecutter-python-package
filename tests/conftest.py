@@ -56,6 +56,11 @@ def test_context(load_context_json, test_context_file) -> t.Dict:
     return load_context_json(test_context_file)
 
 
+@pytest.fixture
+def production_templated_project(production_template) -> str:
+    return os.path.join(production_template, r'{{ cookiecutter.project_slug }}')
+
+
 class ProjectGenerationRequestData(t.Protocol):
     template: str
     destination: str
@@ -64,13 +69,8 @@ class ProjectGenerationRequestData(t.Protocol):
 
 
 @pytest.fixture
-def production_templated_project(production_template) -> str:
-    return os.path.join(production_template, r'{{ cookiecutter.project_slug }}')
-
-
-@pytest.fixture
 def test_project_generation_request(
-    production_template, test_context, tmpdir) -> ProjectGenerationRequestData:
+    production_template, tmpdir) -> ProjectGenerationRequestData:
     """Test data, holding information on how to invoke the cli for testing."""
     return type(
         'GenerationRequest',
@@ -78,15 +78,13 @@ def test_project_generation_request(
         {
             'template': production_template,
             'destination': tmpdir,
-            'default_dict': test_context,
+            'default_dict': False,
             'extra_context': {
                 'interpreters': {
                     'supported-interpreters': [
-                        '3.6',
                         '3.7',
                         '3.8',
                         '3.9',
-                        '3.10',
                     ]
                 }
             },
@@ -99,13 +97,13 @@ def generate_project() -> t.Callable[[ProjectGenerationRequestData], str]:
     from cookiecutter_python.backend import cookiecutter
 
     def _generate_project(generate_request: ProjectGenerationRequestData) -> str:
-        print('\nGENERATE REQ:\n', generate_request)
         return cookiecutter(
             generate_request.template,
             no_input=True,
             extra_context=generate_request.extra_context,
             output_dir=generate_request.destination,
             overwrite_if_exists=True,
+            # TODO: below takes a boolean variable!
             default_config=generate_request.default_dict,
         )
 
@@ -127,15 +125,39 @@ def project_dir(
     assert set(expected_files) == set(runtime_files)
     assert len(expected_files) == len(runtime_files)
     assert all(['tox.ini' in x for x in (expected_files, runtime_files)])
+
+    p = os.path.abspath( os.path.join(proj_dir, '.github', 'workflows', 'test.yaml') )
+    print(p)
+    with open(p, 'r') as f:
+        contents = f.read()
+    import re
+    ver = r'"3\.(?:[6789]|10|11)"'
+    # assert build matrix definition includes one or more python interpreters
+    assert re.search(  # python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
+        fr'python-version:\s*\[\s*{ver}(?:(?:\s*,\s*{ver})*)\s*\]', contents)
+
+    # assert that python interpreters are the expected ones given that we
+    # invoke the 'generate_project' function:
+    # no user yaml config & enabled the default_dict Flag!
+    b = ', '.join((f'"{int_ver}"' for int_ver in test_project_generation_request.extra_context['interpreters']['supported-interpreters']))
+    assert f"python-version: [{b}]" in contents
+    assert 'python-version: ["3.7", "3.8", "3.9"]' in contents
     return proj_dir
 
 
 @pytest.fixture
-def emulated_production_cookiecutter_dict(production_template, test_context):
+def emulated_production_cookiecutter_dict(production_template, test_context) -> t.Mapping:
+    """Equivalent to the {{ cookiecutter }} templated variable runtime value.
+    
+    Returns:
+        t.Mapping: cookiecutter runtime configuration, as key/value hash map
+    """
     import json
+    from collections import OrderedDict
 
     with open(os.path.join(production_template, "cookiecutter.json"), "r") as fp:
-        return dict(json.load(fp), **test_context)
+        data: OrderedDict = json.load(fp, object_pairs_hook=OrderedDict)
+        return OrderedDict(data, **test_context)
 
 
 class HookRequest(t.Protocol):
@@ -158,6 +180,7 @@ class CreateRequestInterface(t.Protocol):
 class SubclassRegistryType(t.Protocol):
     registry: CreateRequestInterface
 
+# Mock Infra
 
 @pytest.fixture
 def hook_request_new(emulated_production_cookiecutter_dict: t.Dict) -> SubclassRegistryType:
@@ -268,6 +291,42 @@ def request_factory(hook_request_new) -> RequestFactoryType:
             'post': create_request_function('post'),
         },
     )
+
+class HttpResponseLike(t.Protocol):
+    status_code: int
+class FutureLike(t.Protocol):
+    result: t.Callable[[], HttpResponseLike]
+
+CheckPypiOutput = t.Tuple[FutureLike, str]
+
+CheckPypi = t.Callable[[str, str], CheckPypiOutput]
+
+
+@pytest.fixture
+def get_check_pypi_mock() -> t.Callable[[t.Optional[bool]], CheckPypi]:
+    def build_check_pypi_mock_output(emulated_success=True) -> FutureLike:
+        return type(
+                'Future',
+                (),
+                {
+                    'result': lambda: type(
+                        'HttpResponse',
+                        (),
+                        {
+                            'status_code': 200 if emulated_success else 404,
+                        },
+                    )
+                },
+            )
+    def _get_check_pypi_mock(emulated_success: bool = True) -> t.Callable[..., CheckPypiOutput]:
+        def check_pypi_mock(*args, **kwargs) -> CheckPypiOutput:
+            return (
+                build_check_pypi_mock_output(emulated_success=emulated_success),
+                'biskotaki',
+            )
+        return check_pypi_mock
+
+    return _get_check_pypi_mock
 
 
 PythonType = t.Union[bool, str, None]

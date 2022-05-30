@@ -51,8 +51,6 @@ def test_correct_module_name(correct_module_name, is_valid_python_module_name):
 
 @pytest.fixture
 def get_main_with_mocked_template(get_object, request_factory):
-    # def get_request()
-
 
     def get_pre_gen_hook_project_main(overrides={}):
         main_method = get_object(
@@ -67,7 +65,7 @@ def get_main_with_mocked_template(get_object, request_factory):
     return get_pre_gen_hook_project_main
 
 
-def test_main(get_main_with_mocked_template, request_factory):
+def test_main(get_main_with_mocked_template):
     main = get_main_with_mocked_template()
     result = main()
     assert result == 0  # 0 indicates successfull executions (as in a shell)
