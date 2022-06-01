@@ -2,25 +2,25 @@ import pytest
 
 
 @pytest.fixture
-def get_main_with_mocked_template(get_object, request_factory):
+def get_post_gen_main(get_object, request_factory):
+    def mock_get_request():
+        return request_factory.post(
+            project_dir="mock_project_folder",  # TODO find out if we can use a temp dir
+            initialize_git_repo=False,
+        )
+
     def get_pre_gen_hook_project_main(overrides={}):
         main_method = get_object(
-            "main",
+            "_post_hook",
             "cookiecutter_python.hooks.post_gen_project",
+            overrides=overrides if overrides else {'get_request': lambda: mock_get_request},
         )
-        return lambda: main_method(
-            request_factory.post(
-                project_dir="dummy_folder",  # TODO find out if we can use a temp dir
-                initialize_git_repo=False,
-            )
-        )
+        return main_method
 
     return get_pre_gen_hook_project_main
 
 
-def test_main(get_main_with_mocked_template):
-    try:
-        result = get_main_with_mocked_template()()
-    except SystemExit as error:
-        result = error.code
+def test_main(get_post_gen_main):
+    post_hook_main = get_post_gen_main()
+    result = post_hook_main()
     assert result == 0

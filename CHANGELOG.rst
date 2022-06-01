@@ -2,6 +2,69 @@
 Changelog
 =========
 
+1.3.0 (2022-05-31)
+==================
+
+Python Interpreters Support and Test
+------------------------------------
+
+This release allows the user to select the Python Interpreters they wish their Project
+to support and be tested on.
+The generator then creates the Test Matrix in the CI config file, which factors in the
+Python Interpreter versions supplied by the user. 
+
+Consistent with the currect behaviour of the cli, passing the '--no-input' flag,
+instructs the Generator to try find the selected interpreters in a config yaml file,
+if given, or else to use the information in the cookiecutter.json.
+
+If the '--no-input' flag is missing, then the user is asked for input, through
+their console.
+The input is read by supplying an interactive console dialog, which allows the user to
+easily select the interpreters they wish to support, by enabling or disabling
+'check boxes' through their console.
+
+Development
+-----------
+
+All tox environments related to 'Linting' now all do by default a 'check'.
+Doing a 'check' means returning a 0 as exit code in case the check is successfull
+and it is suitable for local and remote running on a CI server.
+
+The aforementioned environments are 'lint', 'black', 'isort':
+- tox -e lint
+- tox -e black
+- tox -e isort
+
+Optionally, running as below will modify the source code to comply with
+each respective 'lint check'.
+
+Running environment 'lint', 'black', 'isort' with 'lint apply' enabled:
+- *APPLY_LINT= tox -e lint*
+- *APPLY_BLACK= tox -e black*
+- *APPLY_ISORT= tox -e isort*
+
+Changes
+^^^^^^^
+
+feature
+"""""""
+- generate the Project's CI Test Workflow with a build matrix based on the user's input python interpreters
+
+test
+""""
+- verify 'pre gen' script exits with 1 in case module name given is incorrect
+- write scenarios with/without 'config file' and with/without given 'interpreters'
+
+development
+"""""""""""
+- add env for integration testing
+- add checks for 'scripts' dir, make 'black', 'isort' cmds only do 'lint-check' by default and add switch to allow doing 'lint-apply'
+
+build
+"""""
+- add PyInquirer '>= 1.0.3 and < 1.1.0' dependency: required by checkbox dialog
+
+
 1.2.1 (2022-05-27)
 ==================
 

@@ -14,6 +14,12 @@
     "year": "2022",
     "version": "0.0.1",
     "initialize_git_repo": "yes",
+    "interpreters": {
+      "supported-interpreters": [
+        "py38",
+        "py39"
+      ]
+    },
     "_template": "."
   }
 }

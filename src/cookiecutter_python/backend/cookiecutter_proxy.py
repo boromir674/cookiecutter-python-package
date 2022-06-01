@@ -9,6 +9,10 @@ from .singleton import Singleton
 
 __all__ = ['cookiecutter']
 
+# This sets the root logger to write to stdout (your console).
+# Your script/app needs to call this somewhere at least once.
+logging.basicConfig()
+
 logger = logging.getLogger(__name__)
 
 my_dir = os.path.dirname(os.path.realpath(__file__))
@@ -19,27 +23,26 @@ class CookiecutterSubject(ProxySubject[str]):
 
 
 class CookiecutterProxy(Proxy[str]):
+    """Proxy to cookiecutter: 'from cookiecutter.main import cookiecutter'."""
+
     def request(self, *args, **kwargs) -> str:
         """[summary]
 
         Returns:
             str: [description]
         """
-        logger.info(
-            'Cookiecutter invocation: %s',
+        logger.debug(
+            'Cookiecutter Proxy Request: %s',
             json.dumps(
                 {
-                    'args': '[{arg_values}]'.format(
-                        arg_values=', '.join([f"'{str(x)}'" for x in args])
-                    ),
-                    'kwargs': '{{{key_value_pairs}}}'.format(
-                        key_value_pairs=json.dumps({k: str(v) for k, v in kwargs.items()})
-                    ),
-                }
+                    'keyword_args': {k: str(v) for k, v in kwargs.items()},
+                    'positional_args': [str(arg_value) for arg_value in args],
+                },
+                indent=2,
+                sort_keys=True,
             ),
         )
-        output_dir: str = super().request(*args, **kwargs)
-        return output_dir
+        return super().request(*args, **kwargs)
 
 
 # Singleton and Adapter of Cookiecutter Proxy
