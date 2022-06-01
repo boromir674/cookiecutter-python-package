@@ -24,10 +24,10 @@ def load_yaml(config_file) -> t.Mapping:
     with io.open(config_file, encoding='utf-8') as file_handle:
         try:
             yaml_dict = poyo.parse_string(file_handle.read())
-        except poyo.exceptions.PoyoException as e:
+        except poyo.exceptions.PoyoException as error:
             raise InvalidConfiguration(
-                'Unable to parse YAML file {}. Error: {}' ''.format(config_file, e)
-            )
+                'Unable to parse YAML file {}. Error: {}' ''.format(config_file, error)
+            ) from error
     return yaml_dict
 
 
@@ -128,9 +128,6 @@ def generate(
 
     template: str = os.path.abspath(os.path.join(my_dir, '..'))
 
-    # we handle the interactive input from user here, since cookiecutter does
-    # not provide a user-friendly interface for (our use case) the
-    # 'interpreters' template variable
     interpreters = supported_interpreters(config_file, no_input)
     print('Interpreters Data:', interpreters)
 

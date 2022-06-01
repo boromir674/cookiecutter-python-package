@@ -1,5 +1,6 @@
 import json
 import sys
+from collections import OrderedDict
 
 from cookiecutter_python.backend.input_sanitization import (
     InputValueError,
@@ -18,16 +19,14 @@ def get_request():
 
     # the name the client code should use to import the generated package/module
     print('\n--- Pre Hook Get Request')
-    from collections import OrderedDict
 
     cookiecutter = OrderedDict()
-    cookiecutter = {{cookiecutter}}
+    cookiecutter: OrderedDict = {{cookiecutter}}
 
     print('\n', type(cookiecutter['interpreters']))
     interpreters = cookiecutter['interpreters']
-    if type(interpreters) == str:  # we assume it is json
+    if isinstance(interpreters, str):  # we assume it is json
         interpreters = json.loads(interpreters)
-        cookiecutter['interpreters'] = interpreters
     module_name = '{{ cookiecutter.pkg_name }}'
 
     return type(
