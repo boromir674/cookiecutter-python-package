@@ -1,9 +1,11 @@
+import io
 import json
 import logging
 import os
 import sys
 import typing as t
 
+import poyo
 from cookiecutter.exceptions import InvalidConfiguration
 from requests.exceptions import ConnectionError, JSONDecodeError
 
@@ -19,11 +21,6 @@ my_dir = os.path.dirname(os.path.realpath(__file__))
 
 def load_yaml(config_file) -> t.Mapping:
     # TODO use a proxy to load yaml
-    import io
-
-    import poyo
-    from cookiecutter.exceptions import InvalidConfiguration
-
     with io.open(config_file, encoding='utf-8') as file_handle:
         try:
             yaml_dict = poyo.parse_string(file_handle.read())
@@ -39,28 +36,22 @@ GivenInterpreters = t.Mapping[str, t.Sequence[str]]
 
 def supported_interpreters(config_file, no_input) -> t.Optional[GivenInterpreters]:
     if not no_input:  # interactive
-        if not config_file:
-            print(sys.version_info)
-            print(sys.version_info < (3, 10))
-            if sys.version_info < (3, 10):
-                return check_box_dialog()
-            # else let cookiecutter cli handle!
-        else:
-            return check_box_dialog(config_file=config_file)
-
-    else:  # non-interactive
-        if not config_file:  # use cookiecutter.json for values
-            return None
-        else:
-            try:
-                return get_interpreters_from_yaml(config_file)
-            except (
-                InvalidConfiguration,
-                UserConfigFormatError,
-                NoInterpretersInUserConfigException,
-                JSONDecodeError,
-            ):
-                return None
+        if sys.version_info < (3, 10):
+            check_box_dialog(config_file=config_file)
+        # else return None: let generator backend (ie cookiecutter) handle
+        # receiving the 'supported-interpreters' information from user input
+    # non-interactive
+    if config_file:
+        try:
+            return get_interpreters_from_yaml(config_file)
+        except (
+            InvalidConfiguration,
+            UserConfigFormatError,
+            NoInterpretersInUserConfigException,
+            JSONDecodeError,
+        ):
+            pass
+    return None
 
 
 def check_box_dialog(config_file=None) -> GivenInterpreters:
@@ -107,21 +98,15 @@ def get_interpreters_from_yaml(config_file: str) -> GivenInterpreters:
     context = data['default_context']
     if 'interpreters' not in context:
         raise NoInterpretersInUserConfigException(
-            "No 'iterpreters' key found in user's config (under the 'default_context' key)."
+            "No 'interpreters' key found in user's config (under the 'default_context' key)."
         )
     interpreters_data = json.loads(context['interpreters'])
+    if 'supported-interpreters' not in interpreters_data:
+        raise UserConfigFormatError(
+            "User config (is valid yaml but) does not contain a "
+            "'supported-interpreters' key in the 'interpreters' key"
+        )
     return {'supported-interpreters': interpreters_data['supported-interpreters']}
-    # return interpreters_data['supported-interpreters']
-
-    # try:  # use user's config yaml for default values in checkbox dialog
-    #     interpreters_data = json.loads(context['interpreters'])
-    # except JSONDecodeError as error:
-
-    # except (KeyError, TypeError, JSONDecodeError) as error:
-    #     print(error)
-    #     return {'supported-interpreters': interpreters_data['supported-interpreters']}
-    #     print("Could not find 'interpreters' in user's config yaml")
-    # return None
 
 
 def generate(
