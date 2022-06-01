@@ -31,10 +31,17 @@ class CookiecutterProxy(Proxy[str]):
         Returns:
             str: [description]
         """
-        print('Cookiecutter Proxy Request: %s', json.dumps({
-            'keyword_args': {k: str(v) for k, v in kwargs.items()},
-            'positional_args': [str(arg_value) for arg_value in args],
-        }, indent=2, sort_keys=True))
+        print(
+            'Cookiecutter Proxy Request: %s',
+            json.dumps(
+                {
+                    'keyword_args': {k: str(v) for k, v in kwargs.items()},
+                    'positional_args': [str(arg_value) for arg_value in args],
+                },
+                indent=2,
+                sort_keys=True,
+            ),
+        )
         # logger.debug('Cookiecutter Proxy Request: %s', json.dumps({
         #     'keyword_args': {k: str(v) for k, v in kwargs.items()},
         #     'positional_args': [str(arg_value) for arg_value in args],
@@ -57,6 +64,7 @@ class CookiecutterProxy(Proxy[str]):
         except KeyError as error:
             print(error)
             import inspect
+
             print(inspect.signature(cookiecutter_main_handler))
             raise error
         return output_dir

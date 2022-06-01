@@ -5,7 +5,7 @@ INTERPRETERS_ATTR = 'interpreters'
 from .dialogs.interpreters import dialog
 
 CHOICES = [  # this should match the cookiecutter.json
-# TODO Improvement: dynamically read from cookiecutter.json
+    # TODO Improvement: dynamically read from cookiecutter.json
     {'name': '3.6', 'checked': True},
     {'name': '3.7', 'checked': True},
     {'name': '3.8', 'checked': True},
@@ -16,7 +16,7 @@ CHOICES = [  # this should match the cookiecutter.json
 ]
 
 
-def handle(choices: t.Optional[t.Sequence[str]] = None) -> t.Sequence[str]:
+def handle(choices: t.Optional[t.Sequence[str]] = None) -> t.Dict[str, t.Sequence[str]]:
     """Hande request to create the 'supported interpreters' used in the Project generationfor the generate a project with supporting python interpreters.
 
     Args:
@@ -26,5 +26,8 @@ def handle(choices: t.Optional[t.Sequence[str]] = None) -> t.Sequence[str]:
     Returns:
         t.Sequence[str]: [description]
     """
-    return {'supported-interpreters': dialog(
-        [{'name': version, 'checked': True} for version in choices] if choices else CHOICES)['supported-interpreters']}
+    return dialog(
+        [{'name': version, 'checked': True} for version in choices] if choices else CHOICES
+    )
+    # return {'supported-interpreters': dialog(
+    #     [{'name': version, 'checked': True} for version in choices] if choices else CHOICES)['supported-interpreters']}

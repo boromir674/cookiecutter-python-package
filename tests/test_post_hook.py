@@ -1,6 +1,6 @@
 import pytest
 
- 
+
 @pytest.fixture
 def get_post_gen_main(get_object, request_factory):
     def mock_get_request():
@@ -13,9 +13,7 @@ def get_post_gen_main(get_object, request_factory):
         main_method = get_object(
             "_post_hook",
             "cookiecutter_python.hooks.post_gen_project",
-            overrides=overrides if overrides else {
-                'get_request': lambda: mock_get_request
-            }
+            overrides=overrides if overrides else {'get_request': lambda: mock_get_request},
         )
         return main_method
 

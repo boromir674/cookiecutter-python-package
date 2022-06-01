@@ -1,8 +1,9 @@
 import typing as t
+
 from PyInquirer import prompt
 
 
-def dialog(choices: t.Dict[str, t.Union[str, bool]]) -> t.Sequence[str]:
+def dialog(choices: t.Dict[str, t.Union[str, bool]]) -> t.Dict[str, t.Sequence[str]]:
 
     return prompt(
         [

@@ -1,6 +1,6 @@
 import os
-from abc import ABC, abstractmethod
 import typing as t
+from abc import ABC, abstractmethod
 
 import pytest
 
@@ -27,6 +27,7 @@ class AbstractCLIResult(ABC):
 @pytest.fixture
 def production_template() -> str:
     import cookiecutter_python
+
     return os.path.dirname(cookiecutter_python.__file__)
 
 
@@ -44,11 +45,7 @@ def load_context_json() -> t.Callable[[str], t.Dict]:
 
 @pytest.fixture
 def test_context_file() -> str:
-    return os.path.abspath(os.path.join(
-        my_dir,
-        'data',
-        'test_cookiecutter.json'
-    ))
+    return os.path.abspath(os.path.join(my_dir, 'data', 'test_cookiecutter.json'))
 
 
 @pytest.fixture
@@ -70,7 +67,8 @@ class ProjectGenerationRequestData(t.Protocol):
 
 @pytest.fixture
 def test_project_generation_request(
-    production_template, tmpdir) -> ProjectGenerationRequestData:
+    production_template, tmpdir
+) -> ProjectGenerationRequestData:
     """Test data, holding information on how to invoke the cli for testing."""
     return type(
         'GenerationRequest',
@@ -89,7 +87,7 @@ def test_project_generation_request(
                 }
             },
         },
-    )
+    )()
 
 
 @pytest.fixture
@@ -126,20 +124,29 @@ def project_dir(
     assert len(expected_files) == len(runtime_files)
     assert all(['tox.ini' in x for x in (expected_files, runtime_files)])
 
-    p = os.path.abspath( os.path.join(proj_dir, '.github', 'workflows', 'test.yaml') )
+    p = os.path.abspath(os.path.join(proj_dir, '.github', 'workflows', 'test.yaml'))
     print(p)
     with open(p, 'r') as f:
         contents = f.read()
     import re
+
     ver = r'"3\.(?:[6789]|10|11)"'
     # assert build matrix definition includes one or more python interpreters
     assert re.search(  # python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
-        fr'python-version:\s*\[\s*{ver}(?:(?:\s*,\s*{ver})*)\s*\]', contents)
+        fr'python-version:\s*\[\s*{ver}(?:(?:\s*,\s*{ver})*)\s*\]', contents
+    )
 
     # assert that python interpreters are the expected ones given that we
     # invoke the 'generate_project' function:
     # no user yaml config & enabled the default_dict Flag!
-    b = ', '.join((f'"{int_ver}"' for int_ver in test_project_generation_request.extra_context['interpreters']['supported-interpreters']))
+    b = ', '.join(
+        (
+            f'"{int_ver}"'
+            for int_ver in test_project_generation_request.extra_context['interpreters'][
+                'supported-interpreters'
+            ]
+        )
+    )
     assert f"python-version: [{b}]" in contents
     assert 'python-version: ["3.7", "3.8", "3.9"]' in contents
     return proj_dir
@@ -148,7 +155,7 @@ def project_dir(
 @pytest.fixture
 def emulated_production_cookiecutter_dict(production_template, test_context) -> t.Mapping:
     """Equivalent to the {{ cookiecutter }} templated variable runtime value.
-    
+
     Returns:
         t.Mapping: cookiecutter runtime configuration, as key/value hash map
     """
@@ -177,10 +184,13 @@ class HookRequest(t.Protocol):
 class CreateRequestInterface(t.Protocol):
     create: t.Callable[[str, t.Any], HookRequest]
 
+
 class SubclassRegistryType(t.Protocol):
     registry: CreateRequestInterface
 
+
 # Mock Infra
+
 
 @pytest.fixture
 def hook_request_new(emulated_production_cookiecutter_dict: t.Dict) -> SubclassRegistryType:
@@ -218,10 +228,12 @@ def hook_request_new(emulated_production_cookiecutter_dict: t.Dict) -> SubclassR
     Returns:
         [type]: [description]
     """
+
     class SimpleHookRequest(object):
         pass
 
     from software_patterns import SubclassRegistry
+
     class BaseHookRequest(metaclass=SubclassRegistry):
         pass
 
@@ -232,7 +244,9 @@ def hook_request_new(emulated_production_cookiecutter_dict: t.Dict) -> SubclassR
             self.module_name = kwargs.get('module_name', 'awesome_novelty_python_library')
             self.pypi_package = kwargs.get('pypi_package', self.module_name.replace('_', '-'))
             self.package_version_string = kwargs.get('package_version_string', '0.0.1')
-            self.interpreters = kwargs.get('interpreters', [
+            self.interpreters = kwargs.get(
+                'interpreters',
+                [
                     '3.5',
                     '3.6',
                     '3.7',
@@ -240,7 +254,7 @@ def hook_request_new(emulated_production_cookiecutter_dict: t.Dict) -> SubclassR
                     '3.9',
                     '3.10',
                     '3.11',
-                ]
+                ],
             )
 
     @BaseHookRequest.register_as_subclass('post')
@@ -255,14 +269,18 @@ def hook_request_new(emulated_production_cookiecutter_dict: t.Dict) -> SubclassR
             self.author_email = kwargs.get('author_email', 'boromir674@hotmail.com')
             self.initialize_git_repo = kwargs.get('initialize_git_repo', True)
 
-    return type('RequestInfra', (), {
-        'class_ref': SimpleHookRequest,
-        'registry': BaseHookRequest,
-    })
+    return type(
+        'RequestInfra',
+        (),
+        {
+            'class_ref': SimpleHookRequest,
+            'registry': BaseHookRequest,
+        },
+    )()
 
 
 # creates a request when called
-CreateRequestFunction = t.Callable[[t.Any], HookRequest]
+CreateRequestFunction = t.Callable[..., HookRequest]
 # creates a callable, that when called creates a request
 # CreateRequestFunctionCallback = t.Callable[[str], CreateRequestFunction]
 class RequestFactoryType(t.Protocol):
@@ -273,14 +291,9 @@ class RequestFactoryType(t.Protocol):
 @pytest.fixture
 def request_factory(hook_request_new) -> RequestFactoryType:
     def create_request_function(type_id: str) -> CreateRequestFunction:
-        def _create_request(**kwargs):
-            print('\nDEBUG ---- ')
-            print('\n'.join([
-                f"{k}: {v}" for k, v in kwargs.items()
-            ]))
-            _ = hook_request_new.registry.create(type_id, **kwargs)
-            print(_)
-            return _
+        def _create_request(self, **kwargs):
+            return hook_request_new.registry.create(type_id, **kwargs)
+
         return _create_request
 
     return type(
@@ -290,12 +303,16 @@ def request_factory(hook_request_new) -> RequestFactoryType:
             'pre': create_request_function('pre'),
             'post': create_request_function('post'),
         },
-    )
+    )()
+
 
 class HttpResponseLike(t.Protocol):
     status_code: int
+
+
 class FutureLike(t.Protocol):
     result: t.Callable[[], HttpResponseLike]
+
 
 CheckPypiOutput = t.Tuple[FutureLike, str]
 
@@ -306,33 +323,40 @@ CheckPypi = t.Callable[[str, str], CheckPypiOutput]
 def get_check_pypi_mock() -> t.Callable[[t.Optional[bool]], CheckPypi]:
     def build_check_pypi_mock_output(emulated_success=True) -> FutureLike:
         return type(
-                'Future',
-                (),
-                {
-                    'result': lambda: type(
-                        'HttpResponse',
-                        (),
-                        {
-                            'status_code': 200 if emulated_success else 404,
-                        },
-                    )
-                },
-            )
-    def _get_check_pypi_mock(emulated_success: bool = True) -> t.Callable[..., CheckPypiOutput]:
+            'Future',
+            (),
+            {
+                'result': lambda: type(
+                    'HttpResponse',
+                    (),
+                    {
+                        'status_code': 200 if emulated_success else 404,
+                    },
+                )
+            },
+        )()
+
+    def _get_check_pypi_mock(
+        emulated_success: t.Optional[bool] = True,
+    ) -> t.Callable[..., CheckPypiOutput]:
         def check_pypi_mock(*args, **kwargs) -> CheckPypiOutput:
             return (
                 build_check_pypi_mock_output(emulated_success=emulated_success),
                 'biskotaki',
             )
+
         return check_pypi_mock
 
     return _get_check_pypi_mock
 
 
 PythonType = t.Union[bool, str, None]
+CLIOverrideData = t.Optional[t.Dict[str, PythonType]]
+CLIRunnerParameters = t.Tuple[t.Sequence[str], t.Dict[str, t.Any]]
+
 
 @pytest.fixture
-def cli_invoker_params() -> t.Callable[[t.Any], t.Sequence[t.Union[str, PythonType]]]:
+def cli_invoker_params() -> t.Callable[[t.Any], CLIRunnerParameters]:
     """Create parameters for running a test that invokes a cli program.
 
     Use to generate the cli (string) arguments (positional and optional), as
@@ -348,16 +372,13 @@ def cli_invoker_params() -> t.Callable[[t.Any], t.Sequence[t.Union[str, PythonTy
     Returns:
         callable: the callable that creates `generate` arguments lists
     """
-    from copy import deepcopy
-    from functools import reduce
     from collections import OrderedDict
-
-    CLIOverrideData = t.Optional[t.Dict[str, PythonType]]
+    from copy import deepcopy
 
     class Args:
-        args = [ # these flags and default values emulate the 'generate-python'
-        # cli (exception is the '--config-file' flag where we pass the 
-        # biskotaki yaml by default, instead of None)
+        args = [  # these flags and default values emulate the 'generate-python'
+            # cli (exception is the '--config-file' flag where we pass the
+            # biskotaki yaml by default, instead of None)
             ('--no-input', False),
             ('--checkout', False),
             ('--verbose', False),
@@ -366,7 +387,7 @@ def cli_invoker_params() -> t.Callable[[t.Any], t.Sequence[t.Union[str, PythonTy
             ('--output-dir', '.'),
             (
                 '--config-file',  # biskotaki yaml as default instead of None
-                os.path.abspath(os.path.join(my_dir, '..', '.github', 'biskotaki.yaml'))
+                os.path.abspath(os.path.join(my_dir, '..', '.github', 'biskotaki.yaml')),
             ),
             ('--default-config', False),
             ('--directory', None),
@@ -382,23 +403,27 @@ def cli_invoker_params() -> t.Callable[[t.Any], t.Sequence[t.Union[str, PythonTy
             else:
                 assert all([k in self.cli_defaults for k in args_with_default])
                 self.map = OrderedDict(self.cli_defaults, **dict(args_with_default))
-            assert [k for k in self.map] == [k for k, _ in Args.args] == [k for k in self.cli_defaults]
+            assert (
+                [k for k in self.map]
+                == [k for k, _ in Args.args]
+                == [k for k in self.cli_defaults]
+            )
 
         def __iter__(self) -> t.Iterator[str]:
             for cli_arg, default_value in self.map.items():
                 if bool(default_value):
                     yield cli_arg
                     if type(self.cli_defaults[cli_arg]) != bool:
-                        yield default_value
+                        yield str(default_value)
 
     def parameters(
-        optional_cli_args: CLIOverrideData = None
-    ) -> t.Tuple[t.Sequence[str], t.Dict]:
+        optional_cli_args: CLIOverrideData = None,
+    ) -> CLIRunnerParameters:
         """Generate parameters for running a test that invokes a cli program.
-        
+
         Parameters of a test that invokes a cli program are distinguished in two
         types:
-        
+
         - the actual cli parameters, as a list of strings
             these would function the same as if the program was invoked in a
             shell script or in an interactive console/terminal.

@@ -56,7 +56,6 @@ def test_incorrect_module_name(is_valid_python_module_name):
 
 @pytest.fixture
 def get_main_with_mocked_template(get_object, request_factory):
-
     def get_pre_gen_hook_project_main(overrides={}):
         main_method = get_object(
             "_main",

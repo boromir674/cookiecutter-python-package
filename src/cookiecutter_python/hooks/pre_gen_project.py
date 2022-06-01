@@ -1,5 +1,5 @@
-import sys
 import json
+import sys
 
 from cookiecutter_python.backend.input_sanitization import (
     InputValueError,
@@ -19,8 +19,9 @@ def get_request():
     # the name the client code should use to import the generated package/module
     print('\n--- Pre Hook Get Request')
     from collections import OrderedDict
+
     cookiecutter = OrderedDict()
-    cookiecutter = {{ cookiecutter }}
+    cookiecutter = {{cookiecutter}}
 
     print('\n', type(cookiecutter['interpreters']))
     interpreters = cookiecutter['interpreters']
