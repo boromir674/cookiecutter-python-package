@@ -1,8 +1,8 @@
 import os
 import typing as t
 from abc import ABC, abstractmethod
-from typing import Protocol
 
+import attr
 import pytest
 
 my_dir = os.path.dirname(os.path.realpath(__file__))
@@ -59,10 +59,11 @@ def production_templated_project(production_template) -> str:
     return os.path.join(production_template, r'{{ cookiecutter.project_slug }}')
 
 
-class ProjectGenerationRequestData(Protocol):
+@attr.s(auto_attribs=True, kw_only=True)
+class ProjectGenerationRequestData:
     template: str
     destination: str
-    default_dict: t.Dict[str, t.Any]
+    default_dict: bool
     extra_context: t.Optional[t.Dict[str, t.Any]]
 
 
@@ -71,24 +72,20 @@ def test_project_generation_request(
     production_template, tmpdir
 ) -> ProjectGenerationRequestData:
     """Test data, holding information on how to invoke the cli for testing."""
-    return type(
-        'GenerationRequest',
-        (),
-        {
-            'template': production_template,
-            'destination': tmpdir,
-            'default_dict': False,
-            'extra_context': {
-                'interpreters': {
-                    'supported-interpreters': [
-                        '3.7',
-                        '3.8',
-                        '3.9',
-                    ]
-                }
-            },
+    return ProjectGenerationRequestData(
+        template=production_template,
+        destination=tmpdir,
+        default_dict=False,
+        extra_context={
+            'interpreters': {
+                'supported-interpreters': [
+                    '3.7',
+                    '3.8',
+                    '3.9',
+                ]
+            }
         },
-    )()
+    )
 
 
 @pytest.fixture
@@ -168,33 +165,41 @@ def emulated_production_cookiecutter_dict(production_template, test_context) -> 
         return OrderedDict(data, **test_context)
 
 
-class HookRequest(Protocol):
-    project_dir: t.Optional[str]
-    # TODO improvement: add key/value types
-    cookiecutter: t.Optional[t.Dict]
-    author: t.Optional[str]
-    author_email: t.Optional[str]
-    initialize_git_repo: t.Optional[bool]
-    interpreters: t.Optional[t.Dict]
+@pytest.fixture
+def hook_request_class(emulated_production_cookiecutter_dict):
+    @attr.s(auto_attribs=True, kw_only=True)
+    class HookRequest:
+        project_dir: t.Optional[str]
+        # TODO improvement: add key/value types
+        cookiecutter: t.Optional[t.Dict] = attr.ib(
+            default=emulated_production_cookiecutter_dict
+        )
+        author: t.Optional[str] = attr.ib(default='Konstantinos Lampridis')
+        author_email: t.Optional[str] = attr.ib(default='boromir674@hotmail.com')
+        initialize_git_repo: t.Optional[bool] = attr.ib(default=True)
+        interpreters: t.Optional[t.Dict] = attr.ib(
+            default=[
+                '3.6',
+                '3.7',
+                '3.8',
+                '3.9',
+                '3.10',
+                '3.11',
+            ]
+        )
+        module_name: t.Optional[str] = attr.ib(default='awesome_novelty_python_library')
+        pypi_package: t.Optional[str] = attr.ib(
+            default=attr.Factory(
+                lambda self: self.module_name.replace('_', '-'), takes_self=True
+            )
+        )
+        package_version_string: t.Optional[str] = attr.ib(default='0.0.1')
 
-    module_name: t.Optional[str]
-    pypi_package: t.Optional[str]
-    package_version_string: t.Optional[str]
-
-
-class CreateRequestInterface(Protocol):
-    create: t.Callable[[str, t.Any], HookRequest]
-
-
-class SubclassRegistryType(Protocol):
-    registry: CreateRequestInterface
-
-
-# Mock Infra
+    return HookRequest
 
 
 @pytest.fixture
-def hook_request_new(emulated_production_cookiecutter_dict: t.Dict) -> SubclassRegistryType:
+def hook_request_new(hook_request_class):
     """Emulate the templated data used in the 'pre' and 'post' hooks scripts.
 
     Before and after the actual generation process (ie read the termplate files,
@@ -229,71 +234,28 @@ def hook_request_new(emulated_production_cookiecutter_dict: t.Dict) -> SubclassR
     Returns:
         [type]: [description]
     """
-
-    class SimpleHookRequest(object):
-        pass
-
     from software_patterns import SubclassRegistry
 
     class BaseHookRequest(metaclass=SubclassRegistry):
         pass
 
+    @attr.s(auto_attribs=True, kw_only=True)
     @BaseHookRequest.register_as_subclass('pre')
-    class PreGenProjectRequest(SimpleHookRequest):
-        def __init__(self, **kwargs):
-            print('PreGenProjectRequest\n', kwargs)
-            self.module_name = kwargs.get('module_name', 'awesome_novelty_python_library')
-            self.pypi_package = kwargs.get('pypi_package', self.module_name.replace('_', '-'))
-            self.package_version_string = kwargs.get('package_version_string', '0.0.1')
-            self.interpreters = kwargs.get(
-                'interpreters',
-                [
-                    '3.5',
-                    '3.6',
-                    '3.7',
-                    '3.8',
-                    '3.9',
-                    '3.10',
-                    '3.11',
-                ],
-            )
+    class PreGenProjectRequest(hook_request_class):
+        project_dir: str = attr.ib(default=None)
 
     @BaseHookRequest.register_as_subclass('post')
-    class PostGenProjectRequest(SimpleHookRequest):
-        def __init__(self, **kwargs):
-            print('PostGenProjectRequest\n', kwargs)
-            self.project_dir = kwargs['project_dir']
-            self.cookiecutter = kwargs.get(
-                'cookiecutter', emulated_production_cookiecutter_dict
-            )
-            self.author = kwargs.get('author', 'Konstantinos Lampridis')
-            self.author_email = kwargs.get('author_email', 'boromir674@hotmail.com')
-            self.initialize_git_repo = kwargs.get('initialize_git_repo', True)
+    class PostGenProjectRequest(hook_request_class):
+        pass
 
-    return type(
-        'RequestInfra',
-        (),
-        {
-            'class_ref': SimpleHookRequest,
-            'registry': BaseHookRequest,
-        },
-    )()
-
-
-# creates a request when called
-CreateRequestFunction = t.Callable[..., HookRequest]
-# creates a callable, that when called creates a request
-# CreateRequestFunctionCallback = t.Callable[[str], CreateRequestFunction]
-class RequestFactoryType(Protocol):
-    pre: CreateRequestFunction
-    post: CreateRequestFunction
+    return BaseHookRequest
 
 
 @pytest.fixture
-def request_factory(hook_request_new) -> RequestFactoryType:
-    def create_request_function(type_id: str) -> CreateRequestFunction:
+def request_factory(hook_request_new):
+    def create_request_function(type_id: str):
         def _create_request(self, **kwargs):
-            return hook_request_new.registry.create(type_id, **kwargs)
+            return hook_request_new.create(type_id, **kwargs)
 
         return _create_request
 
@@ -307,22 +269,10 @@ def request_factory(hook_request_new) -> RequestFactoryType:
     )()
 
 
-class HttpResponseLike(Protocol):
-    status_code: int
-
-
-class FutureLike(Protocol):
-    result: t.Callable[[], HttpResponseLike]
-
-
-CheckPypiOutput = t.Tuple[FutureLike, str]
-
-CheckPypi = t.Callable[[str, str], CheckPypiOutput]
-
-
 @pytest.fixture
-def get_check_pypi_mock() -> t.Callable[[t.Optional[bool]], CheckPypi]:
-    def build_check_pypi_mock_output(emulated_success=True) -> FutureLike:
+def get_check_pypi_mock():
+    def build_check_pypi_mock_output(emulated_success=True):
+
         return type(
             'Future',
             (),
@@ -339,8 +289,8 @@ def get_check_pypi_mock() -> t.Callable[[t.Optional[bool]], CheckPypi]:
 
     def _get_check_pypi_mock(
         emulated_success: t.Optional[bool] = True,
-    ) -> t.Callable[..., CheckPypiOutput]:
-        def check_pypi_mock(*args, **kwargs) -> CheckPypiOutput:
+    ):
+        def check_pypi_mock(*args, **kwargs):
             return (
                 build_check_pypi_mock_output(emulated_success=emulated_success),
                 'biskotaki',
@@ -397,7 +347,6 @@ def cli_invoker_params() -> t.Callable[[t.Any], CLIRunnerParameters]:
 
         def __init__(self, args_with_default: CLIOverrideData = None, **kwargs) -> None:
             self.cli_defaults = OrderedDict(Args.args)
-            # self.map = OrderedDict(Args.args, **dict(args_with_default if args_with_default else {}))
 
             if args_with_default is None:
                 self.map = deepcopy(self.cli_defaults)

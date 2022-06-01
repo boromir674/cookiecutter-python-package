@@ -1,10 +1,10 @@
-from typing import Any, Protocol
+from typing import Any
 
-class Response(Protocol):
+class Response:
     status_code: int
 
-class Future(Protocol):
+class Future:
     def result(self) -> Response: ...
 
-class FuturesSession(Protocol):
+class FuturesSession:
     def get(self, url: str, **kwargs: Any) -> Future: ...
