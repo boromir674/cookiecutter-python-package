@@ -1,6 +1,7 @@
 import os
 import typing as t
 from abc import ABC, abstractmethod
+from typing import Protocol
 
 import pytest
 
@@ -58,7 +59,7 @@ def production_templated_project(production_template) -> str:
     return os.path.join(production_template, r'{{ cookiecutter.project_slug }}')
 
 
-class ProjectGenerationRequestData(t.Protocol):
+class ProjectGenerationRequestData(Protocol):
     template: str
     destination: str
     default_dict: t.Dict[str, t.Any]
@@ -167,7 +168,7 @@ def emulated_production_cookiecutter_dict(production_template, test_context) -> 
         return OrderedDict(data, **test_context)
 
 
-class HookRequest(t.Protocol):
+class HookRequest(Protocol):
     project_dir: t.Optional[str]
     # TODO improvement: add key/value types
     cookiecutter: t.Optional[t.Dict]
@@ -181,11 +182,11 @@ class HookRequest(t.Protocol):
     package_version_string: t.Optional[str]
 
 
-class CreateRequestInterface(t.Protocol):
+class CreateRequestInterface(Protocol):
     create: t.Callable[[str, t.Any], HookRequest]
 
 
-class SubclassRegistryType(t.Protocol):
+class SubclassRegistryType(Protocol):
     registry: CreateRequestInterface
 
 
@@ -283,7 +284,7 @@ def hook_request_new(emulated_production_cookiecutter_dict: t.Dict) -> SubclassR
 CreateRequestFunction = t.Callable[..., HookRequest]
 # creates a callable, that when called creates a request
 # CreateRequestFunctionCallback = t.Callable[[str], CreateRequestFunction]
-class RequestFactoryType(t.Protocol):
+class RequestFactoryType(Protocol):
     pre: CreateRequestFunction
     post: CreateRequestFunction
 
@@ -306,11 +307,11 @@ def request_factory(hook_request_new) -> RequestFactoryType:
     )()
 
 
-class HttpResponseLike(t.Protocol):
+class HttpResponseLike(Protocol):
     status_code: int
 
 
-class FutureLike(t.Protocol):
+class FutureLike(Protocol):
     result: t.Callable[[], HttpResponseLike]
 
 
