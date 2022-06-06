@@ -10,3 +10,4 @@ default_context:
     github_username: boromir674
     project_short_description: Project entirely generated using https://github.com/boromir674/cookiecutter-python-package/
     initialize_git_repo: no
+    add_cli: True

@@ -14,12 +14,13 @@ import pytest
         ),
     ],
 )
-def test_generate_with_mocked_network(
+def test_supported_python_interpreters(
     config_file: str,
     expected_interpreters: t.Sequence[str],
     get_object,
     get_check_pypi_mock,
     assert_interpreters_array_in_build_matrix,
+    assert_scaffolded_without_cli,
     tmpdir,
 ):
     generate = get_object(
@@ -42,9 +43,10 @@ def test_generate_with_mocked_network(
     )
 
     assert_interpreters_array_in_build_matrix(project_dir, expected_interpreters)
+    assert_scaffolded_without_cli(project_dir)
 
 
-# ASSERT Fictures
+# ASSERT Fixtures
 
 
 @pytest.fixture
@@ -63,3 +65,38 @@ def assert_interpreters_array_in_build_matrix() -> t.Callable[[str, t.Sequence[s
         assert f"python-version: [{b}]" in contents
 
     return _assert_interpreters_array_in_build_matrix
+
+
+@pytest.fixture
+def assert_scaffolded_without_cli(
+    cli_related_file_name, project_source_file
+) -> t.Callable[[str], None]:
+    from os import path
+
+    def assert_project_generated_without_cli(project_dir: str) -> None:
+        get_file: t.Callable[[str], str] = project_source_file(project_dir)
+        # assert there are no cli related files
+        assert not path.isfile(get_file(cli_related_file_name))
+
+    return assert_project_generated_without_cli
+
+
+@pytest.fixture(
+    params=[
+        'cli.py',
+        '__main__.py',
+    ]
+)
+def cli_related_file_name(request):
+    return request.param
+
+
+def test_enabling_add_cli_templated_variable(
+    cli_related_file_name,
+    project_source_file,
+    project_dir,
+):
+    from os import path
+
+    get_file = project_source_file(project_dir)
+    assert path.isfile(get_file(cli_related_file_name))
