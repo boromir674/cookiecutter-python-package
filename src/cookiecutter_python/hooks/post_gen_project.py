@@ -4,6 +4,7 @@ Cookiecutter post generation hook script that handles operations after the
 template project is used to generate a target project.
 """
 import os
+from os import path
 import shlex
 import subprocess
 import sys
@@ -20,13 +21,16 @@ def get_request():
     AUTHOR = "{{ cookiecutter.author }}"
     AUTHOR_EMAIL = "{{ cookiecutter.author_email }}"
     INITIALIZE_GIT_REPO_FLAG = "{{ cookiecutter.initialize_git_repo|lower }}"
+    ADD_CLI_FLAG = "{{ cookiecutter.add_cli|lower }}"
 
     request = type('PostGenProjectRequest', (), {
         'cookiecutter': COOKIECUTTER,
         'project_dir': PROJECT_DIRECTORY,
+        'module_name': COOKIECUTTER['pkg_name'],
         'author': AUTHOR,
         'author_email': AUTHOR_EMAIL,
         'initialize_git_repo': {'yes': True}.get(INITIALIZE_GIT_REPO_FLAG, False),
+        'add_cli': {'yes': True}.get(ADD_CLI_FLAG, False),
     })
 
     return request
@@ -141,11 +145,34 @@ def is_git_repo_clean(project_directory: str):
 
     return False
 
+class PostFileRemovalError(Exception):
+    pass
+
+def post_file_removal(request):
+    files_to_remove = []
+    if not request.add_cli:
+        files_to_remove.extend([
+            path.join(request.project_dir, 'src', request.module_name, 'cli.py'),
+            path.join(request.project_dir, 'src', request.module_name, '__main__.py'),
+        ])
+    for file in files_to_remove:
+        print('FILE to remove:', file)
+        os.remove(file)
+        # try:
+        # except Exception as error:
+        #     raise PostFileRemovalError from error
+
 
 def _post_hook():
     print('\n --- POST GEN SCRIPT')
     request = get_request()
     print('Computed Templated Vars for Post Script')
+    # try:
+    post_file_removal(request)
+    # except PostFileRemovalError as error:
+    #     print(error)
+    #     print('ERROR in Post Script.\nExiting with 1')
+    #     return 1
     if request.initialize_git_repo:
         try:
             initialize_git_repo(request.project_dir)

@@ -77,6 +77,7 @@ def test_project_generation_request(
         destination=tmpdir,
         default_dict=False,
         extra_context={
+            'add_cli': "yes",
             'interpreters': {
                 'supported-interpreters': [
                     '3.7',
@@ -147,6 +148,7 @@ def project_dir(
     )
     assert f"python-version: [{b}]" in contents
     assert 'python-version: ["3.7", "3.8", "3.9"]' in contents
+
     return proj_dir
 
 
@@ -187,6 +189,7 @@ def hook_request_class(emulated_production_cookiecutter_dict):
                 '3.11',
             ]
         )
+        add_cli: t.Optional[bool] = attr.ib(default=False)
         module_name: t.Optional[str] = attr.ib(default='awesome_novelty_python_library')
         pypi_package: t.Optional[str] = attr.ib(
             default=attr.Factory(
