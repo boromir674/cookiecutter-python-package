@@ -34,8 +34,7 @@ def build_client_callback(data: MatchData, factory: ExceptionFactory) -> ClientC
         if match:
             extracted_tuple = data[2](match)
             return extracted_tuple
-        else:
-            raise factory(file_path, regex, contents)
+        raise factory(file_path, regex, contents)
 
     return client_callback
 

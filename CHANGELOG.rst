@@ -2,6 +2,43 @@
 Changelog
 =========
 
+1.4.0 (2022-06-06)
+==================
+
+Add a CLI as an entrypoint to your Python Package
+-------------------------------------------------
+
+This release enables the user to optionally provide their Python Package with
+a Command Line Interface (CLI) as an entrypoint.
+The *add_cli* Generator Variable has been added to behave as an enable/disable
+'switch'.
+
+Changes
+^^^^^^^
+
+feature
+"""""""
+- add 'dev' & 'dev-cov' envs, designed to run locally with 'python3' from PATH
+- allow user to scaffold a cli with an entrypoint when installing their package
+
+fix
+"""
+- use a proper name for the test case
+- remove hardcoded values and add templated ones
+
+test
+""""
+- verify that when add_cli = 'no', there are no cli related files generated
+
+development
+"""""""""""
+- add 'dev' & 'dev-cov' envs, designed to run locally with 'python3' from PATH
+
+refactor
+""""""""
+- use the 'get_object' fixture from the 'pytest-object-getter' (pypi) package ;-)
+
+
 1.3.0 (2022-05-31)
 ==================
 
