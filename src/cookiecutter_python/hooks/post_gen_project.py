@@ -4,11 +4,11 @@ Cookiecutter post generation hook script that handles operations after the
 template project is used to generate a target project.
 """
 import os
-from os import path
 import shlex
 import subprocess
 import sys
 from collections import OrderedDict
+from os import path
 
 PROJECT_DIRECTORY = os.path.realpath(os.path.curdir)
 
