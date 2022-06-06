@@ -4,24 +4,23 @@ import pytest
 
 
 @pytest.mark.parametrize(
-    'config_file, expected_interpreters, spawned_cli',
+    'config_file, expected_interpreters',
     [
-        ('.github/biskotaki.yaml', ['3.6', '3.7', '3.8', '3.9', '3.10'], False),
-        (None, ['3.6', '3.7', '3.8', '3.9', '3.10', '3.11'], False,),
+        ('.github/biskotaki.yaml', ['3.6', '3.7', '3.8', '3.9', '3.10']),
+        (None, ['3.6', '3.7', '3.8', '3.9', '3.10', '3.11']),
         (
             'tests/data/biskotaki-without-interpreters.yaml',
             ['3.6', '3.7', '3.8', '3.9', '3.10', '3.11'],
-            True, 
         ),
     ],
 )
-def test_generate_with_mocked_network(
+def test_supported_python_interpreters(
     config_file: str,
     expected_interpreters: t.Sequence[str],
-    spawned_cli: bool,
     get_object,
     get_check_pypi_mock,
     assert_interpreters_array_in_build_matrix,
+    assert_scaffolded_without_cli,
     tmpdir,
 ):
     generate = get_object(
@@ -44,20 +43,7 @@ def test_generate_with_mocked_network(
     )
 
     assert_interpreters_array_in_build_matrix(project_dir, expected_interpreters)
-    
-@pytest.fixture(params=[
-    'src/my_new_project/cli.py',
-    'src/my_new_project/__main__.py',
-])
-def expected_cli_related_file(request, project_dir) -> str:
-    import os
-    return os.path.join(project_dir, *list(request.param.split('/')))
-
-
-def test_enabling_add_cli_templated_variable(expected_cli_related_file):
-    import os
-    assert os.path.isfile(expected_cli_related_file)
-
+    assert_scaffolded_without_cli(project_dir)
 
 
 # ASSERT Fixtures
@@ -82,28 +68,35 @@ def assert_interpreters_array_in_build_matrix() -> t.Callable[[str, t.Sequence[s
 
 
 @pytest.fixture
-def project_source_file():
-    from os import path, listdir
-    SRC_DIR_NAME = 'src'
-    def build_get_file_path(project_dir: str) -> str:
-        src_dir_files = listdir(path.join(project_dir, SRC_DIR_NAME))
-        # sanity check that Generator produces only 1 python module/package
-        [python_module] = src_dir_files
-        def _get_file_path(file: str):
-            return path.join(
-                project_dir,
-                SRC_DIR_NAME,
-                python_module,
-                *file.split('/')
-            )
-    return build_get_file_path
-
-
-@pytest.fixture
-def assert_scaffolded_without_cli(cli_related_file_name, project_source_file):
+def assert_scaffolded_without_cli(
+    cli_related_file_name, project_source_file
+) -> t.Callable[[str], None]:
     from os import path
-    def assert_project_generated_without_cli(project_dir: str):
+
+    def assert_project_generated_without_cli(project_dir: str) -> None:
         get_file: t.Callable[[str], str] = project_source_file(project_dir)
         # assert there are no cli related files
         assert not path.isfile(get_file(cli_related_file_name))
+
     return assert_project_generated_without_cli
+
+
+@pytest.fixture(
+    params=[
+        'cli.py',
+        '__main__.py',
+    ]
+)
+def cli_related_file_name(request):
+    return request.param
+
+
+def test_enabling_add_cli_templated_variable(
+    cli_related_file_name,
+    project_source_file,
+    project_dir,
+):
+    from os import path
+
+    get_file = project_source_file(project_dir)
+    assert path.isfile(get_file(cli_related_file_name))

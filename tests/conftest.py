@@ -1,28 +1,10 @@
 import os
 import typing as t
-from abc import ABC, abstractmethod
 
 import attr
 import pytest
 
 my_dir = os.path.dirname(os.path.realpath(__file__))
-
-
-class AbstractCLIResult(ABC):
-    @property
-    @abstractmethod
-    def exit_code(self) -> int:
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def stdout(self) -> str:
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def stderr(self) -> str:
-        raise NotImplementedError
 
 
 @pytest.fixture
@@ -84,7 +66,7 @@ def test_project_generation_request(
                     '3.8',
                     '3.9',
                 ]
-            }
+            },
         },
     )
 
@@ -406,7 +388,7 @@ def cli_invoker_params() -> t.Callable[[t.Any], CLIRunnerParameters]:
 def get_cli_invocation():
     import subprocess
 
-    class CLIResult(AbstractCLIResult):
+    class CLIResult:
         exit_code: int
         stdout: str
         stderr: str
@@ -428,8 +410,8 @@ def get_cli_invocation():
         def stderr(self) -> str:
             return self._stderr
 
-    def get_callable(executable: str, *args, **kwargs) -> t.Callable[[], AbstractCLIResult]:
-        def _callable() -> AbstractCLIResult:
+    def get_callable(executable: str, *args, **kwargs) -> t.Callable[[], CLIResult]:
+        def _callable() -> CLIResult:
             completed_process = subprocess.run(
                 [executable] + list(args), env=kwargs.get('env', {})
             )
@@ -443,3 +425,22 @@ def get_cli_invocation():
 @pytest.fixture
 def invoke_tox_cli_to_run_test_suite(get_cli_invocation):
     return get_cli_invocation('python', '-m', 'tox', '-vv')
+
+
+@pytest.fixture
+def project_source_file():
+    from os import listdir, path
+
+    SRC_DIR_NAME = 'src'
+
+    def build_get_file_path(project_dir: str) -> t.Callable[[str], str]:
+        src_dir_files = listdir(path.join(project_dir, SRC_DIR_NAME))
+        # sanity check that Generator produces only 1 python module/package
+        [python_module] = src_dir_files
+
+        def _get_file_path(file: str):
+            return path.join(project_dir, SRC_DIR_NAME, python_module, *file.split('/'))
+
+        return _get_file_path
+
+    return build_get_file_path
