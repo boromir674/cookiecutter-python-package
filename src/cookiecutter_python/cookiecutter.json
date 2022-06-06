@@ -13,6 +13,7 @@
     "year": "{% now 'utc', '%Y' %}",
     "version": "0.0.1",
     "initialize_git_repo": ["yes", "no"],
+    "add_cli": ["no", "yes"],
     "interpreters": {
         "supported-interpreters": [
             "3.6",
