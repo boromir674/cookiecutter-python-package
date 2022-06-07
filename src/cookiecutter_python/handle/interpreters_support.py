@@ -1,6 +1,6 @@
 import typing as t
 
-from .dialogs.interpreters import dialog
+from .dialogs import InteractiveDialog
 
 INTERPRETERS_ATTR = 'interpreters'
 
@@ -27,6 +27,6 @@ def handle(choices: t.Optional[t.Sequence[str]] = None) -> t.Dict[str, t.Sequenc
     Returns:
         t.Sequence[str]: [description]
     """
-    return dialog(
+    return InteractiveDialog.create('interpreters-checkbox')(
         [{'name': version, 'checked': True} for version in choices] if choices else CHOICES
     )
