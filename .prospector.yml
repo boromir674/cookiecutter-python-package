@@ -11,6 +11,8 @@ ignore-paths:
 ignore-patterns:
   - (^|/)skip(this)?(/|$)
   - src/cookiecutter_python/{{ cookiecutter.project_slug }}/tests/smoke_test.py
+  - src/cookiecutter_python/{{ cookiecutter.project_slug }}/src/{{ cookiecutter.pkg_name }}/__main__.py
+  - src/cookiecutter_python/{{ cookiecutter.project_slug }}/src/{{ cookiecutter.pkg_name }}/cli.py
 autodetect: false
 max-line-length: 95
 
@@ -50,10 +52,7 @@ bandit:
 frosted:
   run: false
 
-pep8:
-  run: false
-
-pep257:
+pycodestyle:
   run: false
 
 mypy:
