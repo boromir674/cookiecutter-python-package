@@ -2,6 +2,21 @@
 Changelog
 =========
 
+1.4.1 (2022-06-07)
+==================
+
+Changes
+^^^^^^^
+
+refactor
+""""""""
+- decouple dialog creation
+
+chore
+"""""
+- satisfy prospector linter even better
+
+
 1.4.0 (2022-06-06)
 ==================
 
