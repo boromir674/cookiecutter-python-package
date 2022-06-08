@@ -16,10 +16,6 @@ MatchData = t.Tuple[str, t.List[t.Any], t.Callable[[t.Match], t.Tuple]]
 # 2nd item (list): zero or more additional runtime arguments
 # 3rd item (Callable): takes a Match object and return a tuple of strings
 
-# my_dir = os.path.dirname(os.path.realpath(__file__))
-
-# TOML = 'pyproject.toml'
-# TOML_FILE = os.path.abspath(os.path.join(my_dir, '..', TOML))
 
 DEMO_SECTION: str = (
     "[tool.software-release]\nversion_variable = " "src/package_name/__init__.py:__version__"
