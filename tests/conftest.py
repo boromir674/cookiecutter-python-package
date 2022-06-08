@@ -395,8 +395,8 @@ def get_cli_invocation():
 
         def __init__(self, completed_process: subprocess.CompletedProcess):
             self._exit_code = int(completed_process.returncode)
-            self._stdout = str(completed_process.stdout)
-            self._stderr = str(completed_process.stderr)
+            self._stdout = str(completed_process.stdout, encoding='utf-8')
+            self._stderr = str(completed_process.stderr, encoding='utf-8')
 
         @property
         def exit_code(self) -> int:
@@ -410,16 +410,13 @@ def get_cli_invocation():
         def stderr(self) -> str:
             return self._stderr
 
-    def get_callable(executable: str, *args, **kwargs) -> t.Callable[[], CLIResult]:
-        def _callable() -> CLIResult:
-            completed_process = subprocess.run(
-                [executable] + list(args), env=kwargs.get('env', {})
-            )
-            return CLIResult(completed_process)
+    def execute_command_in_subprocess(executable: str, *args, **kwargs):
+        completed_process = subprocess.run(
+            [executable] + list(args), env=kwargs.get('env', {}), capture_output=True
+        )
+        return CLIResult(completed_process)
 
-        return _callable
-
-    return get_callable
+    return execute_command_in_subprocess
 
 
 @pytest.fixture
