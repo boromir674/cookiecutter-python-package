@@ -26,6 +26,6 @@ def handle(choices: t.Optional[t.Sequence[str]] = None) -> t.Dict[str, t.Sequenc
     Returns:
         t.Sequence[str]: [description]
     """
-    return InteractiveDialog.create('interpreters-checkbox')(
+    return InteractiveDialog.create('interpreters-checkbox').dialog(
         [{'name': version, 'checked': True} for version in choices] if choices else CHOICES
     )

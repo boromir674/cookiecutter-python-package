@@ -156,23 +156,14 @@ def post_file_removal(request):
             path.join(request.project_dir, 'src', request.module_name, '__main__.py'),
         ])
     for file in files_to_remove:
-        print('FILE to remove:', file)
         os.remove(file)
-        # try:
-        # except Exception as error:
-        #     raise PostFileRemovalError from error
 
 
 def _post_hook():
     print('\n --- POST GEN SCRIPT')
     request = get_request()
     print('Computed Templated Vars for Post Script')
-    # try:
     post_file_removal(request)
-    # except PostFileRemovalError as error:
-    #     print(error)
-    #     print('ERROR in Post Script.\nExiting with 1')
-    #     return 1
     if request.initialize_git_repo:
         try:
             initialize_git_repo(request.project_dir)

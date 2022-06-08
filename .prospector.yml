@@ -52,7 +52,10 @@ bandit:
 frosted:
   run: false
 
-pycodestyle:
+pep8:
+  run: false
+
+pep257:
   run: false
 
 mypy:

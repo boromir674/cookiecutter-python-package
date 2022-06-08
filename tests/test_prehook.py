@@ -46,12 +46,12 @@ def correct_module_name(request):
 
 def test_correct_module_name(correct_module_name, is_valid_python_module_name):
     result = is_valid_python_module_name(correct_module_name.strip())
-    assert result == True
+    assert result is True
 
 
 def test_incorrect_module_name(is_valid_python_module_name):
     result = is_valid_python_module_name('23numpy')
-    assert result == False
+    assert not result
 
 
 @pytest.fixture

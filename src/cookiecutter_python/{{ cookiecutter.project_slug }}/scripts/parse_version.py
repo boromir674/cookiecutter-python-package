@@ -16,10 +16,6 @@ MatchData = t.Tuple[str, t.List[t.Any], t.Callable[[t.Match], t.Tuple]]
 # 2nd item (list): zero or more additional runtime arguments
 # 3rd item (Callable): takes a Match object and return a tuple of strings
 
-# my_dir = os.path.dirname(os.path.realpath(__file__))
-
-# TOML = 'pyproject.toml'
-# TOML_FILE = os.path.abspath(os.path.join(my_dir, '..', TOML))
 
 DEMO_SECTION: str = (
     "[tool.software-release]\nversion_variable = " "src/package_name/__init__.py:__version__"
@@ -120,11 +116,10 @@ def get_arguments(sys_args: t.List[str]):
     if len(sys_args) > 1:
         project_dir = sys_args[1]
     TOML = 'pyproject.toml'
-    TOML_FILE = os.path.abspath(os.path.join(project_dir, TOML))
-    return TOML_FILE
+    toml_file = os.path.abspath(os.path.join(project_dir, TOML))
+    return toml_file
 
-    # TOML_FILE = os.path.abspath(os.path.join(my_dir, '..', TOML))
-# os.path.dirname(os.path.realpath(__file__))
+
 def _main():
     try:
         toml_file: str = get_arguments(sys.argv)

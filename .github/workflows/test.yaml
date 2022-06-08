@@ -32,6 +32,7 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -44,7 +45,11 @@ jobs:
       run: tox -e type -vv -s false
 
     - name: Specify current package version to assist build tool
-      run: echo "PKG_VERSION=$(python scripts/parse_version.py)" >> $GITHUB_ENV
+      run: |
+        PARSER="src/cookiecutter_python/{{ cookiecutter.project_slug }}/scripts/parse_version.py"
+        A=$(python "${PARSER}")
+        echo $A
+        echo "PKG_VERSION=$A" >> $GITHUB_ENV
 
     - name: Run Test Suite
       run: tox -vv -s false
