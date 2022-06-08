@@ -104,8 +104,7 @@ def main(
     """
 
     # TODO Improvement: add logging configuration
-    # from cookiecutter.log import configure_logger
-    # configure_logger(stream_level='DEBUG' if verbose else 'INFO', debug_file=debug_file)
+
     print(f'\nSanity Check\nno_input: {type(no_input)}, {no_input}')
     try:
         project: str = generate(

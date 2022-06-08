@@ -1,4 +1,5 @@
 import json
+import logging
 import sys
 from collections import OrderedDict
 
@@ -10,6 +11,9 @@ from cookiecutter_python.backend.interpreters_support import (
     InvalidInterpretersError,
     verify_input_interpreters,
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 def get_request():
@@ -69,7 +73,10 @@ def input_sanitization(request):
     try:
         verify_input_interpreters(request.interpreters)
     except InvalidInterpretersError as error:
-        # TODO log maybe
+        logger.warning("Interpreters Data Error: %s", json.dumps({
+            'error': error,
+            'interpreters_data': request.interpreters,
+        }, sort_keys=True, indent=4))
         raise error
 
     print("Sanitized Input Variables :)")

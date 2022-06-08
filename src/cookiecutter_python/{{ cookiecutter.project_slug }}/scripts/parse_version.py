@@ -16,10 +16,10 @@ MatchData = t.Tuple[str, t.List[t.Any], t.Callable[[t.Match], t.Tuple]]
 # 2nd item (list): zero or more additional runtime arguments
 # 3rd item (Callable): takes a Match object and return a tuple of strings
 
-my_dir = os.path.dirname(os.path.realpath(__file__))
+# my_dir = os.path.dirname(os.path.realpath(__file__))
 
-TOML = 'pyproject.toml'
-TOML_FILE = os.path.abspath(os.path.join(my_dir, '..', TOML))
+# TOML = 'pyproject.toml'
+# TOML_FILE = os.path.abspath(os.path.join(my_dir, '..', TOML))
 
 DEMO_SECTION: str = (
     "[tool.software-release]\nversion_variable = " "src/package_name/__init__.py:__version__"
@@ -34,8 +34,7 @@ def build_client_callback(data: MatchData, factory: ExceptionFactory) -> ClientC
         if match:
             extracted_tuple = data[2](match)
             return extracted_tuple
-        else:
-            raise factory(file_path, regex, contents)
+        raise factory(file_path, regex, contents)
 
     return client_callback
 
@@ -98,7 +97,7 @@ def parse_version(software_release_cfg: str) -> str:
     )
 
     file_with_version_string = os.path.abspath(
-        os.path.join(my_dir, '../', file_name_with_version)
+        os.path.join(os.path.dirname(software_release_cfg), file_name_with_version)
     )
 
     if not os.path.isfile(file_with_version_string):
@@ -115,9 +114,21 @@ def parse_version(software_release_cfg: str) -> str:
     return version
 
 
+def get_arguments(sys_args: t.List[str]):
+    if len(sys_args) == 1:  # no input path was given by user, as console arg
+        project_dir = os.getcwd()
+    if len(sys_args) > 1:
+        project_dir = sys_args[1]
+    TOML = 'pyproject.toml'
+    TOML_FILE = os.path.abspath(os.path.join(project_dir, TOML))
+    return TOML_FILE
+
+    # TOML_FILE = os.path.abspath(os.path.join(my_dir, '..', TOML))
+# os.path.dirname(os.path.realpath(__file__))
 def _main():
     try:
-        version_string = parse_version(TOML_FILE)
+        toml_file: str = get_arguments(sys.argv)
+        version_string = parse_version(toml_file)
         print(version_string)
         return 0
     except (RuntimeError, FileNotFoundError, AttributeError) as exception:

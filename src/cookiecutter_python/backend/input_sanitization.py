@@ -104,10 +104,10 @@ class ModuleNameInputSanitizer(InputSanitizer):
                     'module_name_regex': str(cls.regex.pattern),
                     'module_name': str(module),
                 },
-                indent=2,
+                indent=4,
                 sort_keys=True,
             ),
-        )  # TODO Improvement: add indent & sort (as above) to all log messages
+        )
 
 
 @InputSanitizer.register_as_subclass('semantic-version')

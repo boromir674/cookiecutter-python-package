@@ -16,9 +16,8 @@ class InterpretersCheckbox(InteractiveDialog):
     def dialog(self, *args, **kwargs):
         return self._dialog(*args, **kwargs)
 
-    def _dialog(
-        self, choices: t.Dict[str, t.Union[str, bool]]
-    ) -> t.Dict[str, t.Sequence[str]]:
+    @staticmethod
+    def _dialog(choices: t.Dict[str, t.Union[str, bool]]) -> t.Dict[str, t.Sequence[str]]:
 
         return prompt(
             [

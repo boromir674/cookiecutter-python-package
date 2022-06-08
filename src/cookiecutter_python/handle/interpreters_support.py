@@ -6,7 +6,6 @@ INTERPRETERS_ATTR = 'interpreters'
 
 
 CHOICES = [  # this should match the cookiecutter.json
-    # TODO Improvement: dynamically read from cookiecutter.json
     {'name': '3.6', 'checked': True},
     {'name': '3.7', 'checked': True},
     {'name': '3.8', 'checked': True},
