@@ -255,35 +255,53 @@ def request_factory(hook_request_new):
 
 
 @pytest.fixture
-def get_check_pypi_mock():
-    def build_check_pypi_mock_output(emulated_success=True):
+def mock_check_pypi(get_object):
+    """Mock and return the `check_pypi` function (with side effects).
 
-        return type(
-            'Future',
-            (),
-            {
-                'result': lambda: type(
-                    'HttpResponse',
-                    (),
-                    {
-                        'status_code': 200 if emulated_success else 404,
-                    },
-                )
-            },
-        )()
+    Returns a callable than when called mocks the check_pypi function so that
+    there is no actual network (ie no connections though the internet) access.
 
-    def _get_check_pypi_mock(
-        emulated_success: t.Optional[bool] = True,
-    ):
-        def check_pypi_mock(*args, **kwargs):
-            return (
-                build_check_pypi_mock_output(emulated_success=emulated_success),
-                'biskotaki',
+    Calling the returned object yields side effects in order to facilitate
+    mocking.
+
+    You can then either directly use the returned `check_pypi` function
+    (which shall trigger the mocked behaviour), or test your own code, which
+    shall trigger the mocked behaviour if it depends on (the "original")
+    `check_pypi`.
+
+    Args:
+        exists_on_pypi (t.Optional[bool]): whether to emulate that the package
+            exists on pypi, or not. Defaults to False (package does NOT exist
+            on pypi).
+
+    Returns:
+        t.Callable: a reference to the `check_pypi` function
+    """
+
+    class FutureMock:
+        def __init__(self, exists_on_pypi: bool = False):
+            self.result = lambda: type(
+                'HttpResponseMock', (), {'status_code': 200 if exists_on_pypi else 404}
             )
 
-        return check_pypi_mock
+    def get_check_pypi_with_mocked_futures_session(
+        exists_on_pypi: bool = False,
+    ) -> t.Callable[..., t.Any]:  # todo specify
+        """Mocks FuturesSession and returns the 'check_pypi' object."""
 
-    return _get_check_pypi_mock
+        return get_object(
+            'check_pypi',
+            'cookiecutter_python.backend.check_pypi',
+            overrides={
+                "FuturesSession": lambda: type(
+                    'MockFuturesSession',
+                    (),
+                    {'get': lambda self, url: FutureMock(exists_on_pypi)},
+                )
+            },
+        )
+
+    return get_check_pypi_with_mocked_futures_session
 
 
 PythonType = t.Union[bool, str, None]

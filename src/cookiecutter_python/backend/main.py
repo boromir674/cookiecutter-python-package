@@ -93,7 +93,6 @@ def generate(
         directory=directory,
         skip_if_file_exists=skip_if_file_exists,
     )
-
     if pkg_name:
         # eval future by waiting only if needed!
         try:
