@@ -39,7 +39,9 @@ jobs:
         python -m pip install tox tox-gh-actions
 
     - name: Do Lint Checking
-      run: tox -e lint -vv -s false
+      run: |
+        tox -e lint -vv -s false
+        tox -e prospector -vv -s false
 
     - name: Do Type Checking
       run: tox -e type -vv -s false
@@ -105,5 +107,3 @@ jobs:
         flags: unittests
         name: codecov-umbrella
         verbose: true
-
-    # TODO find build tar.gz whl files and upload as artefacts

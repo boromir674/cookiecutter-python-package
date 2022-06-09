@@ -27,7 +27,6 @@ def get_request():
     cookiecutter = OrderedDict()
     cookiecutter: OrderedDict = {{cookiecutter}}
 
-    print('\n', type(cookiecutter['interpreters']))
     interpreters = cookiecutter['interpreters']
     if isinstance(interpreters, str):  # we assume it is json
         interpreters = json.loads(interpreters)

@@ -10,9 +10,7 @@ class Dialog:
 
 
 class DialogRegistry(SubclassRegistry[Dialog]):
-    @abstractmethod
-    def dialog(self, *args, **kwargs):
-        raise NotImplementedError
+    pass
 
 
 class InteractiveDialog(metaclass=DialogRegistry):
