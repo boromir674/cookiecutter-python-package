@@ -1,3 +1,3 @@
-from .cookiecutter_proxy import cookiecutter
+from .main import CheckPypiError, generate
 
-__all__ = ['cookiecutter']
+__all__ = ['generate', 'CheckPypiError']

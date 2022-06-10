@@ -73,7 +73,8 @@ def test_project_generation_request(
 
 @pytest.fixture
 def generate_project() -> t.Callable[[ProjectGenerationRequestData], str]:
-    from cookiecutter_python.backend import cookiecutter
+    """Generator backend used by the production Generator CLI."""
+    from cookiecutter_python.backend.generator import generator as cookiecutter
 
     def _generate_project(generate_request: ProjectGenerationRequestData) -> str:
         return cookiecutter(
@@ -82,7 +83,6 @@ def generate_project() -> t.Callable[[ProjectGenerationRequestData], str]:
             extra_context=generate_request.extra_context,
             output_dir=generate_request.destination,
             overwrite_if_exists=True,
-            # TODO: below takes a boolean variable!
             default_config=generate_request.default_dict,
         )
 

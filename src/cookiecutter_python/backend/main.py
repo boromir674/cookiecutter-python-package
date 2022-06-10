@@ -10,7 +10,7 @@ from cookiecutter_python.backend.check_pypi_handler import handler
 from cookiecutter_python.backend.load_config import get_interpreters_from_yaml
 from cookiecutter_python.handle.interpreters_support import handle as get_interpreters
 
-from .cookiecutter_proxy import cookiecutter
+from .generator import create_context, generator
 
 logger = logging.getLogger(__name__)
 
@@ -65,21 +65,11 @@ def generate(
 
     if interpreters:  # update extra_context
         # supported interpreters supplied either from yaml or from user's input
-        if extra_context:
-            new_context = dict(
-                extra_context,
-                **{
-                    'interpreters': interpreters,
-                }
-            )
-        else:
-            new_context = {
-                'interpreters': interpreters,
-            }
+        new_context = create_context(interpreters, extra_context=extra_context)
     else:
         new_context = extra_context
 
-    project_dir = cookiecutter(
+    project_dir = generator(
         template,
         checkout=checkout,
         no_input=no_input,

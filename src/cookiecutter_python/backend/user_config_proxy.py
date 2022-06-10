@@ -4,9 +4,7 @@ import os
 from typing import Any, MutableMapping
 
 from cookiecutter.config import get_user_config as cookie_get_config
-from software_patterns import Proxy, ProxySubject
-
-from .singleton import Singleton
+from software_patterns import Proxy, ProxySubject, Singleton
 
 __all__ = ['get_user_config']
 

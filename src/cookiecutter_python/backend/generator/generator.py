@@ -3,15 +3,10 @@ import logging
 import os
 
 from cookiecutter.main import cookiecutter as cookiecutter_main_handler
-from software_patterns import Proxy, ProxySubject
-
-from .singleton import Singleton
+from software_patterns import Proxy, ProxySubject, Singleton
 
 __all__ = ['cookiecutter']
 
-# This sets the root logger to write to stdout (your console).
-# Your script/app needs to call this somewhere at least once.
-logging.basicConfig()
 
 logger = logging.getLogger(__name__)
 
@@ -58,3 +53,5 @@ class CookiecutterProxySingleton(metaclass=Singleton):
 cookiecutter = CookiecutterProxySingleton(
     lambda: CookiecutterProxy(CookiecutterSubject(cookiecutter_main_handler))
 )
+
+generator = cookiecutter
