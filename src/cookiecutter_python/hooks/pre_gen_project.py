@@ -3,11 +3,9 @@ import logging
 import sys
 from collections import OrderedDict
 
-from cookiecutter_python.backend.input_sanitization import (
+from cookiecutter_python.backend import (
     InputValueError,
     build_input_verification,
-)
-from cookiecutter_python.backend.interpreters_support import (
     InvalidInterpretersError,
     verify_input_interpreters,
 )
