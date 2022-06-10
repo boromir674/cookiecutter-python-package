@@ -7,7 +7,6 @@ from cookiecutter_python.backend import (
     InputValueError,
     build_input_verification,
     InvalidInterpretersError,
-    verify_input_interpreters,
 )
 
 
@@ -50,6 +49,10 @@ verify_templated_semantic_version = build_input_verification(
     'semantic-version',
 )
 
+verify_input_interpreters = build_input_verification(
+    'interpreters'
+)
+
 
 def input_sanitization(request):
     # CHECK Package Name
@@ -90,7 +93,6 @@ def hook_main(request):
 
 def _main():
     request = get_request()
-    # print(request)
     print('Computed Variables:\n{req}'.format(req=str(request)))
     return hook_main(request)
 

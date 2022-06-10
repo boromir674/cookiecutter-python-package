@@ -6,6 +6,8 @@ from typing import Any, Callable, Pattern, Tuple
 
 from software_patterns.subclass_registry import SubclassRegistry
 
+from .interpreters_support import InvalidInterpretersError, verify_input_interpreters
+
 logger = logging.getLogger(__name__)
 
 
@@ -149,4 +151,6 @@ class InputValueError(Exception):
 
 
 def build_input_verification(input_verifier_type: str):
+    if input_verifier_type == 'interpreters':
+        return verify_input_interpreters
     return SanitizerBuilder.build(input_verifier_type)

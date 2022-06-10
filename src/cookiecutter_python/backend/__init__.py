@@ -1,5 +1,8 @@
-from .input_sanitization import InputValueError, build_input_verification
-from .interpreters_support import InvalidInterpretersError, verify_input_interpreters
+from .input_sanitization import (
+    InputValueError,
+    InvalidInterpretersError,
+    build_input_verification,
+)
 from .main import CheckPypiError, generate
 
 __all__ = [
@@ -8,5 +11,4 @@ __all__ = [
     'InputValueError',
     'build_input_verification',
     'InvalidInterpretersError',
-    'verify_input_interpreters',
 ]
