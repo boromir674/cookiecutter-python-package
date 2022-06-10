@@ -1,44 +1,17 @@
 import logging
 import os
-import sys
-import typing as t
 
 from requests.exceptions import ConnectionError
 
 from cookiecutter_python.backend.check_pypi import check_pypi
 from cookiecutter_python.backend.check_pypi_handler import handler
-from cookiecutter_python.backend.load_config import get_interpreters_from_yaml
-from cookiecutter_python.handle.interpreters_support import handle as get_interpreters
 
 from .generator import create_context, generator
+from .helpers import supported_interpreters
 
 logger = logging.getLogger(__name__)
 
 my_dir = os.path.dirname(os.path.realpath(__file__))
-
-
-GivenInterpreters = t.Mapping[str, t.Sequence[str]]
-
-
-def supported_interpreters(config_file, no_input) -> t.Optional[GivenInterpreters]:
-    if not no_input:  # interactive
-        if sys.version_info < (3, 10):
-            return check_box_dialog(config_file=config_file)
-        return None
-    if config_file:
-        return get_interpreters_from_yaml(config_file)
-    return None
-
-
-def check_box_dialog(config_file=None) -> GivenInterpreters:
-    defaults: t.Optional[t.Sequence[str]] = None
-    if config_file:
-        interpreters_data: t.Optional[GivenInterpreters] = get_interpreters_from_yaml(
-            config_file
-        )
-        if interpreters_data:
-            defaults = interpreters_data.get('supported-interpreters', None)
-    return get_interpreters(choices=defaults)
 
 
 def generate(
