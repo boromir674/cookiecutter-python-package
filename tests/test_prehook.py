@@ -8,16 +8,13 @@ TEST_DATA_DIR = os.path.join(MY_DIR, 'data')
 
 @pytest.fixture
 def is_valid_python_module_name():
-    from cookiecutter_python.hooks.pre_gen_project import (
-        InputValueError,
-        verify_templated_module_name,
-    )
+    from cookiecutter_python.hooks.pre_gen_project import sanitize
 
     def _is_valid_python_module_name(name: str):
         try:
-            verify_templated_module_name(name)
+            sanitize['module-name'](name)
             return True
-        except InputValueError:
+        except sanitize.exceptions['module-name']:
             return False
 
     return _is_valid_python_module_name

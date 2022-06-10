@@ -7,8 +7,6 @@ __all__ = ['handler']
 
 
 def _available_on_pypi(callback, package_name: str):
-    print(type(callback), callback)
-    print(type(package_name), package_name)
     try:
         res: bool = callback(package_name)
     except ImportError as error:

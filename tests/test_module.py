@@ -9,6 +9,7 @@ def test_simple_invocation(get_cli_invocation):
         '--help',
     )
     assert result.exit_code == 0
+    print(result.stdout)
     assert result.stdout.split('\n')[0] == 'Usage: generate-python [OPTIONS]'
     assert result.stderr == ''
 

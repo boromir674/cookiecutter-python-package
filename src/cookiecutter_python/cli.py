@@ -104,8 +104,6 @@ def main(
     """
 
     # TODO Improvement: add logging configuration
-
-    print(f'\nSanity Check\nno_input: {type(no_input)}, {no_input}')
     try:
         project: str = generate(
             checkout,

@@ -106,7 +106,6 @@ def project_dir(
     assert all(['tox.ini' in x for x in (expected_files, runtime_files)])
 
     p = os.path.abspath(os.path.join(proj_dir, '.github', 'workflows', 'test.yaml'))
-    print(p)
     with open(p, 'r') as f:
         contents = f.read()
     import re

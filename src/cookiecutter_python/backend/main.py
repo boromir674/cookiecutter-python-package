@@ -3,9 +3,8 @@ import os
 
 from requests.exceptions import ConnectionError
 
-from cookiecutter_python.backend.check_pypi import check_pypi
-from cookiecutter_python.backend.check_pypi_handler import handler
-
+from .check_pypi import check_pypi
+from .check_pypi_handler import handler
 from .generator import create_context, generator
 from .helpers import supported_interpreters
 

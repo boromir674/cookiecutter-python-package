@@ -1,14 +1,8 @@
-from .input_sanitization import (
-    InputValueError,
-    InvalidInterpretersError,
-    build_input_verification,
-)
 from .main import CheckPypiError, generate
+from .sanitization import sanitize
 
 __all__ = [
     'generate',
     'CheckPypiError',
-    'InputValueError',
-    'build_input_verification',
-    'InvalidInterpretersError',
+    'sanitize',
 ]
