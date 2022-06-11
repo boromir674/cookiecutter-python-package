@@ -12,9 +12,9 @@ def test_running_pytest(get_cli_invocation, project_dir):
         os.path.join(project_dir, 'tests'),
         '-vv',
         env={'PYTHONPATH': f'{str(os.path.join(project_dir, "src"))}'},
-    )()
+    )
     assert result.exit_code == 0
-    assert result.stderr == 'None'
+    assert result.stderr == ''
 
 
 @pytest.mark.integration
@@ -33,6 +33,6 @@ def test_running_tox(get_cli_invocation, project_dir):
         'py{version}-dev'.format(version=tox_python_string),
         '-vv',
         env={'PYTHONPATH': f'{str(os.path.join(project_dir, "src"))}', 'PATH': ''},
-    )()
+    )
     assert result.exit_code == 0
-    assert result.stderr == 'None'
+    assert result.stderr == ''

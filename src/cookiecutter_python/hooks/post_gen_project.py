@@ -17,11 +17,11 @@ def get_request():
     COOKIECUTTER = (
         OrderedDict()
     )  # We init the variable to the same type that will be set in the next line.
-    COOKIECUTTER = {{ cookiecutter }}
+    COOKIECUTTER = {{ cookiecutter }}  # pylint: disable=undefined-variable
     AUTHOR = "{{ cookiecutter.author }}"
     AUTHOR_EMAIL = "{{ cookiecutter.author_email }}"
     INITIALIZE_GIT_REPO_FLAG = "{{ cookiecutter.initialize_git_repo|lower }}"
-    ADD_CLI_FLAG = "{{ cookiecutter.add_cli|lower }}"
+    add_cli_flag = "{{ cookiecutter.add_cli|lower }}"
 
     request = type('PostGenProjectRequest', (), {
         'cookiecutter': COOKIECUTTER,
@@ -30,7 +30,7 @@ def get_request():
         'author': AUTHOR,
         'author_email': AUTHOR_EMAIL,
         'initialize_git_repo': {'yes': True}.get(INITIALIZE_GIT_REPO_FLAG, False),
-        'add_cli': {'yes': True}.get(ADD_CLI_FLAG, False),
+        'add_cli': {'yes': True}.get(add_cli_flag, False),
     })
 
     return request
@@ -156,23 +156,14 @@ def post_file_removal(request):
             path.join(request.project_dir, 'src', request.module_name, '__main__.py'),
         ])
     for file in files_to_remove:
-        print('FILE to remove:', file)
         os.remove(file)
-        # try:
-        # except Exception as error:
-        #     raise PostFileRemovalError from error
 
 
 def _post_hook():
     print('\n --- POST GEN SCRIPT')
     request = get_request()
     print('Computed Templated Vars for Post Script')
-    # try:
     post_file_removal(request)
-    # except PostFileRemovalError as error:
-    #     print(error)
-    #     print('ERROR in Post Script.\nExiting with 1')
-    #     return 1
     if request.initialize_git_repo:
         try:
             initialize_git_repo(request.project_dir)

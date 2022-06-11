@@ -8,16 +8,13 @@ TEST_DATA_DIR = os.path.join(MY_DIR, 'data')
 
 @pytest.fixture
 def is_valid_python_module_name():
-    from cookiecutter_python.hooks.pre_gen_project import (
-        InputValueError,
-        verify_templated_module_name,
-    )
+    from cookiecutter_python.hooks.pre_gen_project import sanitize
 
     def _is_valid_python_module_name(name: str):
         try:
-            verify_templated_module_name(name)
+            sanitize['module-name'](name)
             return True
-        except InputValueError:
+        except sanitize.exceptions['module-name']:
             return False
 
     return _is_valid_python_module_name
@@ -46,12 +43,12 @@ def correct_module_name(request):
 
 def test_correct_module_name(correct_module_name, is_valid_python_module_name):
     result = is_valid_python_module_name(correct_module_name.strip())
-    assert result == True
+    assert result is True
 
 
 def test_incorrect_module_name(is_valid_python_module_name):
     result = is_valid_python_module_name('23numpy')
-    assert result == False
+    assert not result
 
 
 @pytest.fixture

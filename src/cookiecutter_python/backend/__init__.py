@@ -1,3 +1,8 @@
-from .cookiecutter_proxy import cookiecutter
+from .main import CheckPypiError, generate
+from .sanitization import sanitize
 
-__all__ = ['cookiecutter']
+__all__ = [
+    'generate',
+    'CheckPypiError',
+    'sanitize',
+]

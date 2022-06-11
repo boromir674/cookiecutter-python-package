@@ -1,14 +1,20 @@
-import typing as t
+from typing import Any, Callable, Mapping, Optional, Sequence, Union
+
+from ..dialog import InteractiveDialog
+
+PyInquirerQuestion = Mapping[str, Optional[Union[str, Mapping, Callable]]]
+PyInquirerPromtQuestions = Union[PyInquirerQuestion, Sequence[PyInquirerQuestion]]
+
+PyInquirerAnswers = Mapping[str, Any]
 
 try:
     from PyInquirer import prompt
 except ImportError:
 
-    def prompt(*args, **kwargs):
+    def prompt(
+        questions: PyInquirerPromtQuestions, answers: PyInquirerAnswers = None, **kwargs: Any
+    ) -> PyInquirerAnswers:
         return {}
-
-
-from ..dialog import InteractiveDialog
 
 
 @InteractiveDialog.register_as_subclass('interpreters-checkbox')
@@ -16,9 +22,8 @@ class InterpretersCheckbox(InteractiveDialog):
     def dialog(self, *args, **kwargs):
         return self._dialog(*args, **kwargs)
 
-    def _dialog(
-        self, choices: t.Dict[str, t.Union[str, bool]]
-    ) -> t.Dict[str, t.Sequence[str]]:
+    @staticmethod
+    def _dialog(choices: Mapping[str, Union[str, bool]]) -> Mapping[str, Sequence[str]]:
 
         return prompt(
             [
