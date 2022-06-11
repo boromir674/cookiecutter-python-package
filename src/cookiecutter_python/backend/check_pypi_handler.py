@@ -22,9 +22,8 @@ def _available_on_pypi(callback, package_name: str):
             "Could not determine whether the selected pypi name "
             f"'{package_name}' is already taken."
         )
-
     except Exception as error:  # ie network failure
-        print(str(error), file=sys.stderr)
+        print(str(error), file=sys.stdout)
     else:
         if res:
             print(

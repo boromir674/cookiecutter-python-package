@@ -5,9 +5,9 @@ import pytest
 def get_post_gen_main(get_object, request_factory):
     def mock_get_request():
         return request_factory.post(
-            project_dir='dummy-folder',  # TODO find out if we can use a temp dir
+            project_dir='dummy-folder',
             initialize_git_repo=False,
-            add_cli=True,  # simply to avoid further file processing
+            add_cli=True,
         )
 
     def get_pre_gen_hook_project_main(overrides={}):

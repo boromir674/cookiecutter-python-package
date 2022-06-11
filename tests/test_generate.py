@@ -17,17 +17,15 @@ import pytest
 def test_supported_python_interpreters(
     config_file: str,
     expected_interpreters: t.Sequence[str],
-    get_object,
-    get_check_pypi_mock,
+    mock_check_pypi,
     assert_interpreters_array_in_build_matrix,
     assert_scaffolded_without_cli,
     tmpdir,
 ):
-    generate = get_object(
-        'generate',
-        'cookiecutter_python.backend.main',
-        overrides={"check_pypi": lambda: get_check_pypi_mock(emulated_success=True)},
-    )
+    from cookiecutter_python.backend.main import generate
+
+    mock_check_pypi(exists_on_pypi=True)
+
     project_dir: str = generate(
         checkout=None,
         no_input=True,
@@ -67,26 +65,25 @@ def assert_interpreters_array_in_build_matrix() -> t.Callable[[str, t.Sequence[s
     return _assert_interpreters_array_in_build_matrix
 
 
+CLI_RELATED_FILES = {
+    'cli.py',
+    '__main__.py',
+}
+
+
 @pytest.fixture
-def assert_scaffolded_without_cli(
-    cli_related_file_name, project_source_file
-) -> t.Callable[[str], None]:
+def assert_scaffolded_without_cli(project_source_file) -> t.Callable[[str], None]:
     from os import path
 
     def assert_project_generated_without_cli(project_dir: str) -> None:
         get_file: t.Callable[[str], str] = project_source_file(project_dir)
         # assert there are no cli related files
-        assert not path.isfile(get_file(cli_related_file_name))
+        assert all(not path.isfile(get_file(file_name)) for file_name in CLI_RELATED_FILES)
 
     return assert_project_generated_without_cli
 
 
-@pytest.fixture(
-    params=[
-        'cli.py',
-        '__main__.py',
-    ]
-)
+@pytest.fixture(params=[x for x in CLI_RELATED_FILES])
 def cli_related_file_name(request):
     return request.param
 
