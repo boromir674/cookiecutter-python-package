@@ -228,8 +228,9 @@ notes=FIXME,
 contextmanager-decorators=contextlib.contextmanager
 
 # List of members which are set dynamically and missed by pylint inference
-# system, and so shouldn't trigger E1101 (no-member) when accessed. Python regular
-# expressions are accepted.
+# system, and so shouldn't trigger E1101 when accessed. Python regular
+# expressions are accepted. Things coming from a metaclass or a dynamic attribute set.
+# Can solve E1101: Class 'X' has no 'y' member (no-member)
 generated-members=_transform|self\.objects|self\._observers|subclasses|
       InteractiveDialog\.create|
       exception_msg|
@@ -361,6 +362,8 @@ function-naming-style=snake_case
 #function-rgx=
 
 # Good variable names which should always be accepted, separated by a comma.
+# Can solves C0103: Variable name "x" doesn't conform to snake_case naming
+# style (invalid-name)
 good-names=i,
            j,
            k,
@@ -376,7 +379,6 @@ good-names=i,
            MODULE_REGEX,
            REGEX,
            cookiecutter
-
 
 # Good variable names regexes, separated by a comma. If names match any regex,
 # they will always be accepted
@@ -525,7 +527,7 @@ callbacks=cb_,
 # Here you make pylint ignore variable names that seem to be undefined.
 # For example:
 # * Variables inside try/except statements that can potentially be undefined
-# * Variables that are part of templating (ie jinja, cookicutter)
+# * Variables that are part of templating (ie jinja, cookiecutter)
 #   and we expect them to be replaced at runtime, but statically seem erronouous for pylint
 # E0602: Undefined variable '<variable_name>' (undefined-variable)
 dummy-variables-rgx=cookiecutter|_+$|(_[a-zA-Z0-9_]*[a-zA-Z0-9]+?$)|dummy|^ignored_|^unused_

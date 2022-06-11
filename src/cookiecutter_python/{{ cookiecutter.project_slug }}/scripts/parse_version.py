@@ -12,9 +12,9 @@ ClientCallback = t.Callable[[str, str], t.Tuple]
 
 MatchConverter = t.Callable[[t.Match], t.Tuple]
 MatchData = t.Union[
-    t.Tuple[ t.Callable[[t.Match], t.Tuple], str, t.List[t.Any] ],
-    t.Tuple[ t.Callable[[t.Match], t.Tuple], str ],
-    t.Tuple[ t.Callable[[t.Match], t.Tuple] ]
+    t.Tuple[t.Callable[[t.Match], t.Tuple], str, t.List[t.Any]],
+    t.Tuple[t.Callable[[t.Match], t.Tuple], str],
+    t.Tuple[t.Callable[[t.Match], t.Tuple]],
 ]
 # 1st item (Callable): takes a Match object and return a tuple of strings
 # 2nd item (str): 'method'/'callable attribute' of the 're' python module)
@@ -32,6 +32,7 @@ def build_client_callback(data: MatchData, factory: ExceptionFactory) -> ClientC
         data = (data[0], 'search', [re.MULTILINE])
     elif len(data) == 2:
         data = (data[0], data[1], [re.MULTILINE])
+
     def client_callback(file_path: str, regex: str) -> t.Tuple:
         with open(file_path, 'r') as _file:
             contents = _file.read()

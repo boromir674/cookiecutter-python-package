@@ -63,7 +63,7 @@ jobs:
         path: ${{ "{{" }} env.DIST_DIR {{ "}}" }}
         if-no-files-found: error
 
-    - name: Aggregate Test Suite Coverage Data
+    - name: Aggregate Test Coverage Data
       run: |
         python -m pip install coverage
         tox -e coverage --sitepackages -vv -s false
