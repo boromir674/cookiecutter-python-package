@@ -1,6 +1,5 @@
 import logging
 import typing as t
-from functools import cached_property
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +15,7 @@ class Sanitize:
     def __getitem__(self, item) -> SanitizerLike:
         return self.sanitizers_map[item]
 
-    @cached_property
+    @property
     def exceptions(self) -> t.Mapping[str, ExceptionValue]:
         return dict(self.__iter_exceptions())
 
