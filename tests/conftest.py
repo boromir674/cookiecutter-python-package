@@ -430,14 +430,15 @@ def get_cli_invocation():
 
     def python37_n_above_kwargs():
         return dict(
-            capture_output=True,  # capture stdout, stderr separately
+            capture_output=True,  # capture stdout and stderr separately
             # cwd=project_directory,
             check=True,
         )
 
     def python36_n_below_kwargs():
         return dict(
-            stdout=subprocess.PIPE,  # capture stdout, stderr separately
+            stdout=subprocess.PIPE,  # capture stdout and stderr separately
+            stderr=subprocess.PIPE,
             check=True,
         )
 
