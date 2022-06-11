@@ -403,7 +403,9 @@ def cli_invoker_params() -> t.Callable[[t.Any], CLIRunnerParameters]:
 # HELPERS
 @pytest.fixture
 def get_cli_invocation():
+    import sys
     import subprocess
+    import shlex
 
     class CLIResult:
         exit_code: int
@@ -427,17 +429,35 @@ def get_cli_invocation():
         def stderr(self) -> str:
             return self._stderr
 
+
+    def python37_n_above_kwargs():
+        return dict(
+            capture_output=True,  # capture stdout, stderr separately
+            # cwd=project_directory,
+            check=True,
+        )
+
+    def python36_n_below_kwargs():
+        return dict(
+            stdout=subprocess.PIPE,  # capture stdout, stderr separately
+            check=True,
+        )
+
+    subprocess_run_map = {
+        True: python36_n_below_kwargs,
+        False: python37_n_above_kwargs,
+    }
+
     def get_callable(cli_args: t.List[str], **kwargs) -> t.Callable[[], CLIResult]:
         def subprocess_run() -> CLIResult:
-            completed_process = subprocess.run(cli_args, **kwargs)
+            kwargs_dict = subprocess_run_map[sys.version_info < (3, 7)]()
+            completed_process = subprocess.run(cli_args, **dict(kwargs_dict, **kwargs))
             return CLIResult(completed_process)
 
         return subprocess_run
 
     def execute_command_in_subprocess(executable: str, *args, **kwargs):
-        execute_subprocess = get_callable(
-            [executable] + list(args), env=kwargs.get('env', {}), capture_output=True
-        )
+        execute_subprocess = get_callable([executable] + list(args), **kwargs)
         return execute_subprocess()
 
     return execute_command_in_subprocess
