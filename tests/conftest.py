@@ -427,18 +427,20 @@ def get_cli_invocation():
         def stderr(self) -> str:
             return self._stderr
 
+    def get_callable(cli_args: t.List[str], **kwargs) -> t.Callable[[], CLIResult]:
+        def subprocess_run() -> CLIResult:
+            completed_process = subprocess.run(cli_args, **kwargs)
+            return CLIResult(completed_process)
+
+        return subprocess_run
+
     def execute_command_in_subprocess(executable: str, *args, **kwargs):
-        completed_process = subprocess.run(
+        execute_subprocess = get_callable(
             [executable] + list(args), env=kwargs.get('env', {}), capture_output=True
         )
-        return CLIResult(completed_process)
+        return execute_subprocess()
 
     return execute_command_in_subprocess
-
-
-@pytest.fixture
-def invoke_tox_cli_to_run_test_suite(get_cli_invocation):
-    return get_cli_invocation('python', '-m', 'tox', '-vv')
 
 
 @pytest.fixture
