@@ -1,26 +1,14 @@
 # -*- coding: utf-8 -*-
-
 """Main `cookiecutter_python` CLI."""
 
-import json
 import os
 import sys
 
 import click
-from cookiecutter.exceptions import (
-    FailedHookException,
-    InvalidModeException,
-    InvalidZipRepository,
-    OutputDirExistsException,
-    RepositoryCloneFailed,
-    RepositoryNotFound,
-    UndefinedVariableInTemplate,
-    UnknownExtension,
-)
 
 from cookiecutter_python import __version__
-from cookiecutter_python.backend.check_pypi import ContextVariableDoesNotExist
-from .backend import CheckPypiError, generate
+from .backend import generate
+from .cli_handlers import handle_error, exceptions
 
 this_file_location = os.path.dirname(os.path.realpath(os.path.abspath(__file__)))
 
@@ -117,28 +105,11 @@ def main(
             directory=directory,
             skip_if_file_exists=skip_if_file_exists,
         )
-    except CheckPypiError as error:
-        click.echo(error)
-    except (  # cookiecutter exceptions
-        OutputDirExistsException,
-        InvalidModeException,
-        FailedHookException,
-        UnknownExtension,
-        InvalidZipRepository,
-        RepositoryNotFound,
-        RepositoryCloneFailed,
-        # python generator exceptions
-        ContextVariableDoesNotExist,
-    ) as error:
-        click.echo(error)
+    except exceptions['critical'] as error:
+        handle_error(error)
         sys.exit(1)
-    except UndefinedVariableInTemplate as undefined_err:
-        click.echo('{}'.format(undefined_err.message))
-        click.echo('Error message: {}'.format(undefined_err.error.message))
-
-        context_str = json.dumps(undefined_err.context, indent=4, sort_keys=True)
-        click.echo('Context: {}'.format(context_str))
-        sys.exit(1)
+    except exceptions['non-critical'] as error:
+        handle_error(error)
     return project
 
 
