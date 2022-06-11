@@ -1,15 +1,12 @@
 import json
+import logging
 import sys
 from collections import OrderedDict
 
-from cookiecutter_python.backend.input_sanitization import (
-    InputValueError,
-    build_input_verification,
-)
-from cookiecutter_python.backend.interpreters_support import (
-    InvalidInterpretersError,
-    verify_input_interpreters,
-)
+from cookiecutter_python.backend import sanitize
+
+
+logger = logging.getLogger(__name__)
 
 
 def get_request():
@@ -23,7 +20,6 @@ def get_request():
     cookiecutter = OrderedDict()
     cookiecutter: OrderedDict = {{cookiecutter}}
 
-    print('\n', type(cookiecutter['interpreters']))
     interpreters = cookiecutter['interpreters']
     if isinstance(interpreters, str):  # we assume it is json
         interpreters = json.loads(interpreters)
@@ -41,36 +37,39 @@ def get_request():
     )
 
 
-verify_templated_module_name = build_input_verification(
-    'module-name',
-)
-
-verify_templated_semantic_version = build_input_verification(
-    'semantic-version',
-)
+class InputSanitizationError(Exception):
+    pass
 
 
 def input_sanitization(request):
     # CHECK Package Name
     try:
-        verify_templated_module_name(request.module_name)
-    except InputValueError as error:
-        raise InputValueError(
+        sanitize['module-name'](request.module_name)
+        # verify_templated_module_name(request.module_name)
+    except sanitize.exceptions['module-name'] as error:
+        raise InputSanitizationError(
             f'ERROR: {request.module_name} is not a valid Python module name!'
         ) from error
 
     # CHECK Version
     try:
-        verify_templated_semantic_version(request.package_version_string)
-    except InputValueError as error:
-        raise InputValueError(
+        # verify_templated_semantic_version(request.package_version_string)
+        sanitize['semantic-version'](request.package_version_string)
+    except sanitize.exceptions['semantic-version'] as error:
+        raise InputSanitizationError(
             f'ERROR: {request.package_version_string} is not a valid Semantic Version!'
         ) from error
     try:
-        verify_input_interpreters(request.interpreters)
-    except InvalidInterpretersError as error:
-        # TODO log maybe
-        raise error
+        # verify_input_interpreters(request.interpreters)
+        sanitize['interpreters'](request.interpreters)
+    except sanitize.exceptions['interpreters'] as error:
+        logger.warning("Interpreters Data Error: %s", json.dumps({
+            'error': error,
+            'interpreters_data': request.interpreters,
+        }, sort_keys=True, indent=4))
+        raise InputSanitizationError(
+            "ERROR: {request.interpreters} are not valid 'supported interpreters'!"
+        ) from error
 
     print("Sanitized Input Variables :)")
 
@@ -78,7 +77,7 @@ def input_sanitization(request):
 def hook_main(request):
     try:
         input_sanitization(request)
-    except (InputValueError, InvalidInterpretersError) as error:
+    except InputSanitizationError as error:
         print(error)
         return 1
     return 0
@@ -86,7 +85,6 @@ def hook_main(request):
 
 def _main():
     request = get_request()
-    # print(request)
     print('Computed Variables:\n{req}'.format(req=str(request)))
     return hook_main(request)
 

@@ -11,6 +11,7 @@ on:
     branches:
       - master
       - dev
+      - develop
     tags:
       - v*
 
@@ -21,10 +22,7 @@ jobs:
     strategy:
       matrix:
         platform: [ubuntu-latest, macos-latest]
-        # platform: [macos-latest]
-        # python-version: ["3.6"]
         python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
-
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
@@ -37,19 +35,24 @@ jobs:
         python -m pip install tox tox-gh-actions
 
     - name: Do Lint Checking
-      run: tox -e lint -vv -s false
+      run: |
+        tox -e lint -vv -s false
+        tox -e prospector -vv -s false
 
     - name: Do Type Checking
       run: tox -e type -vv -s false
 
     - name: Specify current package version to assist build tool
-      run: echo "PKG_VERSION=$(python scripts/parse_version.py)" >> $GITHUB_ENV
+      run: |
+        PARSER="src/cookiecutter_python/{{ cookiecutter.project_slug }}/scripts/parse_version.py"
+        A=$(python "${PARSER}")
+        echo $A
+        echo "PKG_VERSION=$A" >> $GITHUB_ENV
 
     - name: Run Test Suite
       run: tox -vv -s false
       env:
         PLATFORM: ${{ matrix.platform }}
-
     - name: Check for compliance with Python Best Practices
       run: |
         DIST_DIR=dist
@@ -58,7 +61,6 @@ jobs:
         mkdir "$DIST_DIR"
         mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}.tar.gz" "${DIST_DIR}"
         mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}-py3-none-any.whl" "${DIST_DIR}"
-
         tox -e check -vv -s false
 
     - name: Upload Source & Wheel distributions as Artefacts
@@ -99,5 +101,3 @@ jobs:
         flags: unittests
         name: codecov-umbrella
         verbose: true
-
-    # TODO find build tar.gz whl files and upload as artefacts

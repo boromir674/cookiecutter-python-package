@@ -1,5 +1,7 @@
 import typing as t
 
+from .input_sanitization import Sanitize
+
 InterpretersSequence = t.Sequence[str]
 
 
@@ -25,6 +27,7 @@ SUPPORTED = {
 }
 
 
+@Sanitize.register_sanitizer('interpreters')
 def verify_input_interpreters(interpreters: InterpretersSequence) -> None:
     user_interpreters_set = set(interpreters)
     if len(user_interpreters_set) != len(interpreters):
@@ -48,5 +51,6 @@ def unsupported_interpreters(interpreters: InterpretersSequence) -> t.Iterator[s
             yield interpreter
 
 
+@Sanitize.register_exception('interpreters')
 class InvalidInterpretersError(Exception):
     pass

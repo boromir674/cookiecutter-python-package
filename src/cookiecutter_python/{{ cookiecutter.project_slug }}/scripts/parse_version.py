@@ -11,31 +11,36 @@ ExceptionFactory = t.Callable[[str, str, str], Exception]
 ClientCallback = t.Callable[[str, str], t.Tuple]
 
 MatchConverter = t.Callable[[t.Match], t.Tuple]
-MatchData = t.Tuple[str, t.List[t.Any], t.Callable[[t.Match], t.Tuple]]
-# 1st item (str): 'method'/'callable attribute' of the 're' python module)
-# 2nd item (list): zero or more additional runtime arguments
-# 3rd item (Callable): takes a Match object and return a tuple of strings
+MatchData = t.Union[
+    t.Tuple[t.Callable[[t.Match], t.Tuple], str, t.List[t.Any]],
+    t.Tuple[t.Callable[[t.Match], t.Tuple], str],
+    t.Tuple[t.Callable[[t.Match], t.Tuple]],
+]
+# 1st item (Callable): takes a Match object and return a tuple of strings
+# 2nd item (str): 'method'/'callable attribute' of the 're' python module)
+# 3rd item (list): zero or more additional runtime arguments
 
-my_dir = os.path.dirname(os.path.realpath(__file__))
-
-TOML = 'pyproject.toml'
-TOML_FILE = os.path.abspath(os.path.join(my_dir, '..', TOML))
 
 DEMO_SECTION: str = (
     "[tool.software-release]\nversion_variable = " "src/package_name/__init__.py:__version__"
 )
+TOML = 'pyproject.toml'
 
 
 def build_client_callback(data: MatchData, factory: ExceptionFactory) -> ClientCallback:
+    if len(data) == 1:
+        data = (data[0], 'search', [re.MULTILINE])
+    elif len(data) == 2:
+        data = (data[0], data[1], [re.MULTILINE])
+
     def client_callback(file_path: str, regex: str) -> t.Tuple:
         with open(file_path, 'r') as _file:
             contents = _file.read()
-        match = getattr(re, data[0])(regex, contents, *data[1])
+        match = getattr(re, data[1])(regex, contents, *data[2])
         if match:
-            extracted_tuple = data[2](match)
+            extracted_tuple = data[0](match)
             return extracted_tuple
-        else:
-            raise factory(file_path, regex, contents)
+        raise factory(file_path, regex, contents)
 
     return client_callback
 
@@ -43,33 +48,19 @@ def build_client_callback(data: MatchData, factory: ExceptionFactory) -> ClientC
 # PARSERS
 
 software_release_parser = build_client_callback(
-    (
-        'search',
-        [
-            re.MULTILINE,
-        ],
-        lambda match: (match.group(1), match.group(2)),
-    ),
+    (lambda match: (match.group(1), match.group(2)),),
     lambda file_path, reg, string: RuntimeError(
         "Expected to find the '[tool.software-release]' section, in "
-        f"the '{file_path}' file, with key "
-        "'version_variable'.\nFor example:\n"
-        f"{DEMO_SECTION}\n "
-        "indicates that the version string should be looked up in "
-        f"the src/package_name/__init__.py file and specifically "
+        f"the '{file_path}' file, with key 'version_variable'.\nFor example:\n"
+        f"{DEMO_SECTION}\n indicates that the version string should be looked "
+        "up in the src/package_name/__init__.py file and specifically "
         "a '__version__ = 1.2.3' kind of line is expected to be found."
     ),
 )
 
 
 version_file_parser = build_client_callback(
-    (
-        'search',
-        [
-            re.MULTILINE,
-        ],
-        lambda match: (match.group(1),),
-    ),
+    (lambda match: (match.group(1),),),
     lambda file_path, reg, string: AttributeError(
         "Could not find a match for regex {regex} when applied to:".format(regex=reg)
         + "\n{content}".format(content=string)
@@ -98,7 +89,7 @@ def parse_version(software_release_cfg: str) -> str:
     )
 
     file_with_version_string = os.path.abspath(
-        os.path.join(my_dir, '../', file_name_with_version)
+        os.path.join(os.path.dirname(software_release_cfg), file_name_with_version)
     )
 
     if not os.path.isfile(file_with_version_string):
@@ -115,18 +106,22 @@ def parse_version(software_release_cfg: str) -> str:
     return version
 
 
-def _main():
-    try:
-        version_string = parse_version(TOML_FILE)
-        print(version_string)
-        return 0
-    except (RuntimeError, FileNotFoundError, AttributeError) as exception:
-        print(exception)
-        return 1
+def get_arguments(sys_args: t.List[str]):
+    if len(sys_args) == 1:  # no input path was given by user, as console arg
+        project_dir = os.getcwd()
+    if len(sys_args) > 1:
+        project_dir = sys_args[1]
+    return lambda x: os.path.abspath(os.path.join(project_dir, x))
 
 
 def main():
-    sys.exit(_main())
+    try:
+        toml_file: str = get_arguments(sys.argv)(TOML)
+        version_string = parse_version(toml_file)
+        print(version_string)
+    except (RuntimeError, FileNotFoundError, AttributeError) as exception:
+        print(exception)
+        sys.exit(1)
 
 
 if __name__ == '__main__':

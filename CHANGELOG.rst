@@ -2,6 +2,42 @@
 Changelog
 =========
 
+1.5.0 (2022-06-11)
+==================
+
+This release focused on improving the code architecture, reducing technical
+debt, decoupling components, cleaning code, fixing styling issues.
+
+It also features some updates in the Generated Project, with improved tox envs,
+cleaner python scripts and cleaner development tools' configuration files
+(such as .pylintrc, pyproject.toml, tox.ini).
+
+Changes
+^^^^^^^
+
+feature
+"""""""
+- document config settings, improve tox envs & scripts
+
+test
+""""
+- verify Generator can be invoked as python module: `python -m cookiecutter_python`
+
+refactor
+""""""""
+- dry code per string_sanitizer implementation
+- reduce code in cli.py by delegating error handling to the new cli_handlers.py module
+- reduce code of parse_version.py script
+- abstract input sanitization
+- reduce main code
+- decouple components
+- clean code, satisfy some todos, dry code
+
+ci
+""
+- use the template's parse_version script to reduce duplicate code
+
+
 1.4.1 (2022-06-07)
 ==================
 

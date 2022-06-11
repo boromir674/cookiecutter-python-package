@@ -73,7 +73,8 @@ def test_project_generation_request(
 
 @pytest.fixture
 def generate_project() -> t.Callable[[ProjectGenerationRequestData], str]:
-    from cookiecutter_python.backend import cookiecutter
+    """Generator backend used by the production Generator CLI."""
+    from cookiecutter_python.backend.generator import generator as cookiecutter
 
     def _generate_project(generate_request: ProjectGenerationRequestData) -> str:
         return cookiecutter(
@@ -82,7 +83,6 @@ def generate_project() -> t.Callable[[ProjectGenerationRequestData], str]:
             extra_context=generate_request.extra_context,
             output_dir=generate_request.destination,
             overwrite_if_exists=True,
-            # TODO: below takes a boolean variable!
             default_config=generate_request.default_dict,
         )
 
@@ -106,7 +106,6 @@ def project_dir(
     assert all(['tox.ini' in x for x in (expected_files, runtime_files)])
 
     p = os.path.abspath(os.path.join(proj_dir, '.github', 'workflows', 'test.yaml'))
-    print(p)
     with open(p, 'r') as f:
         contents = f.read()
     import re
@@ -255,35 +254,53 @@ def request_factory(hook_request_new):
 
 
 @pytest.fixture
-def get_check_pypi_mock():
-    def build_check_pypi_mock_output(emulated_success=True):
+def mock_check_pypi(get_object):
+    """Mock and return the `check_pypi` function (with side effects).
 
-        return type(
-            'Future',
-            (),
-            {
-                'result': lambda: type(
-                    'HttpResponse',
-                    (),
-                    {
-                        'status_code': 200 if emulated_success else 404,
-                    },
-                )
-            },
-        )()
+    Returns a callable than when called mocks the check_pypi function so that
+    there is no actual network (ie no connections though the internet) access.
 
-    def _get_check_pypi_mock(
-        emulated_success: t.Optional[bool] = True,
-    ):
-        def check_pypi_mock(*args, **kwargs):
-            return (
-                build_check_pypi_mock_output(emulated_success=emulated_success),
-                'biskotaki',
+    Calling the returned object yields side effects in order to facilitate
+    mocking.
+
+    You can then either directly use the returned `check_pypi` function
+    (which shall trigger the mocked behaviour), or test your own code, which
+    shall trigger the mocked behaviour if it depends on (the "original")
+    `check_pypi`.
+
+    Args:
+        exists_on_pypi (t.Optional[bool]): whether to emulate that the package
+            exists on pypi, or not. Defaults to False (package does NOT exist
+            on pypi).
+
+    Returns:
+        t.Callable: a reference to the `check_pypi` function
+    """
+
+    class FutureMock:
+        def __init__(self, exists_on_pypi: bool = False):
+            self.result = lambda: type(
+                'HttpResponseMock', (), {'status_code': 200 if exists_on_pypi else 404}
             )
 
-        return check_pypi_mock
+    def get_check_pypi_with_mocked_futures_session(
+        exists_on_pypi: bool = False,
+    ) -> t.Callable[..., t.Any]:  # todo specify
+        """Mocks FuturesSession and returns the 'check_pypi' object."""
 
-    return _get_check_pypi_mock
+        return get_object(
+            'check_pypi',
+            'cookiecutter_python.backend.check_pypi',
+            overrides={
+                "FuturesSession": lambda: type(
+                    'MockFuturesSession',
+                    (),
+                    {'get': lambda self, url: FutureMock(exists_on_pypi)},
+                )
+            },
+        )
+
+    return get_check_pypi_with_mocked_futures_session
 
 
 PythonType = t.Union[bool, str, None]
@@ -387,6 +404,7 @@ def cli_invoker_params() -> t.Callable[[t.Any], CLIRunnerParameters]:
 @pytest.fixture
 def get_cli_invocation():
     import subprocess
+    import sys
 
     class CLIResult:
         exit_code: int
@@ -395,8 +413,8 @@ def get_cli_invocation():
 
         def __init__(self, completed_process: subprocess.CompletedProcess):
             self._exit_code = int(completed_process.returncode)
-            self._stdout = str(completed_process.stdout)
-            self._stderr = str(completed_process.stderr)
+            self._stdout = str(completed_process.stdout, encoding='utf-8')
+            self._stderr = str(completed_process.stderr, encoding='utf-8')
 
         @property
         def exit_code(self) -> int:
@@ -410,21 +428,38 @@ def get_cli_invocation():
         def stderr(self) -> str:
             return self._stderr
 
-    def get_callable(executable: str, *args, **kwargs) -> t.Callable[[], CLIResult]:
-        def _callable() -> CLIResult:
-            completed_process = subprocess.run(
-                [executable] + list(args), env=kwargs.get('env', {})
-            )
+    def python37_n_above_kwargs():
+        return dict(
+            capture_output=True,  # capture stdout and stderr separately
+            # cwd=project_directory,
+            check=True,
+        )
+
+    def python36_n_below_kwargs():
+        return dict(
+            stdout=subprocess.PIPE,  # capture stdout and stderr separately
+            stderr=subprocess.PIPE,
+            check=True,
+        )
+
+    subprocess_run_map = {
+        True: python36_n_below_kwargs,
+        False: python37_n_above_kwargs,
+    }
+
+    def get_callable(cli_args: t.List[str], **kwargs) -> t.Callable[[], CLIResult]:
+        def subprocess_run() -> CLIResult:
+            kwargs_dict = subprocess_run_map[sys.version_info < (3, 7)]()
+            completed_process = subprocess.run(cli_args, **dict(kwargs_dict, **kwargs))
             return CLIResult(completed_process)
 
-        return _callable
+        return subprocess_run
 
-    return get_callable
+    def execute_command_in_subprocess(executable: str, *args, **kwargs):
+        execute_subprocess = get_callable([executable] + list(args), **kwargs)
+        return execute_subprocess()
 
-
-@pytest.fixture
-def invoke_tox_cli_to_run_test_suite(get_cli_invocation):
-    return get_cli_invocation('python', '-m', 'tox', '-vv')
+    return execute_command_in_subprocess
 
 
 @pytest.fixture
