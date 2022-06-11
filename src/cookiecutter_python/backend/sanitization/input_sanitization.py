@@ -13,17 +13,19 @@ class Sanitize:
     sanitizers_map: t.Dict[str, SanitizerLike] = {}
     exceptions_map: t.Dict[str, ExceptionsMapValue] = {}
 
-    def __getitem__(cls, item) -> SanitizerLike:
-        return cls.sanitizers_map[item]
+    def __getitem__(self, item) -> SanitizerLike:
+        return self.sanitizers_map[item]
 
     @cached_property
     def exceptions(self) -> t.Mapping[str, ExceptionValue]:
-        return {k: v for k, v in self.__iter_exceptions()}
+        return dict(self.__iter_exceptions())
 
     def __iter_exceptions(self) -> t.Iterator[t.Tuple[str, ExceptionValue]]:
-        for k, v in self.exceptions_map.items():
-            exception: ExceptionValue = v[0] if len(v) == 1 else tuple(v)
-            yield k, exception
+        for key, exceptions_list in self.exceptions_map.items():
+            exception: ExceptionValue = (
+                exceptions_list[0] if len(exceptions_list) == 1 else tuple(exceptions_list)
+            )
+            yield key, exception
 
     @classmethod
     def register_sanitizer(cls, sanitizer_identifier: str):

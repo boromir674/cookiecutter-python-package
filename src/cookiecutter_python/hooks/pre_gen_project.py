@@ -67,7 +67,9 @@ def input_sanitization(request):
             'error': error,
             'interpreters_data': request.interpreters,
         }, sort_keys=True, indent=4))
-        raise InputSanitizationError("ERROR: {request.interpreters} are not valid 'supported interpreters'!") from error
+        raise InputSanitizationError(
+            "ERROR: {request.interpreters} are not valid 'supported interpreters'!"
+        ) from error
 
     print("Sanitized Input Variables :)")
 

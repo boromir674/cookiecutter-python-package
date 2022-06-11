@@ -24,6 +24,7 @@ MatchData = t.Union[
 DEMO_SECTION: str = (
     "[tool.software-release]\nversion_variable = " "src/package_name/__init__.py:__version__"
 )
+TOML = 'pyproject.toml'
 
 
 def build_client_callback(data: MatchData, factory: ExceptionFactory) -> ClientCallback:
@@ -109,14 +110,12 @@ def get_arguments(sys_args: t.List[str]):
         project_dir = os.getcwd()
     if len(sys_args) > 1:
         project_dir = sys_args[1]
-    TOML = 'pyproject.toml'
-    toml_file = os.path.abspath(os.path.join(project_dir, TOML))
-    return toml_file
+    return lambda x: os.path.abspath(os.path.join(project_dir, x))
 
 
 def main():
     try:
-        toml_file: str = get_arguments(sys.argv)
+        toml_file: str = get_arguments(sys.argv)(TOML)
         version_string = parse_version(toml_file)
         print(version_string)
     except (RuntimeError, FileNotFoundError, AttributeError) as exception:

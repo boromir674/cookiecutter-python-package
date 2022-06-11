@@ -1,5 +1,7 @@
 from typing import Any, Callable, Mapping, Optional, Sequence, Union
 
+from ..dialog import InteractiveDialog
+
 PyInquirerQuestion = Mapping[str, Optional[Union[str, Mapping, Callable]]]
 PyInquirerPromtQuestions = Union[PyInquirerQuestion, Sequence[PyInquirerQuestion]]
 
@@ -13,9 +15,6 @@ except ImportError:
         questions: PyInquirerPromtQuestions, answers: PyInquirerAnswers = None, **kwargs: Any
     ) -> PyInquirerAnswers:
         return {}
-
-
-from ..dialog import InteractiveDialog
 
 
 @InteractiveDialog.register_as_subclass('interpreters-checkbox')

@@ -1,8 +1,9 @@
 import typing as t
 
+from .input_sanitization import Sanitize
+
 InterpretersSequence = t.Sequence[str]
 
-from .input_sanitization import Sanitize
 
 # TODO Improvement: use an Enum
 # SUPPORTED = {
