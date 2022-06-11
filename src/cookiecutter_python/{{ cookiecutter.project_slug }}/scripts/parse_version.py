@@ -11,10 +11,14 @@ ExceptionFactory = t.Callable[[str, str, str], Exception]
 ClientCallback = t.Callable[[str, str], t.Tuple]
 
 MatchConverter = t.Callable[[t.Match], t.Tuple]
-MatchData = t.Tuple[str, t.List[t.Any], t.Callable[[t.Match], t.Tuple]]
-# 1st item (str): 'method'/'callable attribute' of the 're' python module)
-# 2nd item (list): zero or more additional runtime arguments
-# 3rd item (Callable): takes a Match object and return a tuple of strings
+MatchData = t.Union[
+    t.Tuple[ t.Callable[[t.Match], t.Tuple], str, t.List[t.Any] ],
+    t.Tuple[ t.Callable[[t.Match], t.Tuple], str ],
+    t.Tuple[ t.Callable[[t.Match], t.Tuple] ]
+]
+# 1st item (Callable): takes a Match object and return a tuple of strings
+# 2nd item (str): 'method'/'callable attribute' of the 're' python module)
+# 3rd item (list): zero or more additional runtime arguments
 
 
 DEMO_SECTION: str = (
@@ -23,12 +27,16 @@ DEMO_SECTION: str = (
 
 
 def build_client_callback(data: MatchData, factory: ExceptionFactory) -> ClientCallback:
+    if len(data) == 1:
+        data = (data[0], 'search', [re.MULTILINE])
+    elif len(data) == 2:
+        data = (data[0], data[1], [re.MULTILINE])
     def client_callback(file_path: str, regex: str) -> t.Tuple:
         with open(file_path, 'r') as _file:
             contents = _file.read()
-        match = getattr(re, data[0])(regex, contents, *data[1])
+        match = getattr(re, data[1])(regex, contents, *data[2])
         if match:
-            extracted_tuple = data[2](match)
+            extracted_tuple = data[0](match)
             return extracted_tuple
         raise factory(file_path, regex, contents)
 
@@ -38,33 +46,19 @@ def build_client_callback(data: MatchData, factory: ExceptionFactory) -> ClientC
 # PARSERS
 
 software_release_parser = build_client_callback(
-    (
-        'search',
-        [
-            re.MULTILINE,
-        ],
-        lambda match: (match.group(1), match.group(2)),
-    ),
+    (lambda match: (match.group(1), match.group(2)),),
     lambda file_path, reg, string: RuntimeError(
         "Expected to find the '[tool.software-release]' section, in "
-        f"the '{file_path}' file, with key "
-        "'version_variable'.\nFor example:\n"
-        f"{DEMO_SECTION}\n "
-        "indicates that the version string should be looked up in "
-        f"the src/package_name/__init__.py file and specifically "
+        f"the '{file_path}' file, with key 'version_variable'.\nFor example:\n"
+        f"{DEMO_SECTION}\n indicates that the version string should be looked "
+        "up in the src/package_name/__init__.py file and specifically "
         "a '__version__ = 1.2.3' kind of line is expected to be found."
     ),
 )
 
 
 version_file_parser = build_client_callback(
-    (
-        'search',
-        [
-            re.MULTILINE,
-        ],
-        lambda match: (match.group(1),),
-    ),
+    (lambda match: (match.group(1),),),
     lambda file_path, reg, string: AttributeError(
         "Could not find a match for regex {regex} when applied to:".format(regex=reg)
         + "\n{content}".format(content=string)
@@ -120,19 +114,14 @@ def get_arguments(sys_args: t.List[str]):
     return toml_file
 
 
-def _main():
+def main():
     try:
         toml_file: str = get_arguments(sys.argv)
         version_string = parse_version(toml_file)
         print(version_string)
-        return 0
     except (RuntimeError, FileNotFoundError, AttributeError) as exception:
         print(exception)
-        return 1
-
-
-def main():
-    sys.exit(_main())
+        sys.exit(1)
 
 
 if __name__ == '__main__':
