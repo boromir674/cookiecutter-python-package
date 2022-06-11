@@ -1,4 +1,3 @@
-import json
 import re
 import typing as t
 
@@ -11,18 +10,14 @@ class ModuleNameSanitizer(RegExSanitizer):
     exception_msg = 'Expected a valid Python Module name value'
 
     @classmethod
-    def log_message(cls, error, module) -> t.Tuple[str, str, str]:
+    def log_message(cls, error, module) -> t.Tuple[t.Union[str, t.Mapping], ...]:
         return (
             "%s: %s",
             str(error),
-            json.dumps(
-                {
-                    'module_name_regex': str(cls.regex.pattern),
-                    'module_name': str(module),
-                },
-                indent=4,
-                sort_keys=True,
-            ),
+            {
+                'module_name_regex': str(cls.regex.pattern),
+                'module_name': str(module),
+            },
         )
 
 

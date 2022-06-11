@@ -1,10 +1,11 @@
-import json
 import logging
 import os
 from typing import Any, MutableMapping
 
 from cookiecutter.config import get_user_config as cookie_get_config
-from software_patterns import Proxy, ProxySubject, Singleton
+from software_patterns import ProxySubject, Singleton
+
+from .proxy import BaseProxy
 
 __all__ = ['get_user_config']
 
@@ -22,18 +23,16 @@ class GetUserConfigSubject(ProxySubject[ReturnValueType]):
     pass
 
 
-class GetUserConfigProxy(Proxy[ReturnValueType]):
+class GetUserConfigProxy(BaseProxy[ReturnValueType]):
     def request(self, *args, **kwargs):
         print('\n---- GetUserConfigProxy ----')
         logger.error(
             'Get User Config Proxy Request: %s',
-            json.dumps(
+            BaseProxy.dumps(
                 {
                     'keyword_args': {k: str(v) for k, v in kwargs.items()},
                     'positional_args': [str(arg_value) for arg_value in args],
                 },
-                indent=2,
-                sort_keys=True,
             ),
         )
         return super().request(*args, **kwargs)

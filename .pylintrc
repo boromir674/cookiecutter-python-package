@@ -152,7 +152,8 @@ disable=print-statement,
         redundant-keyword-arg,
         not-callable,
         unsubscriptable-object,
-        protected-access
+        protected-access,
+        invalid-metaclass
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -531,7 +532,7 @@ dummy-variables-rgx=cookiecutter|_+$|(_[a-zA-Z0-9_]*[a-zA-Z0-9]+?$)|dummy|^ignor
 
 # Argument names that match this expression will be ignored. Default to name
 # with leading underscore.
-ignored-argument-names=_.*|^ignored_|^unused_|args|kwargs
+ignored-argument-names=_.*|^ignored_|^unused_|args|kwargs|questions|answers
 
 # Tells whether we should check for unused import in __init__ files.
 init-import=no

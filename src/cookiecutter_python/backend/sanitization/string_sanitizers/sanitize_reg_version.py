@@ -1,4 +1,3 @@
-import json
 import re
 import typing as t
 
@@ -22,16 +21,14 @@ class VersionSanitizer(RegExSanitizer):
     exception_msg = 'Expected a Semantic Version value'
 
     @classmethod
-    def log_message(cls, error, string) -> t.Tuple[str, str, str]:
+    def log_message(cls, error, string) -> t.Tuple[t.Union[str, t.Mapping], ...]:
         return (
             "%s: %s",
             str(error),
-            json.dumps(
-                {
-                    'semver_regex': str(cls.regex.pattern),
-                    'version_string': str(string),
-                }
-            ),
+            {
+                'semver_regex': str(cls.regex.pattern),
+                'version_string': str(string),
+            },
         )
 
 

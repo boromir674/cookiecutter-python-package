@@ -1,9 +1,10 @@
-import json
 import logging
 import os
 
 from cookiecutter.main import cookiecutter as cookiecutter_main_handler
-from software_patterns import Proxy, ProxySubject, Singleton
+from software_patterns import ProxySubject, Singleton
+
+from ..proxy import BaseProxy
 
 __all__ = ['cookiecutter']
 
@@ -17,7 +18,7 @@ class CookiecutterSubject(ProxySubject[str]):
     pass
 
 
-class CookiecutterProxy(Proxy[str]):
+class CookiecutterProxy(BaseProxy[str]):
     """Proxy to cookiecutter: 'from cookiecutter.main import cookiecutter'."""
 
     def request(self, *args, **kwargs) -> str:
@@ -28,13 +29,11 @@ class CookiecutterProxy(Proxy[str]):
         """
         logger.debug(
             'Cookiecutter Proxy Request: %s',
-            json.dumps(
+            BaseProxy.dumps(
                 {
                     'keyword_args': {k: str(v) for k, v in kwargs.items()},
                     'positional_args': [str(arg_value) for arg_value in args],
                 },
-                indent=2,
-                sort_keys=True,
             ),
         )
         return super().request(*args, **kwargs)

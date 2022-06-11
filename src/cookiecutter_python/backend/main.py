@@ -27,25 +27,20 @@ def generate(
     skip_if_file_exists=False,
 ) -> str:
     print('Start Python Generator !')
+
     # first request is started in background
     check_future, pkg_name = check_pypi(config_file, default_config)
 
-    template: str = os.path.abspath(os.path.join(my_dir, '..'))
-
     interpreters = supported_interpreters(config_file, no_input)
-    print('Interpreters Data:', interpreters)
-
     if interpreters:  # update extra_context
         # supported interpreters supplied either from yaml or from user's input
-        new_context = create_context(interpreters, extra_context=extra_context)
-    else:
-        new_context = extra_context
+        extra_context = create_context(interpreters, extra_context=extra_context)
 
     project_dir = generator(
-        template,
+        os.path.abspath(os.path.join(my_dir, '..')),  # template dir path
         checkout=checkout,
         no_input=no_input,
-        extra_context=new_context,
+        extra_context=extra_context,
         replay=replay,
         overwrite_if_exists=overwrite,
         output_dir=output_dir,
@@ -56,8 +51,7 @@ def generate(
         skip_if_file_exists=skip_if_file_exists,
     )
     if pkg_name:
-        # eval future by waiting only if needed!
-        try:
+        try:  # evaluate future by waiting, only if needed!
             handler(lambda x: check_future.result().status_code == 200)(pkg_name)
         except ConnectionError as error:
             raise CheckPypiError("Connection error while checking PyPi") from error
