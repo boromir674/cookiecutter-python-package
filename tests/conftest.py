@@ -403,9 +403,8 @@ def cli_invoker_params() -> t.Callable[[t.Any], CLIRunnerParameters]:
 # HELPERS
 @pytest.fixture
 def get_cli_invocation():
-    import sys
     import subprocess
-    import shlex
+    import sys
 
     class CLIResult:
         exit_code: int
@@ -428,7 +427,6 @@ def get_cli_invocation():
         @property
         def stderr(self) -> str:
             return self._stderr
-
 
     def python37_n_above_kwargs():
         return dict(
