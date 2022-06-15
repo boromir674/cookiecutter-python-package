@@ -164,6 +164,7 @@ def _post_hook():
     request = get_request()
     print('Computed Templated Vars for Post Script')
     post_file_removal(request)
+    assert request.initialize_git_repo in {True, False}
     if request.initialize_git_repo:
         try:
             initialize_git_repo(request.project_dir)
