@@ -528,6 +528,7 @@ def user_config(load_yaml, load_json, path_builder, production_templated_project
             def _load_json(json_file: str):
                 data = loader(json_file)
                 data['project_slug'] = data['project_name'].lower().replace(' ', '-')
+                data['author'] = data['full_name']
                 data['initialize_git_repo'] = {'yes': True}.get(
                     data['initialize_git_repo'][0], False)
                 return data
@@ -556,17 +557,32 @@ def user_config(load_yaml, load_json, path_builder, production_templated_project
         )})()
 
 
-
 # ASSERT Fixtures
 
 @pytest.fixture
-def assert_files_committed_if_flag_is_on(production_templated_project,
-assert_files_commited):
-    import os
+def assert_files_committed_if_flag_is_on(assert_files_commited):
     def _assert_files_committed_if_flag_is_on(project_dir, config):
-        expected_files = os.listdir(production_templated_project) if config.data['initialize_git_repo'] else []
-        assert_files_commited(expected_files, project_dir)
+        assert_files_commited(project_dir, config)
     return _assert_files_committed_if_flag_is_on
+
+
+@pytest.fixture
+def assert_commit_author_is_expected_author(assert_initialized_git):
+    def _assert_commit_author_is_expected_author(project_dir: str, expected_commit):
+        repo = assert_initialized_git(project_dir)
+        latest_commit = repo.commit('HEAD')
+        assert latest_commit.type == 'commit'
+        assert str(latest_commit.message).startswith(expected_commit.message)
+        assert str(latest_commit.author.name) == expected_commit.author
+        assert str(latest_commit.author.email) == expected_commit.email
+    return _assert_commit_author_is_expected_author
+
+        # from git import Actor
+        # author = Actor("An author", "author@example.com")
+        # committer = Actor("A committer", "committer@example.com")
+        # commit by commit message and author and committer
+        # index.commit("my commit message", author=author, committer=committer)
+        # assert commit.author == expected_author
 
 
 @pytest.fixture
@@ -583,30 +599,35 @@ def assert_initialized_git():
 
 
 @pytest.fixture
-def assert_files_commited(assert_initialized_git):
+def assert_files_commited(production_templated_project, assert_initialized_git, assert_commit_author_is_expected_author):
+    import os
     from git.exc import InvalidGitRepositoryError
-    def _assert_files_commited(files, folder):
+    def _assert_files_commited(folder, config):
         try:
             repo = assert_initialized_git(folder)
+            expected_files = os.listdir(production_templated_project) if config.data['initialize_git_repo'] else []
+            tree = repo.heads.master.commit.tree
+            assert all([file_path in tree for file_path in expected_files])
+            assert_commit_author_is_expected_author(folder, type('Commit', (), {
+                'message': '"Template applied from',
+                'author': config.data['author'],
+                'email': config.data['author_email'],
+            }))
         except InvalidGitRepositoryError:
-            assert files == []
             return
-        tree = repo.heads.master.commit.tree
 
-        assert len(tree.trees) > 0          # trees are subdirectories
-        assert len(tree.blobs) > 0          # blobs are files
-        assert len(tree.blobs) + len(tree.trees) == len(tree)
+        # assert len(tree.trees) > 0          # trees are subdirectories
+        # assert len(tree.blobs) > 0          # blobs are files
+        # assert len(tree.blobs) + len(tree.trees) == len(tree)
 
-        assert tree['src'] == tree / 'src'  # access by index & by sub-path
-        # for entry in tree:  # intuitive iteration of tree members
-        #     print(entry)
-        blob = tree.trees[1].blobs[0]  # let's get a blob in a sub-tree
-        assert blob.name
-        assert len(blob.path) < len(blob.abspath)
-        # below is how relative blob path generated
-        assert tree.trees[1].name + '/' + blob.name == blob.path
-        assert tree[blob.path] == blob
-
-        assert all([file_path in tree for file_path in files])
+        # assert tree['src'] == tree / 'src'  # access by index & by sub-path
+        # # for entry in tree:  # intuitive iteration of tree members
+        # #     print(entry)
+        # blob = tree.trees[1].blobs[0]  # let's get a blob in a sub-tree
+        # assert blob.name
+        # assert len(blob.path) < len(blob.abspath)
+        # # below is how relative blob path generated
+        # assert tree.trees[1].name + '/' + blob.name == blob.path
+        # assert tree[blob.path] == blob
 
     return _assert_files_commited

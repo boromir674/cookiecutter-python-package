@@ -4,7 +4,6 @@ Cookiecutter post generation hook script that handles operations after the
 template project is used to generate a target project.
 """
 import os
-import shlex
 import subprocess
 import sys
 from collections import OrderedDict

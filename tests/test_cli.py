@@ -28,16 +28,16 @@ def test_cli(cli_invoker_params, isolated_cli_runner):
 
 @pytest.mark.runner_setup(mix_stderr=False)
 @pytest.mark.parametrize(
-    'config_file',
+    'config_file, default_config',
     [
-        '.github/biskotaki.yaml',
-        # pytest.param(None, marks=pytest.mark.xfail(
-        #     reason="We do not support yet, the 'check-pypi feature, if --config-file is NOT supplied.")),
-        None,
-        'without-interpreters'
+        ('.github/biskotaki.yaml', False),
+        pytest.param(None, True, marks=pytest.mark.xfail(
+            exception=NotImplementedError,
+            reason="We do not support yet, the 'check-pypi feature, if --config-file is NOT supplied.")),
+        ('without-interpreters', False),
     ],
 ids=['biskotaki', 'None', 'without-interpreters'])
-def test_cli_offline(config_file, mock_check_pypi, user_config, cli_invoker_params,
+def test_cli_offline(config_file, default_config, mock_check_pypi, user_config, cli_invoker_params,
     assert_files_committed_if_flag_is_on,
     isolated_cli_runner,
     tmpdir,
@@ -53,6 +53,7 @@ def test_cli_offline(config_file, mock_check_pypi, user_config, cli_invoker_para
             '--no-input': True,
             '--config-file': config.config_file,
             '--output-dir': tmpdir,
+            '--default-config': default_config,
         }
     )
     result = isolated_cli_runner.invoke(
@@ -68,9 +69,11 @@ def test_cli_offline(config_file, mock_check_pypi, user_config, cli_invoker_para
     assert_files_committed_if_flag_is_on(
         os.path.abspath(os.path.join(tmpdir, config.pypi_name)), config=config
     )
-    # s1 = (
-    #     f"Name '{config.pypi_name}' IS available on pypi.org!\n"
-    #     "You will be able to publish your Python Package on pypi as it is!"
-    # )
+    s1 = (
+        f"Name '{config.pypi_name}' IS available on pypi.org!\n"
+        "You will be able to publish your Python Package on pypi as it is!"
+    )
+    if s1 not in result.stdout:
+        raise NotImplementedError
     # assert s1 in result.stdout
 
