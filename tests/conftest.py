@@ -577,13 +577,6 @@ def assert_commit_author_is_expected_author(assert_initialized_git):
         assert str(latest_commit.author.email) == expected_commit.email
     return _assert_commit_author_is_expected_author
 
-        # from git import Actor
-        # author = Actor("An author", "author@example.com")
-        # committer = Actor("A committer", "committer@example.com")
-        # commit by commit message and author and committer
-        # index.commit("my commit message", author=author, committer=committer)
-        # assert commit.author == expected_author
-
 
 @pytest.fixture
 def assert_initialized_git():
@@ -606,10 +599,12 @@ def assert_files_commited(production_templated_project, assert_initialized_git, 
         try:
             repo = assert_initialized_git(folder)
             expected_files = os.listdir(production_templated_project) if config.data['initialize_git_repo'] else []
+            head = repo.active_branch.commit
+            assert head
             tree = repo.heads.master.commit.tree
             assert all([file_path in tree for file_path in expected_files])
             assert_commit_author_is_expected_author(folder, type('Commit', (), {
-                'message': '"Template applied from',
+                'message': 'Template applied from',
                 'author': config.data['author'],
                 'email': config.data['author_email'],
             }))
