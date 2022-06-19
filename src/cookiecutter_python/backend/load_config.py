@@ -51,7 +51,7 @@ def get_interpreters_from_yaml(config_file: str) -> t.Optional[GivenInterpreters
             "User's yaml config 'interpreters' value Error: %s",
             json.dumps(
                 {
-                    'error': error,
+                    'error': str(error),
                     'message': "Expected json-parsable value for the 'interpreters' key",
                 },
                 sort_keys=True,
