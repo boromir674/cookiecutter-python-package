@@ -94,7 +94,7 @@ def grant_basic_permissions(project_dir: str):
             'git', 'config', '--global', '--add', 'safe.directory', project_dir,
             cwd=project_dir,
         )
-    except Exception as error:
+    except subprocess.CalledProcessError as error:
         print('Error while granting Git Permission!\n' + str(error.stderr, encoding='utf-8'))
         raise error
 

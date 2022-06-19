@@ -484,7 +484,7 @@ def path_builder() -> t.Callable[..., t.Callable[[str], str]]:
 
 
 @pytest.fixture
-def load_yaml() -> t.Callable[[str], t.Mapping]:
+def load_yaml():
     """Parse a yaml file using the 'production' Yaml Parser.
 
     Returns:
@@ -493,7 +493,8 @@ def load_yaml() -> t.Callable[[str], t.Mapping]:
     from cookiecutter_python.backend.load_config import load_yaml
     return load_yaml
 
-DataLoader = t.Callable[[str], t.Mapping]
+
+DataLoader = t.Callable[[str], t.MutableMapping]
 
 @pytest.fixture
 def user_config(load_yaml, load_json, path_builder, production_templated_project):
@@ -510,8 +511,8 @@ def user_config(load_yaml, load_json, path_builder, production_templated_project
 
         _data_file_path: t.Union[str, None] = attr.ib(init=False, default=None)
         _config_file_arg: t.Optional[str] = attr.ib(init=False, default=None)
-        _loader: t.Optional[DataLoader] = attr.ib(init=False, default=None)
-        data: t.Optional[t.Mapping] = attr.ib(init=False, default=None)
+        _loader: DataLoader = attr.ib(init=False)
+        data: t.Mapping = attr.ib(init=False)
 
         def __attrs_post_init__(self):
             self._data_file_path, self._config_file_arg, self._loader = self._build_data(self.path)
@@ -520,7 +521,11 @@ def user_config(load_yaml, load_json, path_builder, production_templated_project
         @staticmethod
         def _build_data(file_path: t.Union[str, None]) -> t.Tuple[str, t.Union[str, None], DataLoader]:
             if file_path is not None:
-                return tuple(list([get_file(config_files.get(file_path, file_path))] * 2) + [ConfigData.load_yaml(load_yaml)])
+                return (
+                    data_file := get_file(config_files.get(file_path, file_path)),
+                    data_file,
+                    ConfigData.load_yaml(load_yaml),
+                )
             return path.abspath(path.join(production_templated_project, '..', 'cookiecutter.json')), None, ConfigData.load_json(load_json)
 
         @staticmethod

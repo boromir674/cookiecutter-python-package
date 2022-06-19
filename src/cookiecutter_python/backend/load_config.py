@@ -11,7 +11,7 @@ GivenInterpreters = t.Mapping[str, t.Sequence[str]]
 logger = logging.getLogger(__name__)
 
 
-def load_yaml(config_file) -> t.Mapping:
+def load_yaml(config_file) -> t.MutableMapping:
     # TODO use a proxy to load yaml
     with io.open(config_file, encoding='utf-8') as file_handle:
         try:
