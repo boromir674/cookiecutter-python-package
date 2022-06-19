@@ -659,13 +659,6 @@ def assert_files_commited(
             assert len(tree.blobs) > 0  # blobs are files
             assert len(tree.blobs) + len(tree.trees) == len(tree)
             assert tree['src'] == tree / 'src'  # access by index & by sub-path
-            blob = tree.trees[1].blobs[0]  # let's get a blob in a sub-tree
-            assert blob.name
-            assert len(blob.path) < len(blob.abspath)
-            # below is how relative blob path generated
-            assert tree.trees[1].name + '/' + blob.name == blob.path
-            assert tree[blob.path] == blob
-
             # logic tests
             assert all([file_path in tree for file_path in expected_files])
             assert_commit_author_is_expected_author(
