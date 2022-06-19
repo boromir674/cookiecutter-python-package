@@ -90,9 +90,10 @@ def initialize_git_repo(project_dir: str):
 
 
 def exception(subprocess_exception: subprocess.CalledProcessError):
+    error_message = str(subprocess_exception.stderr, encoding='utf-8')
     if re.match(r'error: could not lock config file .+\.gitconfig File exists',
-        error := str(subprocess_exception.stderr, encoding='utf-8')):
-        return type('LockFileError', (Exception,), {})(error)
+        error_message):
+        return type('LockFileError', (Exception,), {})(error_message)
     return subprocess_exception
 
 def grant_basic_permissions(project_dir: str):
