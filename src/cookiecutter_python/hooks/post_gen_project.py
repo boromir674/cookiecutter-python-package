@@ -15,13 +15,9 @@ from git import Actor, Repo
 PROJECT_DIRECTORY = os.path.realpath(os.path.curdir)
 
 def get_request():
-    # Templated Variables should be centralized here for easier inspection
-    COOKIECUTTER = (
-        OrderedDict()
-    )  # We init the variable to the same type that will be set in the next line.
+    # We init the variable to the same type that will be set in the next line.
+    COOKIECUTTER = OrderedDict()
     COOKIECUTTER = {{ cookiecutter }}  # pylint: disable=undefined-variable
-    AUTHOR = "{{ cookiecutter.author }}"
-    AUTHOR_EMAIL = "{{ cookiecutter.author_email }}"
     INITIALIZE_GIT_REPO_FLAG = "{{ cookiecutter.initialize_git_repo|lower }}"
     add_cli_flag = "{{ cookiecutter.add_cli|lower }}"
 
@@ -29,8 +25,8 @@ def get_request():
         'cookiecutter': COOKIECUTTER,
         'project_dir': PROJECT_DIRECTORY,
         'module_name': COOKIECUTTER['pkg_name'],
-        'author': AUTHOR,
-        'author_email': AUTHOR_EMAIL,
+        'author': "{{ cookiecutter.author }}",
+        'author_email': "{{ cookiecutter.author_email }}",
         'initialize_git_repo': {'yes': True}.get(INITIALIZE_GIT_REPO_FLAG, False),
         'add_cli': {'yes': True}.get(add_cli_flag, False),
         'repo': None,
