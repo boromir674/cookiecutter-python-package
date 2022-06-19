@@ -68,10 +68,9 @@ CLI_RELATED_FILES = {
 }
 
 
-
 @pytest.fixture
 def module_file(path_builder):
-    
+
     from os import listdir, path
 
     SRC_DIR_NAME = 'src'
@@ -84,6 +83,7 @@ def module_file(path_builder):
 
         def _get_file_path(*file_path):
             return get_file(SRC_DIR_NAME, python_module, *file_path)
+
         return _get_file_path
 
     return build_get_file_path

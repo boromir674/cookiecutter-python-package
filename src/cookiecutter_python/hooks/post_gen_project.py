@@ -4,6 +4,7 @@ Cookiecutter post generation hook script that handles operations after the
 template project is used to generate a target project.
 """
 import os
+import re
 import subprocess
 import sys
 from collections import OrderedDict
@@ -88,15 +89,22 @@ def initialize_git_repo(project_dir: str):
     subprocess_run('git', 'init', cwd=project_dir)
 
 
+def exception(subprocess_exception: subprocess.CalledProcessError):
+    if re.match(r'error: could not lock config file .+\.gitconfig File exists',
+        error := str(subprocess_exception.stderr, encoding='utf-8')):
+        return type('LockFileError', (Exception,), {})(error)
+    return subprocess_exception
+
 def grant_basic_permissions(project_dir: str):
     try:
-        git_config = subprocess_run(
+        return subprocess_run(
             'git', 'config', '--global', '--add', 'safe.directory', project_dir,
             cwd=project_dir,
         )
     except subprocess.CalledProcessError as error:
-        print('Error while granting Git Permission!\n' + str(error.stderr, encoding='utf-8'))
-        raise error
+        print('Did not add an entry in ~/.gitconfig!')
+        print(str(error.stderr, encoding='utf-8'))
+        print(exception(error))
 
 
 def git_commit(request):

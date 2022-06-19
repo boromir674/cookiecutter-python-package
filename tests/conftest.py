@@ -462,7 +462,7 @@ def get_cli_invocation():
 @pytest.fixture
 def path_builder() -> t.Callable[..., t.Callable[[str], str]]:
     """Convert relative to absolute file paths, given their root directory.
-    
+
     Supply a root directory and get a callback that conveniently converts
     relative file paths to absolute, at runtime. The root directory can be a
     string, a Path or multiple strings/path (that os.join can 'join' together)
@@ -471,12 +471,20 @@ def path_builder() -> t.Callable[..., t.Callable[[str], str]]:
     and returns an absolute file path (string).
     """
     from os import path
+
     def get_path_builder(root_path) -> t.Callable[[str], str]:
         def get_file(*relative_file_path: str) -> str:
             return path.join(
                 root_path,
-                *[x for l in [path_string.split('/') for path_string in relative_file_path] for x in l])
+                *[
+                    x
+                    for l in [path_string.split('/') for path_string in relative_file_path]
+                    for x in l
+                ],
+            )
+
         return get_file
+
     return get_path_builder
 
 
@@ -491,18 +499,21 @@ def load_yaml():
         t.Callable[[str], t.Mapping]: a callback that parses yaml files
     """
     from cookiecutter_python.backend.load_config import load_yaml
+
     return load_yaml
 
 
 DataLoader = t.Callable[[str], t.MutableMapping]
 
+
 @pytest.fixture
 def user_config(load_yaml, load_json, path_builder, production_templated_project):
     from os import path
+
     config_files = {
         'biskotaki': '.github/biskotaki.yaml',
         'without-interpreters': 'tests/data/biskotaki-without-interpreters.yaml',
-    }    
+    }
     get_file = path_builder(path.abspath(path.join(my_dir, '..')))
 
     @attr.s(auto_attribs=True, slots=True)
@@ -515,18 +526,28 @@ def user_config(load_yaml, load_json, path_builder, production_templated_project
         data: t.Mapping = attr.ib(init=False)
 
         def __attrs_post_init__(self):
-            self._data_file_path, self._config_file_arg, self._loader = self._build_data(self.path)
+            self._data_file_path, self._config_file_arg, self._loader = self._build_data(
+                self.path
+            )
             self.data = self._loader(self._data_file_path)
 
         @staticmethod
-        def _build_data(file_path: t.Union[str, None]) -> t.Tuple[str, t.Union[str, None], DataLoader]:
+        def _build_data(
+            file_path: t.Union[str, None]
+        ) -> t.Tuple[str, t.Union[str, None], DataLoader]:
             if file_path is not None:
                 return (
                     data_file := get_file(config_files.get(file_path, file_path)),
                     data_file,
                     ConfigData.load_yaml(load_yaml),
                 )
-            return path.abspath(path.join(production_templated_project, '..', 'cookiecutter.json')), None, ConfigData.load_json(load_json)
+            return (
+                path.abspath(
+                    path.join(production_templated_project, '..', 'cookiecutter.json')
+                ),
+                None,
+                ConfigData.load_json(load_json),
+            )
 
         @staticmethod
         def load_json(loader: DataLoader):
@@ -535,8 +556,10 @@ def user_config(load_yaml, load_json, path_builder, production_templated_project
                 data['project_slug'] = data['project_name'].lower().replace(' ', '-')
                 data['author'] = data['full_name']
                 data['initialize_git_repo'] = {'yes': True}.get(
-                    data['initialize_git_repo'][0], False)
+                    data['initialize_git_repo'][0], False
+                )
                 return data
+
             return _load_json
 
         @staticmethod
@@ -544,8 +567,10 @@ def user_config(load_yaml, load_json, path_builder, production_templated_project
             def _load_yaml(yaml_file: str):
                 data = loader(yaml_file)['default_context']
                 data['initialize_git_repo'] = {'yes': True}.get(
-                    data['initialize_git_repo'], False)
+                    data['initialize_git_repo'], False
+                )
                 return data
+
             return _load_yaml
 
         @property
@@ -556,18 +581,25 @@ def user_config(load_yaml, load_json, path_builder, production_templated_project
         def config_file(self) -> t.Union[str, None]:
             return self._config_file_arg
 
-    return type('ConfigFile', (), {
-        '__getitem__': lambda self, item: ConfigData(
-            item,
-        )})()
+    return type(
+        'ConfigFile',
+        (),
+        {
+            '__getitem__': lambda self, item: ConfigData(
+                item,
+            )
+        },
+    )()
 
 
 # ASSERT Fixtures
+
 
 @pytest.fixture
 def assert_files_committed_if_flag_is_on(assert_files_commited):
     def _assert_files_committed_if_flag_is_on(project_dir, config):
         assert_files_commited(project_dir, config)
+
     return _assert_files_committed_if_flag_is_on
 
 
@@ -580,6 +612,7 @@ def assert_commit_author_is_expected_author(assert_initialized_git):
         assert str(latest_commit.message).startswith(expected_commit.message)
         assert str(latest_commit.author.name) == expected_commit.author
         assert str(latest_commit.author.email) == expected_commit.email
+
     return _assert_commit_author_is_expected_author
 
 
@@ -587,47 +620,66 @@ def assert_commit_author_is_expected_author(assert_initialized_git):
 def assert_initialized_git():
     from git import Repo
     from git.exc import InvalidGitRepositoryError
+
     def _assert_initialized_git(folder: str):
         try:
             repo = Repo(folder)
             return repo
         except InvalidGitRepositoryError as error:
             raise error
+
     return _assert_initialized_git
 
 
 @pytest.fixture
-def assert_files_commited(production_templated_project, assert_initialized_git, assert_commit_author_is_expected_author):
+def assert_files_commited(
+    production_templated_project,
+    assert_initialized_git,
+    assert_commit_author_is_expected_author,
+):
     import os
+
     from git.exc import InvalidGitRepositoryError
+
     def _assert_files_commited(folder, config):
         try:
             repo = assert_initialized_git(folder)
-            expected_files = os.listdir(production_templated_project) if config.data['initialize_git_repo'] else []
+            expected_files = (
+                os.listdir(production_templated_project)
+                if config.data['initialize_git_repo']
+                else []
+            )
             head = repo.active_branch.commit
             assert head
             tree = repo.heads.master.commit.tree
+
+            # Sanity checks
+            assert len(tree.trees) > 0  # trees are subdirectories
+            assert len(tree.blobs) > 0  # blobs are files
+            assert len(tree.blobs) + len(tree.trees) == len(tree)
+            assert tree['src'] == tree / 'src'  # access by index & by sub-path
+            blob = tree.trees[1].blobs[0]  # let's get a blob in a sub-tree
+            assert blob.name
+            assert len(blob.path) < len(blob.abspath)
+            # below is how relative blob path generated
+            assert tree.trees[1].name + '/' + blob.name == blob.path
+            assert tree[blob.path] == blob
+
+            # logic tests
             assert all([file_path in tree for file_path in expected_files])
-            assert_commit_author_is_expected_author(folder, type('Commit', (), {
-                'message': 'Template applied from',
-                'author': config.data['author'],
-                'email': config.data['author_email'],
-            }))
+            assert_commit_author_is_expected_author(
+                folder,
+                type(
+                    'Commit',
+                    (),
+                    {
+                        'message': 'Template applied from',
+                        'author': config.data['author'],
+                        'email': config.data['author_email'],
+                    },
+                ),
+            )
         except InvalidGitRepositoryError:
             return
-
-        # assert len(tree.trees) > 0          # trees are subdirectories
-        # assert len(tree.blobs) > 0          # blobs are files
-        # assert len(tree.blobs) + len(tree.trees) == len(tree)
-
-        # assert tree['src'] == tree / 'src'  # access by index & by sub-path
-        # # for entry in tree:  # intuitive iteration of tree members
-        # #     print(entry)
-        # blob = tree.trees[1].blobs[0]  # let's get a blob in a sub-tree
-        # assert blob.name
-        # assert len(blob.path) < len(blob.abspath)
-        # # below is how relative blob path generated
-        # assert tree.trees[1].name + '/' + blob.name == blob.path
-        # assert tree[blob.path] == blob
 
     return _assert_files_commited
