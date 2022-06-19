@@ -536,8 +536,9 @@ def user_config(load_yaml, load_json, path_builder, production_templated_project
             file_path: t.Union[str, None]
         ) -> t.Tuple[str, t.Union[str, None], DataLoader]:
             if file_path is not None:
+                data_file = get_file(config_files.get(file_path, file_path))
                 return (
-                    data_file := get_file(config_files.get(file_path, file_path)),
+                    data_file,
                     data_file,
                     ConfigData.load_yaml(load_yaml),
                 )
