@@ -48,7 +48,7 @@ def test_cli(cli_invoker_params, isolated_cli_runner):
 def test_cli_offline(
     config_file,
     default_config,
-    # check_pypi_result,
+    check_pypi_result,
     mock_check_pypi,
     user_config,
     cli_invoker_params,
@@ -84,18 +84,9 @@ def test_cli_offline(
     assert_files_committed_if_flag_is_on(
         path.abspath(path.join(tmpdir, config.pypi_name)), config=config
     )
-    # package_exists_on_pypi = check_pypi_result(result.stdout)
-    # if package_exists_on_pypi is None:
-    #     raise NotImplementedError
-
-    s1 = (
-        f"Name '{config.pypi_name}' IS available on pypi.org!\n"
-        "You will be able to publish your Python Package on pypi as it is!"
-    )
-
-    if s1 not in result.stdout:
+    package_exists_on_pypi = check_pypi_result(result.stdout)
+    if package_exists_on_pypi is None:
         raise NotImplementedError
-    # assert s1 in result.stdout
 
 
 @pytest.fixture
@@ -112,7 +103,7 @@ def check_pypi_result() -> t.Callable[[str], t.Optional[bool]]:
     )
 
     def _check_pypi(cli_stdout: str) -> t.Optional[bool]:
-        match = re.search(rf'{check_pypi_reg_string}\nFinished :)', cli_stdout)
+        match = re.search(rf'{check_pypi_reg_string}\nFinished :\)', cli_stdout)
         if match:
             print('CHECK PYPI MATCHED!:\n', match.group(1))
             return match.group(1) in check_pypi_output.values()

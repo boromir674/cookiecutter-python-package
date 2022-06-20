@@ -51,7 +51,7 @@ def post_file_removal(request):
 
 def _get_run_parameters(python3_minor: int):
     def run(args: list, kwargs: dict):
-        return subprocess.run(*args, **kwargs)
+        return subprocess.run(*args, **dict(kwargs, check=True)) # pylint: disable=W1510 #nosec
     def _subprocess_run(get_params):
         def run1(*args, **kwargs):
             return run(*get_params(*args, **kwargs))
