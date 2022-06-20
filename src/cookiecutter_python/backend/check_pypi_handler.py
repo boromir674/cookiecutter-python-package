@@ -9,12 +9,6 @@ __all__ = ['handler']
 def _available_on_pypi(callback, package_name: str):
     try:
         res: bool = callback(package_name)
-    except ImportError as error:
-        print(error)
-        print(
-            "If you want to enable the 'check_pypi' feature, "
-            "Please also install the [check_pypi] requirements (see setup.cfg)"
-        )
     except ConnectionError as error:
         print(error, file=sys.stderr)
         print("Could not establish connection to pypi.")

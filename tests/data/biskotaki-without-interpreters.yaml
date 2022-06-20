@@ -5,7 +5,6 @@ default_context:
     pkg_name: biskotaki
     full_name: Konstantinos Lampridis
     author: Konstantinos Lampridis
-    email: k.lampridis@hotmail.com
     author_email: k.lampridis@hotmail.com
     github_username: boromir674
     project_short_description: Project entirely generated using https://github.com/boromir674/cookiecutter-python-package/

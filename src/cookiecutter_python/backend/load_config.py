@@ -11,7 +11,7 @@ GivenInterpreters = t.Mapping[str, t.Sequence[str]]
 logger = logging.getLogger(__name__)
 
 
-def load_yaml(config_file) -> t.Mapping:
+def load_yaml(config_file) -> t.MutableMapping:
     # TODO use a proxy to load yaml
     with io.open(config_file, encoding='utf-8') as file_handle:
         try:
@@ -43,25 +43,22 @@ def get_interpreters_from_yaml(config_file: str) -> t.Optional[GivenInterpreters
             "User config (is valid yaml but) does not contain a 'default_context' outer key!"
         )
     context = data['default_context']
-    if 'interpreters' not in context:
-        return None
 
     try:
-        interpreters_data = json.loads(context['interpreters'])
-    except JSONDecodeError as error:
+        return json.loads(context['interpreters'])
+    except (KeyError, JSONDecodeError) as error:
         logger.warning(
             "User's yaml config 'interpreters' value Error: %s",
             json.dumps(
                 {
-                    'error': error,
-                    'message': "Expected json 'parasable' value for the 'interpreters' key",
+                    'error': str(error),
+                    'message': "Expected json-parsable value for the 'interpreters' key",
                 },
                 sort_keys=True,
                 indent=4,
             ),
         )
-        return None
-    return interpreters_data
+    return None
 
 
 class UserYamlDesignError(Exception):

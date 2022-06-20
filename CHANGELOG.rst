@@ -2,6 +2,31 @@
 Changelog
 =========
 
+1.5.1 (2022-06-20)
+==================
+
+The Update includes improved code Architecture and better Test code Coverage!
+Features shorter Unites of Code, more DRY and more Tests.
+
+Changes
+^^^^^^^
+
+test
+""""
+- add bandit tox env for discovering common security issues
+- verify commit message, author and email are the expected ones
+- git init, increase test code coverage
+
+refactor
+""""""""
+- reduce code
+- centralize subprocess run invocations
+
+ci
+""
+- enable network-bound tests to trigger integration testing of the `check_pypi` feature
+
+
 1.5.0 (2022-06-11)
 ==================
 
