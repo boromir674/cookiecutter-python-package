@@ -50,9 +50,10 @@ jobs:
         echo "PKG_VERSION=$A" >> $GITHUB_ENV
 
     - name: Run Test Suite
-      run: tox -vv -s false
+      run: tox -vv -s false -- --run-network_bound
       env:
         PLATFORM: ${{ matrix.platform }}
+
     - name: Check for compliance with Python Best Practices
       run: |
         DIST_DIR=dist

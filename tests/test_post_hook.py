@@ -3,9 +3,11 @@ import pytest
 
 @pytest.fixture
 def get_post_gen_main(get_object, request_factory, tmpdir):
-    from os import path
     import os
+    from os import path
+
     name = 'gg'
+
     def get_pre_gen_hook_project_main(add_cli):
         def mock_get_request():
             # create a file to emulate the generation process
@@ -21,6 +23,7 @@ def get_post_gen_main(get_object, request_factory, tmpdir):
                 add_cli=add_cli,
                 module_name=name,
             )
+
         main_method = get_object(
             "_post_hook",
             "cookiecutter_python.hooks.post_gen_project",
@@ -31,10 +34,14 @@ def get_post_gen_main(get_object, request_factory, tmpdir):
     return get_pre_gen_hook_project_main
 
 
-@pytest.mark.parametrize('add_cli', (
-    True,
-    False,
-))
+@pytest.mark.parametrize(
+    'add_cli',
+    (
+        True,
+        False,
+    ),
+    ids=['add-cli', 'do-not-add-cli'],
+)
 def test_main(add_cli, get_post_gen_main, assert_initialized_git, tmpdir):
     post_hook_main = get_post_gen_main(add_cli)
     result = post_hook_main()

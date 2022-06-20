@@ -8,7 +8,8 @@ import click
 
 from cookiecutter_python import __version__
 from .backend import generate
-from .cli_handlers import handle_error, exceptions
+from .cli_handlers import handle_error
+from .exceptions import exceptions
 
 this_file_location = os.path.dirname(os.path.realpath(os.path.abspath(__file__)))
 
@@ -38,7 +39,6 @@ def version_msg():
     help=u'Directory within repo that holds cookiecutter.json file '
     u'for advanced repositories with multi templates in it',
 )
-@click.option('-v', '--verbose', is_flag=True, help='Print debug information', default=False)
 @click.option(
     u'--replay',
     is_flag=True,
@@ -75,7 +75,6 @@ def version_msg():
 def main(
     no_input,
     checkout,
-    verbose,
     replay,
     overwrite,
     output_dir,
