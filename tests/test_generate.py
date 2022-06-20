@@ -44,9 +44,6 @@ def test_supported_python_interpreters(
     assert_scaffolded_without_cli(project_dir)
 
 
-# ASSERT Fixtures
-
-
 @pytest.fixture
 def assert_interpreters_array_in_build_matrix() -> t.Callable[[str, t.Sequence[str]], None]:
     import os
@@ -72,11 +69,32 @@ CLI_RELATED_FILES = {
 
 
 @pytest.fixture
-def assert_scaffolded_without_cli(project_source_file) -> t.Callable[[str], None]:
+def module_file(path_builder):
+
+    from os import listdir, path
+
+    SRC_DIR_NAME = 'src'
+
+    def build_get_file_path(project_dir: str) -> t.Callable[[str], str]:
+        get_file = path_builder(path.abspath(project_dir))
+        src_dir_files = listdir(get_file(SRC_DIR_NAME))
+        # sanity check that Generator produces only 1 python module/package
+        [python_module] = src_dir_files
+
+        def _get_file_path(*file_path):
+            return get_file(SRC_DIR_NAME, python_module, *file_path)
+
+        return _get_file_path
+
+    return build_get_file_path
+
+
+@pytest.fixture
+def assert_scaffolded_without_cli(module_file) -> t.Callable[[str], None]:
     from os import path
 
     def assert_project_generated_without_cli(project_dir: str) -> None:
-        get_file: t.Callable[[str], str] = project_source_file(project_dir)
+        get_file: t.Callable[[str], str] = module_file(project_dir)
         # assert there are no cli related files
         assert all(not path.isfile(get_file(file_name)) for file_name in CLI_RELATED_FILES)
 
@@ -90,10 +108,10 @@ def cli_related_file_name(request):
 
 def test_enabling_add_cli_templated_variable(
     cli_related_file_name,
-    project_source_file,
+    module_file,
     project_dir,
 ):
     from os import path
 
-    get_file = project_source_file(project_dir)
+    get_file = module_file(project_dir)
     assert path.isfile(get_file(cli_related_file_name))

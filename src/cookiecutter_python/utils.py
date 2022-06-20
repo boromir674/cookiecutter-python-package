@@ -31,15 +31,18 @@ def load(interface: Type[T], dire: Optional[str] = None) -> None:
             same directory as the one where the module of the invoking code
             resides.
     """
+    project_package_location = path.dirname(
+        path.realpath(path.dirname(path.realpath(__file__))))
+
     if not dire:  # set as dir the directory path where the invoking code is
         namespace = sys._getframe(1).f_globals  # caller's globals
         dire = path.dirname(path.realpath(namespace['__file__']))
+        # dot representation as in an import statement: ie software_release.utils
+        _module = str(dire).replace(str(project_package_location), '')[1:].replace('/', '.')
+    else:
+        _module = dire
 
-    project_package_location = path.dirname(
-        path.realpath(path.dirname(path.realpath(__file__))))
-    # dot representation as in an import statement: ie software_release.utils
-    _module: str = str(dire).replace(str(project_package_location), '')[1:].replace('/', '.')
-
+    objects = []
     # iterate through the modules in the dire folder
     for (_, module_name, _) in iter_modules([dire]):
 
@@ -54,3 +57,5 @@ def load(interface: Type[T], dire: Optional[str] = None) -> None:
             if isclass(attribute) and issubclass(attribute, interface):
                 # Add the class to this package's variables
                 globals()[attribute_name] = attribute
+                objects.append(attribute)
+    return objects

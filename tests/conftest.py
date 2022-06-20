@@ -15,7 +15,7 @@ def production_template() -> str:
 
 
 @pytest.fixture
-def load_context_json() -> t.Callable[[str], t.Dict]:
+def load_json() -> t.Callable[[str], t.Dict]:
     import json
 
     def _load_context_json(file_path: str) -> t.Dict:
@@ -32,8 +32,8 @@ def test_context_file() -> str:
 
 
 @pytest.fixture
-def test_context(load_context_json, test_context_file) -> t.Dict:
-    return load_context_json(test_context_file)
+def test_context(load_json, test_context_file) -> t.Dict:
+    return load_json(test_context_file)
 
 
 @pytest.fixture
@@ -329,19 +329,15 @@ def cli_invoker_params() -> t.Callable[[t.Any], CLIRunnerParameters]:
     from copy import deepcopy
 
     class Args:
-        args = [  # these flags and default values emulate the 'generate-python'
-            # cli (exception is the '--config-file' flag where we pass the
-            # biskotaki yaml by default, instead of None)
+        args = [
+            # these flags and default values emulate the 'generate-python' cli
             ('--no-input', False),
             ('--checkout', False),
             ('--verbose', False),
             ('--replay', False),
             ('--overwrite', False),
             ('--output-dir', '.'),
-            (
-                '--config-file',  # biskotaki yaml as default instead of None
-                os.path.abspath(os.path.join(my_dir, '..', '.github', 'biskotaki.yaml')),
-            ),
+            ('--config-file', None),
             ('--default-config', False),
             ('--directory', None),
             ('--skip-if-file-exists', False),
@@ -462,20 +458,222 @@ def get_cli_invocation():
     return execute_command_in_subprocess
 
 
+# Generic fixtures
 @pytest.fixture
-def project_source_file():
-    from os import listdir, path
+def path_builder() -> t.Callable[..., t.Callable[[str], str]]:
+    """Convert relative to absolute file paths, given their root directory.
 
-    SRC_DIR_NAME = 'src'
+    Supply a root directory and get a callback that conveniently converts
+    relative file paths to absolute, at runtime. The root directory can be a
+    string, a Path or multiple strings/path (that os.join can 'join' together)
 
-    def build_get_file_path(project_dir: str) -> t.Callable[[str], str]:
-        src_dir_files = listdir(path.join(project_dir, SRC_DIR_NAME))
-        # sanity check that Generator produces only 1 python module/package
-        [python_module] = src_dir_files
+    Creates a callback that receives a single relative path (string) as input
+    and returns an absolute file path (string).
+    """
+    from os import path
 
-        def _get_file_path(file: str):
-            return path.join(project_dir, SRC_DIR_NAME, python_module, *file.split('/'))
+    def get_path_builder(root_path) -> t.Callable[[str], str]:
+        def get_file(*relative_file_path: str) -> str:
+            return path.join(
+                root_path,
+                *[
+                    x
+                    for l in [path_string.split('/') for path_string in relative_file_path]
+                    for x in l
+                ],
+            )
 
-        return _get_file_path
+        return get_file
 
-    return build_get_file_path
+    return get_path_builder
+
+
+# Python Package Generator specific fixtures/fixtures
+
+
+@pytest.fixture
+def load_yaml():
+    """Parse a yaml file using the 'production' Yaml Parser.
+
+    Returns:
+        t.Callable[[str], t.Mapping]: a callback that parses yaml files
+    """
+    from cookiecutter_python.backend.load_config import load_yaml
+
+    return load_yaml
+
+
+DataLoader = t.Callable[[str], t.MutableMapping]
+
+
+@pytest.fixture
+def user_config(load_yaml, load_json, path_builder, production_templated_project):
+    from os import path
+
+    config_files = {
+        'biskotaki': '.github/biskotaki.yaml',
+        'without-interpreters': 'tests/data/biskotaki-without-interpreters.yaml',
+    }
+    get_file = path_builder(path.abspath(path.join(my_dir, '..')))
+
+    @attr.s(auto_attribs=True, slots=True)
+    class ConfigData:
+        path: t.Union[str, None]
+
+        _data_file_path: t.Union[str, None] = attr.ib(init=False, default=None)
+        _config_file_arg: t.Optional[str] = attr.ib(init=False, default=None)
+        _loader: DataLoader = attr.ib(init=False)
+        data: t.Mapping = attr.ib(init=False)
+
+        def __attrs_post_init__(self):
+            self._data_file_path, self._config_file_arg, self._loader = self._build_data(
+                self.path
+            )
+            self.data = self._loader(self._data_file_path)
+
+        @staticmethod
+        def _build_data(
+            file_path: t.Union[str, None]
+        ) -> t.Tuple[str, t.Union[str, None], DataLoader]:
+            if file_path is not None:
+                data_file = get_file(config_files.get(file_path, file_path))
+                return (
+                    data_file,
+                    data_file,
+                    ConfigData.load_yaml(load_yaml),
+                )
+            return (
+                path.abspath(
+                    path.join(production_templated_project, '..', 'cookiecutter.json')
+                ),
+                None,
+                ConfigData.load_json(load_json),
+            )
+
+        @staticmethod
+        def load_json(loader: DataLoader):
+            def _load_json(json_file: str):
+                data = loader(json_file)
+                data['project_slug'] = data['project_name'].lower().replace(' ', '-')
+                data['author'] = data['full_name']
+                data['initialize_git_repo'] = {'yes': True}.get(
+                    data['initialize_git_repo'][0], False
+                )
+                return data
+
+            return _load_json
+
+        @staticmethod
+        def load_yaml(loader: DataLoader):
+            def _load_yaml(yaml_file: str):
+                data = loader(yaml_file)['default_context']
+                data['initialize_git_repo'] = {'yes': True}.get(
+                    data['initialize_git_repo'], False
+                )
+                return data
+
+            return _load_yaml
+
+        @property
+        def pypi_name(self) -> str:
+            return self.data['project_slug']
+
+        @property
+        def config_file(self) -> t.Union[str, None]:
+            return self._config_file_arg
+
+    return type(
+        'ConfigFile',
+        (),
+        {
+            '__getitem__': lambda self, item: ConfigData(
+                item,
+            )
+        },
+    )()
+
+
+# ASSERT Fixtures
+
+
+@pytest.fixture
+def assert_files_committed_if_flag_is_on(assert_files_commited):
+    def _assert_files_committed_if_flag_is_on(project_dir, config):
+        assert_files_commited(project_dir, config)
+
+    return _assert_files_committed_if_flag_is_on
+
+
+@pytest.fixture
+def assert_commit_author_is_expected_author(assert_initialized_git):
+    def _assert_commit_author_is_expected_author(project_dir: str, expected_commit):
+        repo = assert_initialized_git(project_dir)
+        latest_commit = repo.commit('HEAD')
+        assert latest_commit.type == 'commit'
+        assert str(latest_commit.message).startswith(expected_commit.message)
+        assert str(latest_commit.author.name) == expected_commit.author
+        assert str(latest_commit.author.email) == expected_commit.email
+
+    return _assert_commit_author_is_expected_author
+
+
+@pytest.fixture
+def assert_initialized_git():
+    from git import Repo
+    from git.exc import InvalidGitRepositoryError
+
+    def _assert_initialized_git(folder: str):
+        try:
+            repo = Repo(folder)
+            return repo
+        except InvalidGitRepositoryError as error:
+            raise error
+
+    return _assert_initialized_git
+
+
+@pytest.fixture
+def assert_files_commited(
+    production_templated_project,
+    assert_initialized_git,
+    assert_commit_author_is_expected_author,
+):
+    import os
+
+    from git.exc import InvalidGitRepositoryError
+
+    def _assert_files_commited(folder, config):
+        try:
+            repo = assert_initialized_git(folder)
+            expected_files = (
+                os.listdir(production_templated_project)
+                if config.data['initialize_git_repo']
+                else []
+            )
+            head = repo.active_branch.commit
+            assert head
+            tree = repo.heads.master.commit.tree
+
+            # Sanity checks
+            assert len(tree.trees) > 0  # trees are subdirectories
+            assert len(tree.blobs) > 0  # blobs are files
+            assert len(tree.blobs) + len(tree.trees) == len(tree)
+            assert tree['src'] == tree / 'src'  # access by index & by sub-path
+            # logic tests
+            assert all([file_path in tree for file_path in expected_files])
+            assert_commit_author_is_expected_author(
+                folder,
+                type(
+                    'Commit',
+                    (),
+                    {
+                        'message': 'Template applied from',
+                        'author': config.data['author'],
+                        'email': config.data['author_email'],
+                    },
+                ),
+            )
+        except InvalidGitRepositoryError:
+            return
+
+    return _assert_files_commited

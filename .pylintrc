@@ -153,7 +153,8 @@ disable=print-statement,
         not-callable,
         unsubscriptable-object,
         protected-access,
-        invalid-metaclass
+        invalid-metaclass,
+        catching-non-exception
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -254,7 +255,7 @@ ignore-on-opaque-inference=yes
 
 # List of class names for which member attributes should not be checked (useful
 # for classes with dynamically set attributes). This supports the use of
-# qualified names.
+# qualified names. Solves `attr-defined` errors.
 ignored-classes=optparse.Values,
                 thread._local,
                 _thread._local,

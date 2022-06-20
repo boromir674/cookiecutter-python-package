@@ -66,12 +66,6 @@ def get_main_with_mocked_template(get_object, request_factory):
     return get_pre_gen_hook_project_main
 
 
-def test_main(get_main_with_mocked_template):
-    main = get_main_with_mocked_template()
-    result = main()
-    assert result == 0  # 0 indicates successfull executions (as in a shell)
-
-
 def test_main_with_invalid_module_name(get_main_with_mocked_template, request_factory):
     result = get_main_with_mocked_template(
         overrides={"get_request": lambda: lambda: request_factory.pre(module_name="121212")}
@@ -91,7 +85,6 @@ def test_main_with_invalid_version(get_main_with_mocked_template, request_factor
     assert result == 1  # exit code of 1 indicates failed execution
 
 
-@pytest.mark.network_bound
 def test_main_with_found_pre_existing_pypi_package(
     get_main_with_mocked_template, request_factory
 ):
