@@ -21,8 +21,10 @@ jobs:
     runs-on: ${{ matrix.platform }}
     strategy:
       matrix:
-        platform: [ubuntu-latest, macos-latest]
-        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
+        platform: [ubuntu-latest]
+        # platform: [ubuntu-latest, macos-latest]
+        python-version: ["3.8"]
+        # python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
@@ -34,13 +36,13 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install tox tox-gh-actions
 
-    - name: Do Lint Checking
-      run: |
-        tox -e lint -vv -s false
-        tox -e prospector -vv -s false
+    # - name: Do Lint Checking
+    #   run: |
+    #     tox -e lint -vv -s false
+    #     tox -e prospector -vv -s false
 
-    - name: Do Type Checking
-      run: tox -e type -vv -s false
+    # - name: Do Type Checking
+    #   run: tox -e type -vv -s false
 
     - name: Specify current package version to assist build tool
       run: |
@@ -50,55 +52,54 @@ jobs:
         echo "PKG_VERSION=$A" >> $GITHUB_ENV
 
     - name: Run Test Suite
-      run: tox -vv -s false -- --run-network_bound
+      run: tox -vv -s false -- -n auto --run-network_bound
       env:
         PLATFORM: ${{ matrix.platform }}
 
-    - name: Check for compliance with Python Best Practices
-      run: |
-        DIST_DIR=dist
-        echo "DIST_DIR=dist" >> $GITHUB_ENV
+    # - name: Check for compliance with Python Best Practices
+    #   run: |
+    #     DIST_DIR=dist
+    #     echo "DIST_DIR=dist" >> $GITHUB_ENV
 
-        mkdir "$DIST_DIR"
-        mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}.tar.gz" "${DIST_DIR}"
-        mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}-py3-none-any.whl" "${DIST_DIR}"
-        tox -e check -vv -s false
-
-    - name: Upload Source & Wheel distributions as Artefacts
-      uses: actions/upload-artifact@v2
-      with:
-        # name: dist-${{ env.OS }}-${{ env.PYTHON }}  # TODO enable this
-        name: dist-${{ matrix.platform }}-${{ matrix.python-version }}
-        path: ${{ env.DIST_DIR }}
-        if-no-files-found: error
+    #     mkdir "$DIST_DIR"
+    #     mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}.tar.gz" "${DIST_DIR}"
+    #     mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}-py3-none-any.whl" "${DIST_DIR}"
+    #     tox -e check -vv -s false
 
     - name: Aggregate Test Coverage Data
       run: |
-        python -m pip install coverage
+        # python -m pip install coverage
         tox -e coverage --sitepackages -vv -s false
 
-    - name: Upload Coverage Data as Artefacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: coverage-xml-data
-        path: ./.tox/coverage.xml
-        if-no-files-found: error
-
-  host_coverage_results:
-    needs: test_suite
-    runs-on: ubuntu-latest
-    steps:
-    - name: Download Coverage Data
-      uses: actions/download-artifact@v2
-      with:
-        name: coverage-xml-data
     - name: Send Coverage Data to Codecov
       uses: codecov/codecov-action@v2
       with:
-        directory: .
+        directory: ./.tox
         env_vars: OS,PYTHON
         fail_ci_if_error: true
-        files: coverage.xml
+        files: ./.tox/coverage.xml
         flags: unittests
         name: codecov-umbrella
         verbose: true
+
+    # - name: Upload Source & Wheel distributions as Artefacts
+    #   uses: actions/upload-artifact@v2
+    #   with:
+    #     # name: dist-${{ env.OS }}-${{ env.PYTHON }}  # TODO enable this
+    #     name: dist-${{ matrix.platform }}-${{ matrix.python-version }}
+    #     path: ${{ env.DIST_DIR }}
+    #     if-no-files-found: error
+
+    # - name: Upload Coverage Data as Artefacts
+    #   uses: actions/upload-artifact@v2
+    #   with:
+    #     name: coverage-xml-data
+    #     path: ./.tox/coverage.xml
+    #     if-no-files-found: error
+
+
+
+    # - name: Download Coverage Data
+    #   uses: actions/download-artifact@v2
+    #   with:
+    #     name: coverage-xml-data
