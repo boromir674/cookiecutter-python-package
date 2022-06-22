@@ -2,6 +2,23 @@
 Changelog
 =========
 
+1.5.2 (2022-06-22)
+==================
+
+Development Update fixing the communication between the CI server and the Test
+Coverage Hosting Service. It also enable CI tests for the Documentation
+side of the project.
+
+Changes
+^^^^^^^
+
+ci
+""
+- install pyenchant on macos using homebrew
+- test documentation tests and building command
+- upload code coverage data to codecov.io from within the 'test_suite' job
+
+
 1.5.1 (2022-06-20)
 ==================
 
