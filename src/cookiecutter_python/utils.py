@@ -36,7 +36,7 @@ def load(interface: Type[T], module: Optional[str] = None) -> List[Type[T]]:
     if module is None:  # set path as the dir where the invoking code is
         namespace = sys._getframe(1).f_globals  # caller's globals
         directory: str = path.dirname(path.realpath(namespace['__file__']))
-        _module = str(directory).replace(str(project_package_location), '')[1:].replace('/', '.')
+        _module = directory.replace(str(project_package_location), '')[1:].replace('/', '.')
     else:
         directory = str(module).replace('/', '.')
         _module = module
