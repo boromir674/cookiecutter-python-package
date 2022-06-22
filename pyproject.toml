@@ -130,7 +130,6 @@ test = [
     "pytest-explicit",
     "pytest-xdist",
     "pytest-object-getter",
-    "gitpython",
 ]
 docs = [
     "sphinx",
