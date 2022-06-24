@@ -1,5 +1,6 @@
 default_context:
     project_name: Biskotaki
+    project_type: "module+cli"
     project_slug: biskotaki
     repo_name: biskotaki
     pkg_name: biskotaki
@@ -9,4 +10,3 @@ default_context:
     github_username: boromir674
     project_short_description: Project entirely generated using https://github.com/boromir674/cookiecutter-python-package/
     initialize_git_repo: no
-    add_cli: True

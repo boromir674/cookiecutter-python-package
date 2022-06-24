@@ -59,7 +59,7 @@ def test_project_generation_request(
         destination=tmpdir,
         default_dict=False,
         extra_context={
-            'add_cli': "yes",
+            'project_type': 'module+cli',
             'interpreters': {
                 'supported-interpreters': [
                     '3.7',
@@ -170,7 +170,7 @@ def hook_request_class(emulated_production_cookiecutter_dict):
                 '3.11',
             ]
         )
-        add_cli: t.Optional[bool] = attr.ib(default=False)
+        project_type: t.Optional[t.Literal['module', 'module+cli', 'pytest-plugin']] = attr.ib(default='module')
         module_name: t.Optional[str] = attr.ib(default='awesome_novelty_python_library')
         pypi_package: t.Optional[str] = attr.ib(
             default=attr.Factory(

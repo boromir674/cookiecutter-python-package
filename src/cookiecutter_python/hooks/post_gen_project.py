@@ -19,7 +19,6 @@ def get_request():
     COOKIECUTTER = OrderedDict()
     COOKIECUTTER = {{ cookiecutter }}  # pylint: disable=undefined-variable
     INITIALIZE_GIT_REPO_FLAG = "{{ cookiecutter.initialize_git_repo|lower }}"
-    add_cli_flag = "{{ cookiecutter.add_cli|lower }}"
 
     request = type('PostGenProjectRequest', (), {
         'cookiecutter': COOKIECUTTER,
@@ -28,10 +27,10 @@ def get_request():
         'author': "{{ cookiecutter.author }}",
         'author_email': "{{ cookiecutter.author_email }}",
         'initialize_git_repo': {'yes': True}.get(INITIALIZE_GIT_REPO_FLAG, False),
-        'add_cli': {'yes': True}.get(add_cli_flag, False),
+        'project_type': "{{ cookiecutter.project_type }}",
+        # 'add_cli': {'module+cli': True}.get(project_type, False),
         'repo': None,
     })
-
     return request
 
 
@@ -39,13 +38,15 @@ class PostFileRemovalError(Exception):
     pass
 
 def post_file_removal(request):
+    print(request.project_type)
     files_to_remove = []
-    if not request.add_cli:
+    if request.project_type != 'module+cli':
         files_to_remove.extend([
             path.join(request.project_dir, 'src', request.module_name, 'cli.py'),
             path.join(request.project_dir, 'src', request.module_name, '__main__.py'),
         ])
     for file in files_to_remove:
+        print(f' Removing {file}')
         os.remove(file)
 
 

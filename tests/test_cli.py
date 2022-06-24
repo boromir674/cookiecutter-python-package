@@ -26,6 +26,11 @@ def test_cli(cli_invoker_params, isolated_cli_runner):
     )
     assert result.exit_code == 0
 
+class CheckPypiFeatureNotSupported(Exception):
+    pass
+
+reason="We do not support yet, the 'check-pypi' feature, if --config-file is NOT supplied."
+
 
 @pytest.mark.runner_setup(mix_stderr=False)
 @pytest.mark.parametrize(
@@ -38,7 +43,7 @@ def test_cli(cli_invoker_params, isolated_cli_runner):
             marks=pytest.mark.xfail(
                 # exception=NotImplementedError,
                 strict=True,
-                reason="We do not support yet, the 'check-pypi' feature, if --config-file is NOT supplied.",
+                reason=reason,
             ),
         ),
         ('without-interpreters', False),
@@ -86,7 +91,8 @@ def test_cli_offline(
     )
     package_exists_on_pypi = check_pypi_result(result.stdout)
     if package_exists_on_pypi is None:
-        raise NotImplementedError
+        raise CheckPypiFeatureNotSupported(reason)
+        # raise CheckPypiFeatureNotSupported
 
 
 @pytest.fixture

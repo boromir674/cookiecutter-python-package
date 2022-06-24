@@ -20,7 +20,7 @@ def get_post_gen_main(get_object, request_factory, tmpdir):
             return request_factory.post(
                 project_dir=tmpdir,
                 initialize_git_repo=True,  # affects post_gen_project.py
-                add_cli=add_cli,
+                project_type='module+cli' if add_cli else 'module',
                 module_name=name,
             )
 
