@@ -9,6 +9,7 @@ import subprocess
 import sys
 from collections import OrderedDict
 from copy import copy
+from glob import glob
 from os import path
 from git import Actor, Repo
 
@@ -37,16 +38,30 @@ def get_request():
 class PostFileRemovalError(Exception):
     pass
 
+delete_files = {
+    'pytest-plugin': lambda x: (
+
+    ),
+    'module': lambda x: (
+        ('src', x.module_name, 'cli.py'),
+        ('src', x.module_name, '__main__.py'),
+        ('tests', 'conftest.py'),
+        ('setup.cfg',),
+        ('MANIFEST.in',),
+    ),
+    'module+cli': lambda x: (
+        ('tests', 'conftest.py'),
+        ('setup.cfg',),
+        ('MANIFEST.in',),
+    )
+}
+
 def post_file_removal(request):
     print(request.project_type)
-    files_to_remove = []
-    if request.project_type != 'module+cli':
-        files_to_remove.extend([
-            path.join(request.project_dir, 'src', request.module_name, 'cli.py'),
-            path.join(request.project_dir, 'src', request.module_name, '__main__.py'),
-        ])
+    files_to_remove = [
+        path.join(request.project_dir, *x) for x in delete_files[request.project_type](request)
+    ]
     for file in files_to_remove:
-        print(f' Removing {file}')
         os.remove(file)
 
 
@@ -117,7 +132,16 @@ def git_commit(request):
         "Template configuration:\n"
         f"{cookiecutter_config_str}"
     )
-    request.repo.index.add(os.listdir(request.project_dir))
+
+    def iter_files():
+        for file_path in sorted(
+            set(glob(path.join(request.project_dir, '**/**'), recursive=True))
+        ):
+            if path.isfile(file_path) and '__pycache__' not in file_path:
+                yield file_path
+    request.repo.index.add(list(
+        iter((path.relpath(x, start=request.project_dir) for x in iter_files()))
+    ))
     author = Actor(request.author, request.author_email)
 
     request.repo.index.commit(

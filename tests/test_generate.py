@@ -98,6 +98,7 @@ def assert_scaffolded_without_cli(module_file) -> t.Callable[[str], None]:
         module_dir = get_file('')
         print('MODULE DIR:', module_dir)
         import os
+
         print(os.listdir(module_dir))
         # assert there are no cli related files
         assert all(not path.isfile(get_file(file_name)) for file_name in CLI_RELATED_FILES)

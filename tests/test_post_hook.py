@@ -12,11 +12,20 @@ def get_post_gen_main(get_object, request_factory, tmpdir):
         def mock_get_request():
             # create a file to emulate the generation process
             os.mkdir(path.join(tmpdir, 'src'))
+            os.mkdir(path.join(tmpdir, 'tests'))
             os.mkdir(path.join(tmpdir, 'src', name))
             with open(path.join(tmpdir, 'src', name, 'cli.py'), 'w') as _file:
                 _file.write('print("Hello World!"\n')
             with open(path.join(tmpdir, 'src', name, '__main__.py'), 'w') as _file:
                 _file.write('print("Hello World 2"\n')
+            with open(path.join(tmpdir, 'tests', 'conftest.py'), 'w') as _file:
+                _file.write('print("Hello World!"\n')
+            with open(path.join(tmpdir, 'setup.cfg'), 'w') as _file:
+                _file.write('[tools]\n')
+            with open(path.join(tmpdir, 'pyproject.toml'), 'w') as _file:
+                _file.write('[tools]\n')
+            with open(path.join(tmpdir, 'MANIFEST.in'), 'w') as _file:
+                _file.write('[]\n')
             return request_factory.post(
                 project_dir=tmpdir,
                 initialize_git_repo=True,  # affects post_gen_project.py
