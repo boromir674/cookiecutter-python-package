@@ -97,7 +97,6 @@ def test_cli_offline(
     package_exists_on_pypi = check_pypi_result(result.stdout)
     if package_exists_on_pypi is None:
         raise CheckPypiFeatureNotSupported(reason)
-        # raise CheckPypiFeatureNotSupported
 
 
 @pytest.fixture
@@ -106,9 +105,9 @@ def assert_generated_expected_project_type(
     get_expected_generated_files,
 ):
     def _assert_generated_expected_project_type(project_dir: str, config):
-        runtime_generated_files = project_files(project_dir)
-        expected_gen_files = get_expected_generated_files(project_dir, config)
-        assert set(runtime_generated_files.relative_file_paths()) == set(expected_gen_files)
+        runtime_generated_files = set(project_files(project_dir).relative_file_paths())
+        expected_gen_files = set(get_expected_generated_files(project_dir, config))
+        assert runtime_generated_files == expected_gen_files
 
     return _assert_generated_expected_project_type
 

@@ -9,8 +9,9 @@ import subprocess
 import sys
 from collections import OrderedDict
 from copy import copy
-from glob import glob
 from os import path
+from pathlib import Path
+
 from git import Actor, Repo
 
 PROJECT_DIRECTORY = os.path.realpath(os.path.curdir)
@@ -120,6 +121,18 @@ def grant_basic_permissions(project_dir: str):
         print(exception(error))
 
 
+def iter_files(request):
+    path_obj = Path(request.project_dir)
+    for file_path in path_obj.rglob('*'):
+        if bool(
+            path.isfile(file_path) and
+            '__pycache__' not in str(file_path) and
+            str(os.path.relpath(file_path, start=request.project_dir)) != '.git' and
+            not str(os.path.relpath(file_path, start=request.project_dir)).startswith('.git/')
+        ):
+            yield str(file_path)
+
+
 def git_commit(request):
     """Commit the staged changes in the generated project."""
     cookiecutter_config_str = (
@@ -133,14 +146,8 @@ def git_commit(request):
         f"{cookiecutter_config_str}"
     )
 
-    def iter_files():
-        for file_path in sorted(
-            set(glob(path.join(request.project_dir, '**/**'), recursive=True))
-        ):
-            if path.isfile(file_path) and '__pycache__' not in file_path:
-                yield file_path
     request.repo.index.add(list(
-        iter((path.relpath(x, start=request.project_dir) for x in iter_files()))
+        iter((path.relpath(x, start=request.project_dir) for x in iter_files(request)))
     ))
     author = Actor(request.author, request.author_email)
 
@@ -174,18 +181,13 @@ def _post_hook():
     request = get_request()
     post_file_removal(request)
     if request.initialize_git_repo:
-        try:
-            initialize_git_repo(request.project_dir)
-            grant_basic_permissions(request.project_dir)
-            request.repo = Repo(request.project_dir)
-            if not is_git_repo_clean(request.project_dir):
-            # if request.repo.index.diff(None):  # there are changes not added to index
-                git_commit(request)
-            else:
-                print('Index did not update !!')
-        except Exception as error:
-            print(f"{error}\nERROR in Post Script.\nExiting with 1")
-            return 1
+        initialize_git_repo(request.project_dir)
+        grant_basic_permissions(request.project_dir)
+        request.repo = Repo(request.project_dir)
+        if not is_git_repo_clean(request.project_dir):
+            git_commit(request)
+        else:
+            print('Index did not update !!')
     return 0
 
 

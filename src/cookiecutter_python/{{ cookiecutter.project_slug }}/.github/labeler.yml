@@ -1,0 +1,21 @@
+# Pull Request Labeling Rules based on changed files
+
+# Add 'ci' label to any change within the '.github' dir
+ci:
+- any: ['.github/*', '.github/**/*']
+
+
+# Add 'template' label to any change within the 'src/cookiecutter_python' dir
+# Currently, this is where the cookiecutter template (cookiecutter.json, hooks, etc) is
+template:
+- any: ['src/cookiecutter_python/*', 'src/cookiecutter_python/**/*']
+
+
+# Add 'docs' label to any change within the 'docs' dir
+docs:
+- any: ['docs/*', 'docs/**/*']
+
+
+# Add 'test' label to any change within the 'tests' dir
+test:
+- any: ['tests/*', 'tests/**/*']

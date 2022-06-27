@@ -1,6 +1,10 @@
 # BUILD
 
 [build-system]
+{% if cookiecutter.project_type == "pytest-plugin" %}
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+{% else %}
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
@@ -127,11 +131,10 @@ typing = [
 "Source Code" = "https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}"
 "Changelog" = "https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}/blob/master/CHANGELOG.rst"
 "Code of Conduct" = "https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}/blob/master/CONTRIBUTING.rst"
+{% endif %}
 
 
 # TOOLS
-
-## Pytest & Plugins
 
 [tool.pytest.ini_options]
 minversion = "6.2"
@@ -149,8 +152,6 @@ explicit-only = [
     "network_bound",
 ]
 
-
-## Black formatting/linting
 
 [tool.black]
 line-length = 95

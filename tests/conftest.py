@@ -644,8 +644,9 @@ def assert_initialized_git():
 @pytest.fixture
 def project_files():
     """Files of a generated Project, as iterable of file paths (excluding dirs)."""
-    from os import path
     from glob import glob
+    from os import path
+    from pathlib import Path
 
     import attr
 
@@ -675,10 +676,9 @@ def project_files():
             Yields:
                 Iterator[t.Iterator[str]]: [description]
             """
-            print('DEBUG:\n', self._glob)
-            for file_path in self._glob:
-                if path.isfile(file_path) and '__pycache__' not in file_path:
-                    yield file_path
+            for file_path in Path(self.root_dir).rglob('*'):
+                if path.isfile(file_path) and '__pycache__' not in str(file_path):
+                    yield str(file_path)
 
         def relative_file_paths(self) -> t.Iterator[str]:
             """Iterate alphabetically over relative file paths of the Project.
@@ -690,7 +690,10 @@ def project_files():
             Returns:
                 t.Iterator[str]: [description]
             """
-            return iter((path.relpath(x, start=self.root_dir) for x in iter(self)))
+            for file_path in iter(self):
+                relative_path = str(path.relpath(file_path, start=self.root_dir))
+                if relative_path != '.git' and not relative_path.startswith('.git/'):
+                    yield relative_path
 
     return ProjectFiles
 
@@ -703,33 +706,35 @@ def get_expected_generated_files(production_templated_project, project_files):
 
     def _get_expected_generated_files(folder, config):
         expected_project_type = config.data['project_type']
-        files_to_remove = [
-            path.join(folder, *x)
-            for x in delete_files[expected_project_type](
-                type(
-                    'PostGenRequestLike',
-                    (),
-                    {
-                        'project_dir': folder,
-                        'project_type': expected_project_type,
-                        'module_name': config.data['pkg_name'],
-                    },
-                )
-            )
-        ]
+        request = type(
+            'PostGenRequestLike',
+            (),
+            {
+                'project_dir': folder,
+                'project_type': expected_project_type,
+                'module_name': config.data['pkg_name'],
+            },
+        )
+        files_to_remove = [path.join(*x) for x in delete_files[expected_project_type](request)]
 
         all_template_files = project_files(production_templated_project)
-        max_set = [
+        expected_files = [
             x.replace(r'{{ cookiecutter.pkg_name }}', 'biskotaki')
             for x in all_template_files.relative_file_paths()
         ]
-        return iter(
-            (
-                x
-                for x in max_set
-                if x not in set((path.relpath(x, start=folder) for x in files_to_remove))
-            )
+        print('\nEXPECTED FILES:\n', '\n'.join(expected_files))
+        # some adhoc sanity checks
+        assert all(
+            [
+                x in set(expected_files)
+                for x in (
+                    '.bettercodehub.yml',
+                    '.github/workflows/test.yaml',
+                    'pyproject.toml',
+                )
+            ]
         )
+        return iter(x for x in expected_files if x not in set(files_to_remove))
 
     return _get_expected_generated_files
 
@@ -773,17 +778,20 @@ def assert_files_commited(
             assert tree['src'] == tree / 'src'  # access by index & by sub-path
 
             # logic tests
-            runtime_generated_files = project_files(folder)
+            runtime_generated_files = set(project_files(folder).relative_file_paths())
+            # runtime_generated_files = set(iter(
+            #     x for x in project_files(folder).relative_file_paths()
+            #     if not x.startswith('.git/')
+            # ))
             # below we assert that all the expected files have been
             # commited:
             # 1st assert all generated runtime project files have been commited
-            for f in iter(runtime_generated_files.relative_file_paths()):
+            for f in runtime_generated_files:
+                print('Checking FILE: ', f)
                 assert file_commited(f)
             # 2nd assert the generated files exactly match the expected one
             expected_generated_files = get_expected_generated_files(folder, config)
-            assert set(runtime_generated_files.relative_file_paths()) == set(
-                expected_generated_files
-            )
+            assert set(runtime_generated_files) == set(expected_generated_files)
 
             assert_commit_author_is_expected_author(
                 folder,
