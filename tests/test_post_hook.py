@@ -20,6 +20,10 @@ def get_post_gen_main(get_object, request_factory, tmpdir):
                 _file.write('print("Hello World 2"\n')
             with open(path.join(tmpdir, 'tests', 'conftest.py'), 'w') as _file:
                 _file.write('print("Hello World!"\n')
+            with open(path.join(tmpdir, 'tests', 'test_cli.py'), 'w') as _file:
+                _file.write('print("Hello World!"\n')
+            with open(path.join(tmpdir, 'tests', 'test_invoking_cli.py'), 'w') as _file:
+                _file.write('print("Hello World!"\n')
             with open(path.join(tmpdir, 'setup.cfg'), 'w') as _file:
                 _file.write('[tools]\n')
             with open(path.join(tmpdir, 'pyproject.toml'), 'w') as _file:

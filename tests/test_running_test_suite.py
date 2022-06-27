@@ -7,9 +7,11 @@ def test_running_pytest(get_cli_invocation, project_dir):
         sys.executable,
         '-m',
         'pytest',
-        os.path.join(project_dir, 'tests'),
+        '-s',
+        '-ra',
         '-vv',
+        os.path.join(project_dir, 'tests'),
         env={'PYTHONPATH': f'{str(os.path.join(project_dir, "src"))}'},
     )
-    assert result.exit_code == 0
     assert result.stderr == ''
+    assert result.exit_code == 0

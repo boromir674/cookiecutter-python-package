@@ -39,22 +39,22 @@ def get_request():
 class PostFileRemovalError(Exception):
     pass
 
-delete_files = {
-    'pytest-plugin': lambda x: (
 
-    ),
-    'module': lambda x: (
-        ('src', x.module_name, 'cli.py'),
-        ('src', x.module_name, '__main__.py'),
-        ('tests', 'conftest.py'),
-        ('setup.cfg',),
-        ('MANIFEST.in',),
-    ),
-    'module+cli': lambda x: (
-        ('tests', 'conftest.py'),
-        ('setup.cfg',),
-        ('MANIFEST.in',),
-    )
+CLI_ONLY = lambda x: [
+    ('src', x.module_name, 'cli.py'),
+    ('src', x.module_name, '__main__.py'),
+    ('tests', 'test_cli.py'),
+    ('tests', 'test_invoking_cli.py'),
+]
+PYTEST_PLUGIN_ONLY = lambda x: [
+    ('tests', 'conftest.py'),
+    ('setup.cfg',),
+    ('MANIFEST.in',),
+]
+delete_files = {
+    'pytest-plugin': lambda x: CLI_ONLY(x),
+    'module': lambda x: CLI_ONLY(x) + PYTEST_PLUGIN_ONLY(x),
+    'module+cli': lambda x: PYTEST_PLUGIN_ONLY(x),
 }
 
 def post_file_removal(request):
