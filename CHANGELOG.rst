@@ -2,6 +2,34 @@
 Changelog
 =========
 
+1.6.0 (2022-06-28)
+==================
+
+Introducing the *Project Type* Generate Variable. Now you can select what
+type of Python Package you intend to develop and the Generation process
+shall adjust to produce the desired skeleton and infrastructure accordingly!
+
+Packaged the existing functionality into the `Module` and `Module + CLI`
+Project Types.
+Added the new `Pytest Plugin` Project Type, designed for developing Pytest
+Plugins and Fixtures (see below).
+
+Project Types currently supported:
+- Module: a Python Package intended to serve exclusively as a Software Library
+- Module + CLI: a Python Package proving a Software Library and an
+    "installable" (executable) Command Line Program/Interface (CLI)
+- Pytest Plugin: a Python Package intended to providing a Pyetst Plugin (ie with
+    a Test Fixture)
+
+Changes
+^^^^^^^
+
+feature
+"""""""
+- add 'project_type' Variable allowing for 'module', 'module+cli' or 'pytest-plugin' Projects
+- conditionaly populate 'test' dependencies, ie based on whether there is a cli entrypoint
+
+
 1.5.2 (2022-06-22)
 ==================
 
