@@ -136,6 +136,11 @@ docs = [
 ]
 typing = [
     "mypy",
+    "types-requests",
+    "pytest",
+{% if cookiecutter.project_type == "module+cli" %}
+    "pytest-click",
+{% endif %}
 ]
 
 

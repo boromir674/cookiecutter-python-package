@@ -14,7 +14,7 @@ this_file_location = os.path.dirname(os.path.realpath(os.path.abspath(__file__))
 
 def version_msg():
     """{{ cookiecutter.pkg_name }} version, location and Python version.
-    
+
     Get message about {{ cookiecutter.pkg_name }} version, location
     and Python version.
     """
@@ -31,7 +31,7 @@ def main(
     verbose,
 ):
     """TODO Write this content that gets renders when invoking with --help flag!
-    
+
     Eg:
     Create a Project from the project template.
 

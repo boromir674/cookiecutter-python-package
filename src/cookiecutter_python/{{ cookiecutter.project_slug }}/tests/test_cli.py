@@ -3,10 +3,9 @@ import pytest
 
 @pytest.fixture
 def get_main_arguments():
-    return type('MainArguments', (), {
-        'command_line_script_args': None,
-        'main_function_kwargs': {}
-    })
+    return type(
+        'A', (), {'command_line_script_args': None, 'main_function_kwargs': {}}
+    )
 
 
 @pytest.mark.runner_setup(mix_stderr=False)
