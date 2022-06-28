@@ -49,8 +49,9 @@ reason = "We do not support yet, the 'check-pypi' feature, if --config-file is N
             ),
         ),
         ('without-interpreters', False),
+        ('tests/data/pytest-fixture.yaml', False),
     ],
-    ids=['biskotaki', 'None', 'without-interpreters'],
+    ids=['biskotaki', 'None', 'without-interpreters', 'pytest-fixture'],
 )
 def test_cli_offline(
     config_file,

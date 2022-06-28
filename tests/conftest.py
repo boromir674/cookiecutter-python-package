@@ -605,13 +605,6 @@ def user_config(load_yaml, load_json, path_builder, production_templated_project
 # ASSERT Fixtures
 
 
-@pytest.fixture
-def assert_files_committed_if_flag_is_on(assert_files_commited):
-    def _assert_files_committed_if_flag_is_on(project_dir, config):
-        assert_files_commited(project_dir, config)
-
-    return _assert_files_committed_if_flag_is_on
-
 
 @pytest.fixture
 def assert_commit_author_is_expected_author(assert_initialized_git):
@@ -719,7 +712,7 @@ def get_expected_generated_files(production_templated_project, project_files):
 
         all_template_files = project_files(production_templated_project)
         expected_files = [
-            x.replace(r'{{ cookiecutter.pkg_name }}', 'biskotaki')
+            x.replace(r'{{ cookiecutter.pkg_name }}', config.data['pkg_name'])
             for x in all_template_files.relative_file_paths()
         ]
         print('\nEXPECTED FILES:\n', '\n'.join(expected_files))
@@ -737,6 +730,14 @@ def get_expected_generated_files(production_templated_project, project_files):
         return iter(x for x in expected_files if x not in set(files_to_remove))
 
     return _get_expected_generated_files
+
+
+@pytest.fixture
+def assert_files_committed_if_flag_is_on(assert_files_commited):
+    def _assert_files_committed_if_flag_is_on(project_dir, config):
+        assert_files_commited(project_dir, config)
+
+    return _assert_files_committed_if_flag_is_on
 
 
 @pytest.fixture
@@ -779,15 +780,10 @@ def assert_files_commited(
 
             # logic tests
             runtime_generated_files = set(project_files(folder).relative_file_paths())
-            # runtime_generated_files = set(iter(
-            #     x for x in project_files(folder).relative_file_paths()
-            #     if not x.startswith('.git/')
-            # ))
             # below we assert that all the expected files have been
             # commited:
             # 1st assert all generated runtime project files have been commited
             for f in runtime_generated_files:
-                print('Checking FILE: ', f)
                 assert file_commited(f)
             # 2nd assert the generated files exactly match the expected one
             expected_generated_files = get_expected_generated_files(folder, config)

@@ -48,6 +48,7 @@ CLI_ONLY = lambda x: [
 ]
 PYTEST_PLUGIN_ONLY = lambda x: [
     ('tests', 'conftest.py'),
+    ('tests', 'test_my_fixture.py'),
     ('setup.cfg',),
     ('MANIFEST.in',),
 ]
