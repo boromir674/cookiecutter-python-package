@@ -10,6 +10,8 @@ import sys
 from collections import OrderedDict
 from copy import copy
 from os import path
+from pathlib import Path
+
 from git import Actor, Repo
 
 PROJECT_DIRECTORY = os.path.realpath(os.path.curdir)
@@ -19,7 +21,6 @@ def get_request():
     COOKIECUTTER = OrderedDict()
     COOKIECUTTER = {{ cookiecutter }}  # pylint: disable=undefined-variable
     INITIALIZE_GIT_REPO_FLAG = "{{ cookiecutter.initialize_git_repo|lower }}"
-    add_cli_flag = "{{ cookiecutter.add_cli|lower }}"
 
     request = type('PostGenProjectRequest', (), {
         'cookiecutter': COOKIECUTTER,
@@ -28,23 +29,40 @@ def get_request():
         'author': "{{ cookiecutter.author }}",
         'author_email': "{{ cookiecutter.author_email }}",
         'initialize_git_repo': {'yes': True}.get(INITIALIZE_GIT_REPO_FLAG, False),
-        'add_cli': {'yes': True}.get(add_cli_flag, False),
+        'project_type': "{{ cookiecutter.project_type }}",
+        # 'add_cli': {'module+cli': True}.get(project_type, False),
         'repo': None,
     })
-
     return request
 
 
 class PostFileRemovalError(Exception):
     pass
 
+
+CLI_ONLY = lambda x: [
+    ('src', x.module_name, 'cli.py'),
+    ('src', x.module_name, '__main__.py'),
+    ('tests', 'test_cli.py'),
+    ('tests', 'test_invoking_cli.py'),
+]
+PYTEST_PLUGIN_ONLY = lambda x: [
+    ('tests', 'conftest.py'),
+    ('tests', 'test_my_fixture.py'),
+    ('setup.cfg',),
+    ('MANIFEST.in',),
+]
+delete_files = {
+    'pytest-plugin': lambda x: CLI_ONLY(x),
+    'module': lambda x: CLI_ONLY(x) + PYTEST_PLUGIN_ONLY(x),
+    'module+cli': lambda x: PYTEST_PLUGIN_ONLY(x),
+}
+
 def post_file_removal(request):
-    files_to_remove = []
-    if not request.add_cli:
-        files_to_remove.extend([
-            path.join(request.project_dir, 'src', request.module_name, 'cli.py'),
-            path.join(request.project_dir, 'src', request.module_name, '__main__.py'),
-        ])
+    print(request.project_type)
+    files_to_remove = [
+        path.join(request.project_dir, *x) for x in delete_files[request.project_type](request)
+    ]
     for file in files_to_remove:
         os.remove(file)
 
@@ -104,6 +122,18 @@ def grant_basic_permissions(project_dir: str):
         print(exception(error))
 
 
+def iter_files(request):
+    path_obj = Path(request.project_dir)
+    for file_path in path_obj.rglob('*'):
+        if bool(
+            path.isfile(file_path) and
+            '__pycache__' not in str(file_path) and
+            str(os.path.relpath(file_path, start=request.project_dir)) != '.git' and
+            not str(os.path.relpath(file_path, start=request.project_dir)).startswith('.git/')
+        ):
+            yield str(file_path)
+
+
 def git_commit(request):
     """Commit the staged changes in the generated project."""
     cookiecutter_config_str = (
@@ -116,7 +146,10 @@ def git_commit(request):
         "Template configuration:\n"
         f"{cookiecutter_config_str}"
     )
-    request.repo.index.add(os.listdir(request.project_dir))
+
+    request.repo.index.add(list(
+        iter((path.relpath(x, start=request.project_dir) for x in iter_files(request)))
+    ))
     author = Actor(request.author, request.author_email)
 
     request.repo.index.commit(
@@ -149,18 +182,13 @@ def _post_hook():
     request = get_request()
     post_file_removal(request)
     if request.initialize_git_repo:
-        try:
-            initialize_git_repo(request.project_dir)
-            grant_basic_permissions(request.project_dir)
-            request.repo = Repo(request.project_dir)
-            if not is_git_repo_clean(request.project_dir):
-            # if request.repo.index.diff(None):  # there are changes not added to index
-                git_commit(request)
-            else:
-                print('Index did not update !!')
-        except Exception as error:
-            print(f"{error}\nERROR in Post Script.\nExiting with 1")
-            return 1
+        initialize_git_repo(request.project_dir)
+        grant_basic_permissions(request.project_dir)
+        request.repo = Repo(request.project_dir)
+        if not is_git_repo_clean(request.project_dir):
+            git_commit(request)
+        else:
+            print('Index did not update !!')
     return 0
 
 
