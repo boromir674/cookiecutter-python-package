@@ -605,7 +605,6 @@ def user_config(load_yaml, load_json, path_builder, production_templated_project
 # ASSERT Fixtures
 
 
-
 @pytest.fixture
 def assert_commit_author_is_expected_author(assert_initialized_git):
     def _assert_commit_author_is_expected_author(project_dir: str, expected_commit):
