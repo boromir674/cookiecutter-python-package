@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """Main `{{ cookiecutter.pkg_name }}` CLI."""
 
 import os

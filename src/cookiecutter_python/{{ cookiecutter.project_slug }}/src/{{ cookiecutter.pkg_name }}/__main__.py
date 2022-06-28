@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Run `python -m {{ cookiecutter.pkg_name }}`.
 
 Allow running {{ cookiecutter.project_name }}, also by invoking

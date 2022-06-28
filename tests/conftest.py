@@ -176,9 +176,7 @@ def hook_request_class(emulated_production_cookiecutter_dict):
                 '3.11',
             ]
         )
-        project_type: t.Optional[t.Literal['module', 'module+cli', 'pytest-plugin']] = attr.ib(
-            default='module'
-        )
+        project_type: t.Optional[str] = attr.ib(default='module')
         module_name: t.Optional[str] = attr.ib(default='awesome_novelty_python_library')
         pypi_package: t.Optional[str] = attr.ib(
             default=attr.Factory(

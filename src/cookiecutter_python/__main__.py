@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Allow to run Python Generator also through `python -m cookiecutter_python`.
 
 Allows Python Generator to be executed through `python -m cookiecutter_python`.
