@@ -27,6 +27,13 @@ def test_cli(cli_invoker_params, isolated_cli_runner):
     assert result.exit_code == 0
 
 
+class CheckPypiFeatureNotSupported(Exception):
+    pass
+
+
+reason = "We do not support yet, the 'check-pypi' feature, if --config-file is NOT supplied."
+
+
 @pytest.mark.runner_setup(mix_stderr=False)
 @pytest.mark.parametrize(
     'config_file, default_config',
@@ -38,12 +45,13 @@ def test_cli(cli_invoker_params, isolated_cli_runner):
             marks=pytest.mark.xfail(
                 # exception=NotImplementedError,
                 strict=True,
-                reason="We do not support yet, the 'check-pypi' feature, if --config-file is NOT supplied.",
+                reason=reason,
             ),
         ),
         ('without-interpreters', False),
+        ('tests/data/pytest-fixture.yaml', False),
     ],
-    ids=['biskotaki', 'None', 'without-interpreters'],
+    ids=['biskotaki', 'None', 'without-interpreters', 'pytest-fixture'],
 )
 def test_cli_offline(
     config_file,
@@ -53,6 +61,7 @@ def test_cli_offline(
     user_config,
     cli_invoker_params,
     assert_files_committed_if_flag_is_on,
+    assert_generated_expected_project_type,
     isolated_cli_runner,
     tmpdir,
 ):
@@ -81,12 +90,27 @@ def test_cli_offline(
         **kwargs,
     )
     assert result.exit_code == 0
-    assert_files_committed_if_flag_is_on(
-        path.abspath(path.join(tmpdir, config.pypi_name)), config=config
-    )
+
+    project_dir = path.abspath(path.join(tmpdir, config.project_slug))
+    assert_files_committed_if_flag_is_on(project_dir, config=config)
+    assert_generated_expected_project_type(project_dir, config)
+
     package_exists_on_pypi = check_pypi_result(result.stdout)
     if package_exists_on_pypi is None:
-        raise NotImplementedError
+        raise CheckPypiFeatureNotSupported(reason)
+
+
+@pytest.fixture
+def assert_generated_expected_project_type(
+    project_files,
+    get_expected_generated_files,
+):
+    def _assert_generated_expected_project_type(project_dir: str, config):
+        runtime_generated_files = set(project_files(project_dir).relative_file_paths())
+        expected_gen_files = set(get_expected_generated_files(project_dir, config))
+        assert runtime_generated_files == expected_gen_files
+
+    return _assert_generated_expected_project_type
 
 
 @pytest.fixture

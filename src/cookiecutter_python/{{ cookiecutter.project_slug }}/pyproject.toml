@@ -1,6 +1,10 @@
 # BUILD
 
 [build-system]
+{% if cookiecutter.project_type == "pytest-plugin" %}
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+{% else %}
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
@@ -80,17 +84,28 @@ exclude = [
     ".travis.yml"
 ]
 
+# PyPi url links, that appear in 'Project Links' section
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/{{ cookiecutter.repo_name }}/issues"
+"CI: Github Actions" = "https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}/actions"
+"Documentation" = "https://{{ cookiecutter.repo_name }}.readthedocs.io/"
+"Source Code" = "https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}"
+"Changelog" = "https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}/blob/master/CHANGELOG.rst"
+"Code of Conduct" = "https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}/blob/master/CONTRIBUTING.rst"
+{% endif %}
+
+
 [tool.poetry.dependencies]
 python = "^3.6"
-
-# A list of all of the optional dependencies, some of which are included in the
-# below `extras`. They can be opted into by apps.
 
 # Test: packages imported in test code and packages required for the "test runner"
 pytest = { version = ">= 6.2.4", optional = true }
 pytest-cov = { version = ">= 2.12", optional = true }
 pytest-explicit = { version = "~= 1.0.1", optional = true }
 pytest-xdist = { version = ">= 1.34", optional = true }
+{% if cookiecutter.project_type == "module+cli" %}
+pytest-click = { version = "^1.1.0", optional = true }
+{% endif %}
 
 # Docs: development and build dependencies
 sphinx = { version = "~= 4.0", optional = true }
@@ -101,12 +116,17 @@ sphinxcontrib-spelling = { version = "~= 7.3.3", optional = true }
 # Type Checking: packages required for the type check (ie mypy) to pass
 mypy = { version = "~= 0.950", optional = true }
 
+# Note: "^" is the more conservative compared to "~"
+
 [tool.poetry.extras]
 test = [
     "pytest",
     "pytest-cov",
     "pytest-explicit",
     "pytest-xdist",
+{% if cookiecutter.project_type == "module+cli" %}
+    "pytest-click",
+{% endif %}
 ]
 docs = [
     "sphinx",
@@ -119,19 +139,13 @@ typing = [
 ]
 
 
-# PyPi url links, that appear in 'Project Links' section
-[tool.poetry.urls]
-"Bug Tracker" = "https://github.com/{{ cookiecutter.repo_name }}/issues"
-"CI: Github Actions" = "https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}/actions"
-"Documentation" = "https://{{ cookiecutter.repo_name }}.readthedocs.io/"
-"Source Code" = "https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}"
-"Changelog" = "https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}/blob/master/CHANGELOG.rst"
-"Code of Conduct" = "https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}/blob/master/CONTRIBUTING.rst"
+{% if cookiecutter.project_type == "module+cli" %}
+[tool.poetry.scripts]
+{{ cookiecutter.pkg_name|replace('_', '-') }} = '{{ cookiecutter.pkg_name }}.cli:main'
+{% endif %}
 
 
 # TOOLS
-
-## Pytest & Plugins
 
 [tool.pytest.ini_options]
 minversion = "6.2"
@@ -149,8 +163,6 @@ explicit-only = [
     "network_bound",
 ]
 
-
-## Black formatting/linting
 
 [tool.black]
 line-length = 95
