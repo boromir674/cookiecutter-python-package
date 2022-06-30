@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Main `cookiecutter_python` CLI."""
 
 import os
