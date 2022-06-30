@@ -1,12 +1,13 @@
 default_context:
-    project_name: Biskotaki
-    project_type: module
-    project_slug: biskotaki
-    repo_name: biskotaki
-    pkg_name: biskotaki
+    project_name: My Fixture
+    project_type: pytest-plugin
+    project_slug: my-fixture
+    repo_name: my-fixture
+    pkg_name: my_fixture
     full_name: Konstantinos Lampridis
     author: Konstantinos Lampridis
+    email: k.lampridis@hotmail.com
     author_email: k.lampridis@hotmail.com
     github_username: boromir674
     project_short_description: Project entirely generated using https://github.com/boromir674/cookiecutter-python-package/
-    initialize_git_repo: no
+    initialize_git_repo: yes

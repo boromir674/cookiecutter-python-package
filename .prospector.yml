@@ -10,9 +10,11 @@ ignore-paths:
   - docs
 ignore-patterns:
   - (^|/)skip(this)?(/|$)
-  - src/cookiecutter_python/{{ cookiecutter.project_slug }}/tests/smoke_test.py
+  - src/cookiecutter_python/{{ cookiecutter.project_slug }}/src/{{ cookiecutter.pkg_name }}/__init__.py
   - src/cookiecutter_python/{{ cookiecutter.project_slug }}/src/{{ cookiecutter.pkg_name }}/__main__.py
   - src/cookiecutter_python/{{ cookiecutter.project_slug }}/src/{{ cookiecutter.pkg_name }}/cli.py
+  - src/cookiecutter_python/{{ cookiecutter.project_slug }}/tests/smoke_test.py
+  - src/cookiecutter_python/{{ cookiecutter.project_slug }}/tests/test_cli.py
 autodetect: false
 max-line-length: 95
 
