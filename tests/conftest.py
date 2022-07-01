@@ -681,8 +681,9 @@ def project_files():
                 t.Iterator[str]: [description]
             """
             for file_path in iter(self):
-                relative_path = path.relpath(file_path, start=self.root_dir)
-                print('REL PATH', relative_path,)
+                relative_path = file_path.relative_to(Path(self.root_dir))
+                # relative_path = path.relpath(file_path, start=self.root_dir)
+                print('REL PATH', str(relative_path)),
                 if (
                     str(relative_path) != str(Path('.git')) and
                     not str(relative_path).startswith(str(Path('.git/')))
@@ -757,11 +758,24 @@ def assert_files_commited(
     from git.exc import InvalidGitRepositoryError
 
     def is_root_file_committed(rel_path, tree):
-        return rel_path in tree
+        return str(rel_path) in tree
 
     def is_nested_file_committed(rel_path, tree):
-        # return rel_path in tree[str(Path(path.split(rel_path)[0]))]
-        return rel_path in tree[str(path.split(rel_path)[0].replace('\\\\', '\\'))]
+        print(' --- is_nested_file_committed ---')
+        print('BLOBS')
+        found = 0
+        for blob in tree[str(rel_path.parent)]:
+            print(blob.path)
+            print(f'{str(rel_path)} == {blob.path}:', f'{str(rel_path) == blob.path}')
+            if str(rel_path) == blob.path:
+                found = 1
+                break
+        assert found == 1
+        print(f'Assert {str(rel_path)} in {tree[str(rel_path.parent)]}')
+        # return str(rel_path) in tree[str(Path(path.split(rel_path)[0]))]
+        return str(rel_path) in tree[str(rel_path.parent)]
+        # return str(rel_path) in tree / str(rel_path.parent)
+        # return rel_path in tree[str(path.split(rel_path)[0].replace('\\\\', '\\'))]
 
     # d = {
     #     1: lambda rel_path, tree: rel_path in tree,
@@ -781,11 +795,12 @@ def assert_files_commited(
             assert head
             tree = repo.heads.master.commit.tree
 
-            def file_commited(relative_path: str):
-                assert relative_path[-1] != '/'
+            def file_commited(relative_path: Path):
+                assert str(relative_path)[-1] != '/'
                 splitted = path.split(relative_path)
                 print(' -> DEBUG:', relative_path)
-                print(' -> SPLITTED:', splitted)
+                print(' -> OLD SPLITTED:', splitted)
+                print('-> PARENT:', str(relative_path.parent))
 
                 if splitted[0] == '':
                     return is_root_file_committed(relative_path, tree)
@@ -805,14 +820,13 @@ def assert_files_commited(
 
             # logic tests
             runtime_generated_files = set(project_files(folder).relative_file_paths())
-            # below we assert that all the expected files have been
-            # commited:
+            # below we assert that all the expected files have been commited:
             # 1st assert all generated runtime project files have been commited
-            for f in runtime_generated_files:
+            for f in sorted(runtime_generated_files):
                 assert file_commited(f)
-            # 2nd assert the generated files exactly match the expected one
+            # 2nd assert the generated files exactly match the expected ones
             expected_generated_files = get_expected_generated_files(folder, config)
-            assert set(runtime_generated_files) == set([str(_) for _ in expected_generated_files])
+            assert set(runtime_generated_files) == set(expected_generated_files)
 
             assert_commit_author_is_expected_author(
                 folder,
