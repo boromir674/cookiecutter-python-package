@@ -130,7 +130,6 @@ def check_pypi_result() -> t.Callable[[str], t.Optional[bool]]:
     def _check_pypi(cli_stdout: str) -> t.Optional[bool]:
         match = re.search(rf'{check_pypi_reg_string}\nFinished :\)', cli_stdout)
         if match:
-            print('CHECK PYPI MATCHED!:\n', match.group(1))
             return match.group(1) in check_pypi_output.values()
         return None
 

@@ -113,7 +113,7 @@ def exception(subprocess_exception: subprocess.CalledProcessError):
 def grant_basic_permissions(project_dir: str):
     try:
         return subprocess_run(
-            'git', 'config', '--global', '--add', 'safe.directory', project_dir,
+            'git', 'config', '--global', '--add', 'safe.directory', str(project_dir),
             cwd=project_dir,
         )
     except subprocess.CalledProcessError as error:

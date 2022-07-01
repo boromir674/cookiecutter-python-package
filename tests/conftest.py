@@ -670,7 +670,7 @@ def project_files():
                 if path.isfile(file_path) and '__pycache__' not in str(file_path):
                     yield file_path
 
-        def relative_file_paths(self) -> t.Iterator[str]:
+        def relative_file_paths(self) -> t.Iterator[Path]:
             """Iterate alphabetically over relative file paths of the Project.
 
             Iterate alphabetically over the relative file paths (not
@@ -682,13 +682,10 @@ def project_files():
             """
             for file_path in iter(self):
                 relative_path = file_path.relative_to(Path(self.root_dir))
-                # relative_path = path.relpath(file_path, start=self.root_dir)
-                print('REL PATH', str(relative_path)),
                 if (
-                    str(relative_path) != str(Path('.git')) and
-                    not str(relative_path).startswith(str(Path('.git/')))
+                    str(relative_path) != str(Path('.git'))
+                    and not str(relative_path).startswith(str(Path('.git/')))
                 ) or str(relative_path).startswith(str(Path('.github/'))):
-                    print(' --> YIELD')
                     yield relative_path
 
     return ProjectFiles
@@ -719,21 +716,23 @@ def get_expected_generated_files(production_templated_project, project_files):
             Path(str(x).replace(r'{{ cookiecutter.pkg_name }}', config.data['pkg_name']))
             for x in all_template_files.relative_file_paths()
         ]
-        print('\nEXPECTED FILES:\n', '\n'.join([str(x) for x in expected_files]))
         # some adhoc sanity checks
-        assert str(Path('.github/workflows/test.yaml')) in set([str(_) for _ in expected_files])
+        assert str(Path('.github/workflows/test.yaml')) in set(
+            [str(_) for _ in expected_files]
+        )
         assert all(
             [
                 str(Path(x)) in set([str(_) for _ in expected_files])
                 for x in (
                     '.bettercodehub.yml',
-                    # path.join('.github', 'workflows', 'test.yaml'),
                     '.github/workflows/test.yaml',
                     'pyproject.toml',
                 )
             ]
         )
-        return iter(x for x in expected_files if x not in set([Path(_) for _ in files_to_remove]))
+        return iter(
+            x for x in expected_files if x not in set([Path(_) for _ in files_to_remove])
+        )
 
     return _get_expected_generated_files
 
@@ -755,40 +754,16 @@ def assert_files_commited(
 ):
     from os import path
     from pathlib import Path
+
     from git.exc import InvalidGitRepositoryError
 
     def is_root_file_committed(rel_path, tree):
         return str(rel_path) in tree
 
     def is_nested_file_committed(rel_path, tree):
-        print(' --- is_nested_file_committed ---')
-        print('BLOBS')
-        parent_tree = tree[str(rel_path.parent)]
+        parent_tree = tree[str(rel_path.parent).replace('\\', '/')]
         blobs_set = {Path(blob.path) for blob in parent_tree}
         return rel_path in blobs_set
-        # found = 0
-        # for blob in tree[str(rel_path.parent)]:
-        #     print(blob.path)
-        #     print(f'{rel_path} == {Path(blob.path)}:', f'{rel_path == Path(blob.path)}')
-        #     if rel_path == Path(blob.path):
-        #         found = 1
-        #         break
-        # assert found == 1
-        # print(f'Assert {rel_path} in {tree[str(rel_path.parent)]}')
-        # # return str(rel_path) in tree[str(Path(path.split(rel_path)[0]))]
-        # return str(rel_path) in tree[str(rel_path.parent)]
-        # return str(rel_path) in tree / str(rel_path.parent)
-        # return rel_path in tree[str(path.split(rel_path)[0].replace('\\\\', '\\'))]
-
-    # d = {
-    #     1: lambda rel_path, tree: rel_path in tree,
-    #     0: lambda rel_path, tree: rel_path in tree[path.split(rel_path)[0]],
-    # }
-
-    # d = {
-    #     1: is_root_file_committed,
-    #     0: is_nested_file_committed,
-    # }
 
     def _assert_files_commited(folder, config):
         try:
@@ -801,19 +776,11 @@ def assert_files_commited(
             def file_commited(relative_path: Path):
                 assert str(relative_path)[-1] != '/'
                 splitted = path.split(relative_path)
-                print(' -> DEBUG:', relative_path)
-                print(' -> OLD SPLITTED:', splitted)
-                print('-> PARENT:', str(relative_path.parent))
 
                 if splitted[0] == '':
                     return is_root_file_committed(relative_path, tree)
                 else:
                     return is_nested_file_committed(relative_path, tree)
-
-                # return d[splitted[0] == '' or splitted[1] == ''](
-                #     relative_path,
-                #     tree,
-                # )
 
             # Sanity checks
             assert len(tree.trees) > 0  # trees are subdirectories
