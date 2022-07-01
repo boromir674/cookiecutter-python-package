@@ -763,17 +763,20 @@ def assert_files_commited(
     def is_nested_file_committed(rel_path, tree):
         print(' --- is_nested_file_committed ---')
         print('BLOBS')
-        found = 0
-        for blob in tree[str(rel_path.parent)]:
-            print(blob.path)
-            print(f'{str(rel_path)} == {blob.path}:', f'{str(rel_path) == blob.path}')
-            if str(rel_path) == blob.path:
-                found = 1
-                break
-        assert found == 1
-        print(f'Assert {str(rel_path)} in {tree[str(rel_path.parent)]}')
-        # return str(rel_path) in tree[str(Path(path.split(rel_path)[0]))]
-        return str(rel_path) in tree[str(rel_path.parent)]
+        parent_tree = tree[str(rel_path.parent)]
+        blobs_set = {Path(blob.path) for blob in parent_tree}
+        return rel_path in blobs_set
+        # found = 0
+        # for blob in tree[str(rel_path.parent)]:
+        #     print(blob.path)
+        #     print(f'{rel_path} == {Path(blob.path)}:', f'{rel_path == Path(blob.path)}')
+        #     if rel_path == Path(blob.path):
+        #         found = 1
+        #         break
+        # assert found == 1
+        # print(f'Assert {rel_path} in {tree[str(rel_path.parent)]}')
+        # # return str(rel_path) in tree[str(Path(path.split(rel_path)[0]))]
+        # return str(rel_path) in tree[str(rel_path.parent)]
         # return str(rel_path) in tree / str(rel_path.parent)
         # return rel_path in tree[str(path.split(rel_path)[0].replace('\\\\', '\\'))]
 
