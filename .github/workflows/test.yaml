@@ -7,6 +7,7 @@ on:
       - master
       - dev
       - ci
+      - windows-ci
   pull_request:
     branches:
       - master
@@ -21,7 +22,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
     strategy:
       matrix:
-        platform: [ubuntu-latest, macos-latest]
+        platform: [ubuntu-latest, macos-latest, windows-latest]
         python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
 
     steps:
@@ -37,14 +38,17 @@ jobs:
         python -m pip install tox tox-gh-actions
 
     - name: Do Lint Checking
-      run: |
-        tox -e lint -vv -s false
-        tox -e prospector -vv -s false
+      run: tox -e lint -vv -s false
+
+    - name: Run tox -e prospector
+      if: ${{ matrix.platform != 'windows-latest' }}
+      run: tox -e prospector -vv -s false
 
     - name: Do Type Checking
       run: tox -e type -vv -s false
 
     - name: Specify current package version to assist build tool
+      shell: bash
       run: |
         PARSER="src/cookiecutter_python/{{ cookiecutter.project_slug }}/scripts/parse_version.py"
         PARSED_VERSION=$(python "${PARSER}")
@@ -56,6 +60,7 @@ jobs:
         PLATFORM: ${{ matrix.platform }}
 
     - name: Check for compliance with Python Best Practices
+      shell: bash
       run: |
         DIST_DIR=dist
         echo "DIST_DIR=dist" >> $GITHUB_ENV

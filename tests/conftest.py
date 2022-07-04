@@ -653,7 +653,7 @@ def project_files():
             ),
         )
 
-        def __iter__(self) -> t.Iterator[str]:
+        def __iter__(self) -> t.Iterator[Path]:
             """Iterate alphabetically over files (not dirs) inside the Project.
 
             Iterate alphabetically over the absolute file paths (not
@@ -668,9 +668,9 @@ def project_files():
             """
             for file_path in Path(self.root_dir).rglob('*'):
                 if path.isfile(file_path) and '__pycache__' not in str(file_path):
-                    yield str(file_path)
+                    yield file_path
 
-        def relative_file_paths(self) -> t.Iterator[str]:
+        def relative_file_paths(self) -> t.Iterator[Path]:
             """Iterate alphabetically over relative file paths of the Project.
 
             Iterate alphabetically over the relative file paths (not
@@ -681,8 +681,11 @@ def project_files():
                 t.Iterator[str]: [description]
             """
             for file_path in iter(self):
-                relative_path = str(path.relpath(file_path, start=self.root_dir))
-                if relative_path != '.git' and not relative_path.startswith('.git/'):
+                relative_path = file_path.relative_to(Path(self.root_dir))
+                if (
+                    str(relative_path) != str(Path('.git'))
+                    and not str(relative_path).startswith(str(Path('.git/')))
+                ) or str(relative_path).startswith(str(Path('.github/'))):
                     yield relative_path
 
     return ProjectFiles
@@ -691,6 +694,7 @@ def project_files():
 @pytest.fixture
 def get_expected_generated_files(production_templated_project, project_files):
     from os import path
+    from pathlib import Path
 
     from cookiecutter_python.hooks.post_gen_project import delete_files
 
@@ -709,14 +713,16 @@ def get_expected_generated_files(production_templated_project, project_files):
 
         all_template_files = project_files(production_templated_project)
         expected_files = [
-            x.replace(r'{{ cookiecutter.pkg_name }}', config.data['pkg_name'])
+            Path(str(x).replace(r'{{ cookiecutter.pkg_name }}', config.data['pkg_name']))
             for x in all_template_files.relative_file_paths()
         ]
-        print('\nEXPECTED FILES:\n', '\n'.join(expected_files))
         # some adhoc sanity checks
+        assert str(Path('.github/workflows/test.yaml')) in set(
+            [str(_) for _ in expected_files]
+        )
         assert all(
             [
-                x in set(expected_files)
+                str(Path(x)) in set([str(_) for _ in expected_files])
                 for x in (
                     '.bettercodehub.yml',
                     '.github/workflows/test.yaml',
@@ -724,7 +730,9 @@ def get_expected_generated_files(production_templated_project, project_files):
                 )
             ]
         )
-        return iter(x for x in expected_files if x not in set(files_to_remove))
+        return iter(
+            x for x in expected_files if x not in set([Path(_) for _ in files_to_remove])
+        )
 
     return _get_expected_generated_files
 
@@ -745,13 +753,17 @@ def assert_files_commited(
     project_files,
 ):
     from os import path
+    from pathlib import Path
 
     from git.exc import InvalidGitRepositoryError
 
-    d = {
-        1: lambda rel_path, tree: rel_path in tree,
-        0: lambda rel_path, tree: rel_path in tree[path.split(rel_path)[0]],
-    }
+    def is_root_file_committed(rel_path, tree):
+        return str(rel_path) in tree
+
+    def is_nested_file_committed(rel_path, tree):
+        parent_tree = tree[str(rel_path.parent).replace('\\', '/')]
+        blobs_set = {Path(blob.path) for blob in parent_tree}
+        return rel_path in blobs_set
 
     def _assert_files_commited(folder, config):
         try:
@@ -761,13 +773,14 @@ def assert_files_commited(
             assert head
             tree = repo.heads.master.commit.tree
 
-            def file_commited(relative_path: str):
+            def file_commited(relative_path: Path):
+                assert str(relative_path)[-1] != '/'
                 splitted = path.split(relative_path)
 
-                return d[splitted[0] == '' or splitted[1] == ''](
-                    relative_path,
-                    tree,
-                )
+                if splitted[0] == '':
+                    return is_root_file_committed(relative_path, tree)
+                else:
+                    return is_nested_file_committed(relative_path, tree)
 
             # Sanity checks
             assert len(tree.trees) > 0  # trees are subdirectories
@@ -777,12 +790,11 @@ def assert_files_commited(
 
             # logic tests
             runtime_generated_files = set(project_files(folder).relative_file_paths())
-            # below we assert that all the expected files have been
-            # commited:
+            # below we assert that all the expected files have been commited:
             # 1st assert all generated runtime project files have been commited
-            for f in runtime_generated_files:
+            for f in sorted(runtime_generated_files):
                 assert file_commited(f)
-            # 2nd assert the generated files exactly match the expected one
+            # 2nd assert the generated files exactly match the expected ones
             expected_generated_files = get_expected_generated_files(folder, config)
             assert set(runtime_generated_files) == set(expected_generated_files)
 
