@@ -2,8 +2,8 @@ import re
 import sys
 
 
-def test_simple_invocation(get_cli_invocation):
-    result = get_cli_invocation(
+def test_simple_invocation(run_subprocess):
+    result = run_subprocess(
         sys.executable,
         '-m',
         'cookiecutter_python',

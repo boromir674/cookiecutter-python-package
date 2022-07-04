@@ -31,8 +31,8 @@ def environment():
 
 
 @pytest.mark.skipif(sys.platform == 'win32', reason="not working out-of-the-box for Windows")
-def test_running_pytest(environment, get_cli_invocation, project_dir):
-    result = get_cli_invocation(
+def test_running_pytest(environment, run_subprocess, project_dir):
+    result = run_subprocess(
         sys.executable,
         '-m',
         'pytest',

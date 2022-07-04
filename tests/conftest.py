@@ -403,66 +403,6 @@ def cli_invoker_params() -> t.Callable[[t.Any], CLIRunnerParameters]:
 
 
 # HELPERS
-@pytest.fixture
-def get_cli_invocation():
-    import subprocess
-    import sys
-
-    class CLIResult:
-        exit_code: int
-        stdout: str
-        stderr: str
-
-        def __init__(self, completed_process: subprocess.CompletedProcess):
-            self._exit_code = int(completed_process.returncode)
-            self._stdout = str(completed_process.stdout, encoding='utf-8')
-            self._stderr = str(completed_process.stderr, encoding='utf-8')
-
-        @property
-        def exit_code(self) -> int:
-            return self._exit_code
-
-        @property
-        def stdout(self) -> str:
-            return self._stdout
-
-        @property
-        def stderr(self) -> str:
-            return self._stderr
-
-    def python37_n_above_kwargs():
-        return dict(
-            capture_output=True,  # capture stdout and stderr separately
-            # cwd=project_directory,
-            check=True,
-        )
-
-    def python36_n_below_kwargs():
-        return dict(
-            stdout=subprocess.PIPE,  # capture stdout and stderr separately
-            stderr=subprocess.PIPE,
-            check=True,
-        )
-
-    subprocess_run_map = {
-        True: python36_n_below_kwargs,
-        False: python37_n_above_kwargs,
-    }
-
-    def get_callable(cli_args: t.List[str], **kwargs) -> t.Callable[[], CLIResult]:
-        def subprocess_run() -> CLIResult:
-            kwargs_dict = subprocess_run_map[sys.version_info < (3, 7)]()
-            completed_process = subprocess.run(cli_args, **dict(kwargs_dict, **kwargs))
-            return CLIResult(completed_process)
-
-        return subprocess_run
-
-    def execute_command_in_subprocess(executable: str, *args, **kwargs):
-        execute_subprocess = get_callable([executable] + list(args), **kwargs)
-        return execute_subprocess()
-
-    return execute_command_in_subprocess
-
 
 # Generic fixtures
 @pytest.fixture
@@ -738,15 +678,7 @@ def get_expected_generated_files(production_templated_project, project_files):
 
 
 @pytest.fixture
-def assert_files_committed_if_flag_is_on(assert_files_commited):
-    def _assert_files_committed_if_flag_is_on(project_dir, config):
-        assert_files_commited(project_dir, config)
-
-    return _assert_files_committed_if_flag_is_on
-
-
-@pytest.fixture
-def assert_files_commited(
+def assert_files_committed_if_flag_is_on(
     assert_initialized_git,
     assert_commit_author_is_expected_author,
     get_expected_generated_files,
