@@ -64,7 +64,6 @@ jobs:
       run: |
         DIST_DIR=dist
         echo "DIST_DIR=dist" >> $GITHUB_ENV
-        ls -l ./
         mkdir ${DIST_DIR}
         mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}.tar.gz" "${DIST_DIR}"
         mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}-py3-none-any.whl" "${DIST_DIR}"
