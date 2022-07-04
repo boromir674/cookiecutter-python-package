@@ -404,36 +404,6 @@ def cli_invoker_params() -> t.Callable[[t.Any], CLIRunnerParameters]:
 
 # HELPERS
 
-# Generic fixtures
-@pytest.fixture
-def path_builder() -> t.Callable[..., t.Callable[[str], str]]:
-    """Convert relative to absolute file paths, given their root directory.
-
-    Supply a root directory and get a callback that conveniently converts
-    relative file paths to absolute, at runtime. The root directory can be a
-    string, a Path or multiple strings/path (that os.join can 'join' together)
-
-    Creates a callback that receives a single relative path (string) as input
-    and returns an absolute file path (string).
-    """
-    from os import path
-
-    def get_path_builder(root_path) -> t.Callable[[str], str]:
-        def get_file(*relative_file_path: str) -> str:
-            return path.join(
-                root_path,
-                *[
-                    x
-                    for l in [path_string.split('/') for path_string in relative_file_path]
-                    for x in l
-                ],
-            )
-
-        return get_file
-
-    return get_path_builder
-
-
 # Python Package Generator specific fixtures/fixtures
 
 
@@ -449,24 +419,19 @@ def load_yaml():
     return load_yaml
 
 
-DataLoader = t.Callable[[str], t.MutableMapping]
-
-
 @pytest.fixture
-def user_config(load_yaml, load_json, path_builder, production_templated_project):
-    from os import path
-
+def user_config(load_yaml, load_json, production_templated_project):
+    from pathlib import Path
+    DataLoader = t.Callable[[t.Union[str, Path]], t.MutableMapping]
     config_files = {
         'biskotaki': '.github/biskotaki.yaml',
         'without-interpreters': 'tests/data/biskotaki-without-interpreters.yaml',
     }
-    get_file = path_builder(path.abspath(path.join(my_dir, '..')))
-
     @attr.s(auto_attribs=True, slots=True)
     class ConfigData:
         path: t.Union[str, None]
 
-        _data_file_path: t.Union[str, None] = attr.ib(init=False, default=None)
+        _data_file_path: t.Union[str, Path, None] = attr.ib(init=False, default=None)
         _config_file_arg: t.Optional[str] = attr.ib(init=False, default=None)
         _loader: DataLoader = attr.ib(init=False)
         data: t.Mapping = attr.ib(init=False)
@@ -480,18 +445,16 @@ def user_config(load_yaml, load_json, path_builder, production_templated_project
         @staticmethod
         def _build_data(
             file_path: t.Union[str, None]
-        ) -> t.Tuple[str, t.Union[str, None], DataLoader]:
+        ) -> t.Tuple[Path, t.Union[str, None], DataLoader]:
             if file_path is not None:
-                data_file = get_file(config_files.get(file_path, file_path))
+                data_file = Path(my_dir) / '..' / config_files.get(file_path, file_path)
                 return (
                     data_file,
                     data_file,
                     ConfigData.load_yaml(load_yaml),
                 )
             return (
-                path.abspath(
-                    path.join(production_templated_project, '..', 'cookiecutter.json')
-                ),
+                Path(production_templated_project) / '..' / 'cookiecutter.json',
                 None,
                 ConfigData.load_json(load_json),
             )
@@ -539,36 +502,6 @@ def user_config(load_yaml, load_json, path_builder, production_templated_project
         },
     )()
 
-
-# ASSERT Fixtures
-
-
-@pytest.fixture
-def assert_commit_author_is_expected_author(assert_initialized_git):
-    def _assert_commit_author_is_expected_author(project_dir: str, expected_commit):
-        repo = assert_initialized_git(project_dir)
-        latest_commit = repo.commit('HEAD')
-        assert latest_commit.type == 'commit'
-        assert str(latest_commit.message).startswith(expected_commit.message)
-        assert str(latest_commit.author.name) == expected_commit.author
-        assert str(latest_commit.author.email) == expected_commit.email
-
-    return _assert_commit_author_is_expected_author
-
-
-@pytest.fixture
-def assert_initialized_git():
-    from git import Repo
-    from git.exc import InvalidGitRepositoryError
-
-    def _assert_initialized_git(folder: str):
-        try:
-            repo = Repo(folder)
-            return repo
-        except InvalidGitRepositoryError as error:
-            raise error
-
-    return _assert_initialized_git
 
 
 @pytest.fixture
@@ -675,6 +608,36 @@ def get_expected_generated_files(production_templated_project, project_files):
         )
 
     return _get_expected_generated_files
+
+
+# ASSERT Fixtures
+
+@pytest.fixture
+def assert_commit_author_is_expected_author(assert_initialized_git):
+    def _assert_commit_author_is_expected_author(project_dir: str, expected_commit):
+        repo = assert_initialized_git(project_dir)
+        latest_commit = repo.commit('HEAD')
+        assert latest_commit.type == 'commit'
+        assert str(latest_commit.message).startswith(expected_commit.message)
+        assert str(latest_commit.author.name) == expected_commit.author
+        assert str(latest_commit.author.email) == expected_commit.email
+
+    return _assert_commit_author_is_expected_author
+
+
+@pytest.fixture
+def assert_initialized_git():
+    from git import Repo
+    from git.exc import InvalidGitRepositoryError
+
+    def _assert_initialized_git(folder: str):
+        try:
+            repo = Repo(folder)
+            return repo
+        except InvalidGitRepositoryError as error:
+            raise error
+
+    return _assert_initialized_git
 
 
 @pytest.fixture
