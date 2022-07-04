@@ -15,7 +15,7 @@ def production_template() -> str:
 
 
 @pytest.fixture
-def load_json() -> t.Callable[[str], t.Dict]:
+def load_json():
     import json
 
     def _load_context_json(file_path: str) -> t.Dict:
@@ -27,8 +27,10 @@ def load_json() -> t.Callable[[str], t.Dict]:
 
 
 @pytest.fixture
-def test_context_file() -> str:
-    return os.path.abspath(os.path.join(my_dir, 'data', 'test_cookiecutter.json'))
+def test_context_file():
+    from pathlib import Path
+
+    return Path(my_dir) / 'data' / 'test_cookiecutter.json'
 
 
 @pytest.fixture
@@ -90,52 +92,10 @@ def generate_project() -> t.Callable[[ProjectGenerationRequestData], str]:
 
 
 @pytest.fixture
-def project_dir(
-    generate_project,
-    project_files,
-    get_expected_generated_files,
-    test_project_generation_request,
-    production_templated_project,
-):
+def project_dir(generate_project, test_project_generation_request):
     """Generate a Fresh new Project using the production cookiecutter template and
     the tests/data/test_cookiecutter.json file as default dict."""
     proj_dir: str = generate_project(test_project_generation_request)
-    # runtime_files = os.listdir(proj_dir)
-    # runtime_files = glob(f'{proj_dir}/*/**')
-    # # we add '.git' since the project we generate for testing purposes
-    # # uses a 'test_context' that instructs cookiecutter to initialiaze a git
-    # # repo (see post_gen_project.py hook)
-    # expected_files = os.listdir(production_templated_project) + ['.git']
-    # expected_files = expected_generated_files()
-    # assert set(expected_files) == set(runtime_files)
-    # assert len(expected_files) == len(runtime_files)
-    # assert all(['tox.ini' in x for x in (expected_files, runtime_files)])
-
-    # p = os.path.abspath(os.path.join(proj_dir, '.github', 'workflows', 'test.yaml'))
-    # with open(p, 'r') as f:
-    #     contents = f.read()
-    # import re
-
-    # ver = r'"3\.(?:[6789]|10|11)"'
-    # # assert build matrix definition includes one or more python interpreters
-    # assert re.search(  # python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
-    #     fr'python-version:\s*\[\s*{ver}(?:(?:\s*,\s*{ver})*)\s*\]', contents
-    # )
-
-    # # assert that python interpreters are the expected ones given that we
-    # # invoke the 'generate_project' function:
-    # # no user yaml config & enabled the default_dict Flag!
-    # b = ', '.join(
-    #     (
-    #         f'"{int_ver}"'
-    #         for int_ver in test_project_generation_request.extra_context['interpreters'][
-    #             'supported-interpreters'
-    #         ]
-    #     )
-    # )
-    # assert f"python-version: [{b}]" in contents
-    # assert 'python-version: ["3.7", "3.8", "3.9"]' in contents
-
     return proj_dir
 
 
@@ -422,11 +382,13 @@ def load_yaml():
 @pytest.fixture
 def user_config(load_yaml, load_json, production_templated_project):
     from pathlib import Path
+
     DataLoader = t.Callable[[t.Union[str, Path]], t.MutableMapping]
     config_files = {
         'biskotaki': '.github/biskotaki.yaml',
         'without-interpreters': 'tests/data/biskotaki-without-interpreters.yaml',
     }
+
     @attr.s(auto_attribs=True, slots=True)
     class ConfigData:
         path: t.Union[str, None]
@@ -501,7 +463,6 @@ def user_config(load_yaml, load_json, production_templated_project):
             )
         },
     )()
-
 
 
 @pytest.fixture
@@ -611,6 +572,7 @@ def get_expected_generated_files(production_templated_project, project_files):
 
 
 # ASSERT Fixtures
+
 
 @pytest.fixture
 def assert_commit_author_is_expected_author(assert_initialized_git):

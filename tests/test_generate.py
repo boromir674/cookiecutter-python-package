@@ -47,6 +47,7 @@ def test_supported_python_interpreters(
 @pytest.fixture
 def assert_interpreters_array_in_build_matrix() -> t.Callable[[str, t.Sequence[str]], None]:
     from pathlib import Path
+
     def _assert_interpreters_array_in_build_matrix(
         project_dir: str,
         interpreters: t.Sequence[str],
@@ -68,9 +69,9 @@ CLI_RELATED_FILES = {
 @pytest.fixture
 def module_file():
 
+    from functools import reduce
     from os import listdir
     from pathlib import Path
-    from functools import reduce
 
     SRC_DIR_NAME = 'src'
 
@@ -81,8 +82,9 @@ def module_file():
         [python_module] = src_dir_files
 
         def _get_file_path(*file_path):
-            return reduce(lambda i, j: i / j,
-            [p, SRC_DIR_NAME, python_module] + [_ for _ in file_path])
+            return reduce(
+                lambda i, j: i / j, [p, SRC_DIR_NAME, python_module] + [_ for _ in file_path]
+            )
 
         return _get_file_path
 
