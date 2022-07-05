@@ -1,4 +1,4 @@
-{{ cookiecutter.pkg_name|replace('_', '\_') }} package
+{{ cookiecutter.pkg_name }} package
 =====================================================================
 
 

@@ -36,25 +36,55 @@ jobs:
     - name: Do Lint Checking
       run: tox -e lint -vv -s false
 
+    - name: Run tox -e prospector
+      if: ${{ "{{" }} matrix.platform != 'windows-latest' {{ "}}" }}
+      run: tox -e prospector -vv -s false
+
     - name: Do Type Checking
       run: tox -e type -vv -s false
 
     - name: Specify current package version to assist build tool
+      shell: bash
       run: echo "PKG_VERSION=$(python scripts/parse_version.py)" >> $GITHUB_ENV
 
     - name: Run Test Suite
       run: tox -vv -s false
       env:
         PLATFORM: ${{ "{{" }} matrix.platform {{ "}}" }}
+
     - name: Check for compliance with Python Best Practices
+      shell: bash
       run: |
         DIST_DIR=dist
         echo "DIST_DIR=dist" >> $GITHUB_ENV
-
-        mkdir "$DIST_DIR"
+        mkdir ${DIST_DIR}
         mv ".tox/${DIST_DIR}/{{ cookiecutter.pkg_name }}-${PKG_VERSION}.tar.gz" "${DIST_DIR}"
         mv ".tox/${DIST_DIR}/{{ cookiecutter.pkg_name }}-${PKG_VERSION}-py3-none-any.whl" "${DIST_DIR}"
         tox -e check -vv -s false
+
+    - name: Aggregate Test Coverage Data
+      run: tox -e coverage --sitepackages -vv -s false
+
+    - run: pip install coverage[toml]>=5.1
+
+    - name: Send Coverage Data to Codecov
+      uses: codecov/codecov-action@v2
+      with:
+        directory: ./.tox
+        env_vars: OS,PYTHON
+        fail_ci_if_error: true
+        files: ./.tox/coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        verbose: true
+
+    - name: Install documentation test dependencies
+      if: ${{ "{{" }} matrix.platform == 'macos-latest' && matrix.python-version != '3.6' {{ "}}" }}
+      run: brew install enchant
+
+    - name: Run Documentation Tests
+      if: ${{ "{{" }} matrix.platform == 'ubuntu-latest' || matrix.python-version  != '3.6' {{ "}}" }}
+      run: tox -e docs --sitepackages -vv -s false
 
     - name: Upload Source & Wheel distributions as Artefacts
       uses: actions/upload-artifact@v2
@@ -63,33 +93,9 @@ jobs:
         path: ${{ "{{" }} env.DIST_DIR {{ "}}" }}
         if-no-files-found: error
 
-    - name: Aggregate Test Coverage Data
-      run: |
-        python -m pip install coverage
-        tox -e coverage --sitepackages -vv -s false
-
     - name: Upload Coverage Data as Artefacts
       uses: actions/upload-artifact@v2
       with:
         name: coverage-xml-data
         path: ./.tox/coverage.xml
         if-no-files-found: error
-
-  host_coverage_results:
-    needs: test_suite
-    runs-on: ubuntu-latest
-    steps:
-    - name: Download Coverage Data
-      uses: actions/download-artifact@v2
-      with:
-        name: coverage-xml-data
-    - name: Send Coverage Data to Codecov
-      uses: codecov/codecov-action@v2
-      with:
-        directory: .
-        env_vars: OS,PYTHON
-        fail_ci_if_error: true
-        files: coverage.xml
-        flags: unittests
-        name: codecov-umbrella
-        verbose: true
