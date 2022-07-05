@@ -107,6 +107,7 @@ def assert_generated_expected_project_type(
 ):
     def _assert_generated_expected_project_type(project_dir: str, config):
         runtime_generated_files = set(project_files(project_dir).relative_file_paths())
+        # expected_gen_files = set([str(file_path) for file_path in get_expected_generated_files(project_dir, config)])
         expected_gen_files = set(get_expected_generated_files(project_dir, config))
         assert runtime_generated_files == expected_gen_files
 
@@ -129,7 +130,6 @@ def check_pypi_result() -> t.Callable[[str], t.Optional[bool]]:
     def _check_pypi(cli_stdout: str) -> t.Optional[bool]:
         match = re.search(rf'{check_pypi_reg_string}\nFinished :\)', cli_stdout)
         if match:
-            print('CHECK PYPI MATCHED!:\n', match.group(1))
             return match.group(1) in check_pypi_output.values()
         return None
 

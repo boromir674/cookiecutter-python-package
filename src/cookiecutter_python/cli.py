@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Main `cookiecutter_python` CLI."""
 
 import os
@@ -89,8 +88,6 @@ def main(
     like to get in touch, please see
     https://github.com/boromir674/cookiecutter-python-package.
     """
-    print(type(exceptions['critical']))
-    # print([_ for _ in exceptions['critical']])
     # TODO Improvement: add logging configuration
     try:
         project: str = generate(

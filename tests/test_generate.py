@@ -46,16 +46,14 @@ def test_supported_python_interpreters(
 
 @pytest.fixture
 def assert_interpreters_array_in_build_matrix() -> t.Callable[[str, t.Sequence[str]], None]:
-    import os
+    from pathlib import Path
 
     def _assert_interpreters_array_in_build_matrix(
         project_dir: str,
         interpreters: t.Sequence[str],
     ) -> None:
-        p = os.path.abspath(os.path.join(project_dir, '.github', 'workflows', 'test.yaml'))
-        with open(p, 'r') as f:
-            contents = f.read()
-
+        p = Path(project_dir) / '.github' / 'workflows' / 'test.yaml'
+        contents = p.read_text()
         b = ', '.join((f'"{int_ver}"' for int_ver in interpreters))
         assert f"python-version: [{b}]" in contents
 
@@ -69,20 +67,24 @@ CLI_RELATED_FILES = {
 
 
 @pytest.fixture
-def module_file(path_builder):
+def module_file():
 
-    from os import listdir, path
+    from functools import reduce
+    from os import listdir
+    from pathlib import Path
 
     SRC_DIR_NAME = 'src'
 
     def build_get_file_path(project_dir: str) -> t.Callable[[str], str]:
-        get_file = path_builder(path.abspath(project_dir))
-        src_dir_files = listdir(get_file(SRC_DIR_NAME))
+        p = Path(project_dir)
+        src_dir_files = listdir(p / SRC_DIR_NAME)
         # sanity check that Generator produces only 1 python module/package
         [python_module] = src_dir_files
 
         def _get_file_path(*file_path):
-            return get_file(SRC_DIR_NAME, python_module, *file_path)
+            return reduce(
+                lambda i, j: i / j, [p, SRC_DIR_NAME, python_module] + [_ for _ in file_path]
+            )
 
         return _get_file_path
 
@@ -95,12 +97,6 @@ def assert_scaffolded_without_cli(module_file) -> t.Callable[[str], None]:
 
     def assert_project_generated_without_cli(project_dir: str) -> None:
         get_file: t.Callable[[str], str] = module_file(project_dir)
-        module_dir = get_file('')
-        print('MODULE DIR:', module_dir)
-        import os
-
-        print(os.listdir(module_dir))
-        # assert there are no cli related files
         assert all(not path.isfile(get_file(file_name)) for file_name in CLI_RELATED_FILES)
 
     return assert_project_generated_without_cli

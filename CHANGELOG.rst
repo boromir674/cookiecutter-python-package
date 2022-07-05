@@ -2,6 +2,32 @@
 Changelog
 =========
 
+1.6.1 (2022-07-05)
+==================
+
+This is the first Cross-Platform release of the *Python Generator*.
+That means, now, we officially support installing and running the
+*Python Generator*, apart from Linux and Macos, on Windows machines as well.
+
+Changes
+^^^^^^^
+
+test
+""""
+- manually covert gitpython outputted string paths into Path instances
+- use Path from pathlib instead of the os.path module
+
+refactor
+""""""""
+- remove the 'path_builder' fixture, to reduce test code
+- remove depcrecation warning fired by Jinja2 when rendering the *.rst template files
+- use the 'run_subprocess' fixture to reduce test boilerplate code
+
+ci
+""
+- excplicitly use bash as the shell for some job steps
+
+
 1.6.0 (2022-06-28)
 ==================
 

@@ -129,15 +129,15 @@ License
 
 .. |release_version| image:: https://img.shields.io/pypi/v/{{ cookiecutter.pkg_name }}
     :alt: Production Version
-    :target: https://pypi.org/project/{{ cookiecutter.pkg_name }}/
+    :target: https://pypi.org/project/{{ cookiecutter.pkg_name|replace('_', '-') }}/
 
 .. |wheel| image:: https://img.shields.io/pypi/wheel/{{ cookiecutter.pkg_name|replace('_', '-') }}?color=green&label=wheel
     :alt: PyPI - Wheel
-    :target: https://pypi.org/project/{{ cookiecutter.pkg_name }}
+    :target: https://pypi.org/project/{{ cookiecutter.pkg_name|replace('_', '-') }}
 
 .. |supported_versions| image:: https://img.shields.io/pypi/pyversions/{{ cookiecutter.pkg_name|replace('_', '-') }}?color=blue&label=python&logo=python&logoColor=%23ccccff
     :alt: Supported Python versions
-    :target: https://pypi.org/project/{{ cookiecutter.pkg_name }}
+    :target: https://pypi.org/project/{{ cookiecutter.pkg_name|replace('_', '-') }}
 
 .. Github Releases & Tags
 
@@ -171,8 +171,8 @@ License
 
 .. |maintainability| image:: https://img.shields.io/codeclimate/maintainability/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}
     :alt: Code Climate Maintainability
-    :target: https://codeclimate.com/github/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}/maintainability
+    :target: https://codeclimate.com/github/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}
 
 .. |tech-debt| image:: https://img.shields.io/codeclimate/tech-debt/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}
     :alt: Technical Debt
-    :target: https://codeclimate.com/github/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}/maintainability
+    :target: https://codeclimate.com/github/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}

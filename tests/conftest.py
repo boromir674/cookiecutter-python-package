@@ -15,7 +15,7 @@ def production_template() -> str:
 
 
 @pytest.fixture
-def load_json() -> t.Callable[[str], t.Dict]:
+def load_json():
     import json
 
     def _load_context_json(file_path: str) -> t.Dict:
@@ -27,8 +27,10 @@ def load_json() -> t.Callable[[str], t.Dict]:
 
 
 @pytest.fixture
-def test_context_file() -> str:
-    return os.path.abspath(os.path.join(my_dir, 'data', 'test_cookiecutter.json'))
+def test_context_file():
+    from pathlib import Path
+
+    return Path(my_dir) / 'data' / 'test_cookiecutter.json'
 
 
 @pytest.fixture
@@ -90,52 +92,10 @@ def generate_project() -> t.Callable[[ProjectGenerationRequestData], str]:
 
 
 @pytest.fixture
-def project_dir(
-    generate_project,
-    project_files,
-    get_expected_generated_files,
-    test_project_generation_request,
-    production_templated_project,
-):
+def project_dir(generate_project, test_project_generation_request):
     """Generate a Fresh new Project using the production cookiecutter template and
     the tests/data/test_cookiecutter.json file as default dict."""
     proj_dir: str = generate_project(test_project_generation_request)
-    # runtime_files = os.listdir(proj_dir)
-    # runtime_files = glob(f'{proj_dir}/*/**')
-    # # we add '.git' since the project we generate for testing purposes
-    # # uses a 'test_context' that instructs cookiecutter to initialiaze a git
-    # # repo (see post_gen_project.py hook)
-    # expected_files = os.listdir(production_templated_project) + ['.git']
-    # expected_files = expected_generated_files()
-    # assert set(expected_files) == set(runtime_files)
-    # assert len(expected_files) == len(runtime_files)
-    # assert all(['tox.ini' in x for x in (expected_files, runtime_files)])
-
-    # p = os.path.abspath(os.path.join(proj_dir, '.github', 'workflows', 'test.yaml'))
-    # with open(p, 'r') as f:
-    #     contents = f.read()
-    # import re
-
-    # ver = r'"3\.(?:[6789]|10|11)"'
-    # # assert build matrix definition includes one or more python interpreters
-    # assert re.search(  # python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
-    #     fr'python-version:\s*\[\s*{ver}(?:(?:\s*,\s*{ver})*)\s*\]', contents
-    # )
-
-    # # assert that python interpreters are the expected ones given that we
-    # # invoke the 'generate_project' function:
-    # # no user yaml config & enabled the default_dict Flag!
-    # b = ', '.join(
-    #     (
-    #         f'"{int_ver}"'
-    #         for int_ver in test_project_generation_request.extra_context['interpreters'][
-    #             'supported-interpreters'
-    #         ]
-    #     )
-    # )
-    # assert f"python-version: [{b}]" in contents
-    # assert 'python-version: ["3.7", "3.8", "3.9"]' in contents
-
     return proj_dir
 
 
@@ -403,96 +363,6 @@ def cli_invoker_params() -> t.Callable[[t.Any], CLIRunnerParameters]:
 
 
 # HELPERS
-@pytest.fixture
-def get_cli_invocation():
-    import subprocess
-    import sys
-
-    class CLIResult:
-        exit_code: int
-        stdout: str
-        stderr: str
-
-        def __init__(self, completed_process: subprocess.CompletedProcess):
-            self._exit_code = int(completed_process.returncode)
-            self._stdout = str(completed_process.stdout, encoding='utf-8')
-            self._stderr = str(completed_process.stderr, encoding='utf-8')
-
-        @property
-        def exit_code(self) -> int:
-            return self._exit_code
-
-        @property
-        def stdout(self) -> str:
-            return self._stdout
-
-        @property
-        def stderr(self) -> str:
-            return self._stderr
-
-    def python37_n_above_kwargs():
-        return dict(
-            capture_output=True,  # capture stdout and stderr separately
-            # cwd=project_directory,
-            check=True,
-        )
-
-    def python36_n_below_kwargs():
-        return dict(
-            stdout=subprocess.PIPE,  # capture stdout and stderr separately
-            stderr=subprocess.PIPE,
-            check=True,
-        )
-
-    subprocess_run_map = {
-        True: python36_n_below_kwargs,
-        False: python37_n_above_kwargs,
-    }
-
-    def get_callable(cli_args: t.List[str], **kwargs) -> t.Callable[[], CLIResult]:
-        def subprocess_run() -> CLIResult:
-            kwargs_dict = subprocess_run_map[sys.version_info < (3, 7)]()
-            completed_process = subprocess.run(cli_args, **dict(kwargs_dict, **kwargs))
-            return CLIResult(completed_process)
-
-        return subprocess_run
-
-    def execute_command_in_subprocess(executable: str, *args, **kwargs):
-        execute_subprocess = get_callable([executable] + list(args), **kwargs)
-        return execute_subprocess()
-
-    return execute_command_in_subprocess
-
-
-# Generic fixtures
-@pytest.fixture
-def path_builder() -> t.Callable[..., t.Callable[[str], str]]:
-    """Convert relative to absolute file paths, given their root directory.
-
-    Supply a root directory and get a callback that conveniently converts
-    relative file paths to absolute, at runtime. The root directory can be a
-    string, a Path or multiple strings/path (that os.join can 'join' together)
-
-    Creates a callback that receives a single relative path (string) as input
-    and returns an absolute file path (string).
-    """
-    from os import path
-
-    def get_path_builder(root_path) -> t.Callable[[str], str]:
-        def get_file(*relative_file_path: str) -> str:
-            return path.join(
-                root_path,
-                *[
-                    x
-                    for l in [path_string.split('/') for path_string in relative_file_path]
-                    for x in l
-                ],
-            )
-
-        return get_file
-
-    return get_path_builder
-
 
 # Python Package Generator specific fixtures/fixtures
 
@@ -509,24 +379,21 @@ def load_yaml():
     return load_yaml
 
 
-DataLoader = t.Callable[[str], t.MutableMapping]
-
-
 @pytest.fixture
-def user_config(load_yaml, load_json, path_builder, production_templated_project):
-    from os import path
+def user_config(load_yaml, load_json, production_templated_project):
+    from pathlib import Path
 
+    DataLoader = t.Callable[[t.Union[str, Path]], t.MutableMapping]
     config_files = {
         'biskotaki': '.github/biskotaki.yaml',
         'without-interpreters': 'tests/data/biskotaki-without-interpreters.yaml',
     }
-    get_file = path_builder(path.abspath(path.join(my_dir, '..')))
 
     @attr.s(auto_attribs=True, slots=True)
     class ConfigData:
         path: t.Union[str, None]
 
-        _data_file_path: t.Union[str, None] = attr.ib(init=False, default=None)
+        _data_file_path: t.Union[str, Path, None] = attr.ib(init=False, default=None)
         _config_file_arg: t.Optional[str] = attr.ib(init=False, default=None)
         _loader: DataLoader = attr.ib(init=False)
         data: t.Mapping = attr.ib(init=False)
@@ -540,18 +407,16 @@ def user_config(load_yaml, load_json, path_builder, production_templated_project
         @staticmethod
         def _build_data(
             file_path: t.Union[str, None]
-        ) -> t.Tuple[str, t.Union[str, None], DataLoader]:
+        ) -> t.Tuple[Path, t.Union[str, None], DataLoader]:
             if file_path is not None:
-                data_file = get_file(config_files.get(file_path, file_path))
+                data_file = Path(my_dir) / '..' / config_files.get(file_path, file_path)
                 return (
                     data_file,
                     data_file,
                     ConfigData.load_yaml(load_yaml),
                 )
             return (
-                path.abspath(
-                    path.join(production_templated_project, '..', 'cookiecutter.json')
-                ),
+                Path(production_templated_project) / '..' / 'cookiecutter.json',
                 None,
                 ConfigData.load_json(load_json),
             )
@@ -600,6 +465,112 @@ def user_config(load_yaml, load_json, path_builder, production_templated_project
     )()
 
 
+@pytest.fixture
+def project_files():
+    """Files of a generated Project, as iterable of file paths (excluding dirs)."""
+    from glob import glob
+    from os import path
+    from pathlib import Path
+
+    import attr
+
+    @attr.s(auto_attribs=True, slots=True, frozen=True)
+    class ProjectFiles:
+        root_dir: str
+        _glob: t.List[str] = attr.ib(
+            init=False,
+            default=attr.Factory(
+                lambda self: sorted(
+                    set(glob(path.join(self.root_dir, '**/**'), recursive=True))
+                ),
+                takes_self=True,
+            ),
+        )
+
+        def __iter__(self) -> t.Iterator[Path]:
+            """Iterate alphabetically over files (not dirs) inside the Project.
+
+            Iterate alphabetically over the absolute file paths (not
+            directories) that reside (recursively) inside the Project (root
+            folder).
+
+            Returns:
+                t.Iterator[str]: [description]
+
+            Yields:
+                Iterator[t.Iterator[str]]: [description]
+            """
+            for file_path in Path(self.root_dir).rglob('*'):
+                if path.isfile(file_path) and '__pycache__' not in str(file_path):
+                    yield file_path
+
+        def relative_file_paths(self) -> t.Iterator[Path]:
+            """Iterate alphabetically over relative file paths of the Project.
+
+            Iterate alphabetically over the relative file paths (not
+            directories) that reside (recursively) inside the Project (root
+            folder).
+
+            Returns:
+                t.Iterator[str]: [description]
+            """
+            for file_path in iter(self):
+                relative_path = file_path.relative_to(Path(self.root_dir))
+                if (
+                    str(relative_path) != str(Path('.git'))
+                    and not str(relative_path).startswith(str(Path('.git/')))
+                ) or str(relative_path).startswith(str(Path('.github/'))):
+                    yield relative_path
+
+    return ProjectFiles
+
+
+@pytest.fixture
+def get_expected_generated_files(production_templated_project, project_files):
+    from os import path
+    from pathlib import Path
+
+    from cookiecutter_python.hooks.post_gen_project import delete_files
+
+    def _get_expected_generated_files(folder, config):
+        expected_project_type = config.data['project_type']
+        request = type(
+            'PostGenRequestLike',
+            (),
+            {
+                'project_dir': folder,
+                'project_type': expected_project_type,
+                'module_name': config.data['pkg_name'],
+            },
+        )
+        files_to_remove = [path.join(*x) for x in delete_files[expected_project_type](request)]
+
+        all_template_files = project_files(production_templated_project)
+        expected_files = [
+            Path(str(x).replace(r'{{ cookiecutter.pkg_name }}', config.data['pkg_name']))
+            for x in all_template_files.relative_file_paths()
+        ]
+        # some adhoc sanity checks
+        assert str(Path('.github/workflows/test.yaml')) in set(
+            [str(_) for _ in expected_files]
+        )
+        assert all(
+            [
+                str(Path(x)) in set([str(_) for _ in expected_files])
+                for x in (
+                    '.bettercodehub.yml',
+                    '.github/workflows/test.yaml',
+                    'pyproject.toml',
+                )
+            ]
+        )
+        return iter(
+            x for x in expected_files if x not in set([Path(_) for _ in files_to_remove])
+        )
+
+    return _get_expected_generated_files
+
+
 # ASSERT Fixtures
 
 
@@ -632,126 +603,24 @@ def assert_initialized_git():
 
 
 @pytest.fixture
-def project_files():
-    """Files of a generated Project, as iterable of file paths (excluding dirs)."""
-    from glob import glob
-    from os import path
-    from pathlib import Path
-
-    import attr
-
-    @attr.s(auto_attribs=True, slots=True, frozen=True)
-    class ProjectFiles:
-        root_dir: str
-        _glob: t.List[str] = attr.ib(
-            init=False,
-            default=attr.Factory(
-                lambda self: sorted(
-                    set(glob(path.join(self.root_dir, '**/**'), recursive=True))
-                ),
-                takes_self=True,
-            ),
-        )
-
-        def __iter__(self) -> t.Iterator[str]:
-            """Iterate alphabetically over files (not dirs) inside the Project.
-
-            Iterate alphabetically over the absolute file paths (not
-            directories) that reside (recursively) inside the Project (root
-            folder).
-
-            Returns:
-                t.Iterator[str]: [description]
-
-            Yields:
-                Iterator[t.Iterator[str]]: [description]
-            """
-            for file_path in Path(self.root_dir).rglob('*'):
-                if path.isfile(file_path) and '__pycache__' not in str(file_path):
-                    yield str(file_path)
-
-        def relative_file_paths(self) -> t.Iterator[str]:
-            """Iterate alphabetically over relative file paths of the Project.
-
-            Iterate alphabetically over the relative file paths (not
-            directories) that reside (recursively) inside the Project (root
-            folder).
-
-            Returns:
-                t.Iterator[str]: [description]
-            """
-            for file_path in iter(self):
-                relative_path = str(path.relpath(file_path, start=self.root_dir))
-                if relative_path != '.git' and not relative_path.startswith('.git/'):
-                    yield relative_path
-
-    return ProjectFiles
-
-
-@pytest.fixture
-def get_expected_generated_files(production_templated_project, project_files):
-    from os import path
-
-    from cookiecutter_python.hooks.post_gen_project import delete_files
-
-    def _get_expected_generated_files(folder, config):
-        expected_project_type = config.data['project_type']
-        request = type(
-            'PostGenRequestLike',
-            (),
-            {
-                'project_dir': folder,
-                'project_type': expected_project_type,
-                'module_name': config.data['pkg_name'],
-            },
-        )
-        files_to_remove = [path.join(*x) for x in delete_files[expected_project_type](request)]
-
-        all_template_files = project_files(production_templated_project)
-        expected_files = [
-            x.replace(r'{{ cookiecutter.pkg_name }}', config.data['pkg_name'])
-            for x in all_template_files.relative_file_paths()
-        ]
-        print('\nEXPECTED FILES:\n', '\n'.join(expected_files))
-        # some adhoc sanity checks
-        assert all(
-            [
-                x in set(expected_files)
-                for x in (
-                    '.bettercodehub.yml',
-                    '.github/workflows/test.yaml',
-                    'pyproject.toml',
-                )
-            ]
-        )
-        return iter(x for x in expected_files if x not in set(files_to_remove))
-
-    return _get_expected_generated_files
-
-
-@pytest.fixture
-def assert_files_committed_if_flag_is_on(assert_files_commited):
-    def _assert_files_committed_if_flag_is_on(project_dir, config):
-        assert_files_commited(project_dir, config)
-
-    return _assert_files_committed_if_flag_is_on
-
-
-@pytest.fixture
-def assert_files_commited(
+def assert_files_committed_if_flag_is_on(
     assert_initialized_git,
     assert_commit_author_is_expected_author,
     get_expected_generated_files,
     project_files,
 ):
     from os import path
+    from pathlib import Path
 
     from git.exc import InvalidGitRepositoryError
 
-    d = {
-        1: lambda rel_path, tree: rel_path in tree,
-        0: lambda rel_path, tree: rel_path in tree[path.split(rel_path)[0]],
-    }
+    def is_root_file_committed(rel_path, tree):
+        return str(rel_path) in tree
+
+    def is_nested_file_committed(rel_path, tree):
+        parent_tree = tree[str(rel_path.parent).replace('\\', '/')]
+        blobs_set = {Path(blob.path) for blob in parent_tree}
+        return rel_path in blobs_set
 
     def _assert_files_commited(folder, config):
         try:
@@ -761,13 +630,14 @@ def assert_files_commited(
             assert head
             tree = repo.heads.master.commit.tree
 
-            def file_commited(relative_path: str):
+            def file_commited(relative_path: Path):
+                assert str(relative_path)[-1] != '/'
                 splitted = path.split(relative_path)
 
-                return d[splitted[0] == '' or splitted[1] == ''](
-                    relative_path,
-                    tree,
-                )
+                if splitted[0] == '':
+                    return is_root_file_committed(relative_path, tree)
+                else:
+                    return is_nested_file_committed(relative_path, tree)
 
             # Sanity checks
             assert len(tree.trees) > 0  # trees are subdirectories
@@ -777,12 +647,11 @@ def assert_files_commited(
 
             # logic tests
             runtime_generated_files = set(project_files(folder).relative_file_paths())
-            # below we assert that all the expected files have been
-            # commited:
+            # below we assert that all the expected files have been commited:
             # 1st assert all generated runtime project files have been commited
-            for f in runtime_generated_files:
+            for f in sorted(runtime_generated_files):
                 assert file_commited(f)
-            # 2nd assert the generated files exactly match the expected one
+            # 2nd assert the generated files exactly match the expected ones
             expected_generated_files = get_expected_generated_files(folder, config)
             assert set(runtime_generated_files) == set(expected_generated_files)
 
