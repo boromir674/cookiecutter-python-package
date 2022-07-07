@@ -3,7 +3,7 @@ from cookiecutter.exceptions import (
     UndefinedVariableInTemplate,
 )
 from cookiecutter_python.backend.check_pypi import ContextVariableDoesNotExist
-from cookiecutter_python.backend import CheckPypiError
+from cookiecutter_python.backend import CheckWebServerError
 from cookiecutter_python.utils import load
 
 cookiecutter_exceptions = load(CookiecutterException, 'cookiecutter')
@@ -12,7 +12,7 @@ cookiecutter_exceptions = load(CookiecutterException, 'cookiecutter')
 exceptions = {
     'critical': cookiecutter_exceptions + [ContextVariableDoesNotExist],  # type: ignore
     'non-critical': (
-        CheckPypiError,
+        CheckWebServerError,
     )
 }
 

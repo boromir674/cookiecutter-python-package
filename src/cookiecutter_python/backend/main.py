@@ -5,6 +5,8 @@ from requests.exceptions import ConnectionError
 
 from .check_pypi import check_pypi
 from .check_pypi_handler import handler
+from .check_readthedocs import check_readthedocs
+from .check_readthedocs_handler import check_readthedocs_handler
 from .generator import create_context, generator
 from .helpers import supported_interpreters
 
@@ -30,7 +32,9 @@ def generate(
 
     # first request is started in background
     check_future, pkg_name = check_pypi(config_file, default_config)
-
+    readthedocs_future, readthedocs_project_slug = check_readthedocs(
+        config_file, default_config
+    )
     interpreters = supported_interpreters(config_file, no_input)
     if interpreters:  # update extra_context
         # supported interpreters supplied either from yaml or from user's input
@@ -54,10 +58,19 @@ def generate(
         try:  # evaluate future by waiting, only if needed!
             handler(lambda x: check_future.result().status_code == 200)(pkg_name)
         except ConnectionError as error:
-            raise CheckPypiError("Connection error while checking PyPi") from error
+            raise CheckWebServerError("Connection error while checking PyPi") from error
+    if readthedocs_project_slug:
+        try:  # evaluate future by waiting, only if needed!
+            check_readthedocs_handler(
+                lambda x: readthedocs_future.result().status_code == 200
+            )(readthedocs_project_slug)
+        except ConnectionError as error:
+            raise CheckWebServerError(
+                "Connection error while checking readthedocs.org"
+            ) from error
     print('Finished :)')
     return project_dir
 
 
-class CheckPypiError(Exception):
+class CheckWebServerError(Exception):
     pass

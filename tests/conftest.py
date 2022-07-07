@@ -220,53 +220,21 @@ def request_factory(hook_request_new):
 
 
 @pytest.fixture
-def mock_check_pypi(get_object):
-    """Mock and return the `check_pypi` function (with side effects).
+def mock_check_pypi(get_object, future_session_mock_from_boolean):
+    return lambda found: get_object(
+        'check_pypi',
+        'cookiecutter_python.backend.check_pypi',
+        overrides={'FuturesSession': lambda: future_session_mock_from_boolean(found=found)},
+    )
 
-    Returns a callable than when called mocks the check_pypi function so that
-    there is no actual network (ie no connections though the internet) access.
 
-    Calling the returned object yields side effects in order to facilitate
-    mocking.
-
-    You can then either directly use the returned `check_pypi` function
-    (which shall trigger the mocked behaviour), or test your own code, which
-    shall trigger the mocked behaviour if it depends on (the "original")
-    `check_pypi`.
-
-    Args:
-        exists_on_pypi (t.Optional[bool]): whether to emulate that the package
-            exists on pypi, or not. Defaults to False (package does NOT exist
-            on pypi).
-
-    Returns:
-        t.Callable: a reference to the `check_pypi` function
-    """
-
-    class FutureMock:
-        def __init__(self, exists_on_pypi: bool = False):
-            self.result = lambda: type(
-                'HttpResponseMock', (), {'status_code': 200 if exists_on_pypi else 404}
-            )
-
-    def get_check_pypi_with_mocked_futures_session(
-        exists_on_pypi: bool = False,
-    ) -> t.Callable[..., t.Any]:  # todo specify
-        """Mocks FuturesSession and returns the 'check_pypi' object."""
-
-        return get_object(
-            'check_pypi',
-            'cookiecutter_python.backend.check_pypi',
-            overrides={
-                "FuturesSession": lambda: type(
-                    'MockFuturesSession',
-                    (),
-                    {'get': lambda self, url: FutureMock(exists_on_pypi)},
-                )
-            },
-        )
-
-    return get_check_pypi_with_mocked_futures_session
+@pytest.fixture
+def mock_check_readthedocs(get_object, future_session_mock_from_boolean):
+    return lambda found: get_object(
+        'check_readthedocs',
+        'cookiecutter_python.backend.check_readthedocs',
+        overrides={'FuturesSession': lambda: future_session_mock_from_boolean(found=found)},
+    )
 
 
 PythonType = t.Union[bool, str, None]
@@ -426,6 +394,7 @@ def user_config(load_yaml, load_json, production_templated_project):
             def _load_json(json_file: str):
                 data = loader(json_file)
                 data['project_slug'] = data['project_name'].lower().replace(' ', '-')
+                data['project_type'] = data['project_type'][0]
                 data['author'] = data['full_name']
                 data['pkg_name'] = data['project_name'].lower().replace(' ', '_')
                 data['initialize_git_repo'] = {'yes': True}.get(

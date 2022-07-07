@@ -25,7 +25,7 @@ class GetUserConfigSubject(ProxySubject[ReturnValueType]):
 
 class GetUserConfigProxy(BaseProxy[ReturnValueType]):
     def request(self, *args, **kwargs):
-        logger.error(
+        logger.info(
             'Get User Config Proxy Request: %s',
             BaseProxy.dumps(
                 {
