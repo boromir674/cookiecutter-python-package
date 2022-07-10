@@ -1,4 +1,4 @@
-from typing import Mapping, Protocol
+from typing import Mapping
 
 import attr
 
