@@ -1,20 +1,8 @@
-from typing import Callable, Protocol, Tuple, Union
+from typing import Union
 
 import attr
 
 from .checkers import Checkers
-
-
-class FutureResult(Protocol):
-    status_code: int
-
-
-class Future(Protocol):
-    def result(self) -> FutureResult:
-        ...
-
-
-ServiceChecker = Callable[[Union[None, str], Union[None, str]], Tuple[Future, str]]
 
 
 @attr.s(auto_attribs=True, slots=True, frozen=True)
@@ -23,7 +11,7 @@ class Checker:
     default_config: Union[None, bool]
     checkers: Checkers
 
-    def __getattr__(self, service_name: str) -> ServiceChecker:
+    def __getattr__(self, service_name: str):
         return self.checkers[service_name]
 
     def __iter__(self):

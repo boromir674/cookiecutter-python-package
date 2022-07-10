@@ -6,38 +6,13 @@ from .check_web_hosting_service import WebHostingServiceChecker
 from .exceptions import ContextVariableDoesNotExist
 from .extract_name import NameExtractor
 
-
-class FutureResult(Protocol):
-    status_code: int
-
-
-class Future(Protocol):
-    def result(self) -> FutureResult:
-        ...
-
-
-class CheckResult(Protocol):
-    future: Future
-    service_name: str
-
-
-class HostingService(Protocol):
-    def url(self, name: str) -> str:
-        ...
-
-
-class HostingServiceInfo(Protocol):
-    variable_name: str
-    service: HostingService
-
-
 ExtractNameAble = Callable[[str], str]
 
 
 @attr.s(auto_attribs=True, slots=True, frozen=True)
 class ServiceChecker:
     name_extractor: ExtractNameAble
-    web_service_checker: Callable[[str], CheckResult]
+    web_service_checker: WebHostingServiceChecker
     activate_flag: bool
     config_file_path: str
 
@@ -60,9 +35,7 @@ class ServiceChecker:
         return str(self.web_service_checker)
 
     @staticmethod
-    def create(
-        hosting_service_info: HostingServiceInfo, activate_flag: bool, config_file_path
-    ):
+    def create(hosting_service_info, activate_flag: bool, config_file_path):
         return ServiceChecker(
             NameExtractor.create(hosting_service_info),
             WebHostingServiceChecker(hosting_service_info.service),
