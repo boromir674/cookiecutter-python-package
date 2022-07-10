@@ -220,10 +220,17 @@ def request_factory(hook_request_new):
 
 
 @pytest.fixture
+def engine():
+    from cookiecutter_python.backend.hosting_services import Engine
+
+    return lambda config_file, default_config: Engine.create(config_file, default_config)
+
+
+@pytest.fixture
 def mock_check_pypi(get_object, future_session_mock_from_boolean):
     return lambda found: get_object(
-        'check_pypi',
-        'cookiecutter_python.backend.check_pypi',
+        'WebHostingServiceChecker',
+        'cookiecutter_python.backend.hosting_services.check_web_hosting_service',
         overrides={'FuturesSession': lambda: future_session_mock_from_boolean(found=found)},
     )
 
@@ -231,8 +238,8 @@ def mock_check_pypi(get_object, future_session_mock_from_boolean):
 @pytest.fixture
 def mock_check_readthedocs(get_object, future_session_mock_from_boolean):
     return lambda found: get_object(
-        'check_readthedocs',
-        'cookiecutter_python.backend.check_readthedocs',
+        'WebHostingServiceChecker',
+        'cookiecutter_python.backend.hosting_services.check_web_hosting_service',
         overrides={'FuturesSession': lambda: future_session_mock_from_boolean(found=found)},
     )
 

@@ -92,13 +92,12 @@ def test_cli_offline(
         color=False,
         **kwargs,
     )
+    # print(result.stdout)
     assert result.exit_code == 0
 
     project_dir = path.abspath(path.join(tmpdir, config.project_slug))
     assert_files_committed_if_flag_is_on(project_dir, config=config)
     assert_generated_expected_project_type(project_dir, config)
-
-    print(result.stdout)
 
     package_exists_on_pypi = check_pypi_result(result.stdout)
     assert package_exists_on_pypi == check_web_server_expected_result('pypi')(
@@ -127,8 +126,8 @@ def assert_generated_expected_project_type(
 @pytest.fixture
 def check_pypi_result(check_web_server) -> t.Callable[[str], t.Optional[bool]]:
     check_pypi_output = {
-        'found': "You shall rename your Python Package before publishing to pypi!",
-        'not-found': 'You will be able to publish your Python Package on pypi as it is!',
+        'found': "You shall rename your Python Package first, if you choose to publish it on pypi!",
+        'not-found': r"You will not need to rename your Python Package if you choose to publish it on pypi :\)",
     }
 
     def _check_pypi(cli_stdout: str) -> t.Optional[bool]:
@@ -140,8 +139,8 @@ def check_pypi_result(check_web_server) -> t.Callable[[str], t.Optional[bool]]:
 @pytest.fixture
 def check_readthedocs_result(check_web_server) -> t.Callable[[str], t.Optional[bool]]:
     check_readthedocs_output = {
-        'found': "You shall rename your Documentation Project slug before publishing to readthedocs!",
-        'not-found': "You will be able to publish your Documentation on readthedocs as it is!",
+        'found': "You shall rename your Python Package first, if you choose to publish it on readthedocs!",
+        'not-found': r"You will not need to rename your Python Package if you choose to publish it on readthedocs :\)",
     }
 
     def _check_readthedocs(cli_stdout: str) -> t.Optional[bool]:

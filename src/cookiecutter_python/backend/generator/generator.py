@@ -27,14 +27,8 @@ class CookiecutterProxy(BaseProxy[str]):
         Returns:
             str: [description]
         """
-        logger.debug(
-            'Cookiecutter Proxy Request: %s',
-            BaseProxy.dumps(
-                {
-                    'keyword_args': {k: str(v) for k, v in kwargs.items()},
-                    'positional_args': [str(arg_value) for arg_value in args],
-                },
-            ),
+        logger.info(
+            *BaseProxy.log_info_args('Cookiecutter Proxy Request: %s', *args, **kwargs)
         )
         return super().request(*args, **kwargs)
 
