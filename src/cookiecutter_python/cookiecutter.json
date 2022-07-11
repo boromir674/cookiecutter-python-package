@@ -2,6 +2,7 @@
     "project_name": "My New Project",
     "project_type": ["module", "module+cli", "pytest-plugin"],
     "project_slug": "{{ cookiecutter.project_name|lower|replace(' ', '-') }}",
+    "readthedocs_project_slug": "{{ cookiecutter.project_slug }}",
     "repo_name": "{{ cookiecutter.project_slug }}",
     "pkg_name": "{{ cookiecutter.project_slug|replace('-', '_') }}",
     "full_name": "John Doe",

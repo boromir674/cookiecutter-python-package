@@ -1,8 +1,8 @@
-from .main import CheckPypiError, generate
+from .main import CheckWebServerError, generate
 from .sanitization import sanitize
 
 __all__ = [
     'generate',
-    'CheckPypiError',
+    'CheckWebServerError',
     'sanitize',
 ]

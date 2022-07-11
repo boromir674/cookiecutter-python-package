@@ -2,6 +2,29 @@
 Changelog
 =========
 
+1.7.0 (2022-07-11)
+==================
+
+Introducing a pre-emptive check of whether a Project registered under the same
+name as the one given to the generator, exists on
+the readthedocs.org server already.
+
+Changes
+^^^^^^^
+
+feature
+"""""""
+- check if a project with the same slug name, is already registered on the readthedocs server
+
+test
+""""
+- improve flexibility of testing code
+
+refactor
+""""""""
+- modularize code and improve dryness of code as well
+
+
 1.6.1 (2022-07-05)
 ==================
 
