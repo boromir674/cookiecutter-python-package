@@ -1,4 +1,4 @@
-from typing import Callable, Protocol
+from typing import Callable
 
 import attr
 
@@ -38,7 +38,7 @@ class ServiceChecker:
     def create(hosting_service_info, activate_flag: bool, config_file_path):
         return ServiceChecker(
             NameExtractor.create(hosting_service_info),
-            WebHostingServiceChecker(hosting_service_info.service),
+            WebHostingServiceChecker.create(hosting_service_info.service),
             activate_flag,
             config_file_path,
         )

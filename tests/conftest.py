@@ -220,28 +220,94 @@ def request_factory(hook_request_new):
 
 
 @pytest.fixture
-def engine():
-    from cookiecutter_python.backend.hosting_services import Engine
+def mock_hosting_services(future_session_mock):
+    """Mock the FuturesSession class given urls and http status codes.
 
-    return lambda config_file, default_config: Engine.create(config_file, default_config)
+    Mocks the FuturesSession class given urls and the desired emulated status
+    codes that the remote web server supposedly responds with.
+
+    Args:
+        url_2_code (Mapping): mapping of url strings to status code integers
+    """
+    from typing import Any
+
+    def _futures_session_mock_class(url_2_code):
+        class FutureSessionMockAdapter:
+            future_session_mock_instance: Any
+            _instance = None
+
+            def __new__(cls):
+                if not cls._instance:
+                    cls._instance = super().__new__(cls)
+                    cls._instance.future_session_mock_instance = future_session_mock(
+                        url_2_code
+                    )
+                return cls._instance
+
+            def get(self, url: str):
+                return self.future_session_mock_instance.get(url)
+
+            @property
+            def url_2_code(self):
+                return self.future_session_mock_instance.url_2_code
+
+        return FutureSessionMockAdapter
+
+    return _futures_session_mock_class
 
 
 @pytest.fixture
-def mock_check_pypi(get_object, future_session_mock_from_boolean):
-    return lambda found: get_object(
-        'WebHostingServiceChecker',
-        'cookiecutter_python.backend.hosting_services.check_web_hosting_service',
-        overrides={'FuturesSession': lambda: future_session_mock_from_boolean(found=found)},
+def mock_check(get_object, mock_hosting_services):
+    from typing import Any, Mapping
+
+    import attr
+
+    from cookiecutter_python.backend.hosting_services.web_hosting_service import (
+        HostingServices,
     )
 
+    @attr.s(auto_attribs=True, slots=True)
+    class MockCheck:
+        _config: Any = attr.ib(default=None)
+        futures_session_instance_mock: Any = attr.ib(init=False)  # singleton instance
+        hosting_service_infos: Mapping = attr.ib(init=False, default=attr.Factory(dict))
 
-@pytest.fixture
-def mock_check_readthedocs(get_object, future_session_mock_from_boolean):
-    return lambda found: get_object(
-        'WebHostingServiceChecker',
-        'cookiecutter_python.backend.hosting_services.check_web_hosting_service',
-        overrides={'FuturesSession': lambda: future_session_mock_from_boolean(found=found)},
-    )
+        def __attrs_post_init__(self):
+            self.mock_futures_session()
+
+        @property
+        def config(self):
+            return self._config
+
+        @config.setter
+        def config(self, config):
+            self._config = config
+
+        def mock_futures_session(self):
+            futures_session_class_mock = mock_hosting_services({})
+            self.futures_session_instance_mock = futures_session_class_mock()
+            get_object(
+                'WebHostingServiceChecker',
+                'cookiecutter_python.backend.hosting_services.check_web_hosting_service',
+                overrides={'FuturesSession': lambda: futures_session_class_mock},
+            )
+
+        def __call__(self, service_name: str, found: bool):
+            url = self.get_url(service_name)
+            self.futures_session_instance_mock.url_2_code[url] = 200 if found else 404
+
+        def get_url(self, service_name):
+            if service_name not in self.hosting_service_infos:
+                self.hosting_service_infos[service_name] = HostingServices.create(service_name)
+            info = self.hosting_service_infos[service_name]
+            return info.service.url(
+                self._config.data.get(
+                    info.variable_name,
+                    "cannot determine 'name' (ie pypi, readthedocs) from config file",
+                )
+            )
+
+    return MockCheck()
 
 
 PythonType = t.Union[bool, str, None]

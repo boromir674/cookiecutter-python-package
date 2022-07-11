@@ -52,9 +52,8 @@ reason = "We do not support yet, the 'check-pypi' feature, if --config-file is N
 def test_cli_offline(
     config_file,
     default_config,
-    mock_check_pypi,
+    mock_check,
     check_pypi_result,
-    mock_check_readthedocs,
     check_readthedocs_result,
     check_web_server_expected_result,
     user_config,
@@ -79,9 +78,11 @@ def test_cli_offline(
         }
     )
     FOUND_ON_PYPI = False
-    mock_check_pypi(FOUND_ON_PYPI)
     FOUND_ON_READTHEDOCS = False
-    mock_check_readthedocs(FOUND_ON_READTHEDOCS)
+
+    mock_check.config = config
+    mock_check('pypi', FOUND_ON_PYPI)
+    mock_check('readthedocs', FOUND_ON_READTHEDOCS)
 
     result = isolated_cli_runner.invoke(
         cli_main,

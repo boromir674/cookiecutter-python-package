@@ -1,26 +1,25 @@
-from typing import Protocol
+from typing import Callable
 
 import attr
 from requests_futures.sessions import FuturesSession
 
 
-class WebHostingService(Protocol):
-    def url(self, name: str) -> str:
-        ...
-
-
 @attr.s(auto_attribs=True, slots=True, frozen=True)
 class WebHostingServiceChecker:
-    hosting_service: WebHostingService
+    url_getter: Callable[[str], str]
 
     def __call__(self, name: str):
         session = FuturesSession()
-        future = session.get(self.hosting_service.url(name))
+        future = session.get(self.url_getter(name))
         return type(
             'RequestResult',
             (),
-            {'future': future, 'name': name, 'service_name': str(self.hosting_service)},
+            {'future': future, 'name': name, 'service_name': str(self.url_getter)},
         )
 
     def __str__(self):
-        return str(self.hosting_service)
+        return str(self.url_getter)
+
+    @staticmethod
+    def create(hosting_service):
+        return WebHostingServiceChecker(hosting_service.url)

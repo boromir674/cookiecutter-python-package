@@ -17,17 +17,18 @@ import pytest
 def test_supported_python_interpreters(
     config_file: str,
     expected_interpreters: t.Sequence[str],
-    mock_check_pypi,
-    mock_check_readthedocs,
+    mock_check,
+    user_config,
     assert_interpreters_array_in_build_matrix,
     assert_scaffolded_without_cli,
     tmpdir,
 ):
     from cookiecutter_python.backend.main import generate
 
-    mock_check_pypi(True)  # emulate that package already exists on pypi
-    # emulate that Documentation Project already exists on readthedocs
-    mock_check_readthedocs(True)
+    config = user_config[config_file]
+    mock_check.config = config
+    mock_check('pypi', True)
+    mock_check('readthedocs', True)
 
     project_dir: str = generate(
         checkout=None,

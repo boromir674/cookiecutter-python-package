@@ -3,15 +3,27 @@ from software_patterns import SubclassRegistry
 
 
 @attr.s(auto_attribs=True, slots=True, frozen=True)
-class WebHostingService:
+class URLGetter:
     url_pattern: str
-    name: str
+    service_name: str
 
-    def url(self, name: str):
+    def __call__(self, name: str):
         return self.url_pattern.format(name=name)
 
     def __str__(self):
-        return self.name
+        return self.service_name
+
+
+@attr.s(auto_attribs=True, slots=True, frozen=True)
+class WebHostingService:
+    url: URLGetter
+
+    def __str__(self):
+        return str(self.url)
+
+    @staticmethod
+    def create(url_pattern: str, service_name: str):
+        return WebHostingService(URLGetter(url_pattern, service_name))
 
 
 class HostingServiceInfo:
@@ -43,7 +55,7 @@ class HostingServices(metaclass=HostingServicesInfo):
 @HostingServices.register_as_subclass('pypi')
 class PyPIServerFactory(HostingServiceInfo):
     def create(self, *args, **kwargs):
-        return WebHostingService('http://pypi.org/project/{name}', 'pypi')
+        return WebHostingService.create('https://pypi.org/project/{name}', 'pypi')
 
     @property
     def variable_name(self) -> str:
@@ -53,7 +65,7 @@ class PyPIServerFactory(HostingServiceInfo):
 @HostingServices.register_as_subclass('readthedocs')
 class ReadTheDocsServerFactory(HostingServiceInfo):
     def create(self, *args, **kwargs):
-        return WebHostingService('https://{name}.readthedocs.io/', 'readthedocs')
+        return WebHostingService.create('https://{name}.readthedocs.io/', 'readthedocs')
 
     @property
     def variable_name(self) -> str:
