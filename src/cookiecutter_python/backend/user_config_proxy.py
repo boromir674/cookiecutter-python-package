@@ -25,19 +25,13 @@ class GetUserConfigSubject(ProxySubject[ReturnValueType]):
 
 class GetUserConfigProxy(BaseProxy[ReturnValueType]):
     def request(self, *args, **kwargs):
-        logger.error(
-            'Get User Config Proxy Request: %s',
-            BaseProxy.dumps(
-                {
-                    'keyword_args': {k: str(v) for k, v in kwargs.items()},
-                    'positional_args': [str(arg_value) for arg_value in args],
-                },
-            ),
+        logger.info(
+            *BaseProxy.log_info_args('Get User Config Proxy Request: %s', *args, **kwargs)
         )
         return super().request(*args, **kwargs)
 
 
-# Singleton and Adapter of Cookiecutter Proxy
+# Singleton and Adapter of cookiecutter.config.get_user_config
 class GetUserConfigProxySingleton(metaclass=Singleton):
     def __init__(self, proxy_factory) -> None:
         super().__init__()

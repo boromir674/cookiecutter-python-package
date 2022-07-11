@@ -59,7 +59,6 @@ delete_files = {
 }
 
 def post_file_removal(request):
-    print(request.project_type)
     files_to_remove = [
         path.join(request.project_dir, *x) for x in delete_files[request.project_type](request)
     ]
@@ -178,7 +177,6 @@ def is_git_repo_clean(project_directory: str):
 
 
 def _post_hook():
-    print('\n --- POST GEN SCRIPT')
     request = get_request()
     post_file_removal(request)
     if request.initialize_git_repo:
@@ -188,7 +186,7 @@ def _post_hook():
         if not is_git_repo_clean(request.project_dir):
             git_commit(request)
         else:
-            print('Index did not update !!')
+            print('No changes to commit.')
     return 0
 
 

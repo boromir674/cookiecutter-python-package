@@ -13,16 +13,13 @@ def get_request():
     # Templated Variables should be centralized here for easier inspection
     # Also, this makes static code analyzers to avoid issues with syntax errors
     # due to the templated (dynamically injected) code in this file
-
-    # the name the client code should use to import the generated package/module
-    print('\n--- Pre Hook Get Request')
-
     cookiecutter = OrderedDict()
     cookiecutter: OrderedDict = {{cookiecutter}}
 
     interpreters = cookiecutter['interpreters']
     if isinstance(interpreters, str):  # we assume it is json
         interpreters = json.loads(interpreters)
+    # the name the client code should use to import the generated package/module
     module_name = '{{ cookiecutter.pkg_name }}'
 
     return type(
@@ -85,7 +82,6 @@ def hook_main(request):
 
 def _main():
     request = get_request()
-    print('Computed Variables:\n{req}'.format(req=str(request)))
     return hook_main(request)
 
 

@@ -220,53 +220,94 @@ def request_factory(hook_request_new):
 
 
 @pytest.fixture
-def mock_check_pypi(get_object):
-    """Mock and return the `check_pypi` function (with side effects).
+def mock_hosting_services(future_session_mock):
+    """Mock the FuturesSession class given urls and http status codes.
 
-    Returns a callable than when called mocks the check_pypi function so that
-    there is no actual network (ie no connections though the internet) access.
-
-    Calling the returned object yields side effects in order to facilitate
-    mocking.
-
-    You can then either directly use the returned `check_pypi` function
-    (which shall trigger the mocked behaviour), or test your own code, which
-    shall trigger the mocked behaviour if it depends on (the "original")
-    `check_pypi`.
+    Mocks the FuturesSession class given urls and the desired emulated status
+    codes that the remote web server supposedly responds with.
 
     Args:
-        exists_on_pypi (t.Optional[bool]): whether to emulate that the package
-            exists on pypi, or not. Defaults to False (package does NOT exist
-            on pypi).
-
-    Returns:
-        t.Callable: a reference to the `check_pypi` function
+        url_2_code (Mapping): mapping of url strings to status code integers
     """
+    from typing import Any
 
-    class FutureMock:
-        def __init__(self, exists_on_pypi: bool = False):
-            self.result = lambda: type(
-                'HttpResponseMock', (), {'status_code': 200 if exists_on_pypi else 404}
+    def _futures_session_mock_class(url_2_code):
+        class FutureSessionMockAdapter:
+            future_session_mock_instance: Any
+            _instance = None
+
+            def __new__(cls):
+                if not cls._instance:
+                    cls._instance = super().__new__(cls)
+                    cls._instance.future_session_mock_instance = future_session_mock(
+                        url_2_code
+                    )
+                return cls._instance
+
+            def get(self, url: str):
+                return self.future_session_mock_instance.get(url)
+
+            @property
+            def url_2_code(self):
+                return self.future_session_mock_instance.url_2_code
+
+        return FutureSessionMockAdapter
+
+    return _futures_session_mock_class
+
+
+@pytest.fixture
+def mock_check(get_object, mock_hosting_services):
+    from typing import Any, Mapping
+
+    import attr
+
+    from cookiecutter_python.backend.hosting_services.web_hosting_service import (
+        HostingServices,
+    )
+
+    @attr.s(auto_attribs=True, slots=True)
+    class MockCheck:
+        _config: Any = attr.ib(default=None)
+        futures_session_instance_mock: Any = attr.ib(init=False)  # singleton instance
+        hosting_service_infos: Mapping = attr.ib(init=False, default=attr.Factory(dict))
+
+        def __attrs_post_init__(self):
+            self.mock_futures_session()
+
+        @property
+        def config(self):
+            return self._config
+
+        @config.setter
+        def config(self, config):
+            self._config = config
+
+        def mock_futures_session(self):
+            futures_session_class_mock = mock_hosting_services({})
+            self.futures_session_instance_mock = futures_session_class_mock()
+            get_object(
+                'WebHostingServiceChecker',
+                'cookiecutter_python.backend.hosting_services.check_web_hosting_service',
+                overrides={'FuturesSession': lambda: futures_session_class_mock},
             )
 
-    def get_check_pypi_with_mocked_futures_session(
-        exists_on_pypi: bool = False,
-    ) -> t.Callable[..., t.Any]:  # todo specify
-        """Mocks FuturesSession and returns the 'check_pypi' object."""
+        def __call__(self, service_name: str, found: bool):
+            url = self.get_url(service_name)
+            self.futures_session_instance_mock.url_2_code[url] = 200 if found else 404
 
-        return get_object(
-            'check_pypi',
-            'cookiecutter_python.backend.check_pypi',
-            overrides={
-                "FuturesSession": lambda: type(
-                    'MockFuturesSession',
-                    (),
-                    {'get': lambda self, url: FutureMock(exists_on_pypi)},
+        def get_url(self, service_name):
+            if service_name not in self.hosting_service_infos:
+                self.hosting_service_infos[service_name] = HostingServices.create(service_name)
+            info = self.hosting_service_infos[service_name]
+            return info.service.url(
+                self._config.data.get(
+                    info.variable_name,
+                    "cannot determine 'name' (ie pypi, readthedocs) from config file",
                 )
-            },
-        )
+            )
 
-    return get_check_pypi_with_mocked_futures_session
+    return MockCheck()
 
 
 PythonType = t.Union[bool, str, None]
@@ -426,6 +467,7 @@ def user_config(load_yaml, load_json, production_templated_project):
             def _load_json(json_file: str):
                 data = loader(json_file)
                 data['project_slug'] = data['project_name'].lower().replace(' ', '-')
+                data['project_type'] = data['project_type'][0]
                 data['author'] = data['full_name']
                 data['pkg_name'] = data['project_name'].lower().replace(' ', '_')
                 data['initialize_git_repo'] = {'yes': True}.get(
