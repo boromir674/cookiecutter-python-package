@@ -1,11 +1,9 @@
 import logging
 import os
 
-from requests.exceptions import ConnectionError
-
-from .generator import create_context, generator
-from .helpers import supported_interpreters
-from .hosting_services import Engine
+from .generator import generator
+from .post_main import post_main
+from .pre_main import pre_main
 
 logger = logging.getLogger(__name__)
 
@@ -29,20 +27,19 @@ def generate(
     skip_if_file_exists=False,
 ) -> str:
     print('Start Python Generator !')
-    check = Engine.create(config_file, default_config)
-
-    check_results = check.check(WEB_SERVERS)
-
-    interpreters = supported_interpreters(config_file, no_input)
-    if interpreters:  # update extra_context
-        # supported interpreters supplied either from yaml or from user's input
-        extra_context = create_context(interpreters, extra_context=extra_context)
+    request = pre_main(
+        config_file=config_file,
+        default_config=default_config,
+        web_servers=WEB_SERVERS,
+        no_input=no_input,
+        extra_context=extra_context,
+    )
 
     project_dir = generator(
         os.path.abspath(os.path.join(my_dir, '..')),  # template dir path
         checkout=checkout,
         no_input=no_input,
-        extra_context=extra_context,
+        extra_context=request.extra_context,
         replay=replay,
         overwrite_if_exists=overwrite,
         output_dir=output_dir,
@@ -52,17 +49,7 @@ def generate(
         directory=directory,
         skip_if_file_exists=skip_if_file_exists,
     )
-    for result in check_results:
-        try:
-            check.handle(result)
-        except ConnectionError as error:
-            raise CheckWebServerError(
-                f"Connection error while checking {result.service_name} web server"
-            ) from error
+    request = post_main(request)
 
     print('Finished :)')
     return project_dir
-
-
-class CheckWebServerError(Exception):
-    pass
