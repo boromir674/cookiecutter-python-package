@@ -2,6 +2,17 @@
 Changelog
 =========
 
+1.7.1 (2022-07-30)
+==================
+
+Changes
+^^^^^^^
+
+refactor
+""""""""
+- reduce duplicate code & clean code
+
+
 1.7.0 (2022-07-11)
 ==================
 
