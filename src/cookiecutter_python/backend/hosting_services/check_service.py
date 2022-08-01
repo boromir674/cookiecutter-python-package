@@ -17,6 +17,11 @@ class ServiceChecker:
     config_file_path: str
 
     def __call__(self):
+        """Check the remote server for existing resource, if feture is enabled.
+
+        Returns:
+            Optional[CheckResult]: result of the check operation
+        """
         if self.activate_flag:
             # TODO Improvement: enable feature regardless of default_config
             try:

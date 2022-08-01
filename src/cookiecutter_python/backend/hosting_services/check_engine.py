@@ -1,4 +1,4 @@
-from typing import Tuple, Union
+from typing import List, Tuple, Union
 
 import attr
 
@@ -33,6 +33,9 @@ class Engine:
 
     def handle(self, request_result):
         return self.handlers(request_result)
+
+    def check(self, servers: List[str]):
+        return iter(filter(None, [getattr(self, server)() for server in servers]))
 
     @staticmethod
     def create(config_file, default_config):
