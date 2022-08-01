@@ -49,7 +49,7 @@ def generate(
         directory=directory,
         skip_if_file_exists=skip_if_file_exists,
     )
-    request = post_main(request)
+    post_main(request)
 
     print('Finished :)')
     return project_dir
