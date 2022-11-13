@@ -47,6 +47,7 @@ CLI_ONLY = lambda x: [
     ('tests', 'test_invoking_cli.py'),
 ]
 PYTEST_PLUGIN_ONLY = lambda x: [
+    ('src', x.module_name, 'fixtures.py'),
     ('tests', 'conftest.py'),
     ('tests', 'test_my_fixture.py'),
     ('setup.cfg',),

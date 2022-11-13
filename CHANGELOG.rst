@@ -2,6 +2,24 @@
 Changelog
 =========
 
+1.7.2 (2022-11-13)
+==================
+
+Fixing a couple of bugs.
+
+Changes
+^^^^^^^
+
+fix
+"""
+- only generate 'fixtures.py' for pytest-plugin project type
+- fix pyproject.toml syntax
+
+documentation
+"""""""""""""
+- improve documentation
+
+
 1.7.1 (2022-07-30)
 ==================
 
