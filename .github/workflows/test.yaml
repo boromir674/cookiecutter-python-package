@@ -48,6 +48,13 @@ jobs:
     - name: Do Type Checking
       run: tox -e type -vv -s false
 
+    - name: Parse package version from __init__.py to assist building
+      shell: bash
+      run: |
+        PARSER="src/cookiecutter_python/{{ cookiecutter.project_slug }}/scripts/parse_version.py"
+        PARSED_VERSION=$(python "${PARSER}")
+        echo "PKG_VERSION=$PARSED_VERSION" >> $GITHUB_ENV
+
     - name: Run Test Suite (Unit + Integration)
       run: tox -vv -s false -- -n auto --run-network_bound
       env:
@@ -68,13 +75,6 @@ jobs:
         flags: unittests
         name: codecov-umbrella
         verbose: true
-
-    - name: Parse package version from __init__.py to assist check step
-      shell: bash
-      run: |
-        PARSER="src/cookiecutter_python/{{ cookiecutter.project_slug }}/scripts/parse_version.py"
-        PARSED_VERSION=$(python "${PARSER}")
-        echo "PKG_VERSION=$PARSED_VERSION" >> $GITHUB_ENV
 
     - name: Check for compliance with Python Best Practices
       shell: bash
