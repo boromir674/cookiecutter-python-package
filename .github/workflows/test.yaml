@@ -38,6 +38,7 @@ jobs:
         python -m pip install tox tox-gh-actions
 
     - name: Do Lint Checking
+      if: ${{ matrix.platform != 'windows-latest' }}
       run: tox -e lint -vv -s false
 
     - name: Run tox -e prospector
