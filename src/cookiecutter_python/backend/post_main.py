@@ -1,11 +1,11 @@
-from requests.exceptions import ConnectionError
+from requests.exceptions import ConnectionError as RequestsConnectionError
 
 
 def post_main(request):
     for result in request.check_results:
         try:
             request.check.handle(result)
-        except ConnectionError as error:
+        except RequestsConnectionError as error:
             raise CheckWebServerError(
                 f"Connection error while checking {result.service_name} web server"
             ) from error
