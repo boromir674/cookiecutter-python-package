@@ -1,6 +1,7 @@
 from typing import Any, Callable, Mapping, Optional, Sequence, Union
 
 from questionary import prompt
+
 from ..dialog import InteractiveDialog
 
 QuestionaryQuestion = Mapping[str, Optional[Union[str, Mapping, Callable]]]
