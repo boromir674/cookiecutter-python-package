@@ -47,27 +47,10 @@ jobs:
     - name: Do Type Checking
       run: tox -e type -vv -s false
 
-    - name: Specify current package version to assist build tool
-      shell: bash
-      run: |
-        PARSER="src/cookiecutter_python/{{ cookiecutter.project_slug }}/scripts/parse_version.py"
-        PARSED_VERSION=$(python "${PARSER}")
-        echo "PKG_VERSION=$PARSED_VERSION" >> $GITHUB_ENV
-
-    - name: Run Test Suite
+    - name: Run Test Suite (Unit + Integration)
       run: tox -vv -s false -- -n auto --run-network_bound
       env:
         PLATFORM: ${{ matrix.platform }}
-
-    - name: Check for compliance with Python Best Practices
-      shell: bash
-      run: |
-        DIST_DIR=dist
-        echo "DIST_DIR=dist" >> $GITHUB_ENV
-        mkdir ${DIST_DIR}
-        mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}.tar.gz" "${DIST_DIR}"
-        mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}-py3-none-any.whl" "${DIST_DIR}"
-        tox -e check -vv -s false
 
     - name: Aggregate Test Coverage Data
       run: tox -e coverage --sitepackages -vv -s false
@@ -84,6 +67,23 @@ jobs:
         flags: unittests
         name: codecov-umbrella
         verbose: true
+
+    - name: Parse package version from __init__.py to assist check step
+      shell: bash
+      run: |
+        PARSER="src/cookiecutter_python/{{ cookiecutter.project_slug }}/scripts/parse_version.py"
+        PARSED_VERSION=$(python "${PARSER}")
+        echo "PKG_VERSION=$PARSED_VERSION" >> $GITHUB_ENV
+
+    - name: Check for compliance with Python Best Practices
+      shell: bash
+      run: |
+        DIST_DIR=dist
+        echo "DIST_DIR=dist" >> $GITHUB_ENV
+        mkdir ${DIST_DIR}
+        mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}.tar.gz" "${DIST_DIR}"
+        mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}-py3-none-any.whl" "${DIST_DIR}"
+        tox -e check -vv -s false
 
     - name: Install documentation test dependencies
       if: ${{ matrix.platform == 'macos-latest' && matrix.python-version != '3.6' }}
