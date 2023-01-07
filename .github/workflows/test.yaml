@@ -55,7 +55,7 @@ jobs:
         PARSED_VERSION=$(python "${PARSER}")
         echo "PKG_VERSION=$PARSED_VERSION" >> $GITHUB_ENV
 
-    - name: Run Test Suite (Unit + Integration)
+    - name: Run Unit Tests
       run: tox -vv -s false -- -n auto --run-network_bound
       env:
         PLATFORM: ${{ matrix.platform }}
