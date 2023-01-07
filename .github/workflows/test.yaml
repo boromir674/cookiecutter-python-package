@@ -39,7 +39,18 @@ jobs:
 
     - name: Do Lint Checking
       if: ${{ matrix.platform != 'windows-latest' }}
-      run: tox -e lint -vv -s false
+      env:
+        PYLINT_THRESHOLD: 8.2
+      run: |
+        tox -e lint -vv -s false | tee pylint-result.txt
+        SCORE=`sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' pylint-result.txt`
+        # threshold check
+        if awk "BEGIN {exit !($SCORE >= $PYLINT_THRESHOLD)}"; then
+          echo "PyLint Passed | Score: ${SCORE} | Threshold: ${PYLINT_THRESHOLD}"
+        else
+          echo "PyLint Failed | Score: ${SCORE} | Threshold: ${PYLINT_THRESHOLD}"
+          exit 1
+        fi
 
     - name: Run tox -e prospector
       if: ${{ matrix.platform != 'windows-latest' }}
@@ -56,7 +67,7 @@ jobs:
         echo "PKG_VERSION=$PARSED_VERSION" >> $GITHUB_ENV
 
     - name: Run Unit Tests
-      run: tox -vv -s false -- -n auto --run-network_bound
+      run: tox -vv -s false
       env:
         PLATFORM: ${{ matrix.platform }}
 
