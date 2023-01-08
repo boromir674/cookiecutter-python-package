@@ -72,7 +72,6 @@ exclude = [
     "requirements/*",
     "scripts/*.py",
     "tox.ini",
-    ".bettercodehub.yml",
     ".circleci/config.yml",
     ".coveragerc",
     ".DS_Store",

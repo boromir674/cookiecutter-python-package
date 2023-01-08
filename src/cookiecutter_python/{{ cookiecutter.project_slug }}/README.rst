@@ -4,7 +4,7 @@
 
 .. start-badges
 
-| |build| |docs| |coverage| |maintainability| |better_code_hub| |tech-debt|
+| |build| |docs| |coverage| |maintainability| |tech-debt|
 | |release_version| |wheel| |supported_versions| |gh-lic| |commits_since_specific_tag_on_master| |commits_since_latest_github_release|
 
 |
@@ -157,14 +157,6 @@ License
 
 
 .. CODE QUALITY
-
-.. Better Code Hub
-.. Software Design Patterns
-
-.. |better_code_hub| image:: https://bettercodehub.com/edge/badge/{{ cookiecutter.github_username }}/{{ cookiecutter.repo_name }}?branch=master
-    :alt: Better Code Hub
-    :target: https://bettercodehub.com/
-
 
 .. Code Climate CI
 .. Code maintainability & Technical Debt
