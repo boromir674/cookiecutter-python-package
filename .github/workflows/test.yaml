@@ -128,3 +128,28 @@ jobs:
     #   uses: actions/download-artifact@v2
     #   with:
     #     name: coverage-xml-data
+
+  draw-dependencies:
+    runs-on: ubuntu-latest
+    needs: test_suite
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install tox
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install tox==3.28
+
+    - name: Run pydeps to draw dependencies graphs
+      run: tox -e pydeps -vv -s false
+
+    - name: Upload Dependency Graphs *.svg files
+      uses: actions/upload-artifact@v3
+      with:
+        name: dependency-graphs
+        path: pydeps/
+        if-no-files-found: warn  # 'error' or 'ignore' are also available, defaults to `warn`
