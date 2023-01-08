@@ -37,12 +37,16 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install tox==3.28 tox-gh-actions
 
-    - name: Do Lint Checking
+    - name: Lint check code with Isort and Black
+      if: ${{ matrix.platform != 'windows-latest' }}
+      run: tox -e lint -vv -s false
+
+    - name: Lint check code with Pylint
       if: ${{ matrix.platform != 'windows-latest' }}
       env:
         PYLINT_THRESHOLD: 8.2
       run: |
-        tox -e lint -vv -s false | tee pylint-result.txt
+        tox -e pylint -vv -s false | tee pylint-result.txt
         SCORE=`sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' pylint-result.txt`
         # threshold check
         if awk "BEGIN {exit !($SCORE >= $PYLINT_THRESHOLD)}"; then
