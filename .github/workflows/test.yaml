@@ -146,10 +146,15 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install tox==3.28
 
-    - name: Run pydeps to draw dependencies graphs
+    - name: Install dependencies (ie dot binary of graphviz)
+      run: |
+        sudo apt-get update -y --allow-releaseinfo-change
+        sudo apt-get install -y graphviz
+
+    - name: Draw Dependency Graphs as .svg files
       run: tox -e pydeps -vv -s false
 
-    - name: Upload Dependency Graphs *.svg files
+    - name: Upload Dependency Graphs as artifacts
       uses: actions/upload-artifact@v3
       with:
         name: dependency-graphs
