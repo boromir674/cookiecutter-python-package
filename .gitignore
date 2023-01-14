@@ -24,3 +24,5 @@ pydoer-graphs/
 
 package-lock\.json
 package\.json
+pydeps/
+gen/

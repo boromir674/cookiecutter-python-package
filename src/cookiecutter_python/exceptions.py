@@ -10,7 +10,7 @@ cookiecutter_exceptions = load(CookiecutterException, 'cookiecutter')
 
 
 exceptions = {
-    'critical': cookiecutter_exceptions + [ContextVariableDoesNotExist],  # type: ignore
+    'critical': tuple(cookiecutter_exceptions + [ContextVariableDoesNotExist]),  # type: ignore
     'non-critical': (
         CheckWebServerError,
     )
