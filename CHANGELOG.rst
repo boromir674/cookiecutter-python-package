@@ -2,6 +2,53 @@
 Changelog
 =========
 
+1.7.3 (2023-01-14)
+==================
+
+Changes
+^^^^^^^
+
+fix
+"""
+- raise a proper subclass of python built-in Exception
+
+documentation
+"""""""""""""
+- improve documentation
+
+style
+"""""
+- apply isort in codebase
+
+refactor
+""""""""
+- satisfy pylint a bit more
+
+build
+"""""
+- add pinned/locked dependencies defined in poetry.lock
+- replace PyInquirer with Questionary package
+
+ci
+""
+- install dependencies for pydeps Job
+- use pydeps == 1.11.0 which supports python3.10 & remove autoprovisioning of tox
+- draw dependency graphs in new Job after tests and upload artifacts
+- add 'pytest' as a known word to pass spell checking
+- remove badges from bettercodehub since the service has shut down
+- pin tox to 3.28 in generate workflow
+- run pylint in ci and fail job if score is below threshold
+- fail pylint step if score is below PYLINT_THRESHOLD variable
+- run only unit-tests in ci workflow
+- fix ci
+- install pinned to 3.28 in ci runner
+- debug type checking on windows tox
+- skip tox -e lint on windows machine
+- remove py36 from ci matrix generation
+- fix prospector environment's commands
+- `tox -e pydeps`: allow configuration of target dir & allow invoking from outside root dir
+
+
 1.7.2 (2022-11-13)
 ==================
 
