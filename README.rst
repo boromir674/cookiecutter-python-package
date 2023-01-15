@@ -2,11 +2,11 @@ Python Package Generator
 ========================
 
 | Python Package Generator supporting 3 different Project `types` to scaffold.
-| Emphasizing on CI/CD, Testing and Automation, built with Cookiecutter.
+| Emphasizing on CI/CD, Testing and Automation, implemented on top of Cookiecutter.
 
 .. start-badges
 
-| |build| |docs| |coverage| |ossf| |maintainability| |better_code_hub| |codacy| |tech-debt| |black|
+| |build| |docs| |coverage| |ossf| |maintainability| |codacy| |tech-debt| |black|
 | |release_version| |wheel| |supported_versions| |gh-lic| |commits_since_specific_tag_on_master| |commits_since_latest_github_release|
 
 |
@@ -19,17 +19,13 @@ Python Package Generator
 Features
 ========
 
-module: 24
-module+cli: 28
-pytest-plugin: 26
-
 1. Scaffold a modern `ready-to-develop` Python Package (see `Quickstart`_)
-2. Generate over 24 files, to setup `Test Suite`, `build` scripts & CI Pipeline
+2. Automatically generate over 24 files, to setup `Test Suite`, `build` scripts & CI Pipeline
 3. **Python Package Template** (source code at `src/cookiecutter_python/`_) implemented as a `Cookiecutter`
 4. Extensively **Tested** on various systems, factoring the below:
    
    a. System's platform: **"Linux"**, **"MacOS"** & **"Windows"**
-   b. System's Python: **3.6**, **2.7**, **3.8**, **3.9** & **3.10**
+   b. System's Python: **3.6**, **3.7**, **3.8**, **3.9** & **3.10**
 
     See the `Test Workflow` on the `CI`_ server.
 
@@ -74,7 +70,7 @@ Quickstart
 Installation
 ------------
 
-    .. code-block: shell
+    .. code-block:: shell
 
         pip install --user cookiecutter-python
 
@@ -231,14 +227,6 @@ For more complex use cases, you can modify the Template and also leverage all of
 
 
 .. CODE QUALITY
-
-.. Better Code Hub
-.. Software Design Patterns
-
-.. |better_code_hub| image:: https://bettercodehub.com/edge/badge/boromir674/cookiecutter-python-package?branch=master
-    :alt: Better Code Hub
-    :target: https://bettercodehub.com/
-
 
 .. Codacy
 .. Code Quality, Style, Security

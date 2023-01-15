@@ -2,7 +2,7 @@ import sys
 import typing as t
 
 import attr
-from requests.exceptions import ConnectionError
+from requests.exceptions import ConnectionError as RequestsConnectionError
 
 HostingServiceChecker = t.Callable[[str], bool]
 
@@ -26,7 +26,7 @@ class CheckHostingServiceHandler:
     def __call__(self, package_name: str):
         try:
             res: bool = self.check_hosting_service(package_name)
-        except ConnectionError as error:
+        except RequestsConnectionError as error:
             self.package_name = package_name  # a package "slug" (name)
             self._handle_connection_error(error)
         except Exception as error:  # any other error

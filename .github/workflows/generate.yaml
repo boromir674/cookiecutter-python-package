@@ -72,7 +72,7 @@ jobs:
           sudo apt update -y && sudo apt install -y aptitude
           sudo aptitude install -y graphviz
           python -m pip install --upgrade pip
-          python -m pip install tox
+          python -m pip install tox==3.28
 
       - name: Clone Biskotaki repo
         uses: actions/checkout@v3
