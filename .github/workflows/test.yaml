@@ -42,6 +42,7 @@ on:
 env:
   # ability to define the Job Matrix as an env var !
   MATRIX_STRATEGY: "{\"platform\":[\"ubuntu-latest\",\"macos-latest\",\"windows-latest\"], \"python-version\":[\"3.9\", \"3.10\"]}"
+  RUN_UNIT_TESTS: "false"
 
 jobs:
   generate_job_matrix:
@@ -55,170 +56,203 @@ jobs:
   test_suite:
     runs-on: ${{ matrix.platform }}
     needs: generate_job_matrix
+    if: ${{ env.RUN_UNIT_TESTS == 'true' }}
     strategy:
       # This needs to match the first job's name and output parameter
       matrix: ${{fromJSON(needs.generate_job_matrix.outputs.matrix)}}
 
     steps:
     - uses: actions/checkout@v3
-  #   - name: Set up Python ${{ matrix.python-version }}
-  #     uses: actions/setup-python@v2
-  #     with:
-  #       python-version: ${{ matrix.python-version }}
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
 
-  #   - name: Install dependencies
-  #     run: |
-  #       python -m pip install --upgrade pip
-  #       python -m pip install tox==3.28 tox-gh-actions
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install tox==3.28 tox-gh-actions
 
-  #   - name: Lint check code with Isort and Black
-  #     if: ${{ matrix.platform != 'windows-latest' }}
-  #     run: tox -e lint -vv -s false
+    - name: Lint check code with Isort and Black
+      if: ${{ matrix.platform != 'windows-latest' }}
+      run: tox -e lint -vv -s false
 
-  #   - name: Lint check code with Pylint
-  #     if: ${{ matrix.platform != 'windows-latest' }}
-  #     env:
-  #       PYLINT_THRESHOLD: 8.2
-  #     run: |
-  #       tox -e pylint -vv -s false | tee pylint-result.txt
-  #       SCORE=`sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' pylint-result.txt`
-  #       # threshold check
-  #       if awk "BEGIN {exit !($SCORE >= $PYLINT_THRESHOLD)}"; then
-  #         echo "PyLint Passed | Score: ${SCORE} | Threshold: ${PYLINT_THRESHOLD}"
-  #       else
-  #         echo "PyLint Failed | Score: ${SCORE} | Threshold: ${PYLINT_THRESHOLD}"
-  #         exit 1
-  #       fi
+    - name: Lint check code with Pylint
+      if: ${{ matrix.platform != 'windows-latest' }}
+      env:
+        PYLINT_THRESHOLD: 8.2
+      run: |
+        tox -e pylint -vv -s false | tee pylint-result.txt
+        SCORE=`sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' pylint-result.txt`
+        # threshold check
+        if awk "BEGIN {exit !($SCORE >= $PYLINT_THRESHOLD)}"; then
+          echo "PyLint Passed | Score: ${SCORE} | Threshold: ${PYLINT_THRESHOLD}"
+        else
+          echo "PyLint Failed | Score: ${SCORE} | Threshold: ${PYLINT_THRESHOLD}"
+          exit 1
+        fi
 
-  #   - name: Run tox -e prospector
-  #     if: ${{ matrix.platform != 'windows-latest' }}
-  #     run: tox -e prospector -vv -s false
+    - name: Run tox -e prospector
+      if: ${{ matrix.platform != 'windows-latest' }}
+      run: tox -e prospector -vv -s false
 
-  #   - name: Do Type Checking
-  #     run: tox -e type -vv -s false
+    - name: Do Type Checking
+      run: tox -e type -vv -s false
 
-  #   - name: Parse package version from __init__.py to assist building
-  #     shell: bash
-  #     run: |
-  #       PARSER="src/cookiecutter_python/{{ cookiecutter.project_slug }}/scripts/parse_version.py"
-  #       PARSED_VERSION=$(python "${PARSER}")
-  #       echo "PKG_VERSION=$PARSED_VERSION" >> $GITHUB_ENV
+    - name: Parse package version from __init__.py to assist building
+      shell: bash
+      run: |
+        PARSER="src/cookiecutter_python/{{ cookiecutter.project_slug }}/scripts/parse_version.py"
+        PARSED_VERSION=$(python "${PARSER}")
+        echo "PKG_VERSION=$PARSED_VERSION" >> $GITHUB_ENV
 
-  #   - name: Run Unit Tests
-  #     run: tox -vv -s false
-  #     env:
-  #       PLATFORM: ${{ matrix.platform }}
+    - name: Run Unit Tests
+      run: tox -vv -s false
+      env:
+        PLATFORM: ${{ matrix.platform }}
 
-  #   - name: Aggregate Test Coverage Data
-  #     run: tox -e coverage --sitepackages -vv -s false
+    - name: Aggregate Test Coverage Data
+      run: tox -e coverage --sitepackages -vv -s false
 
-  #   - run: pip install coverage[toml]>=5.1
+    - run: pip install coverage[toml]>=5.1
 
-  #   - name: Send Coverage Data to Codecov
-  #     uses: codecov/codecov-action@v2
-  #     with:
-  #       directory: ./.tox
-  #       env_vars: OS,PYTHON
-  #       fail_ci_if_error: true
-  #       files: ./.tox/coverage.xml
-  #       flags: unittests
-  #       name: codecov-umbrella
-  #       verbose: true
+    - name: Send Coverage Data to Codecov
+      uses: codecov/codecov-action@v2
+      with:
+        directory: ./.tox
+        env_vars: OS,PYTHON
+        fail_ci_if_error: true
+        files: ./.tox/coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        verbose: true
 
-  #   - name: Check for compliance with Python Best Practices
-  #     shell: bash
-  #     run: |
-  #       DIST_DIR=dist
-  #       echo "DIST_DIR=dist" >> $GITHUB_ENV
-  #       mkdir ${DIST_DIR}
-  #       mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}.tar.gz" "${DIST_DIR}"
-  #       mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}-py3-none-any.whl" "${DIST_DIR}"
-  #       tox -e check -vv -s false
+    - name: Check for compliance with Python Best Practices
+      shell: bash
+      run: |
+        DIST_DIR=dist
+        echo "DIST_DIR=dist" >> $GITHUB_ENV
+        mkdir ${DIST_DIR}
+        mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}.tar.gz" "${DIST_DIR}"
+        mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}-py3-none-any.whl" "${DIST_DIR}"
+        tox -e check -vv -s false
 
-  #   - name: Install documentation test dependencies
-  #     if: ${{ matrix.platform == 'macos-latest' && matrix.python-version != '3.6' }}
-  #     run: brew install enchant
+    - name: Install documentation test dependencies
+      if: ${{ matrix.platform == 'macos-latest' && matrix.python-version != '3.6' }}
+      run: brew install enchant
 
-  #   - name: Run Documentation Tests
-  #     if: ${{ matrix.platform == 'ubuntu-latest' || matrix.python-version  != '3.6' }}
-  #     run: tox -e docs --sitepackages -vv -s false
+    - name: Run Documentation Tests
+      if: ${{ matrix.platform == 'ubuntu-latest' || matrix.python-version  != '3.6' }}
+      run: tox -e docs --sitepackages -vv -s false
 
-  #   - name: Upload Source & Wheel distributions as Artefacts
-  #     uses: actions/upload-artifact@v2
-  #     with:
-  #       # name: dist-${{ env.OS }}-${{ env.PYTHON }}  # TODO enable this
-  #       name: dist-${{ matrix.platform }}-${{ matrix.python-version }}
-  #       path: ${{ env.DIST_DIR }}
-  #       if-no-files-found: error
+    - name: Upload Source & Wheel distributions as Artefacts
+      uses: actions/upload-artifact@v2
+      with:
+        # name: dist-${{ env.OS }}-${{ env.PYTHON }}  # TODO enable this
+        name: dist-${{ matrix.platform }}-${{ matrix.python-version }}
+        path: ${{ env.DIST_DIR }}
+        if-no-files-found: error
 
-  #   - name: Upload Coverage Data as Artefacts
-  #     uses: actions/upload-artifact@v2
-  #     with:
-  #       name: coverage-xml-data
-  #       path: ./.tox/coverage.xml
-  #       if-no-files-found: error
-
-
-  #   # - name: Download Coverage Data
-  #   #   uses: actions/download-artifact@v2
-  #   #   with:
-  #   #     name: coverage-xml-data
+    - name: Upload Coverage Data as Artefacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: coverage-xml-data
+        path: ./.tox/coverage.xml
+        if-no-files-found: error
 
 
-  # draw-dependencies:
-  #   runs-on: ubuntu-latest
-  #   needs: test_suite
-  #   steps:
-  #   - uses: actions/checkout@v3
-  #   - name: Set up Python 3.10
-  #     uses: actions/setup-python@v4
-  #     with:
-  #       python-version: '3.10'
+    # - name: Download Coverage Data
+    #   uses: actions/download-artifact@v2
+    #   with:
+    #     name: coverage-xml-data
 
-  #   - name: Install tox
-  #     run: |
-  #       python -m pip install --upgrade pip
-  #       python -m pip install tox==3.28
+# DRAW PYTHON DEPENDENCY GRAPHS
+  check_if_source_code_changed:
+    runs-on: ubuntu-latest
+    name: Check for Source Code changes; happened inside the 'src' dir
+    outputs:
+      src_dir_changed: ${{ steps.check_files.outputs.src_dir_changed }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+      - name: check modified files
+        id: check_files
+        run: |
+          echo "=============== list modified files ==============="
+          git diff --name-only HEAD^ HEAD
 
-  #   - name: Install dependencies (ie dot binary of graphviz)
-  #     run: |
-  #       sudo apt-get update -y --allow-releaseinfo-change
-  #       sudo apt-get install -y graphviz
+          echo "========== check paths of modified files =========="
+          git diff --name-only HEAD^ HEAD &gt; files.txt
 
-  #   - name: Draw Dependency Graphs as .svg files
-  #     run: tox -e pydeps -vv -s false
+          echo "src_dir_changed=false" >> $GITHUB_OUTPUT
+          while IFS= read -r file
+          do
+            echo $file
+            if [[ $file == src/* ]]; then
+              echo "This modified file is under the 'src' folder."
+              echo "src_dir_changed=true" >> $GITHUB_OUTPUT
+              break
+            fi
+          done &lt; files.txt
 
-  #   - name: Upload Dependency Graphs as artifacts
-  #     uses: actions/upload-artifact@v3
-  #     with:
-  #       name: dependency-graphs
-  #       path: pydeps/
-  #       if-no-files-found: warn  # 'error' or 'ignore' are also available, defaults to `warn`
+  draw-dependencies:
+    runs-on: ubuntu-latest
+    needs: check_if_source_code_changed
+    if: needs.check_if_source_code_changed.outputs.src_dir_changed == 'true'
+    name: Draw Python Dependencies as Graphs, in .svg
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
 
-  # docker_build:
-  #   runs-on: ubuntu-latest
-  #   needs: test_suite
-  #   env:
-  #     DOCKER_USER: ${{ secrets.DOCKER_USER }}
-  #   steps:
-  #   - uses: actions/checkout@v3
-  #   - name: Build Docker Image
-  #     run: |
-  #       # Tag the Docker image with the version number
-  #       echo "IMAGE_REF=generate-python:${GITHUB_REF_NAME}" >> $GITHUB_ENV
+    - name: Install tox
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install tox==3.28
 
-  #       docker build -t "${DOCKER_USER}/generate-python:${GITHUB_REF_NAME}" .
-  #       docker images
+    - name: Install dependencies (ie dot binary of graphviz)
+      run: |
+        sudo apt-get update -y --allow-releaseinfo-change
+        sudo apt-get install -y graphviz
 
-  #   - name: Publish Docker image
-  #     env:
-  #       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-  #     run: |
-  #       echo "Sanity check: ${DOCKER_USER}"
-  #       # Set DOCKER_USER and DOCKER_PASSWORD as secrets in GitHub
-  #       echo "${DOCKER_PASSWORD}" | docker login --username "${DOCKER_USER}" --password-stdin
-  #       echo "Logged into Docker Hub"
-  #       # Push the image to Docker Hub
-  #       docker push "${DOCKER_USER}/${IMAGE_REF}"
-  #       echo "Pushed to Dockerhub :)"
-  #       docker logout
+    - name: Draw Dependency Graphs as .svg files
+      run: tox -e pydeps -vv -s false
+
+    - name: Upload Dependency Graphs as artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: dependency-graphs
+        path: pydeps/
+        if-no-files-found: warn  # 'error' or 'ignore' are also available, defaults to `warn`
+
+  docker_build:
+    runs-on: ubuntu-latest
+    needs: test_suite
+    env:
+      DOCKER_USER: ${{ secrets.DOCKER_USER }}
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build Docker Image
+      run: |
+        # Tag the Docker image with the version number
+        echo "IMAGE_REF=generate-python:${GITHUB_REF_NAME}" >> $GITHUB_ENV
+
+        docker build -t "${DOCKER_USER}/generate-python:${GITHUB_REF_NAME}" .
+        docker images
+
+    - name: Publish Docker image
+      env:
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      run: |
+        echo "Sanity check: ${DOCKER_USER}"
+        # Set DOCKER_USER and DOCKER_PASSWORD as secrets in GitHub
+        echo "${DOCKER_PASSWORD}" | docker login --username "${DOCKER_USER}" --password-stdin
+        echo "Logged into Docker Hub"
+        # Push the image to Docker Hub
+        docker push "${DOCKER_USER}/${IMAGE_REF}"
+        echo "Pushed to Dockerhub :)"
+        docker logout
