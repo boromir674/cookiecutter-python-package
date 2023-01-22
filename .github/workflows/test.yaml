@@ -1,6 +1,29 @@
 name: Test Python Package
 # Stress Test against different platforms and python versions
 
+# dev has feature/bug-branch and writes code
+# dev wants on each push, 'small' Matrix Tests to trigger
+# all feature/bug branches "have" to merge to 'dev' branch
+# 'dev' branch automatically triggers 'full' Matrix Tests
+
+# it is time to make a new release
+# 'dev' branch merges into 'release' branch
+# a couple of commits (ie version bump, changelog update) are pushed to 'release'
+# a PR opens to merge 'release' into master/main
+# the PR triggers ALL TESTS:
+#  - Full Matrix Stress Tests
+#  - Doc tests
+#  - build/release
+
+# if all OK then PR merges
+# then a new tag (release) is pushed to github
+
+
+# full Matrix Stress Test on
+#   - push to master/main
+#   - push to stress-test branch
+# we want small Matrix Test on each pushed commit
+
 on:
   push:
     branches:
@@ -18,145 +41,178 @@ on:
 
 
 jobs:
-  test_suite:
-    runs-on: ${{ matrix.platform }}
-    strategy:
-      matrix:
-        # platform: [ubuntu-latest, macos-latest, windows-latest]
-        platform: [ubuntu-latest]
-        # python-version: ["3.7", "3.8", "3.9", "3.10"]
-        python-version: ["3.10"]
+  # test_suite:
+  #   runs-on: ${{ matrix.platform }}
+  #   strategy:
+  #     matrix:
+  #       # platform: [ubuntu-latest, macos-latest, windows-latest]
+  #       platform: [ubuntu-latest]
+  #       # python-version: ["3.7", "3.8", "3.9", "3.10"]
+  #       python-version: ["3.10"]
 
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - name: Set up Python ${{ matrix.python-version }}
+  #     uses: actions/setup-python@v2
+  #     with:
+  #       python-version: ${{ matrix.python-version }}
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install tox==3.28 tox-gh-actions
+    # - name: Install dependencies
+    #   run: |
+    #     python -m pip install --upgrade pip
+    #     python -m pip install tox==3.28 tox-gh-actions
 
-    - name: Lint check code with Isort and Black
-      if: ${{ matrix.platform != 'windows-latest' }}
-      run: tox -e lint -vv -s false
+    # - name: Lint check code with Isort and Black
+    #   if: ${{ matrix.platform != 'windows-latest' }}
+    #   run: tox -e lint -vv -s false
 
-    - name: Lint check code with Pylint
-      if: ${{ matrix.platform != 'windows-latest' }}
-      env:
-        PYLINT_THRESHOLD: 8.2
-      run: |
-        tox -e pylint -vv -s false | tee pylint-result.txt
-        SCORE=`sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' pylint-result.txt`
-        # threshold check
-        if awk "BEGIN {exit !($SCORE >= $PYLINT_THRESHOLD)}"; then
-          echo "PyLint Passed | Score: ${SCORE} | Threshold: ${PYLINT_THRESHOLD}"
-        else
-          echo "PyLint Failed | Score: ${SCORE} | Threshold: ${PYLINT_THRESHOLD}"
-          exit 1
-        fi
+    # - name: Lint check code with Pylint
+    #   if: ${{ matrix.platform != 'windows-latest' }}
+    #   env:
+    #     PYLINT_THRESHOLD: 8.2
+    #   run: |
+    #     tox -e pylint -vv -s false | tee pylint-result.txt
+    #     SCORE=`sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' pylint-result.txt`
+    #     # threshold check
+    #     if awk "BEGIN {exit !($SCORE >= $PYLINT_THRESHOLD)}"; then
+    #       echo "PyLint Passed | Score: ${SCORE} | Threshold: ${PYLINT_THRESHOLD}"
+    #     else
+    #       echo "PyLint Failed | Score: ${SCORE} | Threshold: ${PYLINT_THRESHOLD}"
+    #       exit 1
+    #     fi
 
-    - name: Run tox -e prospector
-      if: ${{ matrix.platform != 'windows-latest' }}
-      run: tox -e prospector -vv -s false
+    # - name: Run tox -e prospector
+    #   if: ${{ matrix.platform != 'windows-latest' }}
+    #   run: tox -e prospector -vv -s false
 
-    - name: Do Type Checking
-      run: tox -e type -vv -s false
+    # - name: Do Type Checking
+    #   run: tox -e type -vv -s false
 
-    - name: Parse package version from __init__.py to assist building
-      shell: bash
-      run: |
-        PARSER="src/cookiecutter_python/{{ cookiecutter.project_slug }}/scripts/parse_version.py"
-        PARSED_VERSION=$(python "${PARSER}")
-        echo "PKG_VERSION=$PARSED_VERSION" >> $GITHUB_ENV
+    # - name: Parse package version from __init__.py to assist building
+    #   shell: bash
+    #   run: |
+    #     PARSER="src/cookiecutter_python/{{ cookiecutter.project_slug }}/scripts/parse_version.py"
+    #     PARSED_VERSION=$(python "${PARSER}")
+    #     echo "PKG_VERSION=$PARSED_VERSION" >> $GITHUB_ENV
 
-    - name: Run Unit Tests
-      run: tox -vv -s false
-      env:
-        PLATFORM: ${{ matrix.platform }}
+    # - name: Run Unit Tests
+    #   run: tox -vv -s false
+    #   env:
+    #     PLATFORM: ${{ matrix.platform }}
 
-    - name: Aggregate Test Coverage Data
-      run: tox -e coverage --sitepackages -vv -s false
+    # - name: Aggregate Test Coverage Data
+    #   run: tox -e coverage --sitepackages -vv -s false
 
-    - run: pip install coverage[toml]>=5.1
+    # - run: pip install coverage[toml]>=5.1
 
-    - name: Send Coverage Data to Codecov
-      uses: codecov/codecov-action@v2
-      with:
-        directory: ./.tox
-        env_vars: OS,PYTHON
-        fail_ci_if_error: true
-        files: ./.tox/coverage.xml
-        flags: unittests
-        name: codecov-umbrella
-        verbose: true
+    # - name: Send Coverage Data to Codecov
+    #   uses: codecov/codecov-action@v2
+    #   with:
+    #     directory: ./.tox
+    #     env_vars: OS,PYTHON
+    #     fail_ci_if_error: true
+    #     files: ./.tox/coverage.xml
+    #     flags: unittests
+    #     name: codecov-umbrella
+    #     verbose: true
 
-    - name: Check for compliance with Python Best Practices
-      shell: bash
-      run: |
-        DIST_DIR=dist
-        echo "DIST_DIR=dist" >> $GITHUB_ENV
-        mkdir ${DIST_DIR}
-        mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}.tar.gz" "${DIST_DIR}"
-        mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}-py3-none-any.whl" "${DIST_DIR}"
-        tox -e check -vv -s false
+    # - name: Check for compliance with Python Best Practices
+    #   shell: bash
+    #   run: |
+    #     DIST_DIR=dist
+    #     echo "DIST_DIR=dist" >> $GITHUB_ENV
+    #     mkdir ${DIST_DIR}
+    #     mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}.tar.gz" "${DIST_DIR}"
+    #     mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}-py3-none-any.whl" "${DIST_DIR}"
+    #     tox -e check -vv -s false
 
-    - name: Install documentation test dependencies
-      if: ${{ matrix.platform == 'macos-latest' && matrix.python-version != '3.6' }}
-      run: brew install enchant
+    # - name: Install documentation test dependencies
+    #   if: ${{ matrix.platform == 'macos-latest' && matrix.python-version != '3.6' }}
+    #   run: brew install enchant
 
-    - name: Run Documentation Tests
-      if: ${{ matrix.platform == 'ubuntu-latest' || matrix.python-version  != '3.6' }}
-      run: tox -e docs --sitepackages -vv -s false
+    # - name: Run Documentation Tests
+    #   if: ${{ matrix.platform == 'ubuntu-latest' || matrix.python-version  != '3.6' }}
+    #   run: tox -e docs --sitepackages -vv -s false
 
-    - name: Upload Source & Wheel distributions as Artefacts
-      uses: actions/upload-artifact@v2
-      with:
-        # name: dist-${{ env.OS }}-${{ env.PYTHON }}  # TODO enable this
-        name: dist-${{ matrix.platform }}-${{ matrix.python-version }}
-        path: ${{ env.DIST_DIR }}
-        if-no-files-found: error
+    # - name: Upload Source & Wheel distributions as Artefacts
+    #   uses: actions/upload-artifact@v2
+    #   with:
+    #     # name: dist-${{ env.OS }}-${{ env.PYTHON }}  # TODO enable this
+    #     name: dist-${{ matrix.platform }}-${{ matrix.python-version }}
+    #     path: ${{ env.DIST_DIR }}
+    #     if-no-files-found: error
 
-    - name: Upload Coverage Data as Artefacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: coverage-xml-data
-        path: ./.tox/coverage.xml
-        if-no-files-found: error
+    # - name: Upload Coverage Data as Artefacts
+    #   uses: actions/upload-artifact@v2
+    #   with:
+    #     name: coverage-xml-data
+    #     path: ./.tox/coverage.xml
+    #     if-no-files-found: error
+
+
+
+
 
     # - name: Download Coverage Data
     #   uses: actions/download-artifact@v2
     #   with:
     #     name: coverage-xml-data
 
-  draw-dependencies:
+  # draw-dependencies:
+  #   runs-on: ubuntu-latest
+  #   needs: test_suite
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - name: Set up Python 3.10
+  #     uses: actions/setup-python@v4
+  #     with:
+  #       python-version: '3.10'
+
+  #   - name: Install tox
+  #     run: |
+  #       python -m pip install --upgrade pip
+  #       python -m pip install tox==3.28
+
+  #   - name: Install dependencies (ie dot binary of graphviz)
+  #     run: |
+  #       sudo apt-get update -y --allow-releaseinfo-change
+  #       sudo apt-get install -y graphviz
+
+  #   - name: Draw Dependency Graphs as .svg files
+  #     run: tox -e pydeps -vv -s false
+
+  #   - name: Upload Dependency Graphs as artifacts
+  #     uses: actions/upload-artifact@v3
+  #     with:
+  #       name: dependency-graphs
+  #       path: pydeps/
+  #       if-no-files-found: warn  # 'error' or 'ignore' are also available, defaults to `warn`
+  
+  docker_build:
     runs-on: ubuntu-latest
-    needs: test_suite
+    # needs: test_suite
+    env:
+      DOCKER_USER: ${{ secrets.DOCKER_USER }}
     steps:
     - uses: actions/checkout@v3
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-
-    - name: Install tox
+    - name: Build Docker Image
       run: |
-        python -m pip install --upgrade pip
-        python -m pip install tox==3.28
+        # Tag the Docker image with the version number
+        echo "IMAGE_REF=generate-python:${GITHUB_REF_NAME}" >> $GITHUB_ENV
 
-    - name: Install dependencies (ie dot binary of graphviz)
+        docker build -t "${DOCKER_USER}/generate-python:${GITHUB_REF_NAME}" .
+        docker images
+        # docker tag ${IMAGE_NAME} ${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG}
+
+    - name: Publish Docker image
+      env:
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       run: |
-        sudo apt-get update -y --allow-releaseinfo-change
-        sudo apt-get install -y graphviz
-
-    - name: Draw Dependency Graphs as .svg files
-      run: tox -e pydeps -vv -s false
-
-    - name: Upload Dependency Graphs as artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: dependency-graphs
-        path: pydeps/
-        if-no-files-found: warn  # 'error' or 'ignore' are also available, defaults to `warn`
+        echo "Sanity check: ${DOCKER_USER}"
+        # Set DOCKER_USER and DOCKER_PASSWORD as secrets in GitHub
+        echo "${DOCKER_PASSWORD}" | docker login --username "${DOCKER_USER}" --password-stdin
+        echo "Logged into Docker Hub"
+        # Push the image to Docker Hub
+        docker push "${DOCKER_USER}/${IMAGE_REF}"
+        echo "Pushed to Dockerhub :)"
+        docker logout
