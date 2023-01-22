@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 
 
 class CheckWebServerResult(ABC):
+    """Interface for checking the result of a web server request."""
+
     @property
     @abstractmethod
     def future(self):
