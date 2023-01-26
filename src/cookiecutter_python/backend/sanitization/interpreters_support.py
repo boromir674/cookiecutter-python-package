@@ -6,15 +6,6 @@ InterpretersSequence = t.Sequence[str]
 
 
 # TODO Improvement: use an Enum
-# SUPPORTED = {
-#     'py35',
-#     'py36',
-#     'py37',
-#     'py38',
-#     'py39',
-#     'py310',
-#     'py311',
-# }
 
 SUPPORTED = {
     '3.5',

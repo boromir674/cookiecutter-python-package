@@ -1,36 +1,80 @@
-name: Test Python Package
-# Stress Test against different platforms and python versions
+name: Continuous Integration / Continuous Delivery
+# Stress Test and Build Docker Image
+
+# dev has feature/bug-branch and writes code
+# dev wants on each push, 'small' Matrix Tests to trigger
+# all feature/bug branches "have" to merge to 'dev' branch
+# 'dev' branch automatically triggers 'full' Matrix Tests
+
+# it is time to make a new release
+# 'dev' branch merges into 'release' branch
+# a couple of commits (ie version bump, changelog update) are pushed to 'release'
+# a PR opens to merge 'release' into master/main
+# the PR triggers ALL TESTS:
+#  - Full Matrix Stress Tests
+#  - Doc tests
+#  - build/release
+
+# if all OK then PR merges
+# then a new tag (release) is pushed to github
+
+
+# full Matrix Stress Test on
+#   - push to master/main
+#   - push to stress-test branch
+# we want small Matrix Test on each pushed commit
 
 on:
   push:
     branches:
-      - master
-      - dev
-      - ci
-      - windows-ci
-  pull_request:
-    branches:
-      - master
-      - dev
-      - develop
+      - "*"
     tags:
       - v*
 
+env:
+  # ability to define the Job Matrix as an env var !
+  FULL_MATRIX_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.9\", \"3.10\"]}"
+  UBUNTU_PY310_STRATEGY: "{\"platform\":[\"ubuntu-latest\"], \"python-version\":[\"3.10\"]}"
+  RUN_UNIT_TESTS: "true"
+  BUILD_DOCKER: "true"
 
 jobs:
+  # we use the below to read the workflow env vars and be able to use in "- if:" Job conditionals
+  # now we can do -> if: ${{ needs.set_github_outputs.outputs.TESTS_ENABLED == 'true' }}
+  # github does not have a way to simply do "- if: ${{ env.RUN_UNIT_TESTS == 'true' }} " !!
+  set_github_outputs:
+    name: Read Workflow Env Section Vars and set Github Outputs
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.pass-env-to-output.outputs.matrix }}
+      TESTS_ENABLED: ${{ steps.pass-env-to-output.outputs.TESTS_ENABLED }}
+      DOCKER_ENABLED: ${{ steps.pass-env-to-output.outputs.DOCKER_ENABLED }}
+    steps:
+      - name: Pass 'env' section variables to GITHUB_OUTPUT
+        id: pass-env-to-output
+        run: |
+          # set the matrix strategy to Full Matrix Stress Test if on master/main or stress-test branch or any tag
+          BRANCH_NAME=${GITHUB_REF##*/}
+          if [[ $BRANCH_NAME == "master" || $BRANCH_NAME == "main" || $BRANCH_NAME == "stress-test" || $GITHUB_REF == refs/tags/* ]]; then
+            echo "matrix=$FULL_MATRIX_STRATEGY" >> $GITHUB_OUTPUT
+          else
+            echo "matrix=$UBUNTU_PY310_STRATEGY" >> $GITHUB_OUTPUT
+          fi
+          echo "TESTS_ENABLED=$RUN_UNIT_TESTS" >> $GITHUB_OUTPUT
+          echo "DOCKER_ENABLED=$BUILD_DOCKER" >> $GITHUB_OUTPUT
+
   test_suite:
     runs-on: ${{ matrix.platform }}
+    needs: set_github_outputs
+    if: ${{ needs.set_github_outputs.outputs.TESTS_ENABLED == 'true' }}
     strategy:
-      matrix:
-        # platform: [ubuntu-latest, macos-latest, windows-latest]
-        platform: [ubuntu-latest]
-        # python-version: ["3.7", "3.8", "3.9", "3.10"]
-        python-version: ["3.10"]
+      # This needs to match the first job's name and output parameter
+      matrix: ${{fromJSON(needs.set_github_outputs.outputs.matrix)}}
 
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -81,6 +125,7 @@ jobs:
       run: tox -e coverage --sitepackages -vv -s false
 
     - run: pip install coverage[toml]>=5.1
+      if: ${{ always() }}
 
     - name: Send Coverage Data to Codecov
       uses: codecov/codecov-action@v2
@@ -92,6 +137,7 @@ jobs:
         flags: unittests
         name: codecov-umbrella
         verbose: true
+      if: ${{ always() }}
 
     - name: Check for compliance with Python Best Practices
       shell: bash
@@ -114,7 +160,6 @@ jobs:
     - name: Upload Source & Wheel distributions as Artefacts
       uses: actions/upload-artifact@v2
       with:
-        # name: dist-${{ env.OS }}-${{ env.PYTHON }}  # TODO enable this
         name: dist-${{ matrix.platform }}-${{ matrix.python-version }}
         path: ${{ env.DIST_DIR }}
         if-no-files-found: error
@@ -131,9 +176,41 @@ jobs:
     #   with:
     #     name: coverage-xml-data
 
+# DRAW PYTHON DEPENDENCY GRAPHS
+  check_if_source_code_changed:
+    runs-on: ubuntu-latest
+    name: Check for Source Code changes; happened inside the 'src' dir
+    outputs:
+      src_dir_changed: ${{ steps.check_files.outputs.src_dir_changed }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+      - name: check modified files
+        id: check_files
+        run: |
+          echo "=============== list modified files ==============="
+          git diff --name-only HEAD^ HEAD
+
+          echo "========== check paths of modified files =========="
+          git diff --name-only HEAD^ HEAD > files.txt
+
+          echo "src_dir_changed=false" >> $GITHUB_OUTPUT
+          while read file; do
+            echo $file
+            if [[ $file =~ ^src/ ]]; then
+              echo "This modified file is under the 'src' folder."
+              echo "src_dir_changed=true" >> $GITHUB_OUTPUT
+              break
+            fi
+          done < files.txt
+
   draw-dependencies:
     runs-on: ubuntu-latest
-    needs: test_suite
+    needs: check_if_source_code_changed
+    if: needs.check_if_source_code_changed.outputs.src_dir_changed == 'true'
+    name: Draw Python Dependencies as Graphs, in .svg
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python 3.10
@@ -160,3 +237,31 @@ jobs:
         name: dependency-graphs
         path: pydeps/
         if-no-files-found: warn  # 'error' or 'ignore' are also available, defaults to `warn`
+
+  docker_build:
+    runs-on: ubuntu-latest
+    needs: test_suite
+    if: needs.set_github_outputs.outputs.DOCKER_ENABLED == 'true'
+    env:
+      DOCKER_USER: ${{ secrets.DOCKER_USER }}
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build 'n Push Docker Image to DockerHub
+      run: |
+        # workflow enabled for branches and v* tags
+        IMAGE_TAG="${GITHUB_REF_NAME}"  # this is branch name or tag name
+        echo "IMAGE_REF=generate-python:${IMAGE_TAG}" >> $GITHUB_ENV
+
+        docker build -t "${DOCKER_USER}/generate-python:${GITHUB_REF_NAME}" .
+        docker images
+
+    - name: Publish Docker Image to DockerHub
+      env:
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      run: |
+        echo "Sanity check: ${DOCKER_USER}"
+        echo "${DOCKER_PASSWORD}" | docker login --username "${DOCKER_USER}" --password-stdin
+        echo "Logged into Docker Hub"
+        docker push "${DOCKER_USER}/${IMAGE_REF}"
+        echo "Published in Dockerhub :)"
+        docker logout

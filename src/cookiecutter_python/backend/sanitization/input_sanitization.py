@@ -38,10 +38,10 @@ class Sanitize:
             """Add the decorated callback to the sanitizers' registry.
 
             Args:
-                    func (t.Callable): the callback to add to the registry
+                func (t.Callable): the callback to add to the registry
 
-                Returns:
-                    object: the (sub) class
+            Returns:
+                object: the (sub) class
             """
             cls.sanitizers_map[sanitizer_identifier] = func
             return func

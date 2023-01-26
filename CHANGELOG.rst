@@ -2,6 +2,30 @@
 Changelog
 =========
 
+1.7.4 (2023-01-26)
+==================
+
+| Improvements in the CI/CD pipeline running on Github Actions.
+| See the .github/workflows/test.yaml file for the workflow (aka pipeline) details.
+
+
+Changes
+^^^^^^^
+
+documentation
+"""""""""""""
+- check Web Server Result Interface
+
+ci
+""
+- 'set_github_outputs' Job to pass 'env' vars to GITHUB_OUTPUT
+- add flag to turn on/off docker build+publish
+- draw deps job based on changes in src dir
+- add disable tests flag
+- build and push (docker) image to dockerhub
+- define (docker) image, where the 'generate-python' cli is installed
+
+
 1.7.3 (2023-01-15)
 ==================
 
