@@ -17,7 +17,7 @@ from git import Actor, Repo
 PROJECT_DIRECTORY = os.path.realpath(os.path.curdir)
 
 def get_request():
-    # We init the variable to the same type that will be set in the next line.
+    # variable with an object of the same type that will be set in the next line
     COOKIECUTTER = OrderedDict()
     COOKIECUTTER = {{ cookiecutter }}  # pylint: disable=undefined-variable
     INITIALIZE_GIT_REPO_FLAG = "{{ cookiecutter.initialize_git_repo|lower }}"
@@ -39,7 +39,8 @@ def get_request():
 class PostFileRemovalError(Exception):
     pass
 
-
+# Define specialized files present per 'project_type' (ie 'module' or 'module+cli')
+# each set of files exists exclusively for a given 'project_type'
 CLI_ONLY = lambda x: [
     ('src', x.module_name, 'cli.py'),
     ('src', x.module_name, '__main__.py'),
@@ -53,6 +54,7 @@ PYTEST_PLUGIN_ONLY = lambda x: [
     ('setup.cfg',),
     ('MANIFEST.in',),
 ]
+# Specify the files to be deleted, in post-process, for each project type
 delete_files = {
     'pytest-plugin': lambda x: CLI_ONLY(x),
     'module': lambda x: CLI_ONLY(x) + PYTEST_PLUGIN_ONLY(x),
