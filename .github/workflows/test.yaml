@@ -179,37 +179,41 @@ jobs:
 # DRAW PYTHON DEPENDENCY GRAPHS
   check_if_source_code_changed:
     runs-on: ubuntu-latest
-    name: Check for Source Code changes; happened inside the 'src' dir
+    name: Draw Python Dependency Graphs ?
     outputs:
-      src_dir_changed: ${{ steps.check_files.outputs.src_dir_changed }}
+      SHOULD_DRAW_GRAPHS: ${{ steps.decide_if_should_draw_graphs.outputs.SHOULD_DRAW_GRAPHS }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           fetch-depth: 2
-      - name: check modified files
-        id: check_files
+      - name: Decide if should draw graphs
+        id: decide_if_should_draw_graphs
         run: |
-          echo "=============== list modified files ==============="
-          git diff --name-only HEAD^ HEAD
-
-          echo "========== check paths of modified files =========="
-          git diff --name-only HEAD^ HEAD > files.txt
-
-          echo "src_dir_changed=false" >> $GITHUB_OUTPUT
-          while read file; do
-            echo $file
-            if [[ $file =~ ^src/ ]]; then
-              echo "This modified file is under the 'src' folder."
-              echo "src_dir_changed=true" >> $GITHUB_OUTPUT
-              break
-            fi
-          done < files.txt
+          # if branch is master or dev; or if we are on tag starting with "v"
+          if [[ ${GITHUB_REF_NAME} == "master" || ${GITHUB_REF_NAME} == "dev" || "${GITHUB_REF}" =~ refs/tags/v.* ]]; then
+            SHOULD_DRAW_GRAPHS=true
+          else
+            echo "=============== list modified files ==============="
+            git diff --name-only HEAD^ HEAD
+            echo "========== check paths of modified files =========="
+            git diff --name-only HEAD^ HEAD > files.txt
+            SHOULD_DRAW_GRAPHS=false
+            while read file; do
+              echo $file
+              if [[ $file =~ ^src/ ]]; then
+                echo "This modified file is under the 'src' folder."
+                SHOULD_DRAW_GRAPHS=true
+                break
+              fi
+            done < files.txt
+          fi
+          echo "SHOULD_DRAW_GRAPHS=$SHOULD_DRAW_GRAPHS" >> $GITHUB_OUTPUT
 
   draw-dependencies:
     runs-on: ubuntu-latest
     needs: check_if_source_code_changed
-    if: needs.check_if_source_code_changed.outputs.src_dir_changed == 'true'
+    if: needs.check_if_source_code_changed.outputs.SHOULD_DRAW_GRAPHS == 'true'
     name: Draw Python Dependencies as Graphs, in .svg
     steps:
     - uses: actions/checkout@v3
