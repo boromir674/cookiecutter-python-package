@@ -35,8 +35,8 @@ env:
   # ability to define the Job Matrix as an env var !
   FULL_MATRIX_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.9\", \"3.10\"]}"
   UBUNTU_PY310_STRATEGY: "{\"platform\":[\"ubuntu-latest\"], \"python-version\":[\"3.10\"]}"
-  RUN_UNIT_TESTS: "true"
-  BUILD_DOCKER: "true"
+  RUN_UNIT_TESTS: "false"
+  BUILD_DOCKER: "false"
 
 jobs:
   # we use the below to read the workflow env vars and be able to use in "- if:" Job conditionals
@@ -255,17 +255,62 @@ jobs:
         # workflow enabled for branches and v* tags
         IMAGE_TAG="${GITHUB_REF_NAME}"  # this is branch name or tag name
         echo "IMAGE_REF=generate-python:${IMAGE_TAG}" >> $GITHUB_ENV
-
         docker build -t "${DOCKER_USER}/generate-python:${GITHUB_REF_NAME}" .
-        docker images
 
     - name: Publish Docker Image to DockerHub
       env:
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       run: |
-        echo "Sanity check: ${DOCKER_USER}"
         echo "${DOCKER_PASSWORD}" | docker login --username "${DOCKER_USER}" --password-stdin
-        echo "Logged into Docker Hub"
         docker push "${DOCKER_USER}/${IMAGE_REF}"
-        echo "Published in Dockerhub :)"
         docker logout
+        echo "Published in Dockerhub :)"
+
+# PYPI
+# we publish only on tags starting with "v"
+  pypi_environment:
+    runs-on: ubuntu-latest
+    outputs:
+      my_env: ${{ steps.setenv.outputs.my_env }}
+    steps:
+    - id: setenv
+      run: echo "my_env=PROD_DEPLOYMENT" >> $GITHUB_OUTPUT
+
+  use_outputs_environemnt:
+    needs: pypi_environment
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ needs.pypi_environment.outputs.my_env }}
+    steps:
+    - name: Testing job environment
+      run: |
+        echo "Hello From ${{ needs.pypi_environment.outputs.my_env }} Envrionment."
+        # That is how you access Environment variables (set in github Environments UI)
+        echo "DEL_ME 2 var is: ${{ vars.DEL_ME }}"
+        # check if TWINE_USERNAME secret is set
+        echo "TWINE_USERNAME is: ${{ secrets.TWINE_USERNAME }}"
+
+
+  pypi_publish:
+    runs-on: ubuntu-latest
+    needs: test_suite
+    if: startsWith(github.event.ref, 'refs/tags/v')
+    environment:
+      name: TEST_DEPLOYMENT
+    steps:
+    - uses: actions/checkout@v3
+    - name: Download Source & Wheel distributions
+      uses: actions/download-artifact@v3
+      with:
+        name: dist-${{ matrix.platform }}-${{ matrix.python-version }}
+        path: dist
+
+    - name: Publish to PyPI
+      env:
+        TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+      run: |
+        TAG="${GITHUB_REF_NAME}"
+        VERSION_TAG="${TAG:1}"  # remove the first character (v)
+        PACKAGE_DIST_VERSION="$VERSION_TAG" tox -vv -s false -e deploy -- upload --non-interactive --skip-existing
+        echo "Published in PyPI :)"

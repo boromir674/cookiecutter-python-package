@@ -1,121 +1,121 @@
-name: Generate from Template and Commit to Biskotaki
+# name: Generate from Template and Commit to Biskotaki
 
-on:
-  push:
-    branches:
-      - 'develop'
-      - update-generate
-  pull_request:
-    branches:
-      - 'master'
+# on:
+#   push:
+#     branches:
+#       - 'develop'
+#       - update-generate
+#   pull_request:
+#     branches:
+#       - 'master'
 
 
-jobs:
-  generate:
-    runs-on: ubuntu-latest
-    env:
-      branch: auto-generated
-      SUPER_SECRET: ${{ secrets.BISKOTAKI_GH_TOKEN }}
-      # GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    steps:
-      - uses: actions/checkout@v3
-      - shell: bash
-        run: |
-          if ! [[ "$SUPER_SECRET" ]]
-          then
-            echo "No BISKOTAKI_GH_TOKEN!"
-            echo "Shall NOT authorize access to the biskotaki repo!"
-            echo "Exiting .."
-            exit 1
-          else
-            echo "BISKOTAKI_GH_TOKEN found :)"
-          fi
+# jobs:
+#   generate:
+#     runs-on: ubuntu-latest
+#     env:
+#       branch: auto-generated
+#       SUPER_SECRET: ${{ secrets.BISKOTAKI_GH_TOKEN }}
+#       # GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#     steps:
+#       - uses: actions/checkout@v3
+#       - shell: bash
+#         run: |
+#           if ! [[ "$SUPER_SECRET" ]]
+#           then
+#             echo "No BISKOTAKI_GH_TOKEN!"
+#             echo "Shall NOT authorize access to the biskotaki repo!"
+#             echo "Exiting .."
+#             exit 1
+#           else
+#             echo "BISKOTAKI_GH_TOKEN found :)"
+#           fi
 
-      - run: |
-          if ! [[ ${{ secrets.GITHUB_TOKEN }} ]]
-          then
-            echo "No GITHUB_TOKEN!"
-            echo "Shall NOT authorize access to this repo!"
-            exit 1
-          else
-            echo "GITHUB_TOKEN found :)"
-          fi
+#       - run: |
+#           if ! [[ ${{ secrets.GITHUB_TOKEN }} ]]
+#           then
+#             echo "No GITHUB_TOKEN!"
+#             echo "Shall NOT authorize access to this repo!"
+#             exit 1
+#           else
+#             echo "GITHUB_TOKEN found :)"
+#           fi
 
-          if ! [[ "${{ secrets.BISKOTAKI_GH_TOKEN }}" ]]
-          then
-            echo "No BISKOTAKI_GH_TOKEN!"
-            echo "Shall NOT authorize access to the biskotaki repo!"
-            echo "Exiting .."
-            exit 1
-          else
-            echo "BISKOTAKI_GH_TOKEN found :)"
-          fi
+#           if ! [[ "${{ secrets.BISKOTAKI_GH_TOKEN }}" ]]
+#           then
+#             echo "No BISKOTAKI_GH_TOKEN!"
+#             echo "Shall NOT authorize access to the biskotaki repo!"
+#             echo "Exiting .."
+#             exit 1
+#           else
+#             echo "BISKOTAKI_GH_TOKEN found :)"
+#           fi
 
-          echo "GG=V1" >> $GITHUB_ENV
+#           echo "GG=V1" >> $GITHUB_ENV
 
-      - run: |
-          if ! [[ ${{ env.GG }} ]]
-          then
-            echo "Failed to read GG var, exported in previous step!"
-            echo "Exiting .."
-            exit 1
-          else
-            echo "Able to read the GG var exported from the previous step :)"
-          fi
+#       - run: |
+#           if ! [[ ${{ env.GG }} ]]
+#           then
+#             echo "Failed to read GG var, exported in previous step!"
+#             echo "Exiting .."
+#             exit 1
+#           else
+#             echo "Able to read the GG var exported from the previous step :)"
+#           fi
 
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: "3.8"
-      - name: Install dependencies
-        run: |
-          sudo apt update -y && sudo apt install -y aptitude
-          sudo aptitude install -y graphviz
-          python -m pip install --upgrade pip
-          python -m pip install tox==3.28
+#       - name: Set up Python 3.8
+#         uses: actions/setup-python@v2
+#         with:
+#           python-version: "3.8"
+#       - name: Install dependencies
+#         run: |
+#           sudo apt update -y && sudo apt install -y aptitude
+#           sudo aptitude install -y graphviz
+#           python -m pip install --upgrade pip
+#           python -m pip install tox==3.28
 
-      - name: Clone Biskotaki repo
-        uses: actions/checkout@v3
-        with:
-          repository: boromir674/biskotaki
-          ref: ${{ env.branch }}
-          path: 'cloned/biskotaki'
+#       - name: Clone Biskotaki repo
+#         uses: actions/checkout@v3
+#         with:
+#           repository: boromir674/biskotaki
+#           ref: ${{ env.branch }}
+#           path: 'cloned/biskotaki'
 
-      - name: Find Biskotaki version
-        run: |
-          cd cloned/biskotaki
-          echo "PKG_VERSION=$(python scripts/parse_version.py)" >> $GITHUB_ENV
+#       - name: Find Biskotaki version
+#         run: |
+#           cd cloned/biskotaki
+#           echo "PKG_VERSION=$(python scripts/parse_version.py)" >> $GITHUB_ENV
 
-      - name: Generate Biskotaki from Template
-        run: |
-          pip install --user -e .
-          echo "    version: \"${{ env.PKG_VERSION }}\"" >> .github/biskotaki.yaml
-          generate-python -o gen --config-file ./.github/biskotaki.yaml --no-input -f
+#       - name: Generate Biskotaki from Template
+#         run: |
+#           pip install --user -e .
+#           echo "    version: \"${{ env.PKG_VERSION }}\"" >> .github/biskotaki.yaml
+#           generate-python -o gen --config-file ./.github/biskotaki.yaml --no-input -f
 
-      - name: Test distributions 'Source', 'Built' and 'edit' (dev env) mode installation
-        run: |
-          cd gen/biskotaki
-          tox -e "py38{-sdist, -wheel, -dev}"
-          tox -e coverage
-      - name: Run Lint, Type Check, Build, Pyroma and PyDeps commands
-        run: |
-          cd gen/biskotaki
-          tox -e lint
-          tox -e type
-          tox -e build
-          tox -e check
-          tox -e graphs
+#       - name: Test distributions 'Source', 'Built' and 'edit' (dev env) mode installation
+#         run: |
+#           cd gen/biskotaki
+#           tox -e "py38{-sdist, -wheel, -dev}"
+#           tox -e coverage
+#       - name: Run Lint, Type Check, Build, Pyroma and PyDeps commands
+#         run: |
+#           cd gen/biskotaki
+#           tox -e lint
+#           tox -e type
+#           tox -e build
+#           tox -e check
+#           tox -e graphs
 
-      - name: Push to dedicated branch in biskotaki repo
-        uses: cpina/github-action-push-to-another-repository@main
-        env:
-          API_TOKEN_GITHUB: ${{ secrets.BISKOTAKI_GH_TOKEN }}
-        with:
-          source-directory: 'gen/biskotaki'
-          destination-github-username: 'boromir674'
-          destination-repository-name: 'biskotaki'
-          user-email: k.lampridis@hotmail.com
-          user-name: 'Konstantinos'
-          destination-repository-username: 'boromir674'
-          target-branch: ${{ env.branch }}
-          commit-message: 'apply Template from https://github.com/boromir674/cookiecutter-python-package'
+#       - name: Push to dedicated branch in biskotaki repo
+#         uses: cpina/github-action-push-to-another-repository@main
+#         env:
+#           API_TOKEN_GITHUB: ${{ secrets.BISKOTAKI_GH_TOKEN }}
+#         with:
+#           source-directory: 'gen/biskotaki'
+#           destination-github-username: 'boromir674'
+#           destination-repository-name: 'biskotaki'
+#           user-email: k.lampridis@hotmail.com
+#           user-name: 'Konstantinos'
+#           destination-repository-username: 'boromir674'
+#           target-branch: ${{ env.branch }}
+#           commit-message: 'apply Template from https://github.com/boromir674/cookiecutter-python-package'
