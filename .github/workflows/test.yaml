@@ -36,7 +36,7 @@ env:
   FULL_MATRIX_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.9\", \"3.10\"]}"
   UBUNTU_PY310_STRATEGY: "{\"platform\":[\"ubuntu-latest\"], \"python-version\":[\"3.10\"]}"
   TEST_STRATEGY: "{\"platform\":[\"ubuntu-latest\"], \"python-version\":[\"3.10\", \"3.9\"]}"
-  RUN_UNIT_TESTS: "false"
+  RUN_UNIT_TESTS: "true"
   BUILD_DOCKER: "false"
 
 jobs:
@@ -141,15 +141,15 @@ jobs:
     #     verbose: true
     #   if: ${{ always() }}
 
-    # - name: Check for compliance with Python Best Practices
-    #   shell: bash
-    #   run: |
-    #     DIST_DIR=dist
-    #     echo "DIST_DIR=dist" >> $GITHUB_ENV
-    #     mkdir ${DIST_DIR}
-    #     mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}.tar.gz" "${DIST_DIR}"
-    #     mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}-py3-none-any.whl" "${DIST_DIR}"
-    #     tox -e check -vv -s false
+    - name: Check for compliance with Python Best Practices
+      shell: bash
+      run: |
+        DIST_DIR=dist
+        echo "DIST_DIR=dist" >> $GITHUB_ENV
+        mkdir ${DIST_DIR}
+        # mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}.tar.gz" "${DIST_DIR}"
+        mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}-py3-none-any.whl" "${DIST_DIR}"
+        # tox -e check -vv -s false
 
     # - name: Install documentation test dependencies
     #   if: ${{ matrix.platform == 'macos-latest' && matrix.python-version != '3.6' }}
@@ -167,12 +167,12 @@ jobs:
         if-no-files-found: error
       # path: ${{ env.DIST_DIR }}/cookiecutter_python-${PKG_VERSION}-*.whl
 
-    - name: Upload Coverage Data as Artefacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: coverage-xml-data
-        path: ./.tox/coverage.xml
-        if-no-files-found: error
+    # - name: Upload Coverage Data as Artefacts
+    #   uses: actions/upload-artifact@v2
+    #   with:
+    #     name: coverage-xml-data
+    #     path: ./.tox/coverage.xml
+    #     if-no-files-found: error
 
     # - name: Download Coverage Data
     #   uses: actions/download-artifact@v2
@@ -295,7 +295,7 @@ jobs:
         echo "TWINE_USERNAME is: ${{ secrets.TWINE_USERNAME }}"
 
   pypi_publish:
-    needs: [pypi_environment, test_suite]
+    needs: [use_outputs_environemnt, test_suite]
     runs-on: ubuntu-latest
     environment:
       name: ${{ needs.pypi_environment.outputs.my_env }}
