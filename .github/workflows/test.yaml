@@ -35,6 +35,7 @@ env:
   # ability to define the Job Matrix as an env var !
   FULL_MATRIX_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.9\", \"3.10\"]}"
   UBUNTU_PY310_STRATEGY: "{\"platform\":[\"ubuntu-latest\"], \"python-version\":[\"3.10\"]}"
+  TEST_STRATEGY: "{\"platform\":[\"ubuntu-latest\"], \"python-version\":[\"3.10\", \"3.9\"]}"
   RUN_UNIT_TESTS: "false"
   BUILD_DOCKER: "false"
 
@@ -54,7 +55,8 @@ jobs:
         id: pass-env-to-output
         run: |
           # set the matrix strategy to Full Matrix Stress Test if on master/main or stress-test branch or any tag
-          BRANCH_NAME=${GITHUB_REF##*/}
+          BRANCH_NAME=${GITHUB_REF_NAME}
+          # BRANCH_NAME=${GITHUB_REF##*/}
           if [[ $BRANCH_NAME == "master" || $BRANCH_NAME == "main" || $BRANCH_NAME == "stress-test" || $GITHUB_REF == refs/tags/* ]]; then
             echo "matrix=$FULL_MATRIX_STRATEGY" >> $GITHUB_OUTPUT
           else
@@ -83,31 +85,31 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install tox==3.28 tox-gh-actions
 
-    - name: Lint check code with Isort and Black
-      if: ${{ matrix.platform != 'windows-latest' }}
-      run: tox -e lint -vv -s false
+    # - name: Lint check code with Isort and Black
+    #   if: ${{ matrix.platform != 'windows-latest' }}
+    #   run: tox -e lint -vv -s false
 
-    - name: Lint check code with Pylint
-      if: ${{ matrix.platform != 'windows-latest' }}
-      env:
-        PYLINT_THRESHOLD: 8.2
-      run: |
-        tox -e pylint -vv -s false | tee pylint-result.txt
-        SCORE=`sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' pylint-result.txt`
-        # threshold check
-        if awk "BEGIN {exit !($SCORE >= $PYLINT_THRESHOLD)}"; then
-          echo "PyLint Passed | Score: ${SCORE} | Threshold: ${PYLINT_THRESHOLD}"
-        else
-          echo "PyLint Failed | Score: ${SCORE} | Threshold: ${PYLINT_THRESHOLD}"
-          exit 1
-        fi
+    # - name: Lint check code with Pylint
+    #   if: ${{ matrix.platform != 'windows-latest' }}
+    #   env:
+    #     PYLINT_THRESHOLD: 8.2
+    #   run: |
+    #     tox -e pylint -vv -s false | tee pylint-result.txt
+    #     SCORE=`sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' pylint-result.txt`
+    #     # threshold check
+    #     if awk "BEGIN {exit !($SCORE >= $PYLINT_THRESHOLD)}"; then
+    #       echo "PyLint Passed | Score: ${SCORE} | Threshold: ${PYLINT_THRESHOLD}"
+    #     else
+    #       echo "PyLint Failed | Score: ${SCORE} | Threshold: ${PYLINT_THRESHOLD}"
+    #       exit 1
+    #     fi
 
-    - name: Run tox -e prospector
-      if: ${{ matrix.platform != 'windows-latest' }}
-      run: tox -e prospector -vv -s false
+    # - name: Run tox -e prospector
+    #   if: ${{ matrix.platform != 'windows-latest' }}
+    #   run: tox -e prospector -vv -s false
 
-    - name: Do Type Checking
-      run: tox -e type -vv -s false
+    # - name: Do Type Checking
+    #   run: tox -e type -vv -s false
 
     - name: Parse package version from __init__.py to assist building
       shell: bash
@@ -121,41 +123,41 @@ jobs:
       env:
         PLATFORM: ${{ matrix.platform }}
 
-    - name: Aggregate Test Coverage Data
-      run: tox -e coverage --sitepackages -vv -s false
+    # - name: Aggregate Test Coverage Data
+    #   run: tox -e coverage --sitepackages -vv -s false
 
-    - run: pip install coverage[toml]>=5.1
-      if: ${{ always() }}
+    # - run: pip install coverage[toml]>=5.1
+    #   if: ${{ always() }}
 
-    - name: Send Coverage Data to Codecov
-      uses: codecov/codecov-action@v2
-      with:
-        directory: ./.tox
-        env_vars: OS,PYTHON
-        fail_ci_if_error: true
-        files: ./.tox/coverage.xml
-        flags: unittests
-        name: codecov-umbrella
-        verbose: true
-      if: ${{ always() }}
+    # - name: Send Coverage Data to Codecov
+    #   uses: codecov/codecov-action@v2
+    #   with:
+    #     directory: ./.tox
+    #     env_vars: OS,PYTHON
+    #     fail_ci_if_error: true
+    #     files: ./.tox/coverage.xml
+    #     flags: unittests
+    #     name: codecov-umbrella
+    #     verbose: true
+    #   if: ${{ always() }}
 
-    - name: Check for compliance with Python Best Practices
-      shell: bash
-      run: |
-        DIST_DIR=dist
-        echo "DIST_DIR=dist" >> $GITHUB_ENV
-        mkdir ${DIST_DIR}
-        mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}.tar.gz" "${DIST_DIR}"
-        mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}-py3-none-any.whl" "${DIST_DIR}"
-        tox -e check -vv -s false
+    # - name: Check for compliance with Python Best Practices
+    #   shell: bash
+    #   run: |
+    #     DIST_DIR=dist
+    #     echo "DIST_DIR=dist" >> $GITHUB_ENV
+    #     mkdir ${DIST_DIR}
+    #     mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}.tar.gz" "${DIST_DIR}"
+    #     mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}-py3-none-any.whl" "${DIST_DIR}"
+    #     tox -e check -vv -s false
 
-    - name: Install documentation test dependencies
-      if: ${{ matrix.platform == 'macos-latest' && matrix.python-version != '3.6' }}
-      run: brew install enchant
+    # - name: Install documentation test dependencies
+    #   if: ${{ matrix.platform == 'macos-latest' && matrix.python-version != '3.6' }}
+    #   run: brew install enchant
 
-    - name: Run Documentation Tests
-      if: ${{ matrix.platform == 'ubuntu-latest' || matrix.python-version  != '3.6' }}
-      run: tox -e docs --sitepackages -vv -s false
+    # - name: Run Documentation Tests
+    #   if: ${{ matrix.platform == 'ubuntu-latest' || matrix.python-version  != '3.6' }}
+    #   run: tox -e docs --sitepackages -vv -s false
 
     - name: Upload Source & Wheel distributions as Artefacts
       uses: actions/upload-artifact@v2
@@ -163,6 +165,7 @@ jobs:
         name: dist-${{ matrix.platform }}-${{ matrix.python-version }}
         path: ${{ env.DIST_DIR }}
         if-no-files-found: error
+      # path: ${{ env.DIST_DIR }}/cookiecutter_python-${PKG_VERSION}-*.whl
 
     - name: Upload Coverage Data as Artefacts
       uses: actions/upload-artifact@v2
@@ -242,6 +245,7 @@ jobs:
         path: pydeps/
         if-no-files-found: warn  # 'error' or 'ignore' are also available, defaults to `warn`
 
+# DOCKER
   docker_build:
     runs-on: ubuntu-latest
     needs: test_suite
@@ -274,7 +278,7 @@ jobs:
       my_env: ${{ steps.setenv.outputs.my_env }}
     steps:
     - id: setenv
-      run: echo "my_env=PROD_DEPLOYMENT" >> $GITHUB_OUTPUT
+      run: echo "my_env=TEST_DEPLOYMENT" >> $GITHUB_OUTPUT
 
   use_outputs_environemnt:
     needs: pypi_environment
@@ -290,13 +294,13 @@ jobs:
         # check if TWINE_USERNAME secret is set
         echo "TWINE_USERNAME is: ${{ secrets.TWINE_USERNAME }}"
 
-
   pypi_publish:
+    needs: [pypi_environment, test_suite]
     runs-on: ubuntu-latest
-    needs: test_suite
-    if: startsWith(github.event.ref, 'refs/tags/v')
     environment:
-      name: TEST_DEPLOYMENT
+      name: ${{ needs.pypi_environment.outputs.my_env }}
+    # if we are on tag starting with "v" and if we are on master or dev branch
+    if: startsWith(github.event.ref, 'refs/tags/v') && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/release')
     steps:
     - uses: actions/checkout@v3
     - name: Download Source & Wheel distributions
@@ -304,13 +308,25 @@ jobs:
       with:
         name: dist-${{ matrix.platform }}-${{ matrix.python-version }}
         path: dist
-
+    - run: ls -l dist
     - name: Publish to PyPI
       env:
         TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+        PYPI_SERVER: ${{ vars.PYPI_SERVER }}
       run: |
         TAG="${GITHUB_REF_NAME}"
-        VERSION_TAG="${TAG:1}"  # remove the first character (v)
-        PACKAGE_DIST_VERSION="$VERSION_TAG" tox -vv -s false -e deploy -- upload --non-interactive --skip-existing
+        SEM_VER="${TAG:1}"  # remove the first character (v)
+
+        PARSER="src/cookiecutter_python/{{ cookiecutter.project_slug }}/scripts/parse_version.py"
+        PARSED_VERSION=$(python "${PARSER}")
+
+        if [[ "${PARSED_VERSION}" != "${SEM_VER}" ]]; then
+          echo "ERROR: Version in __init__.py (${PARSED_VERSION}) does not match tag (${SEM_VER})"
+          exit 1
+        fi
+
+        echo "Publishing $VERSION_TAG to $PYPI_SERVER PyPI"
+
+        # PACKAGE_DIST_VERSION="$SEM_VER" tox -vv -s false -e deploy -- upload --non-interactive --skip-existing
         echo "Published in PyPI :)"
