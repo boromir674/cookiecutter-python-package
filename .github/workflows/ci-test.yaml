@@ -1,0 +1,24 @@
+name: Experiment with CI
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  experiment-with-gh-syntax:
+    runs-on: ubuntu-latest
+    environment:
+      name: TEST_DEPLOYMENT
+    steps:
+      - run: echo "TWINE_USERNAME referenced as" '$TWINE_VARIABLE'
+      - run: echo "Value -> $TWINE_VARIABLE"
+      - run: echo =============
+
+      - run: echo "TWINE_USERNAME referenced as" '${{ secret.TWINE_VARIABLE }}'
+      - run: echo "Value -> ${{ secret.TWINE_VARIABLE }}"
+      - run: echo =============
+
+      - run: echo "TWINE_USERNAME referenced as" '${{ vars.TWINE_VARIABLE }}'
+      - run: echo "Value -> ${{ vars.TWINE_VARIABLE }}"
+      - run: echo =============
