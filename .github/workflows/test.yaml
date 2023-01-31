@@ -6,27 +6,10 @@ name: CI/CD Pipeline
 
 # Full Job Matrix for Stress Testing is activated on 'master', 'dev' and tags
 ## We Test factoring Platforms and Python versions
-
 # For other branches only one Job is spawned for Running (Unit) Tests
+# PyPI publish on v* tags on 'master' branch
+# Test PyPI publish on v* 'pre-release' tags on 'release' branch
 
-# Covers Case 1
-# dev has feature/bug-branch and writes code
-# dev wants on each push, 'small' Matrix Tests to trigger
-# all feature/bug branches "have" to merge to 'dev' branch
-# 'dev' branch automatically triggers 'full' Matrix Tests
-
-# Covers Case 2
-# it is time to make a new release
-# 'dev' branch merges into 'release' branch
-# a couple of commits (ie version bump, changelog update) are pushed to 'release'
-# a PR opens to merge 'release' into master/main
-# the PR triggers ALL TESTS:
-#  - Full Matrix Stress Tests
-#  - Doc tests
-#  - build/release
-
-# if all OK then PR merges
-# then a new tag (release) is pushed to github
 
 on:
   push:
@@ -37,13 +20,13 @@ on:
 
 env:
   # ability to define the Job Matrix as an env var !
-  FULL_MATRIX_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.9\", \"3.10\"]}"
+  FULL_MATRIX_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.7\", \"3.8\", \"3.9\", \"3.10\", \"3.11\"]}"
   UBUNTU_PY310_STRATEGY: "{\"platform\":[\"ubuntu-latest\"], \"python-version\":[\"3.10\"]}"
   TEST_STRATEGY: "{\"platform\":[\"ubuntu-latest\"], \"python-version\":[\"3.10\", \"3.9\"]}"
-  RUN_UNIT_TESTS: "false"
-  RUN_LINT_CHECKS: "true"
-  BUILD_DOCKER: "true"
-  DRAW_DEPENDENCIES: "true"
+  RUN_UNIT_TESTS: "true"
+  RUN_LINT_CHECKS: "false"
+  BUILD_DOCKER: "false"
+  DRAW_DEPENDENCIES: "false"
 
 jobs:
   # we use the below to read the workflow env vars and be able to use in "- if:" Job conditionals
@@ -70,10 +53,10 @@ jobs:
           else
             echo "matrix=$TEST_STRATEGY" >> $GITHUB_OUTPUT
           fi
-          echo "TESTS_ENABLED=$RUN_UNIT_TESTS" >> $GITHUB_OUTPUT
-          echo "DOCKER_ENABLED=$BUILD_DOCKER" >> $GITHUB_OUTPUT
           echo "DRAW_DEPS_SVG_GRAPHS=$DRAW_DEPENDENCIES" >> $GITHUB_OUTPUT
           echo "RUN_LINT=$RUN_LINT_CHECKS" >> $GITHUB_OUTPUT
+          echo "TESTS_ENABLED=$RUN_UNIT_TESTS" >> $GITHUB_OUTPUT
+          echo "DOCKER_ENABLED=$BUILD_DOCKER" >> $GITHUB_OUTPUT
 
   lint:
     runs-on: ${{ matrix.platform }}
@@ -94,13 +77,15 @@ jobs:
       - name: Lint check code with Isort and Black
         if: ${{ matrix.platform != 'windows-latest' }}
         run: tox -e lint -vv -s false
+      - run: tox -e pylint -vv -s false | tee pylint-result.txt
+      - run: cat pylint-result.txt
       - name: "Check Pylint Score > 8.2/10"
         if: ${{ matrix.platform != 'windows-latest' }}
         env:
           PYLINT_THRESHOLD: 8.2
         run: |
-          tox -e pylint -vv -s false | tee pylint-result.txt
           SCORE=`sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' pylint-result.txt`
+          echo "SCORE -> $SCORE"
           # threshold check
           if awk "BEGIN {exit !($SCORE >= $PYLINT_THRESHOLD)}"; then
             echo "PyLint Passed | Score: ${SCORE} | Threshold: ${PYLINT_THRESHOLD}"
@@ -117,87 +102,141 @@ jobs:
     needs: set_github_outputs
     if: ${{ needs.set_github_outputs.outputs.TESTS_ENABLED == 'true' }}
     strategy:
-      # This needs to match the first job's name and output parameter
       matrix: ${{fromJSON(needs.set_github_outputs.outputs.matrix)}}
     outputs:
       SEMVER_PIP_FORMAT: ${{ steps.parse_version.outputs.SEMVER_PIP_FORMAT }}
     steps:
+    - run: echo "Platform -> ${{ matrix.platform }} , Python -> ${{ matrix.python-version }}"
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install tox==3.28 tox-gh-actions
+    - run: python -m pip install --upgrade pip && python -m pip install tox==3.28 tox-gh-actions
 
-    - name: Do Type Checking
-      run: tox -e type -vv -s false
+    # - name: Do Type Checking
+    #   run: tox -e type -vv -s false
     - name: Parse package version from __init__.py to assist building
+      shell: bash
       id: parse_version
       run: |
         PARSER="src/cookiecutter_python/{{ cookiecutter.project_slug }}/scripts/parse_version.py"
         PARSED_VERSION=$(python "${PARSER}")
         # transform version (ie 1.7.4-rc.1) to match the name of the wheel produced (ie 1.7.4rc1)
-        # TODO modify to also parse 1.7.4-rc
-        WHEEL_VERSION=$(echo $PARSED_VERSION | sed -E 's/([^.]*)\.([^.]*)\.([^-]*)-(rc)\.(.*)/\1.\2.\3\4\5/')
+        WHEEL_VERSION=$(echo $PARSED_VERSION | sed -E 's/([^.]*)\.([^.]*)\.([^-]*)-(rc)\.?(.*)/\1.\2.\3\4\5/')
+        # manually append the 0 to index the release candidate
+        # we account for wheel building that automatically does the above
+        last_two=${WHEEL_VERSION: -2}
+        if [[ $last_two == "rc" ]]; then
+          WHEEL_VERSION="${WHEEL_VERSION}0"
+        fi
+        echo "==== $PARSED_VERSION  -->  $WHEEL_VERSION"
         echo "PKG_VERSION=$WHEEL_VERSION" >> $GITHUB_ENV  # to be used in the next step
         echo "SEMVER_PIP_FORMAT=$WHEEL_VERSION" >> $GITHUB_OUTPUT  # to be used in other jobs
     - name: Run Unit Tests
       run: tox -vv -s false
       env:
         PLATFORM: ${{ matrix.platform }}
-
     - name: Aggregate Test Coverage Data
       run: tox -e coverage --sitepackages -vv -s false
+    - name: Upload Coverage Data as Artefacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-${{ matrix.platform }}-${{ matrix.python-version }}.xml
+        path: ./.tox/coverage.xml
+        if-no-files-found: error
+    - run: mv .tox/.coverage .coverage-${{ matrix.platform }}-${{ matrix.python-version }}
+    - uses: actions/upload-artifact@v3
+      with:
+        name: .coverage-${{ matrix.platform }}-${{ matrix.python-version }}
+        path: .coverage-${{ matrix.platform }}-${{ matrix.python-version }}
+        if-no-files-found: error
 
+    # - name: Check for compliance with Python Best Practices
+    #   shell: bash
+    #   run: |
+    #     DIST_DIR=dist
+    #     echo "DIST_DIR=dist" >> $GITHUB_ENV
+    #     mkdir ${DIST_DIR}
+    #     mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}.tar.gz" "${DIST_DIR}"
+    #     mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}-py3-none-any.whl" "${DIST_DIR}"
+    #     # tox -e check -vv -s false
+    # - name: Install documentation test dependencies
+    #   if: ${{ matrix.platform == 'macos-latest' && matrix.python-version != '3.6' }}
+    #   run: brew install enchant
+    # - name: Run Documentation Tests
+    #   if: ${{ matrix.platform == 'ubuntu-latest' || matrix.python-version  != '3.6' }}
+    #   run: tox -e docs --sitepackages -vv -s false
+    # - name: Upload Source & Wheel distributions as Artefacts
+    #   uses: actions/upload-artifact@v3
+    #   with:
+    #     name: dist-${{ matrix.platform }}-${{ matrix.python-version }}
+    #     path: ${{ env.DIST_DIR }}
+    #     if-no-files-found: error
+  codecov_coverage_host:
+    runs-on: ${{ matrix.platform }}
+    needs: [test_suite, set_github_outputs]
+    steps:
+    - uses: actions/checkout@v3
+    - name: "Set up Python 3.10"
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.10
+    - run: ls -l
+    - name: Download ubuntu-latest-3.9 Coverage Data Artefacts
+      uses: actions/download-artifact@v3
+      with:
+        name: .coverage-ubuntu-latest-3.9
+        path: ./
+    - run: ls -l
+    - name: Download ubuntu-latest-3.10 Coverage Data Artefacts
+      uses: actions/download-artifact@v3
+      with:
+        name: .coverage-ubuntu-latest-3.10
+        path: ./
+    - run: ls -l
+    - run: python -m pip install --upgrade pip && python -m pip install tox==3.28
+    - run: TOX_COVERAGE_FILE=.coverage tox -e coverage --sitepackages -vv -s false
+    - run: mv .tox/coverage.xml coverage.xml
     - run: pip install coverage[toml]>=5.1
-      if: ${{ always() }}
-
     - name: Send Coverage Data to Codecov
       uses: codecov/codecov-action@v2
       with:
-        directory: ./.tox
-        env_vars: OS,PYTHON
+        env_vars: MY_OS,MY_PYTHON
         fail_ci_if_error: true
-        files: ./.tox/coverage.xml
         flags: unittests
         name: codecov-umbrella
         verbose: true
-      if: ${{ always() }}
-
-    - name: Check for compliance with Python Best Practices
-      shell: bash
-      run: |
-        DIST_DIR=dist
-        echo "DIST_DIR=dist" >> $GITHUB_ENV
-        mkdir ${DIST_DIR}
-        mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}.tar.gz" "${DIST_DIR}"
-        mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}-py3-none-any.whl" "${DIST_DIR}"
-        # tox -e check -vv -s false
-
-    - name: Install documentation test dependencies
-      if: ${{ matrix.platform == 'macos-latest' && matrix.python-version != '3.6' }}
-      run: brew install enchant
-
-    - name: Run Documentation Tests
-      if: ${{ matrix.platform == 'ubuntu-latest' || matrix.python-version  != '3.6' }}
-      run: tox -e docs --sitepackages -vv -s false
-
-    - name: Upload Source & Wheel distributions as Artefacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: dist-${{ matrix.platform }}-${{ matrix.python-version }}
-        path: ${{ env.DIST_DIR }}
-        if-no-files-found: error
-
-    - name: Upload Coverage Data as Artefacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: coverage-xml-data
-        path: ./.tox/coverage.xml
-        if-no-files-found: error
+  # send_coverage_data_to_codecov:
+  #   runs-on: ${{ matrix.platform }}
+  #   needs: [test_suite, set_github_outputs]
+  #   strategy:
+  #     matrix: ${{fromJSON(needs.set_github_outputs.outputs.matrix)}}
+  #   env:
+  #     MY_OS: ${{ matrix.platform }}
+  #     MY_PYTHON: ${{ matrix.python-version }}
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - name: Set up Python ${{ matrix.python-version }}
+  #     uses: actions/setup-python@v4
+  #     with:
+  #       python-version: ${{ matrix.python-version }}
+  #   - run: ls -l
+  #   - name: Download Coverage Data Artefacts
+  #     uses: actions/download-artifact@v3
+  #     with:
+  #       name: coverage-${{ matrix.platform }}-${{ matrix.python-version }}.xml
+  #   - run: ls -l
+  #   - run: pip install coverage[toml]>=5.1
+  #   - name: Send Coverage Data to Codecov
+  #     uses: codecov/codecov-action@v2
+  #     with:
+  #     # automagically discovers 'coverage.xml' file, since it is inside the tar.gz artifact
+  #       env_vars: MY_OS,MY_PYTHON
+  #       fail_ci_if_error: true
+  #       flags: unittests
+  #       name: codecov-umbrella
+  #       verbose: true
 
 # DRAW PYTHON DEPENDENCY GRAPHS
   check_if_source_code_changed:
@@ -332,11 +371,9 @@ jobs:
     if: startsWith(github.event.ref, 'refs/tags/v') && ${{ needs.on-main-or-release-branch-check.outputs.AUTOMATED_DEPLOY == 'true' }}
     environment:
       name: ${{ needs.on-main-or-release-branch-check.outputs.ENVIRONMENT_NAME }}
-      # name: TEST_DEPLOYMENT
     env:
       DIST_DIR: dist
       PACKAGE_DIST_VERSION: ${{ needs.test_suite.outputs.SEMVER_PIP_FORMAT }}
-            # env:
       TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
       TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
       PYPI_SERVER: ${{ vars.PYPI_SERVER }}
@@ -361,11 +398,8 @@ jobs:
     - run: |
         # Get Source Distribution (tar.gz of source code)
         source_distributions=$(find downloaded-artifacts -type f -name cookiecutter_python*.tar.gz)
-        echo ====== 1 $source_distributions
         source_distributions_array=($source_distributions)
-        echo ====== 2 $source_distributions
         source_distribution=${source_distributions_array[0]}  # a *.tar.gz file path
-        echo ======  $source_distribution
         # Extract the base name (without the path)
         source_distribution_name=$(basename "$source_distribution")
         # Check if all source distribution (.tar.gz) files have the same name
@@ -376,11 +410,7 @@ jobs:
           fi
         done
         echo "source_distribution=$source_distribution" >> $GITHUB_ENV
-      # Copy the source distribution to the dist folder
-    - run: |
-        echo "debug 1: $source_distribution"  # if fail use ${{ env.source_distribution }}
-        echo "debug 2: ${DIST_DIR}"
-        cp "$source_distribution" ${DIST_DIR}
+    - run: cp "$source_distribution" ${DIST_DIR}
     - run: |
         # Get all built Wheels and copy to dist folder
         for f in `find downloaded-artifacts -type f -name cookiecutter_python*.whl`; do
