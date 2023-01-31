@@ -2,6 +2,26 @@
 Changelog
 =========
 
+1.7.5 (2023-01-31)
+==================
+
+| Moving towards fully automated CI/CD pipeline.
+| See the .github/workflows/test.yaml file for the workflow (aka pipeline) details.
+
+
+Changes
+^^^^^^^
+
+ci
+""
+- publish to pypi Job, configured given a 'test' or 'prod' Github Environment (configured through github web UI)
+- draw python dependency graphs, saved as .svg files, for master/dev branches and for tags starting with 'v'
+
+build
+"""""
+- remove data of apt update after apt install from Dockerfile stage
+
+
 1.7.4 (2023-01-26)
 ==================
 
