@@ -3,7 +3,6 @@ name: Generate from Template and Commit to Biskotaki
 on:
   push:
     branches:
-      - 'develop'
       - update-generate
   pull_request:
     branches:
