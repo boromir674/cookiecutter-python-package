@@ -26,7 +26,6 @@ class InterpretersCheckbox(InteractiveDialog):
 
     @staticmethod
     def _dialog(choices: Mapping[str, Union[str, bool]]) -> Mapping[str, Sequence[str]]:
-
         return prompt(
             [
                 # Question 1
