@@ -14,6 +14,8 @@ Changes
 
 ci
 ""
+- dedicate separate Job to upload Coverage xml files to Codecov
+- dedicate a Job Matrix for running Lint Checks
 - publish to pypi Job, configured given a 'test' or 'prod' Github Environment (configured through github web UI)
 - draw python dependency graphs, saved as .svg files, for master/dev branches and for tags starting with 'v'
 
