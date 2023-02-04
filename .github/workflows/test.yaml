@@ -22,12 +22,11 @@ env:
   # ability to define the Job Matrix as an env var !
   FULL_MATRIX_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.7\", \"3.8\", \"3.9\", \"3.10\", \"3.11\"]}"
   UBUNTU_PY310_STRATEGY: "{\"platform\":[\"ubuntu-latest\"], \"python-version\":[\"3.10\"]}"
-  TEST_STRATEGY: "{\"platform\":[\"macos-latest\"], \"python-version\":[\"3.10\"]}"
-  TEST_STRATEGY1: "{\"platform\":[\"macos-latest\", \"windows-latest\"], \"python-version\":[\"3.10\"]}"
+  TEST_STRATEGY: "{\"platform\":[\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\":[\"3.9\"]}"
   RUN_UNIT_TESTS: "true"
-  RUN_LINT_CHECKS: "false"
-  BUILD_DOCKER: "false"
-  DRAW_DEPENDENCIES: "false"
+  RUN_LINT_CHECKS: "true"
+  BUILD_DOCKER: "true"
+  DRAW_DEPENDENCIES: "true"
 
 jobs:
   # we use the below to read the workflow env vars and be able to use in "- if:" Job conditionals
@@ -52,7 +51,7 @@ jobs:
           if [[ $BRANCH_NAME == "master" || $BRANCH_NAME == "main" || $BRANCH_NAME == "stress-test" || $GITHUB_REF == refs/tags/* ]]; then
             echo "matrix=$FULL_MATRIX_STRATEGY" >> $GITHUB_OUTPUT
           else
-            echo "matrix=$TEST_STRATEGY" >> $GITHUB_OUTPUT
+            echo "matrix=$UBUNTU_PY310_STRATEGY" >> $GITHUB_OUTPUT
           fi
           echo "DRAW_DEPS_SVG_GRAPHS=$DRAW_DEPENDENCIES" >> $GITHUB_OUTPUT
           echo "RUN_LINT=$RUN_LINT_CHECKS" >> $GITHUB_OUTPUT
@@ -138,42 +137,18 @@ jobs:
       run: tox -vv -s false
       env:
         PLATFORM: ${{ matrix.platform }}
-    - name: Update to bash 4x on macos
-      if: ${{ matrix.platform == 'macos-latest' }}
-      run: |
-        brew update
-        brew install bash
-    - name: Rename raw coverage data files
+    - name: "Combine Coverage (dev, sdist, wheel) & make Reports"
+      run: tox -e coverage --sitepackages -vv -s false
+
+    - name: Rename Coverage Files
       shell: bash
       run: |
-        bash --version
-        which bash
-        ls -l $(!!)
-
-        declare -A ci_platform2tox_platform
-        ci_platform2tox_platform[ubuntu-latest]="linux"
-        ci_platform2tox_platform[macos-latest]=macos
-        ci_platform2tox_platform[windows-latest]="windows"
-
-        OS_NAME="${{ matrix.platform }}"
-        OOS="${ci_platform2tox_platform[$OS_NAME]}"
-
-        # file_name=$(basename $file)
-        for file in .tox/.coverage.*; do
-          new_file=`echo $file | sed -E "s/\.py([0-9])([0-9]+)-(sdist|wheel)-$OOS/.\1.\2-\3/"`
-          new_file="$new_file-$OS_NAME"
-          echo "OLD: $file  -> $new_file"
-          mv $file $new_file
-        done
-    - uses: actions/upload-artifact@v3
+        mv ./.tox/coverage.xml ./coverage-${{ matrix.platform }}-${{ matrix.python-version }}.xml
+    - name: "Upload Test Coverage as Artifacts"
+      uses: actions/upload-artifact@v3
       with:
         name: all_coverage_raw
-        path: .tox/.coverage.${{ matrix.python-version }}-sdist-${{ matrix.platform }}
-        if-no-files-found: error
-    - uses: actions/upload-artifact@v3
-      with:
-        name: all_coverage_raw
-        path: .tox/.coverage.${{ matrix.python-version }}-wheel-${{ matrix.platform }}
+        path: coverage-${{ matrix.platform }}-${{ matrix.python-version }}.xml
         if-no-files-found: error
     - name: Check for compliance with Python Best Practices
       shell: bash
@@ -202,31 +177,22 @@ jobs:
     needs: test_suite
     steps:
     - uses: actions/checkout@v3
-    - name: "Set up Python 3.10"
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.10"
-    - run: ls -ltra
+    - name: Get Codecov binary
+      run: |
+        curl -Os https://uploader.codecov.io/latest/linux/codecov
+        chmod +x codecov
     - name: Download Raw Coverage Data Artefacts
       uses: actions/download-artifact@v3
       with:
         name: all_coverage_raw
-    - run: ls -ltra
-    - run: python -m pip install --upgrade pip && python -m pip install tox==3.28
-    - run: TOX_COVERAGE_FILE=.coverage tox -e coverage --sitepackages -vv -s false
-    - run: mv .tox/coverage.xml ./
-    - run: ls -ltra
-    - run: pwd
-    - run: pip install coverage[toml]>=5.1
-    - name: Send Coverage Data to Codecov
-      uses: codecov/codecov-action@v2
-      with:
-        env_vars: MY_OS,MY_PYTHON
-        files: ./coverage.xml
-        fail_ci_if_error: true
-        flags: unittests
-        name: codecov-umbrella
-        verbose: true
+    - name: Upload Coverage Reports to Codecov
+      run: |
+        for file in coverage*.xml; do
+          OS_NAME=$(echo $file | sed -E "s/coverage-(\w\+)-/\1/")
+          PY_VERSION=$(echo $file | sed -E "s/coverage-\w\+-(\d\.)\+/\1/")
+          ./codecov -f $file -e "OS=$OS_NAME,PYTHON=$PY_VERSION" --flags unittests --verbose
+          echo "Sent to Codecov: $file"
+        done
 
 # DRAW PYTHON DEPENDENCY GRAPHS
   check_trigger_draw_dependency_graphs:
@@ -373,7 +339,6 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         path: downloaded-artifacts
-    - run: ls -lR downloaded-artifacts
     - name: Get Publishable files from the Artifacts
       run: |
         TAG="${GITHUB_REF_NAME}"
