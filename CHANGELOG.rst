@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.7.5 (2023-01-31)
+1.7.5 (2023-02-05)
 ==================
 
 | Moving towards fully automated CI/CD pipeline.

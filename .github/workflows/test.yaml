@@ -1,6 +1,5 @@
 name: CI/CD Pipeline
 # Continuous Integration / Continuous Delivery
-# CI/CD Pipeline
 
 # Triggers on all branches and tags starting with v
 
@@ -9,7 +8,7 @@ name: CI/CD Pipeline
 # For other branches only one Job is spawned for Running (Unit) Tests
 # PyPI publish on v* tags on 'master' branch
 # Test PyPI publish on v* 'pre-release' tags on 'release' branch
-
+# Dockerhub publich on all branches and tags
 
 on:
   push:
@@ -47,7 +46,6 @@ jobs:
         run: |
           # set the matrix strategy to Full Matrix Stress Test if on master/main or stress-test branch or any tag
           BRANCH_NAME=${GITHUB_REF_NAME}
-          # BRANCH_NAME=${GITHUB_REF##*/}
           if [[ $BRANCH_NAME == "master" || $BRANCH_NAME == "main" || $BRANCH_NAME == "stress-test" || $GITHUB_REF == refs/tags/* ]]; then
             echo "matrix=$FULL_MATRIX_STRATEGY" >> $GITHUB_OUTPUT
           else
@@ -158,7 +156,7 @@ jobs:
         mkdir ${DIST_DIR}
         mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}.tar.gz" "${DIST_DIR}"
         mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}-py3-none-any.whl" "${DIST_DIR}"
-        # tox -e check -vv -s false
+        tox -e check -vv -s false
     - name: Install documentation test dependencies
       if: ${{ matrix.platform == 'macos-latest' && matrix.python-version != '3.6' }}
       run: brew install enchant
@@ -272,7 +270,7 @@ jobs:
         # workflow enabled for branches and v* tags
         IMAGE_TAG="${GITHUB_REF_NAME}"  # this is branch name or tag name
         echo "IMAGE_REF=generate-python:${IMAGE_TAG}" >> $GITHUB_ENV
-        docker build -t "${DOCKER_USER}/generate-python:${GITHUB_REF_NAME}" .
+        docker build -t "${DOCKER_USER}/generate-python:${IMAGE_TAG}" .
     - name: Publish Docker Image to DockerHub
       env:
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
