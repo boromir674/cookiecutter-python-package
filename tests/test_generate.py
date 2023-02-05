@@ -72,7 +72,6 @@ CLI_RELATED_FILES = {
 
 @pytest.fixture
 def module_file():
-
     from functools import reduce
     from os import listdir
     from pathlib import Path
