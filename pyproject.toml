@@ -124,6 +124,7 @@ sphinxcontrib-spelling = { version = "~= 7.3.3", optional = true }
 # Type Checking: packages required for the type check (ie mypy) to pass
 mypy = { version = "== 0.961", optional = true }
 types-requests = { version = "~= 2.27.26", optional = true }
+types-pyyaml = { version = "^6.0.12.5", optional = true }
 
 [tool.poetry.extras]
 test = [
@@ -148,6 +149,7 @@ typing = [
     "types-requests",
     "pytest",
     "pytest-click",
+    "types-pyyaml",
 ]
 
 

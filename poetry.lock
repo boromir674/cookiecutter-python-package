@@ -785,6 +785,14 @@ optional = true
 python-versions = ">=3.6"
 
 [[package]]
+name = "types-pyyaml"
+version = "6.0.12.5"
+description = "Typing stubs for PyYAML"
+category = "main"
+optional = true
+python-versions = "*"
+
+[[package]]
 name = "types-requests"
 version = "2.27.31"
 description = "Typing stubs for requests"
@@ -846,13 +854,13 @@ testing = ["func-timeout", "jaraco.itertools", "pytest (>=4.6)", "pytest-black (
 
 [extras]
 docs = ["sphinx", "sphinx-autodoc-typehints", "sphinx-rtd-theme", "sphinxcontrib-spelling"]
-test = ["pytest", "pytest-click", "pytest-cov", "pytest-explicit", "pytest-xdist", "pytest-object-getter", "pytest-run-subprocess", "pytest-requests-futures"]
+test = ["pytest", "pytest-click", "pytest-cov", "pytest-explicit", "pytest-xdist", "pytest-object-getter", "pytest-run-subprocess", "pytest-requests-futures", "pyyaml"]
 typing = ["mypy", "types-requests", "pytest", "pytest-click"]
 
 [metadata]
 lock-version = "1.1"
 python-versions = ">3.6 <3.13"
-content-hash = "529943c8980e2761d92f7f0414e8a70daa848f71ca7f11adc1108d013e9e8126"
+content-hash = "d1a1312919fa331bb1049c66ff97473a3d711c48db769c33c63bef0fdcd70555"
 
 [metadata.files]
 alabaster = [
@@ -1312,6 +1320,10 @@ typed-ast = [
     {file = "typed_ast-1.5.4-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:98f80dee3c03455e92796b58b98ff6ca0b2a6f652120c263efdba4d6c5e58f72"},
     {file = "typed_ast-1.5.4-cp39-cp39-win_amd64.whl", hash = "sha256:0fdbcf2fef0ca421a3f5912555804296f0b0960f0418c440f5d6d3abb549f3e1"},
     {file = "typed_ast-1.5.4.tar.gz", hash = "sha256:39e21ceb7388e4bb37f4c679d72707ed46c2fbf2a5609b8b8ebc4b067d977df2"},
+]
+types-pyyaml = [
+    {file = "types-PyYAML-6.0.12.5.tar.gz", hash = "sha256:3b61b7a8111ce368eb366e4a13f3e94e568bc2ed6227e01520a50ee07993bf38"},
+    {file = "types_PyYAML-6.0.12.5-py3-none-any.whl", hash = "sha256:dcaf87b65b839e7b641721346ef8b12a87f94071e15205a64ac93ca0e0afc77a"},
 ]
 types-requests = [
     {file = "types-requests-2.27.31.tar.gz", hash = "sha256:6fab97b99fea52b9c7b466a4dd93e06bb325bc7e7420475e87831026a8dd35cc"},
