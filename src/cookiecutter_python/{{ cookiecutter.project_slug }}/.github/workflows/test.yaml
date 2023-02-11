@@ -1,18 +1,25 @@
-name: Test Python Package
-# Stress Test against different platforms and python versions
+name: CI/CD Pipeline
+# Continuous Integration / Continuous Delivery
+
+# Triggers on all branches and tags starting with v
 
 on:
   push:
     branches:
-      - master
-      - dev
-      - ci
-  pull_request:
-    branches:
-      - master
-      - dev
+      - "*"
     tags:
       - v*
+
+
+env:
+  # ability to define the Job Matrix as an env var !
+  FULL_MATRIX_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.7\", \"3.8\", \"3.9\", \"3.10\", \"3.11\"]}"
+  UBUNTU_PY310_STRATEGY: "{\"platform\":[\"ubuntu-latest\"], \"python-version\":[\"3.10\"]}"
+  TEST_STRATEGY: "{\"platform\":[\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\":[\"3.9\"]}"
+  RUN_UNIT_TESTS: "true"
+  RUN_LINT_CHECKS: "true"
+  BUILD_DOCKER: "true"
+  DRAW_DEPENDENCIES: "true"
 
 
 jobs:
