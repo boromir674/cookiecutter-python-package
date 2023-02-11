@@ -22,9 +22,14 @@ env:
   FULL_MATRIX_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.7\", \"3.8\", \"3.9\", \"3.10\", \"3.11\"]}"
   UBUNTU_PY310_STRATEGY: "{\"platform\":[\"ubuntu-latest\"], \"python-version\":[\"3.10\"]}"
   TEST_STRATEGY: "{\"platform\":[\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\":[\"3.9\"]}"
-  RUN_UNIT_TESTS: "false"
+
+  # On/Off switches for the various CI/CD steps
+  # If false the step prevented from running
+  # If true the step is allowed to run (it still may be skipped on other runtime conditions)
+  RUN_UNIT_TESTS: "true"
   RUN_LINT_CHECKS: "false"
   BUILD_DOCKER: "false"
+  PUBLISH_ON_PYPI: "false"
   DRAW_DEPENDENCIES: "false"
 
 jobs:
@@ -40,6 +45,7 @@ jobs:
       DOCKER_ENABLED: ${{ steps.pass-env-to-output.outputs.DOCKER_ENABLED }}
       DRAW_DEPS_SVG_GRAPHS: ${{ steps.pass-env-to-output.outputs.DRAW_DEPS_SVG_GRAPHS }}
       RUN_LINT: ${{ steps.pass-env-to-output.outputs.RUN_LINT }}
+      PUBLISH_ON_PYPI: ${{ steps.pass-env-to-output.outputs.PUBLISH_ON_PYPI }}
     steps:
       - name: Pass 'env' section variables to GITHUB_OUTPUT
         id: pass-env-to-output
@@ -55,6 +61,7 @@ jobs:
           echo "RUN_LINT=$RUN_LINT_CHECKS" >> $GITHUB_OUTPUT
           echo "TESTS_ENABLED=$RUN_UNIT_TESTS" >> $GITHUB_OUTPUT
           echo "DOCKER_ENABLED=$BUILD_DOCKER" >> $GITHUB_OUTPUT
+          echo "PUBLISH_ON_PYPI=$PUBLISH_ON_PYPI" >> $GITHUB_OUTPUT
 
   lint:
     runs-on: ${{ matrix.platform }}
@@ -95,6 +102,7 @@ jobs:
         if: ${{ matrix.platform != 'windows-latest' }}
         run: tox -e prospector -vv -s false
 
+# RUN TEST SUITE ON ALL PLATFORMS
   test_suite:
     runs-on: ${{ matrix.platform }}
     needs: set_github_outputs
@@ -284,7 +292,7 @@ jobs:
 # we consider publishing on tags starting with "v"
   check_which_git_branch_we_are_on:
     runs-on: ubuntu-latest
-    if: startsWith(github.event.ref, 'refs/tags/v')
+    if: ${{ startsWith(github.event.ref, 'refs/tags/v') && needs.set_github_outputs.outputs.PUBLISH_ON_PYPI == 'true' }}
     outputs:
       ENVIRONMENT_NAME: ${{ steps.set_environment_name.outputs.ENVIRONMENT_NAME }}
       AUTOMATED_DEPLOY: ${{ steps.set_environment_name.outputs.AUTOMATED_DEPLOY }}

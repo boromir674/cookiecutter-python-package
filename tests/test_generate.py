@@ -50,6 +50,15 @@ def test_supported_python_interpreters(
 
 @pytest.fixture
 def assert_interpreters_array_in_build_matrix() -> t.Callable[[str, t.Sequence[str]], None]:
+    """Test that Job Matrix is generated correctly and stored as Workflow env var.
+
+    Test proper generation of github workflow config yaml for lines such as:
+
+    # FULL_MATRIX_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.7\", \"3.8\", \"3.9\", \"3.10\", \"3.11\"]}"
+
+    Returns:
+        t.Callable[[str, t.Sequence[str]], None]: [description]
+    """
     from pathlib import Path
 
     def _assert_interpreters_array_in_build_matrix(
@@ -58,8 +67,9 @@ def assert_interpreters_array_in_build_matrix() -> t.Callable[[str, t.Sequence[s
     ) -> None:
         p = Path(project_dir) / '.github' / 'workflows' / 'test.yaml'
         contents = p.read_text()
-        b = ', '.join((f'"{int_ver}"' for int_ver in interpreters))
-        assert f"python-version: [{b}]" in contents
+        b = ', '.join((fr'\"{int_ver}\"' for int_ver in interpreters))
+        assert fr'\"python-version\": ' in contents
+        assert fr'\"python-version\": [{b}]' in contents, f'"{b}" not in "{contents}"'
 
     return _assert_interpreters_array_in_build_matrix
 

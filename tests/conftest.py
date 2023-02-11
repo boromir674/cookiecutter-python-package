@@ -485,9 +485,10 @@ def user_config(load_yaml, load_json, production_templated_project):
             def _load_json(json_file: str):
                 data = loader(json_file)
                 data['project_slug'] = data['project_name'].lower().replace(' ', '-')
+                data['docker_image'] = data['project_slug']
                 data['project_type'] = data['project_type'][0]
-                data['author'] = data['full_name']
                 data['pkg_name'] = data['project_name'].lower().replace(' ', '_')
+                data['author'] = data['full_name']
                 data['initialize_git_repo'] = {'yes': True}.get(
                     data['initialize_git_repo'][0], False
                 )

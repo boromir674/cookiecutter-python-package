@@ -2,6 +2,7 @@ default_context:
     project_name: Biskotaki
     project_type: module
     project_slug: biskotaki
+    docker_image: biskotaki
     repo_name: biskotaki
     pkg_name: biskotaki
     full_name: Konstantinos Lampridis

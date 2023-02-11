@@ -49,5 +49,7 @@ def test_file_is_valid_yaml(config_file, user_config, mock_check, tmpdir):
     assert 'on' + '<TEST>' in ci_config, f'on is missing: \n' + '\n'.join([str(x) for x in ci_config.keys()])
     assert 'jobs' in ci_config
 
-    assert 'python-version' in ci_config['jobs']['test_suite']['strategy']['matrix']
-    assert isinstance(ci_config['jobs']['test_suite']['strategy']['matrix']['python-version'], list)
+    assert 'test_suite' in ci_config['jobs']
+    assert 'pypi_publish' in ci_config['jobs']
+    assert 'check_which_git_branch_we_are_on' in ci_config['jobs']
+    assert 'docker_build' in ci_config['jobs']
