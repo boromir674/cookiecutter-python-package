@@ -2,9 +2,10 @@ default_context:
     project_name: Biskotaki
     project_type: module
     project_slug: biskotaki
-    readthedocs_project_slug: biskotaki
-    repo_name: biskotaki
     pkg_name: biskotaki
+    repo_name: biskotaki
+    readthedocs_project_slug: biskotaki
+    docker_image: biskotaki
     full_name: Konstantinos Lampridis
     author: Konstantinos Lampridis
     email: k.lampridis@hotmail.com

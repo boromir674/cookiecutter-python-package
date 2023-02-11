@@ -432,44 +432,63 @@ def user_config(load_yaml, load_json, production_templated_project):
 
     @attr.s(auto_attribs=True, slots=True)
     class ConfigData:
+        """Compute the 'default parameters' either from user yaml or from json.
+
+        The 'default parameters' are the parameters that are used to generate
+        the project. In interactive mode the user is prompted to provide values
+        or the default values are used.
+
+        If path is given then it is assumed that a 'user config' yaml file has
+        been passed.
+
+        If path is None, then it is assumed that no 'user config' yaml file has
+        been passed and thus the 'default parameters' will be computed using the
+        cookiecutter.json. The 'default parameters', in this case, are emulated
+        to imitate the possible jinja2 transformations that may be defined in
+        each of the cookiecutter.json files.
+
+        Args:
+            Union[str, None]: the path to the user config yaml file or None
+        """
         path: t.Union[str, None]
 
         _data_file_path: t.Union[str, Path, None] = attr.ib(init=False, default=None)
         _config_file_arg: t.Optional[str] = attr.ib(init=False, default=None)
         _loader: DataLoader = attr.ib(init=False)
-        data: t.Mapping = attr.ib(init=False)
+        _data: t.Mapping = attr.ib(init=False)
 
         def __attrs_post_init__(self):
-            self._data_file_path, self._config_file_arg, self._loader = self._build_data(
-                self.path
-            )
-            self.data = self._loader(self._data_file_path)
+            if self.path is not None:
+                data_file = Path(my_dir) / '..' / config_files.get(self.path, self.path)
+                
+                self._config_file_arg = data_file
+                self._data_file_path = data_file
+                self._loader = ConfigData.load_yaml(load_yaml)
+            else:
+                self._config_file_arg = None
+                self._data_file_path = Path(production_templated_project) / '..' / 'cookiecutter.json'
+                self._loader = ConfigData.load_json(load_json)
 
-        @staticmethod
-        def _build_data(
-            file_path: t.Union[str, None]
-        ) -> t.Tuple[Path, t.Union[str, None], DataLoader]:
-            if file_path is not None:
-                data_file = Path(my_dir) / '..' / config_files.get(file_path, file_path)
-                return (
-                    data_file,
-                    data_file,
-                    ConfigData.load_yaml(load_yaml),
-                )
-            return (
-                Path(production_templated_project) / '..' / 'cookiecutter.json',
-                None,
-                ConfigData.load_json(load_json),
-            )
+            self._data = self._loader(self._data_file_path)
+
+        @property
+        def data(self) -> t.Mapping:
+            """Get the computed 'default parameters' as standard python objects.
+
+            Returns:
+                t.Mapping: the 'default parameters' as standard python objects
+            """
+            return self._data
 
         @staticmethod
         def load_json(loader: DataLoader):
             def _load_json(json_file: str):
                 data = loader(json_file)
                 data['project_slug'] = data['project_name'].lower().replace(' ', '-')
+                data['docker_image'] = data['project_slug']
                 data['project_type'] = data['project_type'][0]
-                data['author'] = data['full_name']
                 data['pkg_name'] = data['project_name'].lower().replace(' ', '_')
+                data['author'] = data['full_name']
                 data['initialize_git_repo'] = {'yes': True}.get(
                     data['initialize_git_repo'][0], False
                 )
@@ -490,7 +509,7 @@ def user_config(load_yaml, load_json, production_templated_project):
 
         @property
         def project_slug(self) -> str:
-            return self.data['project_slug']
+            return self._data['project_slug']
 
         @property
         def config_file(self) -> t.Union[str, None]:
