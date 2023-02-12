@@ -26,5 +26,7 @@ RUN apt-get update && \
 
 COPY . .
 RUN pip install --no-cache-dir --user .
+{% if cookiecutter.project_type == "module+cli" %}
 
 CMD [ "{{ cookiecutter.pkg_name|replace('_', '-') }}" ]
+{% endif %}
