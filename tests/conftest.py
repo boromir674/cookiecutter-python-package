@@ -619,9 +619,10 @@ def get_expected_generated_files(production_templated_project, project_files):
             [
                 str(Path(x)) in set([str(_) for _ in expected_files])
                 for x in (
-                    '.bettercodehub.yml',
                     '.github/workflows/test.yaml',
                     'pyproject.toml',
+                    f"src/{config.data['pkg_name']}/__init__.py",
+                    'tests/conftest.py',
                 )
             ]
         )
