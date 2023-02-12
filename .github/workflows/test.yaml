@@ -5,10 +5,13 @@ name: CI/CD Pipeline
 
 # Full Job Matrix for Stress Testing is activated on 'master', 'dev' and tags
 ## We Test factoring Platforms and Python versions
+
 # For other branches only one Job is spawned for Running (Unit) Tests
+
 # PyPI publish on v* tags on 'master' branch
 # Test PyPI publish on v* 'pre-release' tags on 'release' branch
-# Dockerhub publich on all branches and tags
+
+# Dockerhub publish on all branches and tags
 
 on:
   push:
@@ -18,7 +21,7 @@ on:
       - v*
 
 env:
-  # ability to define the Job Matrix as an env var !
+  # Job Matrix as an env var !
   FULL_MATRIX_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.7\", \"3.8\", \"3.9\", \"3.10\", \"3.11\"]}"
   UBUNTU_PY310_STRATEGY: "{\"platform\":[\"ubuntu-latest\"], \"python-version\":[\"3.10\"]}"
   TEST_STRATEGY: "{\"platform\":[\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\":[\"3.9\"]}"
@@ -63,45 +66,6 @@ jobs:
           echo "DOCKER_ENABLED=$BUILD_DOCKER" >> $GITHUB_OUTPUT
           echo "PUBLISH_ON_PYPI=$PUBLISH_ON_PYPI" >> $GITHUB_OUTPUT
 
-  lint:
-    runs-on: ${{ matrix.platform }}
-    needs: set_github_outputs
-    if: ${{ needs.set_github_outputs.outputs.RUN_LINT == 'true' }}
-    strategy:
-      matrix: ${{fromJson(needs.set_github_outputs.outputs.matrix)}}
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install tox==3.28 tox-gh-actions
-      - name: Lint check code with Isort and Black
-        if: ${{ matrix.platform != 'windows-latest' }}
-        run: tox -e lint -vv -s false
-      - run: tox -e pylint -vv -s false | tee pylint-result.txt
-      - run: cat pylint-result.txt
-      - name: "Check Pylint Score > 8.2/10"
-        if: ${{ matrix.platform != 'windows-latest' }}
-        env:
-          PYLINT_THRESHOLD: 8.2
-        run: |
-          SCORE=`sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' pylint-result.txt`
-          echo "SCORE -> $SCORE"
-          # threshold check
-          if awk "BEGIN {exit !($SCORE >= $PYLINT_THRESHOLD)}"; then
-            echo "PyLint Passed | Score: ${SCORE} | Threshold: ${PYLINT_THRESHOLD}"
-          else
-            echo "PyLint Failed | Score: ${SCORE} | Threshold: ${PYLINT_THRESHOLD}"
-            exit 1
-          fi
-      - name: Run tox -e prospector
-        if: ${{ matrix.platform != 'windows-latest' }}
-        run: tox -e prospector -vv -s false
-
 # RUN TEST SUITE ON ALL PLATFORMS
   test_suite:
     runs-on: ${{ matrix.platform }}
@@ -122,6 +86,7 @@ jobs:
 
     - name: Do Type Checking
       run: tox -e type -vv -s false
+
     - name: Parse package version from __init__.py to assist building
       shell: bash
       id: parse_version
@@ -197,74 +162,10 @@ jobs:
           OS_NAME=$(echo $file | sed -E "s/coverage-(\w\+)-/\1/")
           PY_VERSION=$(echo $file | sed -E "s/coverage-\w\+-(\d\.)\+/\1/")
           ./codecov -f $file -e "OS=$OS_NAME,PYTHON=$PY_VERSION" --flags unittests --verbose
-          echo "Sent to Codecov: $file"
+          echo "Sent to Codecov: $file !"
         done
 
-# DRAW PYTHON DEPENDENCY GRAPHS
-  check_trigger_draw_dependency_graphs:
-    runs-on: ubuntu-latest
-    name: Draw Python Dependency Graphs ?
-    needs: set_github_outputs
-    if: needs.set_github_outputs.outputs.DRAW_DEPS_SVG_GRAPHS == 'true'
-    outputs:
-      SHOULD_DRAW_GRAPHS: ${{ steps.decide_if_should_draw_graphs.outputs.SHOULD_DRAW_GRAPHS }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 2
-      - name: Decide if should draw graphs
-        id: decide_if_should_draw_graphs
-        run: |
-          # if branch is master or dev; or if we are on tag starting with "v"
-          if [[ ${GITHUB_REF_NAME} == "master" || ${GITHUB_REF_NAME} == "dev" || "${GITHUB_REF}" =~ refs/tags/v.* ]]; then
-            SHOULD_DRAW_GRAPHS=true
-          else
-            echo "=============== list modified files ==============="
-            git diff --name-only HEAD^ HEAD
-            echo "========== check paths of modified files =========="
-            git diff --name-only HEAD^ HEAD > files.txt
-            SHOULD_DRAW_GRAPHS=false
-            while read file; do
-              echo $file
-              if [[ $file =~ ^src/ ]]; then
-                echo "This modified file is under the 'src' folder."
-                SHOULD_DRAW_GRAPHS=true
-                break
-              fi
-            done < files.txt
-          fi
-          echo "SHOULD_DRAW_GRAPHS=$SHOULD_DRAW_GRAPHS" >> $GITHUB_OUTPUT
-
-  draw-dependencies:
-    runs-on: ubuntu-latest
-    needs: check_trigger_draw_dependency_graphs
-    if: needs.check_trigger_draw_dependency_graphs.outputs.SHOULD_DRAW_GRAPHS == 'true'
-    name: Draw Python Dependencies as Graphs, in .svg
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-    - name: Install tox
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install tox==3.28
-    - name: Install dependencies (ie dot binary of graphviz)
-      run: |
-        sudo apt-get update -y --allow-releaseinfo-change
-        sudo apt-get install -y graphviz
-    - name: Draw Dependency Graphs as .svg files
-      run: tox -e pydeps -vv -s false
-    - name: Upload Dependency Graphs as artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: dependency-graphs
-        path: pydeps/
-        if-no-files-found: warn  # 'error' or 'ignore' are also available, defaults to `warn`
-
-# DOCKER
+# DOCKER BUILD AND PUBLISH ON DOCKERHUB
   docker_build:
     runs-on: ubuntu-latest
     needs: test_suite
@@ -288,7 +189,7 @@ jobs:
         docker logout
         echo "Published in Dockerhub :)"
 
-# PYPI
+# PUBLISH DISTRIBUTIONS ON PYPI
 # we consider publishing on tags starting with "v"
   check_which_git_branch_we_are_on:
     runs-on: ubuntu-latest
@@ -385,3 +286,107 @@ jobs:
     - name: Publish to PyPI
       run: tox -vv -s false -e deploy -- upload --non-interactive --skip-existing
     - run: echo "Published :\)"
+
+# STATIC CODE ANALYSIS & LINTING
+  lint:
+    runs-on: ${{ matrix.platform }}
+    needs: set_github_outputs
+    if: ${{ needs.set_github_outputs.outputs.RUN_LINT == 'true' }}
+    strategy:
+      matrix: ${{fromJson(needs.set_github_outputs.outputs.matrix)}}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install tox==3.28 tox-gh-actions
+      - name: Lint check code with Isort and Black
+        if: ${{ matrix.platform != 'windows-latest' }}
+        run: tox -e lint -vv -s false
+      - run: tox -e pylint -vv -s false | tee pylint-result.txt
+      - run: cat pylint-result.txt
+      - name: "Check Pylint Score > 8.2/10"
+        if: ${{ matrix.platform != 'windows-latest' }}
+        env:
+          PYLINT_THRESHOLD: 8.2
+        run: |
+          SCORE=`sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' pylint-result.txt`
+          echo "SCORE -> $SCORE"
+          # threshold check
+          if awk "BEGIN {exit !($SCORE >= $PYLINT_THRESHOLD)}"; then
+            echo "PyLint Passed | Score: ${SCORE} | Threshold: ${PYLINT_THRESHOLD}"
+          else
+            echo "PyLint Failed | Score: ${SCORE} | Threshold: ${PYLINT_THRESHOLD}"
+            exit 1
+          fi
+      - name: Run tox -e prospector
+        if: ${{ matrix.platform != 'windows-latest' }}
+        run: tox -e prospector -vv -s false
+
+# DRAW PYTHON DEPENDENCY GRAPHS
+  check_trigger_draw_dependency_graphs:
+    runs-on: ubuntu-latest
+    name: Draw Python Dependency Graphs ?
+    needs: set_github_outputs
+    if: needs.set_github_outputs.outputs.DRAW_DEPS_SVG_GRAPHS == 'true'
+    outputs:
+      SHOULD_DRAW_GRAPHS: ${{ steps.decide_if_should_draw_graphs.outputs.SHOULD_DRAW_GRAPHS }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+      - name: Decide if should draw graphs
+        id: decide_if_should_draw_graphs
+        run: |
+          # if branch is master or dev; or if we are on tag starting with "v"
+          if [[ ${GITHUB_REF_NAME} == "master" || ${GITHUB_REF_NAME} == "dev" || "${GITHUB_REF}" =~ refs/tags/v.* ]]; then
+            SHOULD_DRAW_GRAPHS=true
+          else
+            echo "=============== list modified files ==============="
+            git diff --name-only HEAD^ HEAD
+            echo "========== check paths of modified files =========="
+            git diff --name-only HEAD^ HEAD > files.txt
+            SHOULD_DRAW_GRAPHS=false
+            while read file; do
+              echo $file
+              if [[ $file =~ ^src/ ]]; then
+                echo "This modified file is under the 'src' folder."
+                SHOULD_DRAW_GRAPHS=true
+                break
+              fi
+            done < files.txt
+          fi
+          echo "SHOULD_DRAW_GRAPHS=$SHOULD_DRAW_GRAPHS" >> $GITHUB_OUTPUT
+
+  draw-dependencies:
+    runs-on: ubuntu-latest
+    needs: check_trigger_draw_dependency_graphs
+    if: needs.check_trigger_draw_dependency_graphs.outputs.SHOULD_DRAW_GRAPHS == 'true'
+    name: Draw Python Dependencies as Graphs, in .svg
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    - name: Install tox
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install tox==3.28
+    - name: Install dependencies (ie dot binary of graphviz)
+      run: |
+        sudo apt-get update -y --allow-releaseinfo-change
+        sudo apt-get install -y graphviz
+    - name: Draw Dependency Graphs as .svg files
+      run: tox -e pydeps -vv -s false
+    - name: Upload Dependency Graphs as artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: dependency-graphs
+        path: pydeps/
+        if-no-files-found: warn  # 'error' or 'ignore' are also available, defaults to `warn`

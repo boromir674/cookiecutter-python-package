@@ -89,7 +89,7 @@ generate-python = 'cookiecutter_python.cli:main'
 
 
 [tool.poetry.dependencies]
-python = ">3.6 <3.13"
+python = ">3.6,<3.13"
 click = "^8"
 cookiecutter = "^1.7.3"
 software-patterns = "^1.3.0"
@@ -98,11 +98,22 @@ gitpython = "^3.1"
 questionary = "^1.10.0"
 attrs = "^21.4.0"
 
-# A list of all of the optional dependencies, some of which are included in the
-# below `extras`. They can be opted into by apps.
-# "^" is the more conservative compared to "~"
-# caret ^ character: update to any new version that does not change the leftmost non-zero section.
-# "^2.1.7"  ==  >=2.1.7, <3.0.0
+
+# Caret requirements allow SemVer compatible updates to a specified version. An update is allowed if the new version number does not modify the left-most non-zero digit in the major, minor, patch grouping. For instance, if we previously ran poetry add requests@^2.13.0 and wanted to update the library and ran poetry update requests, poetry would update us to version 2.14.0 if it was available, but would not update us to 3.0.0. If instead we had specified the version string as ^0.1.13, poetry would update to 0.1.14 but not 0.2.0. 0.0.x is not considered compatible with any other version.
+# REQUIREMENT  VERSIONS ALLOWED
+# ^1.2.3	   >=1.2.3 <2.0.0
+# ^1.2	       >=1.2.0 <2.0.0
+# ^1	       >=1.0.0 <2.0.0
+# ^0.2.3	   >=0.2.3 <0.3.0
+# ^0.0.3	   >=0.0.3 <0.0.4
+# ^0.0	       >=0.0.0 <0.1.0
+# ^0	       >=0.0.0 <1.0.0
+# "~" is the more conservative compared to "^"
+# Tilde requirements specify a minimal version with some ability to update. If you specify a major, minor, and patch version or only a major and minor version, only patch-level changes are allowed. If you only specify a major version, then minor- and patch-level changes are allowed.
+# REQUIREMENT  VERSIONS ALLOWED
+# ~1.2.3	   >=1.2.3 <1.3.0
+# ~1.2	       >=1.2.0 <1.3.0
+# ~1	       >=1.0.0 <2.0.0
 
 # Test: packages imported in test code and packages required for the "test runner"
 pytest = { version = ">= 6.2.4", optional = true }
