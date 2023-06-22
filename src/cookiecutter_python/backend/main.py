@@ -34,7 +34,7 @@ def generate(
         no_input=no_input,
         extra_context=extra_context,
     )
-
+    print('Exta context: ', request.extra_context)
     project_dir = generator(
         os.path.abspath(os.path.join(my_dir, '..')),  # template dir path
         checkout=checkout,

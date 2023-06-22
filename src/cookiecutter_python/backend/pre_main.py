@@ -12,6 +12,8 @@ def pre_main(**kwargs):
     request.check_results = request.check.check(request.web_servers)
 
     interpreters = supported_interpreters(request.config_file, request.no_input)
+    print(f'--- Interpreters type: {type(interpreters)}')
+    print(f'Interpreters: {interpreters}')
     if interpreters:  # update extra_context
         # supported interpreters supplied either from yaml or from user's input
         request.extra_context = create_context(

@@ -19,6 +19,7 @@ def get_request():
     interpreters = cookiecutter['interpreters']
     if isinstance(interpreters, str):  # we assume it is json
         interpreters = json.loads(interpreters)
+        cookiecutter['interpreters'] = interpreters
     # the name the client code should use to import the generated package/module
     module_name = '{{ cookiecutter.pkg_name }}'
 
