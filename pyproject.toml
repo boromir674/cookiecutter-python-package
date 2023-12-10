@@ -87,7 +87,6 @@ exclude = [
 [tool.poetry.scripts]
 generate-python = 'cookiecutter_python.cli:main'
 
-
 [tool.poetry.dependencies]
 python = ">3.6,<3.13"
 click = "^8"
