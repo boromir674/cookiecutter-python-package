@@ -2,6 +2,8 @@ from requests.exceptions import ConnectionError as RequestsConnectionError
 
 
 def post_main(request):
+    """Check if any CI 'deployment' (ie in pypi), would require minor tweak."""
+    # ie if gen proj py pkg name is 'gg', and pypi.org/project/gg/ is already taken
     for result in request.check_results:
         try:
             request.check.handle(result)
