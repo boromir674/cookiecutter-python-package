@@ -33,3 +33,18 @@ def pre_main(request):
                 'interpreters': interpreters,
             }
         )
+
+    # define the 'docs' folder path to use, per docs builder
+    request.extra_context = dict(
+        request.extra_context or {},
+        **{
+            'docs': {
+                # TODO: unit-test compatibility of below with post_gen_project
+                # test that 'find_docs_folder' functions correctly
+                # make sure tests will break in case of future diviation
+                # aka make the case a regression test 
+                'mkdocs': 'docs-mkdocs',
+                'sphinx': 'docs-sphinx',
+            },
+        }
+    )

@@ -35,8 +35,11 @@ def generate(
     """
     print('Start Python Generator !')
     # Initialize Generation Request:
-    #  - to store the CI Test Matrix Python Interpreters versions list
-    #  - to prepare Cookiecutter extra context (ie add versions list)
+    #  - store the CI Test Matrix Python Interpreters versions list
+    #       -  prompt for user input in interactive or atempt to read from yaml otherwise
+    #  - prepare Cookiecutter extra context:
+    #      - add interpreters versions list
+    #      - store 'docs' folder, per docs builder, that Generator supports
     request = pre_main(Request(
         config_file=config_file,
         default_config=default_config,
