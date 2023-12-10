@@ -11,4 +11,6 @@ Flow Chart, of Jobs Dependencies in the Pipeline.
 
 **config: ./.github/workflows/test.yaml**
 
-{% include 'cicd_mermaid.md' %}
+{# to be evaluated, post generation, during markdown docs build process #}
+{# not during Generation time #}
+{% raw %}{% include 'dockerfile_mermaid.md' %}{% endraw %}
