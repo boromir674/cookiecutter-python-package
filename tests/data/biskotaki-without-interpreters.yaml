@@ -11,3 +11,6 @@ default_context:
     github_username: boromir674
     project_short_description: Project entirely generated using https://github.com/boromir674/cookiecutter-python-package/
     initialize_git_repo: no
+    ## READ THE DOCS CI ##
+    docs_generator: sphinx
+    rtd_python_version: "3.10"
