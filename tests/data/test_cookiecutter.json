@@ -20,6 +20,8 @@
         "py39"
       ]
     },
+    "docs_generator": ["mkDocs", "sphinx"],
+    "rtd_python_version": ["3.8", "3.9", "3.10", "3.11", "3.12"],
     "_template": "."
   }
 }
