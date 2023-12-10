@@ -1,20 +1,28 @@
-#!/bin/env python3
-"""
+"""Post Cookie Hook: Templated File with jinja2 syntax
+
 Cookiecutter post generation hook script that handles operations after the
 template project is used to generate a target project.
 """
+#!/usr/bin/env python3
+
+import shutil
 import os
 import re
 import subprocess
 import sys
+import typing as t
 from collections import OrderedDict
 from copy import copy
 from os import path
 from pathlib import Path
-
+import json
 from git import Actor, Repo
 
-PROJECT_DIRECTORY = os.path.realpath(os.path.curdir)
+# Path to dir, where the a newly Scaffolded Project is generated in
+# ie: if we scaffold new Project at /data/my-project/README.md, /data/my-project/src
+# then GEN_PROJ_LOC = /data/my-project
+GEN_PROJ_LOC = os.path.realpath(os.path.curdir)
+
 
 def get_request():
     # variable with an object of the same type that will be set in the next line
@@ -24,7 +32,7 @@ def get_request():
 
     request = type('PostGenProjectRequest', (), {
         'cookiecutter': COOKIECUTTER,
-        'project_dir': PROJECT_DIRECTORY,
+        'project_dir': GEN_PROJ_LOC,
         'module_name': COOKIECUTTER['pkg_name'],
         'author': "{{ cookiecutter.author }}",
         'author_email': "{{ cookiecutter.author_email }}",
@@ -32,6 +40,12 @@ def get_request():
         'project_type': "{{ cookiecutter.project_type }}",
         # 'add_cli': {'module+cli': True}.get(project_type, False),
         'repo': None,
+        # Docs Website: build/infra config, and Content Templates
+        'docs_website': {
+            'builder': COOKIECUTTER['docs_generator'],
+            'python_runtime': COOKIECUTTER['rtd_python_version'],
+        },
+        'extra_context': COOKIECUTTER['extra_context'],
     })
     return request
 
@@ -39,14 +53,20 @@ def get_request():
 class PostFileRemovalError(Exception):
     pass
 
-# Define specialized files present per 'project_type' (ie 'module' or 'module+cli')
+### Define specialized files present per 'project_type' ###
+# (ie 'module' or 'module+cli')
 # each set of files exists exclusively for a given 'project_type'
+
+# CLI have extra files for command-line entrypoint and unit testing them
 CLI_ONLY = lambda x: [
     ('src', x.module_name, 'cli.py'),
     ('src', x.module_name, '__main__.py'),
     ('tests', 'test_cli.py'),
     ('tests', 'test_invoking_cli.py'),
 ]
+# Pytest plugin must use the legacy setuptools backend (no poetry)
+# thus the setup.cfg and MANIFEST.in files are required
+# Pytest pluging usually declare their public API in fixtures.py
 PYTEST_PLUGIN_ONLY = lambda x: [
     ('src', x.module_name, 'fixtures.py'),
     ('tests', 'conftest.py'),
@@ -61,10 +81,29 @@ delete_files = {
     'module+cli': lambda x: PYTEST_PLUGIN_ONLY(x),
 }
 
+
 def post_file_removal(request):
+    """Preserve only files relevant to Project Type requested to Generate.
+
+    Delete files that are not relevant to the project type requested to
+    generate.
+    
+    For example, if the user requested a 'module' project type,
+    then delete the files that are only relevant to a 'module+cli' project.
+
+    Args:
+        request ([type]): [description]
+    """
+    # Post Removal, given 'Project Type', of potentially extra files
     files_to_remove = [
-        path.join(request.project_dir, *x) for x in delete_files[request.project_type](request)
+        os.path.join(request.project_dir, *x) for x in delete_files[request.project_type](request)
     ]
+
+    # Remove Exra files, given 'Docs Website Builder' (DWB)
+    for builder_id, docs_gen_location in request.extra_context['docs'].items():
+        if builder_id != request.docs_website['builder']:
+            shutil.rmtree(docs_gen_location)
+
     for file in files_to_remove:
         os.remove(file)
 
@@ -161,7 +200,7 @@ def git_commit(request):
     )
 
 
-def is_git_repo_clean(project_directory: str):
+def is_git_repo_clean(project_directory: str) -> bool:
     """
     Check to confirm if the Git repository is clean and has no uncommitted
     changes. If its clean return True otherwise False.
@@ -180,11 +219,21 @@ def is_git_repo_clean(project_directory: str):
 
 
 def _post_hook():
+    """Delete irrelevant to Project Type files and optionally do git commit."""
     request = get_request()
+    # Delete gen Files related to
+    #  - different Project Type
+    #  - related to different documentation builder tool"""
     post_file_removal(request)
+    # move/rename docs-builder-specific docs folder to 'docs/'
+    os.rename(
+        request.extra_context['docs'][request.docs_website['builder']],
+        os.path.join(request.project_dir, 'docs')
+    )
+    # Git commit
     if request.initialize_git_repo:
         initialize_git_repo(request.project_dir)
-        grant_basic_permissions(request.project_dir)
+        # grant_basic_permissions(request.project_dir)
         request.repo = Repo(request.project_dir)
         if not is_git_repo_clean(request.project_dir):
             git_commit(request)
@@ -194,10 +243,12 @@ def _post_hook():
 
 
 def post_hook():
+    """Delete irrelevant to Project Type files and optionally do git commit."""
     sys.exit(_post_hook())
 
 
 def main():
+    """Delete irrelevant to Project Type files and optionally do git commit."""
     post_hook()
 
 
