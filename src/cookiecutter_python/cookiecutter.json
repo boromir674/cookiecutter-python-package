@@ -26,6 +26,6 @@
             "3.11"
         ]
     },
-    "docs_generator": ["mkdocs", "sphinx"],
+    "docs_builder": ["mkdocs", "sphinx"],
     "rtd_python_version": ["3.8", "3.9", "3.10", "3.11", "3.12"]
 }

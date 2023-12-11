@@ -24,11 +24,11 @@ build:
       - python ./scripts/visualize-dockerfile.py > ./docs/dockerfile_mermaid.md
 
 
-{% if cookiecutter.docs_generator == "mkdocs" %}
+{% if cookiecutter.docs_builder == "mkdocs" %}
 # Build documentation in the "docs/" directory with mkdocs
 mkdocs:
   configuration: mkdocs.yml
-{% elif cookiecutter.docs_generator == "sphinx" %}
+{% elif cookiecutter.docs_builder == "sphinx" %}
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
   builder: html
