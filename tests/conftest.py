@@ -785,6 +785,18 @@ def get_expected_generated_files(distro_loc, project_files):
             p = file_path.relative_to(docs_template_dir).parts[1:]
             expected_to_find.add(Path('docs') / rp)
 
+        # pre-emptively any .pyc file from expected_to_find, since a bug was reported
+        # where the .pyc file was not removed
+        expected_to_find = {
+            x
+            for x in expected_to_find
+            if not str(x).endswith('.pyc') and not str(x).endswith('__pycache__')
+        }
+
+        assert not any(
+            [str(x).endswith('.pyc') for x in expected_to_find]
+        ), f"Sanity check fail: {expected_to_find}"
+
         assert docs_builder == 'sphinx' or not (Path(folder) / 'docs' / 'conf.py').exists()
 
         ## DERIVE the EXPECTED root-level files for post removal, based on docs-builer type
@@ -872,6 +884,11 @@ def get_expected_generated_files(distro_loc, project_files):
                 if x not in set([Path(_) for _ in files_to_remove])
             ]
         )
+        # Regression Test
+        # assert no .pyc files apear as has reported on sdist installation
+        assert not any(
+            [str(x).endswith('.pyc') for x in expected_gen_files]
+        ), f"Sanity check fail: {expected_gen_files}"
 
         assert (
             len(set([type(x) for x in expected_gen_files])) == 1
@@ -881,6 +898,10 @@ def get_expected_generated_files(distro_loc, project_files):
         so_far: int = len(expected_gen_files)
 
         expected_gen_files.update(expected_to_find)
+
+        assert not any(
+            [str(x).endswith('.pyc') for x in expected_gen_files]
+        ), f"pyc files found: {[str(x.name) for x in expected_gen_files if str(x).endswith('.pyc')]}" 
 
         assert (
             len(set([type(x) for x in expected_gen_files])) == 1
