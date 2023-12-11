@@ -24,6 +24,7 @@ def emulated_generated_project(
         # Emulate Docs Builder related files (ie mkdocs and sphinx)
         mkdir(path.join(project_dir, 'docs-mkdocs'))
         from pathlib import Path
+
         Path(path.join(project_dir, 'mkdocs.yml')).touch()
 
         mkdir(path.join(project_dir, 'docs-sphinx'))
@@ -37,7 +38,7 @@ def emulated_generated_project(
             module_name=name,
         )
         from functools import reduce
-        
+
         files_set = reduce(
             lambda i, j: i + j,
             (
@@ -62,10 +63,12 @@ def emulated_generated_project(
 def get_post_gen_main(get_object, emulated_generated_project):
     """Get a monkeypatched post_gen_project.main method."""
     from pathlib import Path
+
     name = 'gg'
 
     def get_pre_gen_hook_project_main(add_cli: bool, project_dir: Path):
         """"""
+
         def mock_get_request():
             # to avoid bugs we require empty project dir, before emulated generation
             absolute_proj_dir = Path(project_dir).absolute()
@@ -77,7 +80,7 @@ def get_post_gen_main(get_object, emulated_generated_project):
             # sanity check that sth got generated
             assert len(list(absolute_proj_dir.iterdir())) > 0
             return emulated_request
-        
+
         # Get a main method, with a mocked get_request
         # When called, will Generate the Emulated Project, in a just-in-time-manner
         # By monekypatching the `get_request`, with the emulated one
@@ -93,6 +96,7 @@ def get_post_gen_main(get_object, emulated_generated_project):
 
     return get_pre_gen_hook_project_main
 
+
 # REQUIRES well maintained emulated generated project (fixtures)
 @pytest.mark.parametrize(
     'add_cli',
@@ -105,6 +109,7 @@ def get_post_gen_main(get_object, emulated_generated_project):
 def test_main(add_cli, get_post_gen_main, assert_initialized_git, tmpdir):
     """Verify post_gen_project behaviour, with emulated generated project."""
     from pathlib import Path
+
     # GIVEN a temporary directory, for the emulated generated project
     tmp_target_gen_dir = tmpdir.mkdir('cookiecutter_python.unit-tests.proj-targetr-gen-dir')
 
@@ -139,10 +144,9 @@ def test_main(add_cli, get_post_gen_main, assert_initialized_git, tmpdir):
     # assert (expexpected_gen_dir / 'mkdocs.yml').exists()
     # assert (expexpected_gen_dir / 'mkdocs.yml').is_file()
 
-
     # Run the Post Gen Hook, with a custom Request, and make sure
     # there is an Emulated Generated Project, with all the necessary files
-    # that are required for the post_gen_project to run successfully    
+    # that are required for the post_gen_project to run successfully
     # WHEN the post_gen_project.main is called
     result = post_hook_main()
     # THEN the post_gen_project.main runs successfully

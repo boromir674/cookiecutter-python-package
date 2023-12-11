@@ -34,8 +34,8 @@ assert DOCS
 def get_context() -> OrderedDict:
     """Get the Context, that was used by the Templating Engine at render time"""
     # variable with an object of the same type that will be set in the next line
-    COOKIECUTTER = OrderedDict()
-    COOKIECUTTER = {{ cookiecutter }}  # pylint: disable=undefined-variable
+    COOKIECUTTER: OrderedDict = OrderedDict()
+    COOKIECUTTER = {{ cookiecutter }}  # type: ignore    # pylint: disable=undefined-variable
     return COOKIECUTTER
 
 

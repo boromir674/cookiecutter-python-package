@@ -8,10 +8,7 @@ from requests_futures.sessions import FuturesSession
 class WebHostingServiceChecker:
     # Check if CI config is out of the box ok to integrate with hosting services
     # or due to namespace collisions (ie on pypi.org/project/<name>, slight change is needed
-    """Check if CI config is out-of-the-box ok to integrate with hosting services
-
-    
-    """
+    """Check if CI config is out-of-the-box ok to integrate with hosting services"""
     url_getter: Callable[[str], str]
 
     def __call__(self, name: str):

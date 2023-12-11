@@ -64,8 +64,10 @@ def test_cli_offline(
     tmpdir,
 ):
     from os import path
+
     # GIVEN the CLI main entrypoint
     from cookiecutter_python.cli import main as cli_main
+
     # GIVEN a way to compute expectatoins, either in case
     #  - user config yaml, was passed as input to the CLI
     #  - or in case no yaml, but default config was passed as input to the CLI

@@ -1,9 +1,8 @@
 import os
-from re import L
 import typing as t
 from pathlib import Path
+
 import attr
-from click.core import F
 import pytest
 
 my_dir = os.path.dirname(os.path.realpath(__file__))
@@ -14,11 +13,12 @@ def distro_loc() -> Path:
     """Get Installation Root Directory; ie /python/site-packages/cookiecutter_python"
 
     This is the root directory of the Python Package Distribution (PPD).
-    
+
     Returns:
         Path: the root directory of the Python Package Distribution (PPD).
     """
     import cookiecutter_python
+
     # if top-level init is at '/site-packages/cookiecutter_python/__init__.py'
     # then distro_path is '/site-packages/cookiecutter_python'
     distro_path: Path = Path(cookiecutter_python.__file__).parent
@@ -27,9 +27,13 @@ def distro_loc() -> Path:
     # THEN the TD includes valid Template Variables Configuration
     ## REGRESSION Tests ##
     assert (distro_path / 'cookiecutter.json').is_file(), f"distro_path: {distro_path}"
-    assert (distro_path / r'{{ cookiecutter.project_slug }}').is_dir(), f"distro_path: {distro_path}"
+    assert (
+        distro_path / r'{{ cookiecutter.project_slug }}'
+    ).is_dir(), f"distro_path: {distro_path}"
     # hard require pyproject.toml for at Python Repo root dir
-    assert (distro_path / r'{{ cookiecutter.project_slug }}' / 'pyproject.toml').is_file(), f"distro_path: {distro_path}"
+    assert (
+        distro_path / r'{{ cookiecutter.project_slug }}' / 'pyproject.toml'
+    ).is_file(), f"distro_path: {distro_path}"
     return distro_path
 
 
@@ -44,12 +48,13 @@ def load_json():
 
     return _load_context_json
 
+
 class ProjectGenerationRequestDataProtocol(t.Protocol):
     template: str
     destination: str
     default_dict: bool
     extra_context: t.Optional[t.Dict[str, t.Any]]
-        
+
 
 @pytest.fixture
 def generate_project() -> t.Callable[[ProjectGenerationRequestDataProtocol], str]:
@@ -57,7 +62,9 @@ def generate_project() -> t.Callable[[ProjectGenerationRequestDataProtocol], str
     from cookiecutter_python.backend.generator import generator as cookiecutter
 
     def _generate_project(generate_request: ProjectGenerationRequestDataProtocol) -> str:
-        assert isinstance(generate_request.template, str), f"Expexted str for template, got {type(generate_request.template)}"
+        assert isinstance(
+            generate_request.template, str
+        ), f"Expexted str for template, got {type(generate_request.template)}"
         return cookiecutter(
             generate_request.template,
             no_input=True,
@@ -74,29 +81,33 @@ def generate_project() -> t.Callable[[ProjectGenerationRequestDataProtocol], str
 def project_dir(generate_project, distro_loc, tmpdir):
     """Generate a Fresh new Project using the production cookiecutter template and
     the tests/data/test_cookiecutter.json file as default dict."""
+
     @attr.s(auto_attribs=True, kw_only=True)
     class ProjectGenerationRequestData:
         """Information to pass in the CLI when invoked for testing purposes."""
+
         template: str
         destination: str
         default_dict: bool
         extra_context: t.Optional[t.Dict[str, t.Any]]
-    assert 
-    proj_dir: str = generate_project(ProjectGenerationRequestData(
-        template=str(distro_loc),
-        destination=tmpdir,
-        default_dict=False,
-        extra_context={
-            'project_type': 'module+cli',
-            'interpreters': {
-                'supported-interpreters': [
-                    '3.7',
-                    '3.8',
-                    '3.9',
-                ]
+
+    proj_dir: str = generate_project(
+        ProjectGenerationRequestData(
+            template=str(distro_loc),
+            destination=tmpdir,
+            default_dict=False,
+            extra_context={
+                'project_type': 'module+cli',
+                'interpreters': {
+                    'supported-interpreters': [
+                        '3.7',
+                        '3.8',
+                        '3.9',
+                    ]
+                },
             },
-        },
-    ))
+        )
+    )
     return proj_dir
 
 
@@ -106,7 +117,7 @@ def hook_request_new(distro_loc):
 
     MUST be kept in SYNC with the 'pre' and 'post' hook scripts, and their
     interface.
- 
+
     Before and after the actual generation process (ie read the termplate files,
     generate the output files, etc), there 2 scripts that run. The 'pre' script
     (implemented as src/cookiecutter/hooks/pre_gen_project.py) and the 'post'
@@ -139,23 +150,24 @@ def hook_request_new(distro_loc):
     Returns:
         [type]: [description]
     """
-    from software_patterns import SubclassRegistry
-    from collections import OrderedDict
     import json
+    from collections import OrderedDict
+
+    from software_patterns import SubclassRegistry
 
     # Read JSON data from 'tests/data/test_cookiecutter.json'
     # The JSON schema and values MUST reflect a valid internal state of the
     # Generator's Template Engine.
     # at the moment, we exclusively use cookiecutter (and jinja2) for templating
-
     # GIVEN data that reflect a state, which the Templating Engine is possible
     # to arrive at, when the Generator CLI is invoked.
     ### We want to skip running the templating engine, so we mock the state
     ### that the templating engine would have produced.
     engine_state: OrderedDict = json.loads(
         (Path(my_dir) / 'data' / 'test_cookiecutter.json').read_text(),
-        object_pairs_hook=OrderedDict)
-    
+        object_pairs_hook=OrderedDict,
+    )
+
     # THEN the state must be a valid Context for the Template Engine
     assert set(engine_state.keys()) == {'cookiecutter'}
     intended_template_path: str = engine_state['cookiecutter'].pop('_template')
@@ -167,22 +179,22 @@ def hook_request_new(distro_loc):
     # which is used at runtime, when the Generator CLI is invoked, and thus if
     # file changes, the Generator's behaviour changes.
     td_cookiecutter_json_data = json.loads(
-        (distro_loc / 'cookiecutter.json').read_text(),
-        object_pairs_hook=OrderedDict
+        (distro_loc / 'cookiecutter.json').read_text(), object_pairs_hook=OrderedDict
     )
 
     # ΤΗΕΝ engine_state (excluding _template) must be supported TD cookiecutter.json
     intended_templated_variables: t.Set[str] = set(engine_state['cookiecutter'].keys())
     supported_template_variables: t.Set[str] = set(td_cookiecutter_json_data.keys())
     engine_state_vars_supported_by_td: bool = intended_templated_variables.issubset(
-        supported_template_variables)
+        supported_template_variables
+    )
     assert engine_state_vars_supported_by_td
 
     # WHEN we define a way to create a valid input for pre and post hooks
     @attr.s(auto_attribs=True, kw_only=True)
     class HookRequest:
         """Hook Request Data Class.
-        
+
         This class is used to mock the 'templated variables' that are used in
         the 'pre' and 'post' scripts.
 
@@ -211,13 +223,14 @@ def hook_request_new(distro_loc):
             project_type (t.Optional[str]): [description]
             module_name (t.Optional[str]): [description]
         """
+
         project_dir: t.Optional[str]
         # TODO improvement: add key/value types
         ### We want to skip running the templating engine, so we mock the state
         ### that the templating engine would have produced.
-        cookiecutter: t.Optional[t.Dict] = attr.ib(default=OrderedDict(
-            td_cookiecutter_json_data, **engine_state['cookiecutter']
-        ))
+        cookiecutter: t.Optional[t.Dict] = attr.ib(
+            default=OrderedDict(td_cookiecutter_json_data, **engine_state['cookiecutter'])
+        )
         author: t.Optional[str] = attr.ib(default='Konstantinos Lampridis')
         author_email: t.Optional[str] = attr.ib(default='boromir674@hotmail.com')
         initialize_git_repo: t.Optional[bool] = attr.ib(default=True)
@@ -239,13 +252,17 @@ def hook_request_new(distro_loc):
             )
         )
         package_version_string: t.Optional[str] = attr.ib(default='0.0.1')
-        docs_extra_info: t.Optional[bool] = attr.ib(default=dict(
-            **{'mkdocs': 'docs-mkdocs', 'sphinx': 'docs-sphinx'},
-        ))
-        docs_website: t.Optional[str] = attr.ib(default={
-            'builder': 'sphinx',
-            'python_runtime': '3.10',
-        })
+        docs_extra_info: t.Optional[bool] = attr.ib(
+            default=dict(
+                **{'mkdocs': 'docs-mkdocs', 'sphinx': 'docs-sphinx'},
+            )
+        )
+        docs_website: t.Optional[str] = attr.ib(
+            default={
+                'builder': 'sphinx',
+                'python_runtime': '3.10',
+            }
+        )
 
     class BaseHookRequest(metaclass=SubclassRegistry):
         pass
@@ -304,7 +321,7 @@ def mock_hosting_services(future_session_mock):
                     # atm, the is LIMITED to supply only 'get' method
                     # when mock `get` is called, it immediately returns an Futere HTTPResponse-like
                     # which provides the 'result' attribute, which can immediately be evaluated.
-                    # Ref: self.result = lambda: type('HttpResponseMock', (), {'status_code': status_code})    
+                    # Ref: self.result = lambda: type('HttpResponseMock', (), {'status_code': status_code})
                     cls._instance.future_session_mock_instance = future_session_mock(
                         url_2_code
                     )
@@ -343,7 +360,9 @@ def mock_check(get_object, mock_hosting_services):
     class MockCheck:
         _config: Any = attr.ib(default=None)
         futures_session_instance_mock: Any = attr.ib(init=False)  # singleton instance
-        hosting_service_infos: Mapping = attr.ib(init=False, default=attr.Factory(dict))
+        hosting_service_infos: t.MutableMapping[str, t.Any] = attr.ib(
+            init=False, default=attr.Factory(dict)
+        )
 
         def __attrs_post_init__(self):
             self.mock_futures_session()
@@ -387,7 +406,9 @@ def mock_check(get_object, mock_hosting_services):
         def __call__(self, service_name: str, found: bool):
             # Find URL from service_name
             if service_name not in self.hosting_service_infos:
-                self.hosting_service_infos[service_name] = HostingServices.create(service_name)
+                self.hosting_service_infos[str(service_name)] = HostingServices.create(
+                    service_name
+                )
             info = self.hosting_service_infos[service_name]
             url = info.service.url(
                 self._config.data.get(
@@ -541,6 +562,7 @@ def user_config(load_yaml, load_json, distro_loc):
         Args:
             Union[str, None]: the path to the user config yaml file or None
         """
+
         path: t.Union[str, None]
 
         _data_file_path: t.Union[str, Path, None] = attr.ib(init=False, default=None)
@@ -554,18 +576,23 @@ def user_config(load_yaml, load_json, distro_loc):
                 data_file = Path(my_dir) / '..' / config_files.get(self.path, self.path)
                 assert data_file.exists()
                 assert data_file.is_file()
-                assert data_file.suffix in ('.yaml', '.yml'), f"Invalid user config file {data_file}. Expected .yaml or .yml extension."
-                
+                assert data_file.suffix in (
+                    '.yaml',
+                    '.yml',
+                ), f"Invalid user config file {data_file}. Expected .yaml or .yml extension."
+
                 self._config_file_arg = data_file
                 self._data_file_path = data_file
                 self._loader = ConfigData.load_yaml(load_yaml)
             else:
                 self._config_file_arg = None
                 self._data_file_path = distro_loc / 'cookiecutter.json'
-                
+
                 assert self._data_file_path.exists()
                 assert self._data_file_path.is_file()
-                assert self._data_file_path.suffix == '.json', f"Invalid cookiecutter.json file {self._data_file_path}. Expected .json extension."
+                assert (
+                    self._data_file_path.suffix == '.json'
+                ), f"Invalid cookiecutter.json file {self._data_file_path}. Expected .json extension."
                 self._loader = ConfigData.load_json(load_json)
 
             self._data = self._loader(self._data_file_path)
@@ -694,49 +721,63 @@ def get_expected_generated_files(distro_loc, project_files):
     from os import path
     from pathlib import Path
 
-    from cookiecutter_python.hooks.post_gen_project import delete_files as proj_type_2_files_to_remove
+    from cookiecutter_python.hooks.post_gen_project import (
+        delete_files as proj_type_2_files_to_remove,
+    )
 
     def _get_expected_generated_files(folder: str, config):
         expected_project_type = config.data['project_type']
         print(f"\nDEBUG: expected_project_type: {expected_project_type}")
         pkg_name: str = config.data['pkg_name']
-        assert 'docs_builder' in config.data, f"Missing 'docs_builder' in {config.data}. Probaly, user config Yaml supplied is missing templated values, required by cookiecutter.json."
+        assert (
+            'docs_builder' in config.data
+        ), f"Missing 'docs_builder' in {config.data}. Probaly, user config Yaml supplied is missing templated values, required by cookiecutter.json."
         docs_builder: str = config.data['docs_builder']
 
         expected_gen_files: t.Set[Path] = set()
         expected_to_find: t.Set = set()
-        files_to_remove = t.Set = set()
 
         ## DERIVE the EXPECTED files to be removed, varying across 'Project Type'
         # we leverage the same production logic
         a = proj_type_2_files_to_remove[expected_project_type]
-        r = a(type('G', (), {
-                'module_name': pkg_name,
-            },
-        ))
+        r = a(
+            type(
+                'G',
+                (),
+                {
+                    'module_name': pkg_name,
+                },
+            )
+        )
 
-        ii = [x for x in proj_type_2_files_to_remove[expected_project_type](type(
-            'PostGenRequestLike',
-            (),
-            {
-                'project_dir': folder,
-                'project_type': expected_project_type,
-                'module_name': pkg_name,
-            },
-        ))]
+        ii = [
+            x
+            for x in proj_type_2_files_to_remove[expected_project_type](
+                type(
+                    'PostGenRequestLike',
+                    (),
+                    {
+                        'project_dir': folder,
+                        'project_type': expected_project_type,
+                        'module_name': pkg_name,
+                    },
+                )
+            )
+        ]
         SEP = '/'
-
-        for i in ii:
-            files_to_remove.add(SEP.join(i))
+        files_to_remove: t.Set[str] = {SEP.join(i) for i in ii}
 
         ## DERIVE expected files inside 'docs' gen dir
         from cookiecutter_python.backend import get_docs_gen_internal_config
+
         doc_builder_id_2_docs_gen_folder: t.Dict[str, str] = get_docs_gen_internal_config()
         builder_docs_folder_name: str = doc_builder_id_2_docs_gen_folder[docs_builder]
-        docs_template_dir: Path = distro_loc / r'{{ cookiecutter.project_slug }}' / builder_docs_folder_name
+        docs_template_dir: Path = (
+            distro_loc / r'{{ cookiecutter.project_slug }}' / builder_docs_folder_name
+        )
 
         # those docs template dir, are expected to be found under 'docs' folder
-        for file_path in iter( (x for x in docs_template_dir.rglob('*') if x.is_file()) ):
+        for file_path in iter((x for x in docs_template_dir.rglob('*') if x.is_file())):
             assert isinstance(file_path, Path)
             # assert file_path is relative to docs_template_dir
             rp = file_path.relative_to(docs_template_dir)
@@ -752,20 +793,48 @@ def get_expected_generated_files(distro_loc, project_files):
 
         for docs_builder_id, builder_files in builder_id_2_files.items():
             if docs_builder_id != config.data['docs_builder']:
-                assert all([type(x) == str for x in builder_files]), f"Temporary Requirement of Test Code: builder_files must be a list of strings, not {builder_files}"
+                assert all(
+                    [type(x) == str for x in builder_files]
+                ), f"Temporary Requirement of Test Code: builder_files must be a list of strings, not {builder_files}"
                 files_to_remove.update(builder_files)
-        assert all([type(x) == str for x in files_to_remove]), f"Temporary Requirement of Test Code: files_to_remove must be a list of strings, not {files_to_remove}"
+        assert all(
+            [type(x) == str for x in files_to_remove]
+        ), f"Temporary Requirement of Test Code: files_to_remove must be a list of strings, not {files_to_remove}"
 
         ## Remove all Template Docs files from Expectations
-        for docs_builder_id, builder_docs_folder_name in doc_builder_id_2_docs_gen_folder.items():
-            for file_path in iter( (x for x in Path(distro_loc / r'{{ cookiecutter.project_slug }}' / builder_docs_folder_name).rglob('*') if x.is_file()) ):
+        for (
+            docs_builder_id,
+            builder_docs_folder_name,
+        ) in doc_builder_id_2_docs_gen_folder.items():
+            for file_path in iter(
+                (
+                    x
+                    for x in Path(
+                        distro_loc
+                        / r'{{ cookiecutter.project_slug }}'
+                        / builder_docs_folder_name
+                    ).rglob('*')
+                    if x.is_file()
+                )
+            ):
                 # assert only Path instances are in the loop
-                assert isinstance(file_path, Path), f"Temporary Requirement of Test Code: file_path must be a Path instance, not {file_path}"
-                
+                assert isinstance(
+                    file_path, Path
+                ), f"Temporary Requirement of Test Code: file_path must be a Path instance, not {file_path}"
+
                 # see that file_path is relative to the distro_loc / r'{{ cookiecutter.project_slug }}'
-                assert file_path.relative_to(distro_loc / r'{{ cookiecutter.project_slug }}').parts[0] == builder_docs_folder_name, f"Sanity check fail: {file_path.relative_to(distro_loc / r'{{ cookiecutter.project_slug }}')}, {file_path.relative_to(distro_loc / r'{{ cookiecutter.project_slug }}').parts[0]}"
-                files_to_remove.add(str(file_path.relative_to(distro_loc / r'{{ cookiecutter.project_slug }}')))
-        assert all([type(x) == str for x in files_to_remove]), f"Temporary Requirement of Test Code: files_to_remove must be a list of strings, not {files_to_remove}"
+                assert (
+                    file_path.relative_to(
+                        distro_loc / r'{{ cookiecutter.project_slug }}'
+                    ).parts[0]
+                    == builder_docs_folder_name
+                ), f"Sanity check fail: {file_path.relative_to(distro_loc / r'{{ cookiecutter.project_slug }}')}, {file_path.relative_to(distro_loc / r'{{ cookiecutter.project_slug }}').parts[0]}"
+                files_to_remove.add(
+                    str(file_path.relative_to(distro_loc / r'{{ cookiecutter.project_slug }}'))
+                )
+        assert all(
+            [type(x) == str for x in files_to_remove]
+        ), f"Temporary Requirement of Test Code: files_to_remove must be a list of strings, not {files_to_remove}"
 
         all_template_files = project_files(distro_loc / r'{{ cookiecutter.project_slug }}')
 
@@ -775,9 +844,7 @@ def get_expected_generated_files(distro_loc, project_files):
         ]
 
         # some adhoc sanity checks
-        assert str(Path('.github/workflows/test.yaml')) in set(
-            [str(_) for _ in _files]
-        )
+        assert str(Path('.github/workflows/test.yaml')) in set([str(_) for _ in _files])
         assert all(
             [
                 str(Path(x)) in set([str(_) for _ in _files])
@@ -786,31 +853,49 @@ def get_expected_generated_files(distro_loc, project_files):
                     'pyproject.toml',
                     f"src/{pkg_name}/__init__.py",
                     'tests/conftest.py',
-                    'mkdocs.yml'
+                    'mkdocs.yml',
                 )
             ]
         )
-        assert len(set([type(x) for x in expected_to_find] )) == 1, f"Sanity check fail: {expected_to_find}"
-        assert len(set([type(x) for x in files_to_remove] )) == 1, f"Sanity check fail: {files_to_remove}"
+        assert (
+            len(set([type(x) for x in expected_to_find])) == 1
+        ), f"Sanity check fail: {expected_to_find}"
+        assert (
+            len(set([type(x) for x in files_to_remove])) == 1
+        ), f"Sanity check fail: {files_to_remove}"
 
         # update based on derived expected post deletions to happen
-        expected_gen_files = set([x for x in [i for i in all_template_files.relative_file_paths()] if x not in set([Path(_) for _ in files_to_remove])])
-        
-        assert len(set([type(x) for x in expected_gen_files] )) == 1, f"Sanity check fail: {expected_gen_files}"
+        expected_gen_files = set(
+            [
+                x
+                for x in [i for i in all_template_files.relative_file_paths()]
+                if x not in set([Path(_) for _ in files_to_remove])
+            ]
+        )
+
+        assert (
+            len(set([type(x) for x in expected_gen_files])) == 1
+        ), f"Sanity check fail: {expected_gen_files}"
 
         # update based on derived post renamings to happen
         so_far: int = len(expected_gen_files)
 
         expected_gen_files.update(expected_to_find)
-        
-        assert len(set([type(x) for x in expected_gen_files] )) == 1, f"Sanity check fail: {expected_gen_files}"
-        # sanity check on posix path
-        assert isinstance(list(expected_gen_files)[0], Path), f"Sanity check fail: {expected_gen_files}"
 
-        assert len(expected_gen_files) == so_far + len(expected_to_find), f"Our logic for deriving the expected files is wrong."
+        assert (
+            len(set([type(x) for x in expected_gen_files])) == 1
+        ), f"Sanity check fail: {expected_gen_files}"
+        # sanity check on posix path
+        assert isinstance(
+            list(expected_gen_files)[0], Path
+        ), f"Sanity check fail: {expected_gen_files}"
+
+        assert len(expected_gen_files) == so_far + len(
+            expected_to_find
+        ), f"Our logic for deriving the expected files is wrong."
 
         ## Inject Values in TEMPLATE placeholders ##
-        # TODO: ease maintainace of below, with some automation
+        # TODO: use comprenhesoin once stable, and then ease maintainace, with some automation
         res = []
         for x in expected_gen_files:
             parts = x.parts
@@ -818,7 +903,8 @@ def get_expected_generated_files(distro_loc, project_files):
             assert len(parts) > 0, f"Sanity check fail: {parts}"
             b = SEP.join(parts)
             b = b.replace(r'{{ cookiecutter.pkg_name }}', pkg_name).replace(
-                    r'{{ cookiecutter.project_slug }}', config.data['project_slug'])
+                r'{{ cookiecutter.project_slug }}', config.data['project_slug']
+            )
 
             l = b.split(SEP)
             assert len(l) > 0, f"Sanity check fail: {l}"
@@ -828,16 +914,17 @@ def get_expected_generated_files(distro_loc, project_files):
             assert type(l) == list, f"Sanity check fail: {l}"
             c: Path = Path(*l)
             res.append(c)
-        
-        # Filter again through predicted for removale since some of them already inject their value for distro name
-        res = set([x for x in res if x not in set([Path(_) for _ in files_to_remove])])
 
-        return iter(x for x in res)
+        assert len(set([type(x) for x in res])) == 1, f"Sanity check fail: {res}"
+
+        # Filter again through predicted for removale since some of them already inject their value for distro name
+        return iter(set([x for x in res if x not in set([Path(_) for _ in files_to_remove])]))
 
     return _get_expected_generated_files
 
 
 # ASSERT Fixtures
+
 
 @pytest.fixture
 def assert_commit_author_is_expected_author(assert_initialized_git):
