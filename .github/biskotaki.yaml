@@ -14,3 +14,7 @@ default_context:
     project_short_description: Project generated from the https://github.com/boromir674/cookiecutter-python-package/tree/master/src/cookiecutter_python cookiecutter
     initialize_git_repo: no
     interpreters: {"supported-interpreters": ["3.6", "3.7", "3.8", "3.9", "3.10"]}
+    ## Documentation Config ##
+    docs_builder: "sphinx"
+    ## READ THE DOCS CI Config ##
+    rtd_python_version: "3.10"
