@@ -15,25 +15,39 @@ from collections import OrderedDict
 from copy import copy
 from os import path
 from pathlib import Path
-import json
 from git import Actor, Repo
+from cookiecutter_python.backend.gen_docs_common import get_docs_gen_internal_config
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Path to dir, where the a newly Scaffolded Project is generated in
 # ie: if we scaffold new Project at /data/my-project/README.md, /data/my-project/src
 # then GEN_PROJ_LOC = /data/my-project
 GEN_PROJ_LOC = os.path.realpath(os.path.curdir)
 
+# Doc Builders docs default location, after Generation
+DOCS: t.Dict[str, str] = get_docs_gen_internal_config()
+assert DOCS
 
-def get_request():
+def get_context() -> OrderedDict:
+    """Get the Context, that was used by the Templating Engine at render time"""
     # variable with an object of the same type that will be set in the next line
     COOKIECUTTER = OrderedDict()
     COOKIECUTTER = {{ cookiecutter }}  # pylint: disable=undefined-variable
+    return COOKIECUTTER
+
+
+def get_request():
+    cookie_dict: OrderedDict = get_context()
     INITIALIZE_GIT_REPO_FLAG = "{{ cookiecutter.initialize_git_repo|lower }}"
 
-    request = type('PostGenProjectRequest', (), {
-        'cookiecutter': COOKIECUTTER,
+    # DATA: str to value mapping
+    data: t.Dict[str, t.Any] = {
+        'cookiecutter': cookie_dict,
         'project_dir': GEN_PROJ_LOC,
-        'module_name': COOKIECUTTER['pkg_name'],
+        'module_name': cookie_dict['pkg_name'],
         'author': "{{ cookiecutter.author }}",
         'author_email': "{{ cookiecutter.author_email }}",
         'initialize_git_repo': {'yes': True}.get(INITIALIZE_GIT_REPO_FLAG, False),
@@ -42,11 +56,25 @@ def get_request():
         'repo': None,
         # Docs Website: build/infra config, and Content Templates
         'docs_website': {
-            'builder': COOKIECUTTER['docs_generator'],
-            'python_runtime': COOKIECUTTER['rtd_python_version'],
+            'builder': cookie_dict['docs_builder'],
+            'python_runtime': cookie_dict['rtd_python_version'],
         },
-        'extra_context': COOKIECUTTER['extra_context'],
-    })
+        'docs_extra_info': DOCS,
+    }
+    # sanity check on data dict for docs_website and docs_extra_info
+    # TODO: remove sanity checks
+    assert 'docs_website' in data.keys(), f"ERROR 1: 'docs_website' not in data.keys()={data.keys()}"
+    assert 'builder' in data['docs_website'].keys(), f"ERROR 2: 'builder' not in data['docs_website'].keys()={data['docs_website'].keys()}"
+    assert 'docs_extra_info' in data.keys(), f"ERROR 3a: 'docs_extra_info' not in data.keys()={data.keys()}"
+    assert data['docs_website']['builder'] in {'mkdocs', 'sphinx'}, f"ERROR 3b: docs_website.builder={data['docs_website']['builder']} not in ['mkdocs', 'sphinx']"
+
+    from pprint import pprint
+    pprint("\n\n")
+    pprint(data)
+    assert data['docs_website']['builder'] in data['docs_extra_info'].keys(), f"ERROR 3: docs_website.builder={data['docs_website']['builder']} not in docs_extra_info.keys()={data['docs_extra_info'].keys()}"
+    request = type('PostGenProjectRequest', (), data)
+    assert hasattr(request, 'docs_extra_info')
+    assert hasattr(request, 'docs_website')
     return request
 
 
@@ -81,6 +109,12 @@ delete_files = {
     'module+cli': lambda x: PYTEST_PLUGIN_ONLY(x),
 }
 
+# TODO: read from cookiecuuter['_template'] / cookiecutter.json
+# delete mkdocs.yml if not using mkdocs
+# delete sphinx files if not using sphinx
+builder_id_2_files = {
+    'mkdocs': ['mkdocs.yml'],
+}
 
 def post_file_removal(request):
     """Preserve only files relevant to Project Type requested to Generate.
@@ -94,18 +128,44 @@ def post_file_removal(request):
     Args:
         request ([type]): [description]
     """
-    # Post Removal, given 'Project Type', of potentially extra files
+    from pathlib import Path
+    
     files_to_remove = [
         os.path.join(request.project_dir, *x) for x in delete_files[request.project_type](request)
     ]
-
-    # Remove Exra files, given 'Docs Website Builder' (DWB)
-    for builder_id, docs_gen_location in request.extra_context['docs'].items():
-        if builder_id != request.docs_website['builder']:
-            shutil.rmtree(docs_gen_location)
-
+    ## Post Removal, given 'Project Type', of potentially extra files ##
     for file in files_to_remove:
-        os.remove(file)
+        try:
+            os.remove(file)
+        except FileNotFoundError:
+            raise PostFileRemovalError(f"File '{file}' not found in Project Directory.")
+
+    ## Remove gen 'docs' folders, given 'Docs Website Builder' (DWB) ##
+    try:
+        for builder_id, gen_docs_folder_name in request.docs_extra_info.items():
+            if builder_id != request.docs_website['builder']:
+                shutil.rmtree(str(Path(request.project_dir) / gen_docs_folder_name))
+    except AttributeError:  # debug attributes of requests and their runtime values
+        print('\n-----')
+        print(f'Dir request: {dir(request)}')
+        print('Has docs_website attribute?: ', hasattr(request, 'docs_website'))
+        print(f"has docs_extra_info attribute?: {hasattr(request, 'docs_extra_info')}")
+        print('-----')
+        raise
+    
+    ## Remove top level files (ie mkdocs.yml), defined in builder_id_2_files map ##
+    for builder_id, files in builder_id_2_files.items():
+        if builder_id != request.docs_website['builder']:
+            for file in files:
+                try:
+                    os.remove(os.path.join(request.project_dir, file))
+                except FileNotFoundError:
+                    print(f"[DEBUG] Doc File '{file}' for Post Remove not found.")
+                    print(f"[DEBUG] Current Working Directory: {os.getcwd()}")
+                    print(f"[DEBUG] Project Directory: {request.project_dir}")
+                    print(f"[DEBUG] File Path: {os.path.join(request.project_dir, file)}")
+                    print(f"[DEBUG] Files in Project Directory: {os.listdir(request.project_dir)}")
+                    raise PostFileRemovalError(f"File '{file}' not found in Project Directory.")
 
 
 def _get_run_parameters(python3_minor: int):
@@ -226,10 +286,16 @@ def _post_hook():
     #  - related to different documentation builder tool"""
     post_file_removal(request)
     # move/rename docs-builder-specific docs folder to 'docs/'
-    os.rename(
-        request.extra_context['docs'][request.docs_website['builder']],
-        os.path.join(request.project_dir, 'docs')
-    )
+    try:
+        os.rename(
+            str(Path(request.project_dir) / request.docs_extra_info[request.docs_website['builder']]),
+            os.path.join(request.project_dir, 'docs')
+        )
+    except OSError as error:
+        print(f"** Could not move/rename '{request.docs_extra_info[request.docs_website['builder']]}' to 'docs/'")
+        print('Exception: ' + str(error))
+        raise error
+
     # Git commit
     if request.initialize_git_repo:
         initialize_git_repo(request.project_dir)

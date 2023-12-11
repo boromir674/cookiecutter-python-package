@@ -1,7 +1,7 @@
-from .context import create_context
 import typing as t
 from .helpers import supported_interpreters
 from .hosting_services import Engine
+from .gen_docs_common import get_docs_gen_internal_config
 
 
 def pre_main(request):
@@ -35,16 +35,17 @@ def pre_main(request):
         )
 
     # define the 'docs' folder path to use, per docs builder
-    request.extra_context = dict(
-        request.extra_context or {},
-        **{
-            'docs': {
-                # TODO: unit-test compatibility of below with post_gen_project
-                # test that 'find_docs_folder' functions correctly
-                # make sure tests will break in case of future diviation
-                # aka make the case a regression test 
-                'mkdocs': 'docs-mkdocs',
-                'sphinx': 'docs-sphinx',
-            },
-        }
-    )
+    # request.extra_context = dict(
+    #     request.extra_context or {},
+    #     **{
+    #         'docs': {
+    #             # TODO: unit-test compatibility of below with post_gen_project
+    #             # test that 'find_docs_folder' functions correctly
+    #             # make sure tests will break in case of future diviation
+    #             # aka make the case a regression test 
+    #             'mkdocs': 'docs-mkdocs',
+    #             'sphinx': 'docs-sphinx',
+    #         },
+    #     }
+    # )
+    return request
