@@ -8,6 +8,11 @@ import pytest
     None,
 ])
 def test_file_is_valid_yaml(config_file, user_config, mock_check, tmpdir):
+    """Test Generator produces Valid CI config files, as expected.
+    
+    This Test features the following:
+      - automatically mocks futures (web/http)
+    """
     from pathlib import Path
     # user_config_file: Path = Path(__file__).parent / '..' / config_file
 

@@ -1,17 +1,36 @@
 import os
+from re import L
 import typing as t
-
+from pathlib import Path
 import attr
+from click.core import F
 import pytest
 
 my_dir = os.path.dirname(os.path.realpath(__file__))
 
 
 @pytest.fixture
-def production_template() -> str:
-    import cookiecutter_python
+def distro_loc() -> Path:
+    """Get Installation Root Directory; ie /python/site-packages/cookiecutter_python"
 
-    return os.path.dirname(cookiecutter_python.__file__)
+    This is the root directory of the Python Package Distribution (PPD).
+    
+    Returns:
+        Path: the root directory of the Python Package Distribution (PPD).
+    """
+    import cookiecutter_python
+    # if top-level init is at '/site-packages/cookiecutter_python/__init__.py'
+    # then distro_path is '/site-packages/cookiecutter_python'
+    distro_path: Path = Path(cookiecutter_python.__file__).parent
+
+    # BTD is compatible to Generator's Templating Engine, i.e. Cookiecutter (jinja2)
+    # THEN the TD includes valid Template Variables Configuration
+    ## REGRESSION Tests ##
+    assert (distro_path / 'cookiecutter.json').is_file(), f"distro_path: {distro_path}"
+    assert (distro_path / r'{{ cookiecutter.project_slug }}').is_dir(), f"distro_path: {distro_path}"
+    # hard require pyproject.toml for at Python Repo root dir
+    assert (distro_path / r'{{ cookiecutter.project_slug }}' / 'pyproject.toml').is_file(), f"distro_path: {distro_path}"
+    return distro_path
 
 
 @pytest.fixture
@@ -25,60 +44,20 @@ def load_json():
 
     return _load_context_json
 
-
-@pytest.fixture
-def test_context_file():
-    from pathlib import Path
-
-    return Path(my_dir) / 'data' / 'test_cookiecutter.json'
-
-
-@pytest.fixture
-def test_context(load_json, test_context_file) -> t.Dict:
-    return load_json(test_context_file)
-
-
-@pytest.fixture
-def production_templated_project(production_template) -> str:
-    return os.path.join(production_template, r'{{ cookiecutter.project_slug }}')
-
-
-@attr.s(auto_attribs=True, kw_only=True)
-class ProjectGenerationRequestData:
+class ProjectGenerationRequestDataProtocol(t.Protocol):
     template: str
     destination: str
     default_dict: bool
     extra_context: t.Optional[t.Dict[str, t.Any]]
-
-
-@pytest.fixture
-def test_project_generation_request(
-    production_template, tmpdir
-) -> ProjectGenerationRequestData:
-    """Test data, holding information on how to invoke the cli for testing."""
-    return ProjectGenerationRequestData(
-        template=production_template,
-        destination=tmpdir,
-        default_dict=False,
-        extra_context={
-            'project_type': 'module+cli',
-            'interpreters': {
-                'supported-interpreters': [
-                    '3.7',
-                    '3.8',
-                    '3.9',
-                ]
-            },
-        },
-    )
-
+        
 
 @pytest.fixture
-def generate_project() -> t.Callable[[ProjectGenerationRequestData], str]:
+def generate_project() -> t.Callable[[ProjectGenerationRequestDataProtocol], str]:
     """Generator backend used by the production Generator CLI."""
     from cookiecutter_python.backend.generator import generator as cookiecutter
 
-    def _generate_project(generate_request: ProjectGenerationRequestData) -> str:
+    def _generate_project(generate_request: ProjectGenerationRequestDataProtocol) -> str:
+        assert isinstance(generate_request.template, str), f"Expexted str for template, got {type(generate_request.template)}"
         return cookiecutter(
             generate_request.template,
             no_input=True,
@@ -92,66 +71,42 @@ def generate_project() -> t.Callable[[ProjectGenerationRequestData], str]:
 
 
 @pytest.fixture
-def project_dir(generate_project, test_project_generation_request):
+def project_dir(generate_project, distro_loc, tmpdir):
     """Generate a Fresh new Project using the production cookiecutter template and
     the tests/data/test_cookiecutter.json file as default dict."""
-    proj_dir: str = generate_project(test_project_generation_request)
+    @attr.s(auto_attribs=True, kw_only=True)
+    class ProjectGenerationRequestData:
+        """Information to pass in the CLI when invoked for testing purposes."""
+        template: str
+        destination: str
+        default_dict: bool
+        extra_context: t.Optional[t.Dict[str, t.Any]]
+    assert 
+    proj_dir: str = generate_project(ProjectGenerationRequestData(
+        template=str(distro_loc),
+        destination=tmpdir,
+        default_dict=False,
+        extra_context={
+            'project_type': 'module+cli',
+            'interpreters': {
+                'supported-interpreters': [
+                    '3.7',
+                    '3.8',
+                    '3.9',
+                ]
+            },
+        },
+    ))
     return proj_dir
 
 
 @pytest.fixture
-def emulated_production_cookiecutter_dict(production_template, test_context) -> t.Mapping:
-    """Equivalent to the {{ cookiecutter }} templated variable runtime value.
-
-    Returns:
-        t.Mapping: cookiecutter runtime configuration, as key/value hash map
-    """
-    import json
-    from collections import OrderedDict
-
-    with open(os.path.join(production_template, "cookiecutter.json"), "r") as fp:
-        data: OrderedDict = json.load(fp, object_pairs_hook=OrderedDict)
-        return OrderedDict(data, **test_context)
-
-
-@pytest.fixture
-def hook_request_class(emulated_production_cookiecutter_dict):
-    @attr.s(auto_attribs=True, kw_only=True)
-    class HookRequest:
-        project_dir: t.Optional[str]
-        # TODO improvement: add key/value types
-        cookiecutter: t.Optional[t.Dict] = attr.ib(
-            default=emulated_production_cookiecutter_dict
-        )
-        author: t.Optional[str] = attr.ib(default='Konstantinos Lampridis')
-        author_email: t.Optional[str] = attr.ib(default='boromir674@hotmail.com')
-        initialize_git_repo: t.Optional[bool] = attr.ib(default=True)
-        interpreters: t.Optional[t.Dict] = attr.ib(
-            default=[
-                '3.6',
-                '3.7',
-                '3.8',
-                '3.9',
-                '3.10',
-                '3.11',
-            ]
-        )
-        project_type: t.Optional[str] = attr.ib(default='module')
-        module_name: t.Optional[str] = attr.ib(default='awesome_novelty_python_library')
-        pypi_package: t.Optional[str] = attr.ib(
-            default=attr.Factory(
-                lambda self: self.module_name.replace('_', '-'), takes_self=True
-            )
-        )
-        package_version_string: t.Optional[str] = attr.ib(default='0.0.1')
-
-    return HookRequest
-
-
-@pytest.fixture
-def hook_request_new(hook_request_class):
+def hook_request_new(distro_loc):
     """Emulate the templated data used in the 'pre' and 'post' hooks scripts.
 
+    MUST be kept in SYNC with the 'pre' and 'post' hook scripts, and their
+    interface.
+ 
     Before and after the actual generation process (ie read the termplate files,
     generate the output files, etc), there 2 scripts that run. The 'pre' script
     (implemented as src/cookiecutter/hooks/pre_gen_project.py) and the 'post'
@@ -185,17 +140,123 @@ def hook_request_new(hook_request_class):
         [type]: [description]
     """
     from software_patterns import SubclassRegistry
+    from collections import OrderedDict
+    import json
+
+    # Read JSON data from 'tests/data/test_cookiecutter.json'
+    # The JSON schema and values MUST reflect a valid internal state of the
+    # Generator's Template Engine.
+    # at the moment, we exclusively use cookiecutter (and jinja2) for templating
+
+    # GIVEN data that reflect a state, which the Templating Engine is possible
+    # to arrive at, when the Generator CLI is invoked.
+    ### We want to skip running the templating engine, so we mock the state
+    ### that the templating engine would have produced.
+    engine_state: OrderedDict = json.loads(
+        (Path(my_dir) / 'data' / 'test_cookiecutter.json').read_text(),
+        object_pairs_hook=OrderedDict)
+    
+    # THEN the state must be a valid Context for the Template Engine
+    assert set(engine_state.keys()) == {'cookiecutter'}
+    intended_template_path: str = engine_state['cookiecutter'].pop('_template')
+    assert intended_template_path == '.'
+
+    assert '_template' not in engine_state['cookiecutter'].keys()
+
+    # GIVEN the Generator's Templated Variables Configuration file (ie cookiecutter.json)
+    # which is used at runtime, when the Generator CLI is invoked, and thus if
+    # file changes, the Generator's behaviour changes.
+    td_cookiecutter_json_data = json.loads(
+        (distro_loc / 'cookiecutter.json').read_text(),
+        object_pairs_hook=OrderedDict
+    )
+
+    # ΤΗΕΝ engine_state (excluding _template) must be supported TD cookiecutter.json
+    intended_templated_variables: t.Set[str] = set(engine_state['cookiecutter'].keys())
+    supported_template_variables: t.Set[str] = set(td_cookiecutter_json_data.keys())
+    engine_state_vars_supported_by_td: bool = intended_templated_variables.issubset(
+        supported_template_variables)
+    assert engine_state_vars_supported_by_td
+
+    # WHEN we define a way to create a valid input for pre and post hooks
+    @attr.s(auto_attribs=True, kw_only=True)
+    class HookRequest:
+        """Hook Request Data Class.
+        
+        This class is used to mock the 'templated variables' that are used in
+        the 'pre' and 'post' scripts.
+
+        The 'pre' and 'post' scripts are also templated! Consequently, similarly
+        to the how the templated package depends on the 'templated variables',
+        the 'pre' and 'post' scripts need a 'templating engine'.
+
+        In our unit tests we do not run a 'templating engine' and thus it is
+        required to mock the templated variables, when testing the 'pre' or
+        'post' script.
+
+        This class provides an easily modified/extended infrastructure to mock
+        all the necessary 'template variables' mentioned above.
+
+        Thus, when writing (unit) test cases for testing code in the 'pre' or
+        'post' scripts (python modules) it is recommended to use this class to
+        mock any 'templated variables', according to your needs.
+
+        Args:
+            project_dir (t.Optional[str]): [description]
+            cookiecutter (t.Optional[t.Dict]): [description]
+            author (t.Optional[str]): [description]
+            author_email (t.Optional[str]): [description]
+            initialize_git_repo (t.Optional[bool]): [description]
+            interpreters (t.Optional[t.Dict]): [description]
+            project_type (t.Optional[str]): [description]
+            module_name (t.Optional[str]): [description]
+        """
+        project_dir: t.Optional[str]
+        # TODO improvement: add key/value types
+        ### We want to skip running the templating engine, so we mock the state
+        ### that the templating engine would have produced.
+        cookiecutter: t.Optional[t.Dict] = attr.ib(default=OrderedDict(
+            td_cookiecutter_json_data, **engine_state['cookiecutter']
+        ))
+        author: t.Optional[str] = attr.ib(default='Konstantinos Lampridis')
+        author_email: t.Optional[str] = attr.ib(default='boromir674@hotmail.com')
+        initialize_git_repo: t.Optional[bool] = attr.ib(default=True)
+        interpreters: t.Optional[t.Dict] = attr.ib(
+            default=[
+                '3.6',
+                '3.7',
+                '3.8',
+                '3.9',
+                '3.10',
+                '3.11',
+            ]
+        )
+        project_type: t.Optional[str] = attr.ib(default='module')
+        module_name: t.Optional[str] = attr.ib(default='awesome_novelty_python_library')
+        pypi_package: t.Optional[str] = attr.ib(
+            default=attr.Factory(
+                lambda self: self.module_name.replace('_', '-'), takes_self=True
+            )
+        )
+        package_version_string: t.Optional[str] = attr.ib(default='0.0.1')
+        docs_extra_info: t.Optional[bool] = attr.ib(default=dict(
+            **{'mkdocs': 'docs-mkdocs', 'sphinx': 'docs-sphinx'},
+        ))
+        docs_website: t.Optional[str] = attr.ib(default={
+            'builder': 'sphinx',
+            'python_runtime': '3.10',
+        })
 
     class BaseHookRequest(metaclass=SubclassRegistry):
         pass
 
     @attr.s(auto_attribs=True, kw_only=True)
     @BaseHookRequest.register_as_subclass('pre')
-    class PreGenProjectRequest(hook_request_class):
+    class PreGenProjectRequest(HookRequest):
         project_dir: str = attr.ib(default=None)
 
     @BaseHookRequest.register_as_subclass('post')
-    class PostGenProjectRequest(hook_request_class):
+    class PostGenProjectRequest(HookRequest):
         pass
 
     return BaseHookRequest
@@ -239,9 +300,21 @@ def mock_hosting_services(future_session_mock):
             def __new__(cls):
                 if not cls._instance:
                     cls._instance = super().__new__(cls)
+                    # create a mock instance of the FuturesSession class
+                    # atm, the is LIMITED to supply only 'get' method
+                    # when mock `get` is called, it immediately returns an Futere HTTPResponse-like
+                    # which provides the 'result' attribute, which can immediately be evaluated.
+                    # Ref: self.result = lambda: type('HttpResponseMock', (), {'status_code': status_code})    
                     cls._instance.future_session_mock_instance = future_session_mock(
                         url_2_code
                     )
+                    # when 'get' method is called, the insted of real futures behavior
+                    # our mock will be called instead, which immediately returns
+                    # an object, which provides the 'result' attribute, which can
+                    # immediately be evaluated.
+
+                    # Ref: self.result = lambda: type('HttpResponseMock', (), {'status_code': status_code})
+
                 return cls._instance
 
             def get(self, url: str):
@@ -284,28 +357,46 @@ def mock_check(get_object, mock_hosting_services):
             self._config = config
 
         def mock_futures_session(self):
+            # GIVEN a class that can act in place of the FuturesSession class
+            # NOTE: instances of class can only mock the 'get' method
             futures_session_class_mock = mock_hosting_services({})
+            # we let client call the __call__ method of this instance to
+            # in order to setup the url_2_code dict with actual values
+
+            # because futures_session_class_mock is implemented as singleton
+            # we create a new instance of it, to
             self.futures_session_instance_mock = futures_session_class_mock()
+            # has 'get' method amd 'url_2_code' property
             get_object(
                 'WebHostingServiceChecker',
                 'cookiecutter_python.backend.hosting_services.check_web_hosting_service',
+                # we monkeypatch the FuturesSession class to return our mock
                 overrides={'FuturesSession': lambda: futures_session_class_mock},
             )
+            # EFFECT:
+            # when client code invokes the __call__ method of a WebHostingServiceChecker isntance obj
+            # then 1. will create a session, not (as in prod) as an instance of FuturesSession class,
+            # but as an instance of our mock class (singleton)
+            # 2. will call the 'get' method of our mock session (not the prod instance method of FuturesSession class)
+            # which immediately returns an future-instance-like object (in place of prod future instance),
+            # which provides the 'result' attribute, which can immediately be evaluated.
+            # 3. will return a "request'Result', with same interface as prod, which
+            # instead of wrapping a real future instance (like in prod),
+            # it wraps our future-instance-like mock object
 
         def __call__(self, service_name: str, found: bool):
-            url = self.get_url(service_name)
-            self.futures_session_instance_mock.url_2_code[url] = 200 if found else 404
-
-        def get_url(self, service_name):
+            # Find URL from service_name
             if service_name not in self.hosting_service_infos:
                 self.hosting_service_infos[service_name] = HostingServices.create(service_name)
             info = self.hosting_service_infos[service_name]
-            return info.service.url(
+            url = info.service.url(
                 self._config.data.get(
                     info.variable_name,
                     "cannot determine 'name' (ie pypi, readthedocs) from config file",
                 )
             )
+            # Emulate singal emitted by the WebHostingServiceChecker
+            self.futures_session_instance_mock.url_2_code[url] = 200 if found else 404
 
     return MockCheck()
 
@@ -421,7 +512,7 @@ def load_yaml():
 
 
 @pytest.fixture
-def user_config(load_yaml, load_json, production_templated_project):
+def user_config(load_yaml, load_json, distro_loc):
     from pathlib import Path
 
     DataLoader = t.Callable[[t.Union[str, Path]], t.MutableMapping]
@@ -459,14 +550,22 @@ def user_config(load_yaml, load_json, production_templated_project):
 
         def __attrs_post_init__(self):
             if self.path is not None:
+                # Read data coming from yaml
                 data_file = Path(my_dir) / '..' / config_files.get(self.path, self.path)
+                assert data_file.exists()
+                assert data_file.is_file()
+                assert data_file.suffix in ('.yaml', '.yml'), f"Invalid user config file {data_file}. Expected .yaml or .yml extension."
                 
                 self._config_file_arg = data_file
                 self._data_file_path = data_file
                 self._loader = ConfigData.load_yaml(load_yaml)
             else:
                 self._config_file_arg = None
-                self._data_file_path = Path(production_templated_project) / '..' / 'cookiecutter.json'
+                self._data_file_path = distro_loc / 'cookiecutter.json'
+                
+                assert self._data_file_path.exists()
+                assert self._data_file_path.is_file()
+                assert self._data_file_path.suffix == '.json', f"Invalid cookiecutter.json file {self._data_file_path}. Expected .json extension."
                 self._loader = ConfigData.load_json(load_json)
 
             self._data = self._loader(self._data_file_path)
@@ -492,6 +591,9 @@ def user_config(load_yaml, load_json, production_templated_project):
                 data['initialize_git_repo'] = {'yes': True}.get(
                     data['initialize_git_repo'][0], False
                 )
+                # Docs Building #
+                data['docs_builder'] = data['docs_builder'][0]  # choice variable
+                # rtd_python_version has scalar value as default
                 return data
 
             return _load_json
@@ -587,54 +689,155 @@ def project_files():
 
 
 @pytest.fixture
-def get_expected_generated_files(production_templated_project, project_files):
+def get_expected_generated_files(distro_loc, project_files):
+    """Automatically derive the expected generated files given a config file."""
     from os import path
     from pathlib import Path
 
-    from cookiecutter_python.hooks.post_gen_project import delete_files
+    from cookiecutter_python.hooks.post_gen_project import delete_files as proj_type_2_files_to_remove
 
-    def _get_expected_generated_files(folder, config):
+    def _get_expected_generated_files(folder: str, config):
         expected_project_type = config.data['project_type']
-        request = type(
+        print(f"\nDEBUG: expected_project_type: {expected_project_type}")
+        pkg_name: str = config.data['pkg_name']
+        assert 'docs_builder' in config.data, f"Missing 'docs_builder' in {config.data}. Probaly, user config Yaml supplied is missing templated values, required by cookiecutter.json."
+        docs_builder: str = config.data['docs_builder']
+
+        expected_gen_files: t.Set[Path] = set()
+        expected_to_find: t.Set = set()
+        files_to_remove = t.Set = set()
+
+        ## DERIVE the EXPECTED files to be removed, varying across 'Project Type'
+        # we leverage the same production logic
+        a = proj_type_2_files_to_remove[expected_project_type]
+        r = a(type('G', (), {
+                'module_name': pkg_name,
+            },
+        ))
+
+        ii = [x for x in proj_type_2_files_to_remove[expected_project_type](type(
             'PostGenRequestLike',
             (),
             {
                 'project_dir': folder,
                 'project_type': expected_project_type,
-                'module_name': config.data['pkg_name'],
+                'module_name': pkg_name,
             },
-        )
-        files_to_remove = [path.join(*x) for x in delete_files[expected_project_type](request)]
+        ))]
+        SEP = '/'
 
-        all_template_files = project_files(production_templated_project)
-        expected_files = [
-            Path(str(x).replace(r'{{ cookiecutter.pkg_name }}', config.data['pkg_name']))
+        for i in ii:
+            files_to_remove.add(SEP.join(i))
+
+        ## DERIVE expected files inside 'docs' gen dir
+        from cookiecutter_python.backend import get_docs_gen_internal_config
+        doc_builder_id_2_docs_gen_folder: t.Dict[str, str] = get_docs_gen_internal_config()
+        builder_docs_folder_name: str = doc_builder_id_2_docs_gen_folder[docs_builder]
+        docs_template_dir: Path = distro_loc / r'{{ cookiecutter.project_slug }}' / builder_docs_folder_name
+
+        # those docs template dir, are expected to be found under 'docs' folder
+        for file_path in iter( (x for x in docs_template_dir.rglob('*') if x.is_file()) ):
+            assert isinstance(file_path, Path)
+            # assert file_path is relative to docs_template_dir
+            rp = file_path.relative_to(docs_template_dir)
+            assert file_path.relative_to(docs_template_dir)
+            p = file_path.relative_to(docs_template_dir).parts[1:]
+            expected_to_find.add(Path('docs') / rp)
+
+        assert docs_builder == 'sphinx' or not (Path(folder) / 'docs' / 'conf.py').exists()
+
+        ## DERIVE the EXPECTED root-level files for post removal, based on docs-builer type
+        # we leverage the same production mapping of builder_id to files
+        from cookiecutter_python.hooks.post_gen_project import builder_id_2_files
+
+        for docs_builder_id, builder_files in builder_id_2_files.items():
+            if docs_builder_id != config.data['docs_builder']:
+                assert all([type(x) == str for x in builder_files]), f"Temporary Requirement of Test Code: builder_files must be a list of strings, not {builder_files}"
+                files_to_remove.update(builder_files)
+        assert all([type(x) == str for x in files_to_remove]), f"Temporary Requirement of Test Code: files_to_remove must be a list of strings, not {files_to_remove}"
+
+        ## Remove all Template Docs files from Expectations
+        for docs_builder_id, builder_docs_folder_name in doc_builder_id_2_docs_gen_folder.items():
+            for file_path in iter( (x for x in Path(distro_loc / r'{{ cookiecutter.project_slug }}' / builder_docs_folder_name).rglob('*') if x.is_file()) ):
+                # assert only Path instances are in the loop
+                assert isinstance(file_path, Path), f"Temporary Requirement of Test Code: file_path must be a Path instance, not {file_path}"
+                
+                # see that file_path is relative to the distro_loc / r'{{ cookiecutter.project_slug }}'
+                assert file_path.relative_to(distro_loc / r'{{ cookiecutter.project_slug }}').parts[0] == builder_docs_folder_name, f"Sanity check fail: {file_path.relative_to(distro_loc / r'{{ cookiecutter.project_slug }}')}, {file_path.relative_to(distro_loc / r'{{ cookiecutter.project_slug }}').parts[0]}"
+                files_to_remove.add(str(file_path.relative_to(distro_loc / r'{{ cookiecutter.project_slug }}')))
+        assert all([type(x) == str for x in files_to_remove]), f"Temporary Requirement of Test Code: files_to_remove must be a list of strings, not {files_to_remove}"
+
+        all_template_files = project_files(distro_loc / r'{{ cookiecutter.project_slug }}')
+
+        _files = [  # build up proper info for the expected files
+            Path(str(x).replace(r'{{ cookiecutter.pkg_name }}', pkg_name))
             for x in all_template_files.relative_file_paths()
         ]
+
         # some adhoc sanity checks
         assert str(Path('.github/workflows/test.yaml')) in set(
-            [str(_) for _ in expected_files]
+            [str(_) for _ in _files]
         )
         assert all(
             [
-                str(Path(x)) in set([str(_) for _ in expected_files])
+                str(Path(x)) in set([str(_) for _ in _files])
                 for x in (
                     '.github/workflows/test.yaml',
                     'pyproject.toml',
-                    f"src/{config.data['pkg_name']}/__init__.py",
+                    f"src/{pkg_name}/__init__.py",
                     'tests/conftest.py',
+                    'mkdocs.yml'
                 )
             ]
         )
-        return iter(
-            x for x in expected_files if x not in set([Path(_) for _ in files_to_remove])
-        )
+        assert len(set([type(x) for x in expected_to_find] )) == 1, f"Sanity check fail: {expected_to_find}"
+        assert len(set([type(x) for x in files_to_remove] )) == 1, f"Sanity check fail: {files_to_remove}"
+
+        # update based on derived expected post deletions to happen
+        expected_gen_files = set([x for x in [i for i in all_template_files.relative_file_paths()] if x not in set([Path(_) for _ in files_to_remove])])
+        
+        assert len(set([type(x) for x in expected_gen_files] )) == 1, f"Sanity check fail: {expected_gen_files}"
+
+        # update based on derived post renamings to happen
+        so_far: int = len(expected_gen_files)
+
+        expected_gen_files.update(expected_to_find)
+        
+        assert len(set([type(x) for x in expected_gen_files] )) == 1, f"Sanity check fail: {expected_gen_files}"
+        # sanity check on posix path
+        assert isinstance(list(expected_gen_files)[0], Path), f"Sanity check fail: {expected_gen_files}"
+
+        assert len(expected_gen_files) == so_far + len(expected_to_find), f"Our logic for deriving the expected files is wrong."
+
+        ## Inject Values in TEMPLATE placeholders ##
+        # TODO: ease maintainace of below, with some automation
+        res = []
+        for x in expected_gen_files:
+            parts = x.parts
+            assert type(parts) == tuple, f"Sanity check fail: {parts}"
+            assert len(parts) > 0, f"Sanity check fail: {parts}"
+            b = SEP.join(parts)
+            b = b.replace(r'{{ cookiecutter.pkg_name }}', pkg_name).replace(
+                    r'{{ cookiecutter.project_slug }}', config.data['project_slug'])
+
+            l = b.split(SEP)
+            assert len(l) > 0, f"Sanity check fail: {l}"
+            assert l[-1] != '', f"Sanity check fail: {l}"
+            assert len(l) == len(parts), f"Sanity check fail: {l}, {parts}"
+            assert len(l) == len(x.parts), f"Sanity check fail: {l}, {x.parts}"
+            assert type(l) == list, f"Sanity check fail: {l}"
+            c: Path = Path(*l)
+            res.append(c)
+        
+        # Filter again through predicted for removale since some of them already inject their value for distro name
+        res = set([x for x in res if x not in set([Path(_) for _ in files_to_remove])])
+
+        return iter(x for x in res)
 
     return _get_expected_generated_files
 
 
 # ASSERT Fixtures
-
 
 @pytest.fixture
 def assert_commit_author_is_expected_author(assert_initialized_git):

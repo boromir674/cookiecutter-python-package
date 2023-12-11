@@ -78,6 +78,7 @@ CLI_RELATED_FILES = {
     'cli.py',
     '__main__.py',
 }
+"Files, only expected to be generated for cli type of Projects"
 
 
 @pytest.fixture
@@ -125,7 +126,9 @@ def test_enabling_add_cli_templated_variable(
     module_file,
     project_dir,
 ):
+    """Test that 'module+cli' Project Type generates CLI-explicit files."""
     from os import path
 
     get_file = module_file(project_dir)
+    assert path.exists(get_file(cli_related_file_name))
     assert path.isfile(get_file(cli_related_file_name))
