@@ -5,7 +5,12 @@ from pathlib import Path
 import attr
 import pytest
 
-my_dir = os.path.dirname(os.path.realpath(__file__))
+my_dir: str = os.path.dirname(os.path.realpath(__file__))
+
+@pytest.fixture
+def test_root() -> Path:
+    """Root directory Path of the test suite; ie /projects/my-project/tests/"""
+    return Path(my_dir)
 
 
 @pytest.fixture

@@ -29,7 +29,6 @@ GEN_PROJ_LOC = os.path.realpath(os.path.curdir)
 
 # Doc Builders docs default location, after Generation
 DOCS: t.Dict[str, str] = get_docs_gen_internal_config()
-assert DOCS
 
 def get_context() -> OrderedDict:
     """Get the Context, that was used by the Templating Engine at render time"""
