@@ -1,3 +1,4 @@
+import logging
 from typing import Callable
 
 import attr
@@ -6,14 +7,21 @@ from .check_web_hosting_service import WebHostingServiceChecker
 from .exceptions import ContextVariableDoesNotExist
 from .extract_name import NameExtractor
 
-ExtractNameAble = Callable[[str], str]
+logger = logging.getLogger(__name__)
 
 
 @attr.s(auto_attribs=True, slots=True, frozen=True)
 class ServiceChecker:
-    name_extractor: ExtractNameAble
+    # parser of User Config (YAML) file
+    name_extractor: Callable[[str], str]  # (config_file: str) -> str
+
+    # Resolves URLs and makes Future HTTP Requests
     web_service_checker: WebHostingServiceChecker
+
+    # Hard switch to enable/disable feature
     activate_flag: bool
+
+    # Path to User Config (YAML) file, to parse at runtime, on __call__ invoke
     config_file_path: str
 
     def __call__(self):
@@ -29,7 +37,29 @@ class ServiceChecker:
                 result = self.web_service_checker(name)
                 return result
             except ContextVariableDoesNotExist as error:
-                print(error)
+                # we assume that client deliberately had the activate flag on
+                # only because they know that the way the Generator has been
+                # parametrized (ie from CLI),
+                # accounting for User Config or Default Config precedance, is such
+                # that on Generator call the User Config will have precendence.
+                # But this is design to be call in pre_main, so rendering has
+                # not happened yet, so we can't rely on the User Config.
+
+                # We could manullay render the cookiecutter.json file, with jinja2
+
+                # or we can signal, that this can be called after rendering
+                # in post_main, but we are going to loose fancy Futures HTTP!
+                # and we are going to have to do the HTTP request in the main thread
+                # and we are going to have to do it in a blocking way, but still at the very end
+
+                # Atm, leaning more towards an INFO than a WARNING
+                logger.info(
+                    "Skipping check of remote server, because of missing context variable"
+                )
+                logger.info(error)
+                # atm service checker can only rely on user config yaml file
+                # the info can be derived from static cookiecutter.json file
+                # or after rendering the template
         return None
 
     @property

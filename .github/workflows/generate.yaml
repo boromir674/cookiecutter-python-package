@@ -68,8 +68,8 @@ jobs:
           python-version: "3.8"
       - name: Install dependencies
         run: |
-          sudo apt update -y && sudo apt install -y aptitude
-          sudo aptitude install -y graphviz
+          # sudo apt update -y && sudo apt install -y aptitude
+          # sudo aptitude install -y graphviz
           python -m pip install --upgrade pip
           python -m pip install tox==3.28
 
@@ -90,7 +90,13 @@ jobs:
           pip install --user -e .
           echo "    version: \"${{ env.PKG_VERSION }}\"" >> .github/biskotaki.yaml
           generate-python -o gen --config-file ./.github/biskotaki.yaml --no-input -f
-
+      - name: "Validate YAML format"
+        run: |
+          GEN_CI_CONFIG=gen/biskotaki/.github/workflows/test.yaml
+          if [ ! $(yq eval 'true' "$GEN_CI_CONFIG") ]; then
+            echo "ERROR: $GEN_CI_CONFIG is malformed"
+            exit 1
+          fi
       - name: Test distributions 'Source', 'Built' and 'edit' (dev env) mode installation
         run: |
           cd gen/biskotaki
@@ -103,7 +109,7 @@ jobs:
           tox -e type
           tox -e build
           tox -e check
-          tox -e graphs
+          # tox -e graphs
 
       - name: Push to dedicated branch in biskotaki repo
         uses: cpina/github-action-push-to-another-repository@main

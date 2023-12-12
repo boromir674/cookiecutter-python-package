@@ -35,6 +35,21 @@ class Engine:
         return self.handlers(request_result)
 
     def check(self, servers: List[str]):
+        """Request Future per supported server, for web hosting service checks
+
+        For each server the dedicated 'checker' is called, which tries to
+        return a Future.
+
+        Returns None checker's 'activation' boolean flag was off at runtime.
+        Returns None if internal mechanism for determining server URL fails to
+        derive the URL (atm URL is only trie d to be read from User Config yaml)
+
+        Args:
+            servers (List[str]): [description]
+
+        Returns:
+            [type]: [description]
+        """
         return iter(filter(None, [getattr(self, server)() for server in servers]))
 
     @staticmethod

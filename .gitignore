@@ -26,3 +26,7 @@ package-lock\.json
 package\.json
 pydeps/
 gen/
+Dockerfile-1
+logging\.py\.wip
+notes\.org~
+cookie-py\.log
