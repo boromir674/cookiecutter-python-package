@@ -43,9 +43,11 @@ logging.basicConfig(
 #### CONSOLE LOGGING
 console = logging.StreamHandler()
 
+
 ### Handler which writes DEBUG messages or higher to the sys.stderr ###
 console.setLevel(logging.DEBUG)
 # console.setLevel(logging.INFO)
+
 
 # set a format which is simpler for console use
 formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')

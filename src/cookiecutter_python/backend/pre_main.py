@@ -1,6 +1,5 @@
 import typing as t
 
-from .gen_docs_common import get_docs_gen_internal_config
 from .helpers import supported_interpreters
 from .hosting_services import Engine
 
@@ -14,10 +13,25 @@ def pre_main(request):
     ## External Services Clients Initialization ##
     # clients "how to question" 3rd party web services like pypi, and rtd
     # making http request to web servers hosting endpoints for APIs
+    
+    # Checkers are initialized as 'Activated'
+    #  if User Config is True and Default Config is False
+
     request.check = Engine.create(request.config_file, request.default_config)
 
-    # initialize the check_results
+    # Start Requesting Futures! - Hosting Service: PyPI, Read The Docs
     request.check_results = request.check.check(request.web_servers)
+    # Skipped i:
+    # - User Config does not have pkg_name and, readthedocs_project_slug
+    #   which are used to rderive the URLs for Future Requests
+    # - checker property activate_flag is False
+    """
+    If skipped due to missing info in User Config, we can expect Logs roughly as:
+    logger.info(
+        "Skipping check of remote server, because of missing context variable"
+    )
+    logger.info(error)
+    """
 
     # Case 1: NON Interactive Mode <--> `request.no_input == True`
     #   - if interpreters is None, then no user config file supplied in CLI
@@ -37,18 +51,4 @@ def pre_main(request):
             }
         )
 
-    # define the 'docs' folder path to use, per docs builder
-    # request.extra_context = dict(
-    #     request.extra_context or {},
-    #     **{
-    #         'docs': {
-    #             # TODO: unit-test compatibility of below with post_gen_project
-    #             # test that 'find_docs_folder' functions correctly
-    #             # make sure tests will break in case of future diviation
-    #             # aka make the case a regression test
-    #             'mkdocs': 'docs-mkdocs',
-    #             'sphinx': 'docs-sphinx',
-    #         },
-    #     }
-    # )
     return request
