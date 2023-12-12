@@ -1,0 +1,53 @@
+virtualenv
+macOS
+Macos
+conda
+env
+
+Quickstart
+Submodules
+Subpackages
+
+# python modules/object names
+biskotaki
+utils
+metaclass
+args
+kwargs
+Iterable
+json
+len
+
+# Software Engineering
+runnable
+instantiation
+subclasses
+dev
+templating
+
+deserialization
+discretization
+interpretable
+pre
+accomodate
+eg
+ie
+iterable
+indexable
+nb
+quantisized
+runtime
+
+# 2nd, 3rd
+nd
+
+cookiecutter
+pypi
+sdist
+cpu
+
+# Github
+github
+
+# Open Source Software Licences
+affero

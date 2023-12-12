@@ -1,0 +1,20 @@
+# Pull Request Labeling Rules based on changed files
+
+# Add 'ci' label to any change within the '.github' dir
+ci:
+- any: ['.github/*', '.github/**/*']
+
+
+# Add 'business_logic' label to any change within the 'src/biskotaki' dir
+business_logic:
+- any: ['src/biskotaki/*', 'src/biskotaki/**/*']
+
+
+# Add 'docs' label to any change within the 'docs' dir
+docs:
+- any: ['docs/*', 'docs/**/*']
+
+
+# Add 'test' label to any change within the 'tests' dir
+test:
+- any: ['tests/*', 'tests/**/*']
