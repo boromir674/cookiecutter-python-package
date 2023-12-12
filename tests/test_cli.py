@@ -1,8 +1,10 @@
-from re import L
+import logging
 import typing as t
 from pathlib import Path
+from re import L
+
 import pytest
-import logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -127,7 +129,7 @@ def test_cli_offline(
     #     path.join(project_dir, 'cookie-py.log')
     # ), f"Gen Logs NOT Found in Gen Target Dir! File Contents as string:\n\n{open(path.join(project_dir, 'cookie-py.log')).read()}"
 
-    # assert cookie-py.log is not found in project_dir 
+    # assert cookie-py.log is not found in project_dir
     # assert not path.exists(path.join(project_dir, 'cookie-py.log')), f"Gen Logs Found in Gen Target Dir! File Contents as string:\n\n{open(path.join(project_dir, 'cookie-py.log')).read()}"
 
     assert_files_committed_if_flag_is_on(gen_proj_dir, config)
@@ -155,7 +157,9 @@ def assert_generated_expected_project_type(
 ):
     def _assert_generated_expected_project_type(project_dir: str, config):
         runtime_generated_files = set(project_files(project_dir).relative_file_paths())
-        expected_gen_files: t.Set[Path] = set(get_expected_generated_files(project_dir, config))
+        expected_gen_files: t.Set[Path] = set(
+            get_expected_generated_files(project_dir, config)
+        )
 
         # TODO: obviously, remove if, with deterministic test config to control all aspect of Logs
         if Path('cookie-py.log') in runtime_generated_files:

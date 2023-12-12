@@ -13,7 +13,7 @@ def pre_main(request):
     ## External Services Clients Initialization ##
     # clients "how to question" 3rd party web services like pypi, and rtd
     # making http request to web servers hosting endpoints for APIs
-    
+
     # Checkers are initialized as 'Activated'
     #  if User Config is True and Default Config is False
 

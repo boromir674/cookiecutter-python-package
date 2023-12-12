@@ -1,5 +1,5 @@
 import json
-from typing import Callable, Mapping, TypedDict, Dict, Any
+from typing import Any, Callable, Dict, Mapping, TypedDict
 
 import attr
 
@@ -15,6 +15,7 @@ from .value_extractor import BaseValueExtractor
 @attr.s(auto_attribs=True, slots=True, frozen=True)
 class NameExtractor:
     """Extract Context Value, from a User's Config (YAML) file."""
+
     name_extractor: Callable[[Mapping], str]
 
     def __call__(self, config_file: str) -> str:
@@ -23,7 +24,7 @@ class NameExtractor:
         config_data = get_user_config(
             config_file=config_file,
             # MUST be False, otherwise Cookiecutter does not do YAML parsing
-            default_config=False,  
+            default_config=False,
         )
         context_data = config_data['default_context']
         try:

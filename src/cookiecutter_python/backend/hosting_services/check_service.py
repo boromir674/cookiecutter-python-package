@@ -1,3 +1,4 @@
+import logging
 from typing import Callable
 
 import attr
@@ -6,14 +7,11 @@ from .check_web_hosting_service import WebHostingServiceChecker
 from .exceptions import ContextVariableDoesNotExist
 from .extract_name import NameExtractor
 
-import logging
-
 logger = logging.getLogger(__name__)
 
 
 @attr.s(auto_attribs=True, slots=True, frozen=True)
 class ServiceChecker:
-
     # parser of User Config (YAML) file
     name_extractor: Callable[[str], str]  # (config_file: str) -> str
 
@@ -46,7 +44,7 @@ class ServiceChecker:
                 # that on Generator call the User Config will have precendence.
                 # But this is design to be call in pre_main, so rendering has
                 # not happened yet, so we can't rely on the User Config.
-                
+
                 # We could manullay render the cookiecutter.json file, with jinja2
 
                 # or we can signal, that this can be called after rendering

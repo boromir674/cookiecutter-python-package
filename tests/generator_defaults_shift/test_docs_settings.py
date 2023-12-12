@@ -1,7 +1,9 @@
 import typing as t
+
 import pytest
 
 CookiecutterJSONDefaults = t.Dict[str, t.Any]
+
 
 class ParsedConfig(t.Protocol):
     data: CookiecutterJSONDefaults
@@ -10,13 +12,13 @@ class ParsedConfig(t.Protocol):
 @pytest.fixture
 def distro_gen_docs_defaults(
     user_config,
-# ) -> t.TypedDict[
-#     'docs_builder': str,
-#     'rtd_python_version': str,
-# ]:
+    # ) -> t.TypedDict[
+    #     'docs_builder': str,
+    #     'rtd_python_version': str,
+    # ]:
 ):
     """The officially recognized defaults for the Docs Generator Feature.
-    
+
     Confidentlly, advertize that this is the default, which the generator will use,
     in case the user does not provide any input, for the Docs Generator Feature.
     """
@@ -61,14 +63,16 @@ def test_gen_parametrized_only_from_user_config_defaults_to_sphinx_builder_n_py3
 ):
     # GIVEN a user config YAML file
     from pathlib import Path
-    user_config_yaml: Path = Path(__file__).parent.parent / 'data' / 'biskotaki-with-no-docs-specs.yaml'
+
+    user_config_yaml: Path = (
+        Path(__file__).parent.parent / 'data' / 'biskotaki-with-no-docs-specs.yaml'
+    )
     assert user_config_yaml.is_file() and user_config_yaml.exists()
 
     # WHEN generator called with input the user config YAML file, and no default config
     from cookiecutter_python.backend.main import generate
 
     # AND we prevent any network bound calls, by inserting emulated results
-
     # parse user config yaml data, into same Dict schema, which the generator would
     # have parsed to attempt gathering the required information for URL resolution
     config = user_config[user_config_yaml]
@@ -106,6 +110,7 @@ def test_gen_parametrized_only_from_user_config_defaults_to_sphinx_builder_n_py3
     # THEN the generator should have fallen back to the DOCS Template Defaults
 
     from pathlib import Path
+
     generated_project_dir: Path = Path(project_dir)
     assert generated_project_dir.is_dir() and generated_project_dir.exists()
 
@@ -116,12 +121,16 @@ def test_gen_parametrized_only_from_user_config_defaults_to_sphinx_builder_n_py3
     # AND Python Version 3.8 is verified as the default rtd CI Python Version
     ## default RTD Python Version is 3.8 (same as when only shinx was only doc builder option)
     import yaml
+
     generated_project_readthedocs_yaml_content: t.Dict[str, t.Any] = yaml.safe_load(
         (generated_project_dir / '.readthedocs.yml').read_text()
     )
     assert 'build' in generated_project_readthedocs_yaml_content
     assert 'tools' in generated_project_readthedocs_yaml_content['build']
     assert 'python' in generated_project_readthedocs_yaml_content['build']['tools']
-    
-    assert generated_project_readthedocs_yaml_content['build']['tools']['python'] == distro_gen_docs_defaults['rtd_python_version']
+
+    assert (
+        generated_project_readthedocs_yaml_content['build']['tools']['python']
+        == distro_gen_docs_defaults['rtd_python_version']
+    )
     # Note: Python RTD 3.8 has been default for some time

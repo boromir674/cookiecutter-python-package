@@ -709,8 +709,10 @@ def project_files():
             """
             for file_path in iter(self):
                 relative_path = file_path.relative_to(Path(self.root_dir))
-                if (str(relative_path) != str(Path('.git')) and not str(relative_path).startswith(str(Path('.git/')))) or \
-                    str(relative_path).startswith(str(Path('.github/'))):
+                if (
+                    str(relative_path) != str(Path('.git'))
+                    and not str(relative_path).startswith(str(Path('.git/')))
+                ) or str(relative_path).startswith(str(Path('.github/'))):
                     # assert not str(relative_path).startswith(
                     #     "cookie-py.log"
                     # ), f"Found {relative_path} in {self.root_dir}."
@@ -720,7 +722,9 @@ def project_files():
 
 
 @pytest.fixture
-def get_expected_generated_files(distro_loc, project_files) -> t.Callable[[str, t.Mapping[str, t.Any]], t.Set[Path]]:
+def get_expected_generated_files(
+    distro_loc, project_files
+) -> t.Callable[[str, t.Mapping[str, t.Any]], t.Set[Path]]:
     """Automatically derive the expected generated files given a config file."""
     from os import path
     from pathlib import Path
@@ -883,7 +887,9 @@ def get_expected_generated_files(distro_loc, project_files) -> t.Callable[[str, 
         ]
 
         # some adhoc sanity checks
-        assert str(Path('.github/workflows/test.yaml')) in set([str(_) for _ in sanity_check_files])
+        assert str(Path('.github/workflows/test.yaml')) in set(
+            [str(_) for _ in sanity_check_files]
+        )
         assert all(
             [
                 str(Path(x)) in set([str(_) for _ in sanity_check_files])
@@ -928,7 +934,7 @@ def get_expected_generated_files(distro_loc, project_files) -> t.Callable[[str, 
 
         assert not any(
             [str(x).endswith('.pyc') for x in expected_gen_files]
-        ), f"pyc files found: {[str(x.name) for x in expected_gen_files if str(x).endswith('.pyc')]}" 
+        ), f"pyc files found: {[str(x.name) for x in expected_gen_files if str(x).endswith('.pyc')]}"
 
         assert (
             len(set([type(x) for x in expected_gen_files])) == 1
