@@ -10,10 +10,11 @@ class ParsedConfig(t.Protocol):
 @pytest.fixture
 def distro_gen_docs_defaults(
     user_config,
-) -> t.TypedDict('DistroGenDocsDefaults', {
-    'docs_builder': str,
-    'rtd_python_version': str,
-}):
+# ) -> t.TypedDict[
+#     'docs_builder': str,
+#     'rtd_python_version': str,
+# ]:
+):
     """The officially recognized defaults for the Docs Generator Feature.
     
     Confidentlly, advertize that this is the default, which the generator will use,

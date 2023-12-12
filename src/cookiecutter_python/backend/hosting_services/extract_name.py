@@ -8,8 +8,8 @@ from .exceptions import ContextVariableDoesNotExist
 from .value_extractor import BaseValueExtractor
 
 # The Dict Schema expected to be parsed
-class GeneratorYamlData(TypedDict):
-    default_context: Dict[str, Any]
+# class GeneratorYamlData(TypedDict):
+#     default_context: Dict[str, Any]
 
 
 @attr.s(auto_attribs=True, slots=True, frozen=True)
@@ -19,7 +19,8 @@ class NameExtractor:
 
     def __call__(self, config_file: str) -> str:
         # Delegate to Cookiecutter YAML parsing of User Config
-        config_data: GeneratorYamlData = get_user_config(
+        # config_data: GeneratorYamlData = get_user_config(
+        config_data = get_user_config(
             config_file=config_file,
             # MUST be False, otherwise Cookiecutter does not do YAML parsing
             default_config=False,  
