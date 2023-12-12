@@ -2,14 +2,19 @@ default_context:
     project_name: Biskotaki
     project_type: module
     project_slug: biskotaki
-    readthedocs_project_slug: biskotaki
-    repo_name: biskotaki
     pkg_name: biskotaki
+    repo_name: biskotaki
+    readthedocs_project_slug: biskotaki
+    docker_image: biskotaki
     full_name: Konstantinos Lampridis
     author: Konstantinos Lampridis
     email: k.lampridis@hotmail.com
     author_email: k.lampridis@hotmail.com
     github_username: boromir674
     project_short_description: Project generated from the https://github.com/boromir674/cookiecutter-python-package/tree/master/src/cookiecutter_python cookiecutter
-    initialize_git_repo: yes
+    initialize_git_repo: no
     interpreters: {"supported-interpreters": ["3.6", "3.7", "3.8", "3.9", "3.10"]}
+    ## Documentation Config ##
+    docs_builder: "sphinx"
+    ## READ THE DOCS CI Config ##
+    rtd_python_version: "3.10"

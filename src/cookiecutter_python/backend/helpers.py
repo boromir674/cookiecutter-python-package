@@ -12,12 +12,15 @@ logger = logging.getLogger(__name__)
 
 
 def supported_interpreters(config_file: str, no_input: bool) -> t.Optional[GivenInterpreters]:
-    if not no_input:  # interactive
-        if sys.version_info < (3, 10):
-            return check_box_dialog(config_file=config_file)
-        return None
+    # Interactive Mode: ask for user input with Interactive (console) Dialog
+    if not no_input:  # render checkbox console ui, and return user selection
+        # TODO: verify that the below works!
+        return check_box_dialog(config_file=config_file)
+    # NON Interactive Mode: try to automatically read interpreters from config
     if config_file:
+        # read 'default_context.interpreters' from User Config yaml file
         return get_interpreters_from_yaml(config_file)
+    ## No User Config yaml file, was supplied through CLI parameters, at runtime
     return None
 
 

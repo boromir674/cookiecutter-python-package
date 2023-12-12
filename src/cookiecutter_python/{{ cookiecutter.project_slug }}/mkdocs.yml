@@ -1,0 +1,66 @@
+site_name: '{{ cookiecutter.project_name }}'
+site_url: 'https://{{ cookiecutter.readthedocs_project_slug }}.readthedocs.io/'
+site_description: '{{ cookiecutter.project_name }} Project Documentation.'
+site_author: '{{ cookiecutter.full_name }}'
+
+repo_url: 'https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.project_slug }}/'
+repo_name: '{{ cookiecutter.github_username }}/{{ cookiecutter.project_slug }}'
+edit_uri: blob/main/docs/
+
+theme:
+  # 1
+  name: material
+  icon:
+    logo: material/palette
+    previous: fontawesome/solid/angle-left
+    next: fontawesome/solid/angle-right
+    default: material/tag
+
+  features:
+    - navigation.path
+    - navigation.top
+    - navigation.footer
+
+plugins:
+  # Enable jinja inside your markdown files
+  # https://github.com/fralau/mkdocs_macros_plugin
+  # - macros
+  # Authors need installation
+  # - git-authors
+  - tags:
+      tags_file: tags.md
+  # BASIC SEARCH PLUGIN
+  - search
+  # MERMAID Render Support
+  - mermaid2
+  # Directives Provider for docstrings parsing
+  - mkdocstrings
+  - gen-files:
+      scripts:
+        - scripts/gen_api_refs_pages.py 
+  - literate-nav:
+      nav_file: SUMMARY.md
+  - section-index
+
+markdown_extensions:
+  - mkdocs-click
+  - pymdownx.highlight
+  
+nav:
+  - Home:
+    - "Quick Start": index.md  
+
+    {# If 'module+'cli' Type of Project, add Ref Docs for the 'CLI' #}
+    {% if cookiecutter.project_type == 'module+cli' %}
+    - "CLI": cli.md
+    {% endif %}
+
+  - Developer:
+    - "Docker": build-process_DAG.md
+    - "CICD": cicd.md
+  - Code Reference: reference/
+  - tags: tags.md
+
+
+extra:
+  generator: false

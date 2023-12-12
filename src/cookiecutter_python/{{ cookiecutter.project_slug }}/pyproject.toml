@@ -97,6 +97,22 @@ exclude = [
 [tool.poetry.dependencies]
 python = "^3.6"
 
+# Caret requirements allow SemVer compatible updates to a specified version. An update is allowed if the new version number does not modify the left-most non-zero digit in the major, minor, patch grouping. For instance, if we previously ran poetry add requests@^2.13.0 and wanted to update the library and ran poetry update requests, poetry would update us to version 2.14.0 if it was available, but would not update us to 3.0.0. If instead we had specified the version string as ^0.1.13, poetry would update to 0.1.14 but not 0.2.0. 0.0.x is not considered compatible with any other version.
+# REQUIREMENT  VERSIONS ALLOWED
+# ^1.2.3	   >=1.2.3 <2.0.0
+# ^1.2	       >=1.2.0 <2.0.0
+# ^1	       >=1.0.0 <2.0.0
+# ^0.2.3	   >=0.2.3 <0.3.0
+# ^0.0.3	   >=0.0.3 <0.0.4
+# ^0.0	       >=0.0.0 <0.1.0
+# ^0	       >=0.0.0 <1.0.0
+# "~" is the more conservative compared to "^"
+# Tilde requirements specify a minimal version with some ability to update. If you specify a major, minor, and patch version or only a major and minor version, only patch-level changes are allowed. If you only specify a major version, then minor- and patch-level changes are allowed.
+# REQUIREMENT  VERSIONS ALLOWED
+# ~1.2.3	   >=1.2.3 <1.3.0
+# ~1.2	       >=1.2.0 <1.3.0
+# ~1	       >=1.0.0 <2.0.0
+
 # Test: packages imported in test code and packages required for the "test runner"
 pytest = { version = ">= 6.2.4", optional = true }
 pytest-cov = { version = ">= 2.12", optional = true }
@@ -104,6 +120,7 @@ pytest-explicit = { version = "~= 1.0.1", optional = true }
 pytest-xdist = { version = ">= 1.34", optional = true }
 {% if cookiecutter.project_type == "module+cli" %}
 pytest-click = { version = "^1.1.0", optional = true }
+pytest-run-subprocess = { version = "^0.10.0", optional = true }
 {% endif %}
 
 # Docs: development and build dependencies
@@ -115,7 +132,7 @@ sphinxcontrib-spelling = { version = "~= 7.3.3", optional = true }
 # Type Checking: packages required for the type check (ie mypy) to pass
 mypy = { version = "== 0.961", optional = true }
 
-# Note: "^" is the more conservative compared to "~"
+
 
 [tool.poetry.extras]
 test = [
@@ -125,6 +142,7 @@ test = [
     "pytest-xdist",
 {% if cookiecutter.project_type == "module+cli" %}
     "pytest-click",
+    "pytest-run-subprocess",
 {% endif %}
 ]
 docs = [
@@ -142,7 +160,6 @@ typing = [
 {% endif %}
 ]
 
-
 {% if cookiecutter.project_type == "module+cli" %}
 [tool.poetry.scripts]
 {{ cookiecutter.pkg_name|replace('_', '-') }} = '{{ cookiecutter.pkg_name }}.cli:main'
@@ -150,7 +167,6 @@ typing = [
 
 
 # TOOLS
-
 [tool.pytest.ini_options]
 minversion = "6.2"
 addopts = "--strict-markers"
@@ -162,7 +178,10 @@ markers = [
 testpaths = [
     "tests",
 ]
-
+explicit-only = [
+    "integration",
+    "network_bound",
+]
 
 [tool.black]
 line-length = 95
