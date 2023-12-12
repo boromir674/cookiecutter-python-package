@@ -39,7 +39,7 @@ def biskotaki_ci_project(
     # Sanity Checks
     assert gen_project_dir.exists()
     assert gen_project_dir.is_dir()
-    assert (biskotaki_ci_project / 'src').exists() and (biskotaki_ci_project / 'src').is_dir()
+    assert (gen_project_dir / 'src').exists() and (gen_project_dir / 'src').is_dir()
 
     return gen_project_dir
 
@@ -49,7 +49,7 @@ def biskotaki_ci_project(
 @pytest.fixture(params=[
     'scripts/parse_version.py',
     'scripts/visualize-dockerfile.py',
-    'scripts/visualize-ga-workflow.pya',
+    'scripts/visualize-ga-workflow.py',
 ])
 def biskotaki_file_expected(request):
     return request.param
