@@ -73,6 +73,8 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install tox==3.28
 
+      ## CLONE BISKOTAKI REPO into cloned/biskotaki ##
+      # ROOT : cloned/biskotaki/pyproject.toml
       - name: Clone Biskotaki repo
         uses: actions/checkout@v3
         with:
@@ -85,11 +87,15 @@ jobs:
           cd cloned/biskotaki
           echo "PKG_VERSION=$(python scripts/parse_version.py)" >> $GITHUB_ENV
 
+      ## GENERATE FROM TEMPLATE into gen/ ##
+      # ROOT : gen/biskotaki/pyproject.toml
       - name: Generate Biskotaki from Template
         run: |
           pip install --user -e .
           echo "    version: \"${{ env.PKG_VERSION }}\"" >> .github/biskotaki.yaml
           generate-python -o gen --config-file ./.github/biskotaki.yaml --no-input -f
+
+      ## VALIDATE BISKOTAKI CI CONFIG file is in valid Yaml format ##
       - name: "Validate YAML format"
         run: |
           GEN_CI_CONFIG=gen/biskotaki/.github/workflows/test.yaml
@@ -97,11 +103,21 @@ jobs:
             echo "ERROR: $GEN_CI_CONFIG is malformed"
             exit 1
           fi
+
+      ## Run Test Suite against the generated project ##
       - name: Test distributions 'Source', 'Built' and 'edit' (dev env) mode installation
         run: |
           cd gen/biskotaki
           tox -e "py38{-sdist, -wheel, -dev}"
           tox -e coverage
+
+      ## Verify Development Scripts operate as intented out of the box
+      
+      # Running Lint Check, on src and Test code: Passes
+      # Running Type Check, on src and Test code: Passes
+      # Running the Build script (sdist and wheel): produces Distro Artifacts: Source (.tar.gz) and Wheel (.whl) files
+      # Running Quality Checks against Distro Metadata: Passes with 10/10 score
+
       - name: Run Lint, Type Check, Build, Pyroma and PyDeps commands
         run: |
           cd gen/biskotaki
@@ -111,6 +127,7 @@ jobs:
           tox -e check
           # tox -e graphs
 
+      ## PUSH to BISKOTAKI REPO ##
       - name: Push to dedicated branch in biskotaki repo
         uses: cpina/github-action-push-to-another-repository@main
         env:
