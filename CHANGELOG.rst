@@ -2,6 +2,61 @@
 Changelog
 =========
 
+1.8.0 (2023-12-12)
+==================
+
+Changes
+^^^^^^^
+
+feature
+"""""""
+- allow either mkdocs or sphinx option for 'docs_builder' Template Var
+- lift requirement of runtime py version >=3.10, for 'interpreters interactive dialog'
+- generate python Logging Configuration, with Handler for File and Handler for Std err
+- add Logging Configuration: DEBUG and above Stream to Std err and Write to Disk
+- generate full CI/CD Pipeline as Github Actions Workflow
+
+fix
+"""
+- include pytest-run-subprocess in test Extras of Generated Project pyproject.toml
+
+test
+""""
+- test default gen behaviour related to Docs, is same as before adding mkdocs option
+- update automated tests
+- map new 'rtd_python_version' key to "3.10"; expect to affect only rtd CI python version
+- update expected json internally derived by Cookiecutter, based on new cookiecutter.json
+- yaml validation and required/expected workflow vars checks
+
+documentation
+"""""""""""""
+- fix README badge
+- add docstring in backend.post_main:post_main function, to check out-of-the-box CD
+- add Docstring, for Cookiecutter Pre Hook, at Module (file/script) level
+
+style
+"""""
+- apply isort and black to codebase
+- add spacing
+
+refactor
+""""""""
+- simplify 'main' code, add docstring to backend.main.generate func, and code comments
+- simplify 'pre_main' code, add docstring in pre_main funct, and add code comments
+
+ci
+""
+- update Template of automatically generated project on CI
+
+chore
+"""""
+- update .gitignore to ignore some development artifact files
+
+release
+"""""""
+- bump version to 1.8.0
+
+
 1.7.5 (2023-02-05)
 ==================
 
