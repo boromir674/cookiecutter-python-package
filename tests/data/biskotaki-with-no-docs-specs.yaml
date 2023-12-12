@@ -1,0 +1,11 @@
+default_context:
+    project_name: Biskotaki
+    project_type: module
+    project_slug: biskotaki
+    repo_name: biskotaki
+    full_name: Konstantinos Lampridis
+    author: Konstantinos Lampridis
+    author_email: k.lampridis@hotmail.com
+    github_username: boromir674
+    project_short_description: Project entirely generated using https://github.com/boromir674/cookiecutter-python-package/
+    initialize_git_repo: no

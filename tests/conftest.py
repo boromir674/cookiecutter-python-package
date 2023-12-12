@@ -406,6 +406,8 @@ def mock_check(get_object, mock_hosting_services):
         def __call__(self, service_name: str, found: bool):
             # Find URL from service_name
             if service_name not in self.hosting_service_infos:
+                # A HostingService instance reports the corresponding Template Variable
+                # with property 'variable_name' (ie 'readthedocs_project_slug', 'pkg_name')
                 self.hosting_service_infos[str(service_name)] = HostingServices.create(
                     service_name
                 )
@@ -620,7 +622,8 @@ def user_config(load_yaml, load_json, distro_loc):
                 )
                 # Docs Building #
                 data['docs_builder'] = data['docs_builder'][0]  # choice variable
-                # rtd_python_version has scalar value as default
+                # RTD CI Python Version #
+                data['rtd_python_version'] = data['rtd_python_version'][0]  # choice variable
                 return data
 
             return _load_json
@@ -706,17 +709,18 @@ def project_files():
             """
             for file_path in iter(self):
                 relative_path = file_path.relative_to(Path(self.root_dir))
-                if (
-                    str(relative_path) != str(Path('.git'))
-                    and not str(relative_path).startswith(str(Path('.git/')))
-                ) or str(relative_path).startswith(str(Path('.github/'))):
+                if (str(relative_path) != str(Path('.git')) and not str(relative_path).startswith(str(Path('.git/')))) or \
+                    str(relative_path).startswith(str(Path('.github/'))):
+                    # assert not str(relative_path).startswith(
+                    #     "cookie-py.log"
+                    # ), f"Found {relative_path} in {self.root_dir}."
                     yield relative_path
 
     return ProjectFiles
 
 
 @pytest.fixture
-def get_expected_generated_files(distro_loc, project_files):
+def get_expected_generated_files(distro_loc, project_files) -> t.Callable[[str, t.Mapping[str, t.Any]], t.Set[Path]]:
     """Automatically derive the expected generated files given a config file."""
     from os import path
     from pathlib import Path
@@ -726,6 +730,7 @@ def get_expected_generated_files(distro_loc, project_files):
     )
 
     def _get_expected_generated_files(folder: str, config):
+        print(f"\n  PROJ DIR in Folder: {folder}")
         expected_project_type = config.data['project_type']
         print(f"\nDEBUG: expected_project_type: {expected_project_type}")
         pkg_name: str = config.data['pkg_name']
@@ -848,18 +853,40 @@ def get_expected_generated_files(distro_loc, project_files):
             [type(x) == str for x in files_to_remove]
         ), f"Temporary Requirement of Test Code: files_to_remove must be a list of strings, not {files_to_remove}"
 
+        # FIND WHAT is actually in GEN ProJ DIR
         all_template_files = project_files(distro_loc / r'{{ cookiecutter.project_slug }}')
 
-        _files = [  # build up proper info for the expected files
+        # gen_files: t.Set[Path] = set(all_template_files.relative_file_paths())
+        # assert all([isinstance(x, Path) for x in gen_files])
+
+        # # TODO: deterministically configure tests/logs and then remove below
+
+        # # Hard remove inconsitencies and add Pytest Log to handle better in the future
+        # # we know when git init is on, a log file sneeks into the gen proj location. we exclude it as a bypass
+        # # relative_path = Path(str(all_template_files.relative_file_paths()[0]))
+        # need_to_remove_log_file: bool = config.data['initialize_git_repo']
+        # assert need_to_remove_log_file == True
+        # if need_to_remove_log_file:
+        #     # assert (distro_loc / r'{{ cookiecutter.project_slug }}' / 'cookie-py.log').exists(), f"Sanity check fail: {distro_loc / r'{{ cookiecutter.project_slug }}' / 'cookie-py.log'}. Maybe BUG was fixed!?"
+        #     # assert (distro_loc / r'{{ cookiecutter.project_slug }}' / 'cookie-py.log').is_file()
+        #     # remove the log file from the expected files: exlude from structure
+        #     files_to_remove.add('cookie-py.log')
+        # assert 'cookie-py.log' in files_to_remove
+
+        assert all(
+            [type(x) == str for x in files_to_remove]
+        ), f"Temporary Requirement of Test Code: files_to_remove must be a list of strings, not {files_to_remove}"
+
+        sanity_check_files = [  # build up proper info for the expected files
             Path(str(x).replace(r'{{ cookiecutter.pkg_name }}', pkg_name))
             for x in all_template_files.relative_file_paths()
         ]
 
         # some adhoc sanity checks
-        assert str(Path('.github/workflows/test.yaml')) in set([str(_) for _ in _files])
+        assert str(Path('.github/workflows/test.yaml')) in set([str(_) for _ in sanity_check_files])
         assert all(
             [
-                str(Path(x)) in set([str(_) for _ in _files])
+                str(Path(x)) in set([str(_) for _ in sanity_check_files])
                 for x in (
                     '.github/workflows/test.yaml',
                     'pyproject.toml',
@@ -996,6 +1023,7 @@ def assert_files_committed_if_flag_is_on(
         return rel_path in blobs_set
 
     def _assert_files_commited(folder, config):
+        print("\n HERE")
         try:
             repo = assert_initialized_git(folder)
 
@@ -1020,6 +1048,14 @@ def assert_files_committed_if_flag_is_on(
 
             # logic tests
             runtime_generated_files = set(project_files(folder).relative_file_paths())
+
+            # A bug appeared that the runtime generated files include the logs file of cookiecutter_python distro
+            for f in runtime_generated_files:
+                # verify there is not top levevel distro log file generated/reported
+                assert not str(f).endswith('cookie-py.log'), f"Documented Bug: {f}"
+            assert 0, f"Print Runtime Generated Files: " + '\n'.join(
+                [str(f) for f in runtime_generated_files]
+            )
             # below we assert that all the expected files have been commited:
             # 1st assert all generated runtime project files have been commited
             for f in sorted(runtime_generated_files):

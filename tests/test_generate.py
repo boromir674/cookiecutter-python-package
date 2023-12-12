@@ -3,11 +3,29 @@ import typing as t
 import pytest
 
 
+@pytest.fixture
+def assert_scaffolded_without_cli(module_file) -> t.Callable[[str], None]:
+    from os import path
+
+    def assert_project_generated_without_cli(project_dir: str) -> None:
+        get_file: t.Callable[[str], str] = module_file(project_dir)
+        assert all(not path.isfile(get_file(file_name)) for file_name in CLI_RELATED_FILES)
+
+    return assert_project_generated_without_cli
+
+
+
 @pytest.mark.parametrize(
     'config_file, expected_interpreters',
     [
-        ('.github/biskotaki.yaml', ['3.6', '3.7', '3.8', '3.9', '3.10']),
-        (None, ['3.6', '3.7', '3.8', '3.9', '3.10', '3.11']),
+        (
+            '.github/biskotaki.yaml',
+            ['3.6', '3.7', '3.8', '3.9', '3.10']
+        ),
+        (
+            None,
+            ['3.6', '3.7', '3.8', '3.9', '3.10', '3.11']
+        ),
         (
             'tests/data/biskotaki-without-interpreters.yaml',
             ['3.6', '3.7', '3.8', '3.9', '3.10', '3.11'],
@@ -46,6 +64,7 @@ def test_supported_python_interpreters(
 
     assert_interpreters_array_in_build_matrix(project_dir, expected_interpreters)
     assert_scaffolded_without_cli(project_dir)
+
 
 
 @pytest.fixture
@@ -104,16 +123,6 @@ def module_file():
 
     return build_get_file_path
 
-
-@pytest.fixture
-def assert_scaffolded_without_cli(module_file) -> t.Callable[[str], None]:
-    from os import path
-
-    def assert_project_generated_without_cli(project_dir: str) -> None:
-        get_file: t.Callable[[str], str] = module_file(project_dir)
-        assert all(not path.isfile(get_file(file_name)) for file_name in CLI_RELATED_FILES)
-
-    return assert_project_generated_without_cli
 
 
 @pytest.fixture(params=[x for x in CLI_RELATED_FILES])
