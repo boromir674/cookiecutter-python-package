@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-import typing as t
-import re
-from pathlib import Path
 import argparse
+import re
+import typing as t
+from pathlib import Path
 
 def parse_dockerfile(dockerfile_path):
     # Stages built from 'FROM <a> AS <b> statements
