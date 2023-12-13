@@ -1,13 +1,14 @@
-import pytest
 import sys
+
+import pytest
 
 
 @pytest.mark.integration
 def test_running_lint_passes(
     test_root,
 ):
-    from pathlib import Path
     import subprocess
+    from pathlib import Path
 
     # Load Snapshot
     snapshot_dir: Path = test_root / 'data' / 'snapshots' / 'biskotaki-no-input'

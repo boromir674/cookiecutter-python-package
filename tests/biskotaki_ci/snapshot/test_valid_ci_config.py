@@ -8,6 +8,7 @@ import pytest
 def test_snapshot_has_valid_ci_config_file_yaml(snapshot_name, test_root):
     """Test that the snapshot has a valid CI Config File"""
     from pathlib import Path
+
     import yaml
 
     # Load Snapshot
