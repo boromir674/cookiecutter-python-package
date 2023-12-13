@@ -1,5 +1,4 @@
 import logging
-import sys
 import typing as t
 
 from cookiecutter_python.handle.interpreters_support import handle as get_interpreters

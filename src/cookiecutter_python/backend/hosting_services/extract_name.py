@@ -1,5 +1,5 @@
 import json
-from typing import Any, Callable, Dict, Mapping, TypedDict
+from typing import Callable, Mapping
 
 import attr
 

@@ -134,37 +134,18 @@ def post_file_removal(request):
     ]
     ## Post Removal, given 'Project Type', of potentially extra files ##
     for file in files_to_remove:
-        try:
-            os.remove(file)
-        except FileNotFoundError:
-            raise PostFileRemovalError(f"File '{file}' not found in Project Directory.")
+        os.remove(file)
 
     ## Remove gen 'docs' folders, given 'Docs Website Builder' (DWB) ##
-    try:
-        for builder_id, gen_docs_folder_name in request.docs_extra_info.items():
-            if builder_id != request.docs_website['builder']:
-                shutil.rmtree(str(Path(request.project_dir) / gen_docs_folder_name))
-    except AttributeError:  # debug attributes of requests and their runtime values
-        print('\n-----')
-        print(f'Dir request: {dir(request)}')
-        print('Has docs_website attribute?: ', hasattr(request, 'docs_website'))
-        print(f"has docs_extra_info attribute?: {hasattr(request, 'docs_extra_info')}")
-        print('-----')
-        raise
+    for builder_id, gen_docs_folder_name in request.docs_extra_info.items():
+        if builder_id != request.docs_website['builder']:
+            shutil.rmtree(str(Path(request.project_dir) / gen_docs_folder_name))
     
     ## Remove top level files (ie mkdocs.yml), defined in builder_id_2_files map ##
     for builder_id, files in builder_id_2_files.items():
         if builder_id != request.docs_website['builder']:
             for file in files:
-                try:
-                    os.remove(os.path.join(request.project_dir, file))
-                except FileNotFoundError:
-                    print(f"[DEBUG] Doc File '{file}' for Post Remove not found.")
-                    print(f"[DEBUG] Current Working Directory: {os.getcwd()}")
-                    print(f"[DEBUG] Project Directory: {request.project_dir}")
-                    print(f"[DEBUG] File Path: {os.path.join(request.project_dir, file)}")
-                    print(f"[DEBUG] Files in Project Directory: {os.listdir(request.project_dir)}")
-                    raise PostFileRemovalError(f"File '{file}' not found in Project Directory.")
+                os.remove(os.path.join(request.project_dir, file))
 
 
 def _get_run_parameters(python3_minor: int):
