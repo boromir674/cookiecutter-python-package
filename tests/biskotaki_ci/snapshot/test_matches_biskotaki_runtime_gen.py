@@ -24,6 +24,7 @@ def test_snapshot_matches_runtime(snapshot, biskotaki_ci_project, test_root):
     # GIVEN we find the Runtime files (paths to dirs and files), using glob
     runtime_relative_paths_set = set([x.relative_to(runtime_biskotaki) for x in runtime_biskotaki.glob('**/*')])
 
+    # GIVEN that wheel files might appear in runtime, but not in snapshot
     # if runtiume has cookie-py.log , this expected based on the current behaviour of logger
     # we want to change that behaviour, so that cookie-py.log is not created there
     assert Path('cookie-py.log') in runtime_relative_paths_set, f"Bug Solved?"
@@ -34,8 +35,16 @@ def test_snapshot_matches_runtime(snapshot, biskotaki_ci_project, test_root):
     # assert (snapshot_dir / 'cookie-py.log').read_text() == '', f"Bug Fixed, or undocumented events were logged!"
     # snap_relative_paths_set.remove(Path('cookie-py.log'))
 
+    # current CI runs tox -e dev, sdist, and wheel meaning it is certain __pycache__ will be created
+    # remove all __pycache__ folders and everything nested under them
+    # this is a tiny bit of a hack, but it is the simplest way to fix the problem
+
+    # for all relative paths, if 'part' __pycache__ is in the path, remove it
+    snap_relative_paths_set = set([x for x in snap_relative_paths_set if '__pycache__' not in x.parts])
+    runtime_relative_paths_set = set([x for x in runtime_relative_paths_set if '__pycache__' not in x.parts])
+
     # WHEN we compare the 2 sets of relative Paths
-    
+
     ## THEN, the sets should be the same
     # same dirs and files, but not necessarily same content
     assert snap_relative_paths_set == runtime_relative_paths_set
