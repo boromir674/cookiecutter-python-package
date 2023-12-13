@@ -23,6 +23,7 @@ def test_running_build_creates_source_and_wheel_distros(
     )
     # CLEAN UP: Remove .tox/build folder, created by tox
     import shutil
+
     shutil.rmtree(snapshot_dir / '.tox' / 'build')
 
     # Check that Code passes Build out of the box
@@ -62,9 +63,10 @@ def test_running_build_creates_source_and_wheel_distros(
         cwd=snapshot_dir,
         check=False,  # prevent raising exception, so we can do clean up
     )
-    
+
     # CLEAN UP: Remove .tox/check folder, created by tox
     import shutil
+
     shutil.rmtree(snapshot_dir / '.tox' / 'check')
 
     # Check that Code passes Metadata Checks out of the box
@@ -100,7 +102,7 @@ def test_running_build_creates_source_and_wheel_distros(
     # Remove 'dist' folder, and avoid OSError: [Errno 39] Directory not empty
     for distro in dist_dir.glob('*'):
         distro.unlink()
-    
+
     dist_dir.rmdir()
 
     assert not dist_dir.exists()

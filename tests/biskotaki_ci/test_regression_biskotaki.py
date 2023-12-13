@@ -5,17 +5,20 @@ import pytest
 
 # the files we intend to check for, in a biskotatki geb project
 # these files should help build regressoin tests, as minimum set to verify
-@pytest.fixture(params=[
-    'scripts/parse_version.py',
-    'scripts/visualize-dockerfile.py',
-    'scripts/visualize-ga-workflow.py',
-])
+@pytest.fixture(
+    params=[
+        'scripts/parse_version.py',
+        'scripts/visualize-dockerfile.py',
+        'scripts/visualize-ga-workflow.py',
+    ]
+)
 def biskotaki_file_expected(request):
     return request.param
 
 
 # we concern with different assertions, given the same generated project
 # so we use a "fixture" to receive the same generated project, to test against
+
 
 # tests on Project Generated from .github/biskotaki.yaml
 def test_gen_ci_biskotaki_has_expected_files(
@@ -30,7 +33,9 @@ def test_gen_ci_biskotaki_has_expected_files(
     assert isinstance(expected_file, str), f"expected_file: {expected_file} is not a string"
     expected_file_path: Path = Path(expected_file)
     # sanity that path is relative, so that we can use it to check for existence
-    assert not expected_file_path.is_absolute(), f"expected_file_path: {expected_file_path} is not relative"
+    assert (
+        not expected_file_path.is_absolute()
+    ), f"expected_file_path: {expected_file_path} is not relative"
 
     ## WHEN we check if the generated project has the expected files
     ERROR_MSG = (
@@ -44,7 +49,6 @@ def test_gen_ci_biskotaki_has_expected_files(
         " - If this is a false positive, then we need to update the test to not expect this file\n"
         "    For this, we should also Advertise that this file is no longer generated\n\n"
         "   Make sure we communicate this is: Docs, Readme, PR, Release Note, Sem Ver Tag, etc\n\n"
-
         "  It could be a 'Public API' change, hence this verbose error message\n"
     )
 

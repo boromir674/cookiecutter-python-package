@@ -24,6 +24,7 @@ def test_running_lint_passes(
 
     # Remove .tox/ folder, created by tox
     import shutil
+
     shutil.rmtree(snapshot_dir / '.tox')
 
     # Check that Code passes Lint out of the box

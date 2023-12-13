@@ -6,7 +6,8 @@ import pytest
 @pytest.fixture
 def biskotaki_ci_project(
     # Mock Network Code, to prevent http (future) requests
-    user_config, mock_check,
+    user_config,
+    mock_check,
     test_root,
     tmp_path,
 ) -> Path:
