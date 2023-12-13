@@ -215,10 +215,12 @@ jobs:
     with:
       DOCKER_USER: ${{ needs.read_docker_settings.outputs.DOCKER_USER }}
       acceptance_policy: ${{ needs.read_docker_settings.outputs.CASE_POLICY }}
-      tests_pass: ${{ needs.test_suite.result == 'success' }}
-      tests_run: ${{ !contains(fromJSON('["skipped", "cancelled"]'), needs.test_suite.result) }}
       image_slug: "generate-python"
       # target_stage: "some_stage_alias"  # no stage, means no `--target` flag, on build
+      tests_pass: ${{ needs.test_suite.result == 'success' }}
+      tests_run: ${{ !contains(fromJSON('["skipped", "cancelled"]'), needs.test_suite.result) }}
+    secrets:
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
 # PUBLISH DISTRIBUTIONS ON PYPI
 # we consider publishing on tags starting with "v"
