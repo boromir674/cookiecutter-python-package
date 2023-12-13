@@ -186,7 +186,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       CASE_POLICY: ${{ steps.derive_docker_policy.outputs.CASE_POLICY }}
-      DOCKER_USER: ${{ steps.get_docker_user.outputs.DOCKER_USER }}
     steps:
       - run: |
           if [[ $DOCKER_JOB_ON == "true" ]]; then
@@ -201,12 +200,9 @@ jobs:
             DOCKER_POLICY=0
           fi
           echo "CASE_POLICY=$DOCKER_POLICY" >> $GITHUB_ENV
+
       - run: echo "CASE_POLICY=$CASE_POLICY" >> $GITHUB_OUTPUT
         id: derive_docker_policy
-      # Username is not Sensitive, but it is a Secret, for legacy reasons
-      # so it is safe, that it is not masked, in the web UI or in the logs
-      - run: echo "DOCKER_USER=$DOCKER_USER" >> $GITHUB_OUTPUT
-        id: get_docker_user
 
 # DOCKER BUILD AND PUBLISH ON DOCKERHUB
   docker_build:
@@ -214,12 +210,12 @@ jobs:
     uses: boromir674/automated-workflows/.github/workflows/docker.yml@v1.1.0
     if: always()
     with:
-      DOCKER_USER: ${{ needs.read_docker_settings.outputs.DOCKER_USER }}
       acceptance_policy: ${{ needs.read_docker_settings.outputs.CASE_POLICY }}
       image_slug: "generate-python"
       # target_stage: "some_stage_alias"  # no stage, means no `--target` flag, on build
       tests_pass: ${{ needs.test_suite.result == 'success' }}
       tests_run: ${{ !contains(fromJSON('["skipped", "cancelled"]'), needs.test_suite.result) }}
+      DOCKER_USER: ${{ vars.DOCKER_USER }}
     secrets:
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
