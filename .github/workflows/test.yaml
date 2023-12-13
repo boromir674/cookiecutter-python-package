@@ -99,7 +99,9 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - run: python -m pip install --upgrade pip && python -m pip install tox==3.28 tox-gh-actions
-
+    # SANITY for WINDOWS
+    - run: |
+        python -c 'from pathlib import Path; ( Path( "." ) / "tests" / "__init__.py" ).touch();'
     - name: Do Type Checking
       run: tox -e type -vv -s false
 
