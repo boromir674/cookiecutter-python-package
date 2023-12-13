@@ -49,7 +49,14 @@ def test_snapshot_matches_runtime(snapshot, biskotaki_ci_project, test_root):
     for relative_path in sorted([x for x in snap_relative_paths_set if x.is_file()]):
         snap_file = snapshot_dir / relative_path
         runtime_file = runtime_biskotaki / relative_path
-        assert snap_file.read_text() == runtime_file.read_text()
+        assert snap_file.read_text() == runtime_file.read_text(), (
+            f"File: {relative_path} has different content in Snapshot and Runtime\n"
+            "-------------------\n"
+            f"Snapshot: {snap_file}\n"
+            "-------------------\n"
+            f"Runtime: {runtime_file}\n"
+            "-------------------\n"
+        )
 
     # If error appears above,
     #  - either Generator has Regressed

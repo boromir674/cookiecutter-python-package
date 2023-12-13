@@ -16,10 +16,13 @@ def test_running_build_creates_source_and_wheel_distros(
 
     ## Programmatically run Build, with the entrypoint we suggest, for a Dev to run
     res = subprocess.run(  # tox -e build
-        [sys.executable, '-m', 'tox', '-e', 'build'],
+        [sys.executable, '-m', 'tox', '-r', '-vv', '-e', 'build'],
         cwd=snapshot_dir,
-        check=True,
+        check=False,  # prevent raising exception, so we can do clean up
     )
+    # CLEAN UP: Remove .tox/build folder, created by tox
+    import shutil
+    shutil.rmtree(snapshot_dir / '.tox' / 'build')
 
     # Check that Code passes Build out of the box
     assert res.returncode == 0
@@ -52,13 +55,16 @@ def test_running_build_creates_source_and_wheel_distros(
     # suggest, for a Dev to run
 
     # Check that Code passes Metadata Checks out of the box
+    # run `tox -e check` and make sure we first do clean up before throwing an error
     res = subprocess.run(  # tox -e check
-        # python -m tox -e check
-        [sys.executable, '-m', 'tox', '-e', 'check'],
+        [sys.executable, '-m', 'tox', '-r', '-vv', '-e', 'check'],
         cwd=snapshot_dir,
-        check=True,
-        env={'PKG_VERSION': '0.0.1'},
+        check=False,  # prevent raising exception, so we can do clean up
     )
+    
+    # CLEAN UP: Remove .tox/check folder, created by tox
+    import shutil
+    shutil.rmtree(snapshot_dir / '.tox' / 'check')
 
     # Check that Code passes Metadata Checks out of the box
     assert res.returncode == 0

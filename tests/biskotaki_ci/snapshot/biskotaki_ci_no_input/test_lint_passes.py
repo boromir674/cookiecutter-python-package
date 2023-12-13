@@ -1,4 +1,5 @@
 import pytest
+import sys
 
 
 @pytest.mark.integration
@@ -15,10 +16,14 @@ def test_running_lint_passes(
 
     # Programmatically run Lint, with the entrypoint we suggest, for a Dev to run
     res = subprocess.run(  # tox -e lint
-        ['tox', '-e', 'lint'],
+        [sys.executable, '-m', 'tox', '-r', '-vv', '-e', 'lint'],
         cwd=snapshot_dir,
-        check=True,
+        check=False,  # prevent raising exception, so we can do clean up
     )
+
+    # Remove .tox/ folder, created by tox
+    import shutil
+    shutil.rmtree(snapshot_dir / '.tox')
 
     # Check that Code passes Lint out of the box
     assert res.returncode == 0
