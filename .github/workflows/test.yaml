@@ -29,10 +29,21 @@ env:
   ##### JOB ON/OFF SWITCHES #####
   RUN_UNIT_TESTS: "true"
   RUN_LINT_CHECKS: "true"
-  BUILD_DOCKER: "true"
+  DOCKER_JOB_ON: "true"
   PUBLISH_ON_PYPI: "true"
   DRAW_DEPENDENCIES: "true"
   ###############################
+
+  ### DOCKER Job Policy ####
+  # Override Docker Policy-dependent decision-making and
+  # Accept any ALL (branch/build) to Publish to Dockerhub
+  # if true, it will push image and ignore DOCKER_JOB_POLICY
+  ALWAYS_BUILD_N_PUBLSIH_DOCKER: "false"
+
+  DOCKER_JOB_POLICY: "CDeployment"
+  # - CDeployment : Builds and Publishes only if Tests ran and passed
+  # - CDelivery   : Builds and Publishes if Tests Passed or if Tests were Skipped
+  ############################
 
   #### STATIC CODE ANALYSIS Job ####
   ## Python Runtime version to set the Job runner with ##
@@ -51,7 +62,6 @@ jobs:
     outputs:
       matrix: ${{ steps.pass-env-to-output.outputs.matrix }}
       TESTS_ENABLED: ${{ steps.pass-env-to-output.outputs.TESTS_ENABLED }}
-      DOCKER_ENABLED: ${{ steps.pass-env-to-output.outputs.DOCKER_ENABLED }}
       DRAW_DEPS_SVG_GRAPHS: ${{ steps.pass-env-to-output.outputs.DRAW_DEPS_SVG_GRAPHS }}
       RUN_LINT: ${{ steps.pass-env-to-output.outputs.RUN_LINT }}
       PUBLISH_ON_PYPI: ${{ steps.pass-env-to-output.outputs.PUBLISH_ON_PYPI }}
@@ -68,7 +78,6 @@ jobs:
           fi
           echo "TESTS_ENABLED=$RUN_UNIT_TESTS" >> $GITHUB_OUTPUT
           echo "RUN_LINT=$RUN_LINT_CHECKS" >> $GITHUB_OUTPUT
-          echo "DOCKER_ENABLED=$BUILD_DOCKER" >> $GITHUB_OUTPUT
           echo "PUBLISH_ON_PYPI=$PUBLISH_ON_PYPI" >> $GITHUB_OUTPUT
           echo "DRAW_DEPS_SVG_GRAPHS=$DRAW_DEPENDENCIES" >> $GITHUB_OUTPUT
 
@@ -171,51 +180,45 @@ jobs:
           echo "Sent to Codecov: $file !"
         done
 
+## AUTOMATED DOCKER BUILD and PUBLISH ON DOCKERHUB ##
+  read_docker_settings:
+    runs-on: ubuntu-latest
+    outputs:
+      CASE_POLICY: ${{ steps.derive_docker_policy.outputs.CASE_POLICY }}
+      DOCKER_USER: ${{ steps.get_docker_user.outputs.DOCKER_USER }}
+    steps:
+      - run: |
+          if [[ $DOCKER_JOB_ON == "true" ]]; then
+            if [[ $ALWAYS_BUILD_N_PUBLSIH_DOCKER == "true" ]]; then
+              DOCKER_POLICY=1
+            elif [[ $DOCKER_JOB_POLICY == "CDeployment" ]]; then
+              DOCKER_POLICY=2
+            elif [[ $DOCKER_JOB_POLICY == "CDelivery" ]]; then
+              DOCKER_POLICY=3
+            fi
+          else
+            DOCKER_POLICY=0
+          fi
+          echo "CASE_POLICY=$DOCKER_POLICY" >> $GITHUB_ENV
+      - run: echo "CASE_POLICY=$CASE_POLICY" >> $GITHUB_OUTPUT
+        id: derive_docker_policy
+      # Username is not Sensitive, but it is a Secret, for legacy reasons
+      # so it is safe, that it is not masked, in the web UI or in the logs
+      - run: echo "DOCKER_USER=$DOCKER_USER" >> $GITHUB_OUTPUT
+        id: get_docker_user
+
 # DOCKER BUILD AND PUBLISH ON DOCKERHUB
   docker_build:
-    runs-on: ubuntu-latest
-    needs: test_suite
-    if: needs.set_github_outputs.outputs.DOCKER_ENABLED == 'true'
-    env:
-      DOCKER_USER: ${{ secrets.DOCKER_USER }}
-    steps:
-    - uses: actions/checkout@v3
-    - name: Build 'n Push Docker Image to DockerHub
-      run: |
-        # workflow enabled for branches and v* tags
-        IMAGE_TAG="${GITHUB_REF_NAME}"  # this is branch name or tag name
-        echo "IMAGE_REF=generate-python:${IMAGE_TAG}" >> $GITHUB_ENV
-        docker build -t "${DOCKER_USER}/generate-python:${IMAGE_TAG}" .
-
-    - name: Login to Dockerhub, public Image Registry
-      env:
-        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      run: echo "${DOCKER_PASSWORD}" | docker login --username "${DOCKER_USER}" --password-stdin
-
-    - name: Publish to DockerHub; Push Docker Image
-      run: |
-        push_success=1
-        docker push "${IMAGE_REF}" || push_success=0
-        if [ $push_success -eq 1 ]; then
-          echo "Docker Image "${IMAGE_REF}" pushed to DockerHub!"
-        else
-          echo "[ERROR] Docker push failed!"
-        fi
-        echo "push_success=$push_success" >> $GITHUB_ENV
-
-    - name: Logout from Dockerhub
-      run: docker logout
-
-    - name: Exit Job, with status code 0 if push was successful
-      run: |
-        if [ $push_success -eq 1 ]; then
-          job_status=0
-        else
-          echo "[ERROR] Docker push failed!"
-          job_status=1
-        fi
-        echo "Exiting with status code: $job_status"
-        exit $job_status
+    needs: [read_docker_settings, test_suite]
+    uses: boromir674/automated-workflows/.github/workflows/docker.yml@v1.1.0
+    if: always()
+    with:
+      DOCKER_USER: ${{ needs.read_docker_settings.outputs.DOCKER_USER }}
+      acceptance_policy: ${{ needs.read_docker_settings.outputs.CASE_POLICY }}
+      tests_pass: ${{ needs.test_suite.result == 'success' }}
+      tests_run: ${{ !contains(fromJSON('["skipped", "cancelled"]'), needs.test_suite.result) }}
+      image_slug: "generate-python"
+      # target_stage: "some_stage_alias"  # no stage, means no `--target` flag, on build
 
 # PUBLISH DISTRIBUTIONS ON PYPI
 # we consider publishing on tags starting with "v"
