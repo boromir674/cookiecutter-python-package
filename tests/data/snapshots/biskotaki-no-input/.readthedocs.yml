@@ -5,27 +5,42 @@
 # Required
 version: 2
 
+# Set the OS, Python version and other tools you might need
+build:
+  os: ubuntu-22.04
+  tools:
+    python: "3.10"
+
+  # ALL JOBS implied: https://docs.readthedocs.io/en/stable/builds.html
+  jobs:
+    pre_install:
+      - python --version
+      - python -m pip install poetry
+      - python -m poetry export -o req-docs.txt -E docs
+    post_install:
+      - python -m pip install -e .
+    pre_build:
+      - python ./scripts/visualize-ga-workflow.py > ./docs/cicd_mermaid.md
+      - python ./scripts/visualize-dockerfile.py > ./docs/dockerfile_mermaid.md
+
+
+
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
   builder: html
   configuration: docs/conf.py
   fail_on_warning: false
 
-# Build documentation with MkDocs
-#mkdocs:
-#  configuration: mkdocs.yml
-
 # Optionally build your docs in additional formats such as PDF
 formats:
   - pdf
   - epub
 
-build:
-  image: latest
 
-# Optionally set the version of Python and requirements required to build your docs
+
+# Optional but recommended, declare the Python requirements required
+# to build your documentation
+# See https://docs.readthedocs.io/en/stable/guides/reproducible-builds.html
 python:
-  version: 3.8
-  install:
-    - method: pip
-      path: .[docs]
+   install:
+   - requirements: req-docs.txt

@@ -5,13 +5,14 @@ they are written/streamed.
 The application logs are written in full details (ie with timestamps) to a file
 and also streamed to the console in a more concise format.
 
-Console:
-    Stream Logs of INFO (and above) Level on Console's stderr
-    The rendered Log format is: <logger name>: <log level> <log message>
+# Console/Terminal Log:
+    - We Stream Logs of INFO (and above) Level on Console's stderr
+    - The rendered Log format is: <logger name>: <log level> <log message>
 
-Disk File:
-    Write Logs of ALL Levels on a Disk File (see DCR_LOGS_FILE variable below)
-    The rendered Log format is: <timestamp> <logger name>: <log level> <log message>
+# Disk File Log:
+    - we Write Logs of ALL Levels on a Disk File
+    - The rendered Log format is: <timestamp> <logger name>: <log level> <log message>
+    - The FILE_TARGET_LOGS, variable (see below), defines the path to the log file
 
 Log Levels:
 - CRITICAL
@@ -26,7 +27,8 @@ Usage:
 """
 import logging
 
-DCR_LOGS_FILE = 'dcr.log'
+# for 'biskotaki' app/code
+FILE_TARGET_LOGS = 'biskotaki.log'
 
 #### FILE LOGGING
 # set up logging to file for DEBUG Level and above
@@ -34,15 +36,17 @@ logging.basicConfig(
     level=logging.DEBUG,
     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
     datefmt='%m-%d %H:%M',
-    filename=DCR_LOGS_FILE,
+    filename=FILE_TARGET_LOGS,
     filemode='w',
 )
 
 #### CONSOLE LOGGING
-# define a Handler which writes INFO messages or higher to the sys.stderr
 console = logging.StreamHandler()
-# console.setLevel(logging.INFO)
+
+### Handler which writes DEBUG messages or higher to the sys.stderr ###
 console.setLevel(logging.DEBUG)
+# console.setLevel(logging.INFO)
+
 # set a format which is simpler for console use
 formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
 # tell the handler to use this format
