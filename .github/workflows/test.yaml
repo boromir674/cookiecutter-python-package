@@ -86,7 +86,14 @@ jobs:
   test_suite:
     runs-on: ${{ matrix.platform }}
     needs: set_github_outputs
-    if: ${{ needs.set_github_outputs.outputs.TESTS_ENABLED == 'true' }}
+    # on Ubuntu Latest with Python 3.6, we encounter below error:
+    
+    # Version 3.6 was not found in the local cache
+    # Error: The version '3.6' with architecture 'x64' was not found for Ubuntu 22.04.
+    # The list of all available versions can be found here: https://raw.githubusercontent.com/actions/python-versions/main/versions-manifest.json
+
+    # so for now we skip 3.6 on Ubuntu Latest
+    if: ${{ needs.set_github_outputs.outputs.TESTS_ENABLED == 'true' && !(matrix.platform == 'ubuntu-latest' && matrix.python-version == '3.6') }}
     strategy:
       matrix: ${{fromJSON(needs.set_github_outputs.outputs.matrix)}}
     outputs:
