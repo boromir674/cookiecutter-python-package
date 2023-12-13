@@ -50,7 +50,7 @@ def extract_job_dependencies(config: ParsedYaml) -> t.Dict[str, JobsNeedsValue]:
     job_dependencies: t.Dict[str, JobsNeedsValue] = {}
 
     if not 'jobs' in config:
-        print(f"[WARNGING] No 'jobs' section found in config file")
+        print("[WARNGING] No 'jobs' section found in config file")
 
     else:
         for job_name, job_config in config['jobs'].items():
