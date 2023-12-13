@@ -1,5 +1,12 @@
 import os
+import sys
 import typing as t
+
+if sys.version_info >= (3, 8):
+    from typing import Protocol
+else:
+    from typing_extensions import Protocol
+
 from pathlib import Path
 
 import attr
@@ -55,7 +62,7 @@ def load_json():
     return _load_context_json
 
 
-class ProjectGenerationRequestDataProtocol(t.Protocol):
+class ProjectGenerationRequestDataProtocol(Protocol):
     template: str
     destination: str
     default_dict: bool

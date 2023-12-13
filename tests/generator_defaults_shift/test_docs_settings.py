@@ -1,11 +1,17 @@
+import sys
 import typing as t
+
+if sys.version_info >= (3, 8):
+    from typing import Protocol
+else:
+    from typing_extensions import Protocol
 
 import pytest
 
 CookiecutterJSONDefaults = t.Dict[str, t.Any]
 
 
-class ParsedConfig(t.Protocol):
+class ParsedConfig(Protocol):
     data: CookiecutterJSONDefaults
 
 
