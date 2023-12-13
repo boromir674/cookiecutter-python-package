@@ -33,10 +33,10 @@ def test_snapshot_matches_runtime(snapshot, biskotaki_ci_project, test_root):
     # GIVEN that wheel files might appear in runtime, but not in snapshot
     # if runtiume has cookie-py.log , this expected based on the current behaviour of logger
     # we want to change that behaviour, so that cookie-py.log is not created there
-    assert Path('cookie-py.log') in runtime_relative_paths_set, f"Bug Solved?"
+    assert Path('cookie-py.log') in runtime_relative_paths_set, "Bug Solved?"
     assert (
         runtime_biskotaki / 'cookie-py.log'
-    ).read_text() == '', f"Bug Fixed, or undocumented events were logged!"
+    ).read_text() == '', "Bug Fixed, or undocumented events were logged!"
     runtime_relative_paths_set.remove(Path('cookie-py.log'))
 
     # assert Path('cookie-py.log') in snap_relative_paths_set, f"Bug Solved?"

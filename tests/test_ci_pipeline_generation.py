@@ -45,7 +45,7 @@ def test_file_is_valid_yaml(config_file, user_config, mock_check, tmpdir):
 
     def sanitize_load(s):
         for w in "on".split():
-            reg = re.compile(rf'^(on):', re.MULTILINE)
+            reg = re.compile(r'^(on):', re.MULTILINE)
             s = reg.sub(r'\1<TEST>:', s)
         return yaml.load(s, yaml.FullLoader)
 
@@ -55,7 +55,7 @@ def test_file_is_valid_yaml(config_file, user_config, mock_check, tmpdir):
     assert isinstance(ci_config, dict)
 
     assert 'name' in ci_config
-    assert 'on' + '<TEST>' in ci_config, f'on is missing: \n' + '\n'.join(
+    assert 'on' + '<TEST>' in ci_config, 'on is missing: \n' + '\n'.join(
         [str(x) for x in ci_config.keys()]
     )
     assert 'jobs' in ci_config

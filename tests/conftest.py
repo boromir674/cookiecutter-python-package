@@ -354,7 +354,7 @@ def mock_hosting_services(future_session_mock):
 
 @pytest.fixture
 def mock_check(get_object, mock_hosting_services):
-    from typing import Any, Mapping
+    from typing import Any
 
     import attr
 
@@ -732,7 +732,6 @@ def get_expected_generated_files(
     distro_loc, project_files
 ) -> t.Callable[[str, t.Mapping[str, t.Any]], t.Set[Path]]:
     """Automatically derive the expected generated files given a config file."""
-    from os import path
     from pathlib import Path
 
     from cookiecutter_python.hooks.post_gen_project import (
@@ -754,17 +753,6 @@ def get_expected_generated_files(
 
         ## DERIVE the EXPECTED files to be removed, varying across 'Project Type'
         # we leverage the same production logic
-        a = proj_type_2_files_to_remove[expected_project_type]
-        r = a(
-            type(
-                'G',
-                (),
-                {
-                    'module_name': pkg_name,
-                },
-            )
-        )
-
         ii = [
             x
             for x in proj_type_2_files_to_remove[expected_project_type](
@@ -797,7 +785,6 @@ def get_expected_generated_files(
             # assert file_path is relative to docs_template_dir
             rp = file_path.relative_to(docs_template_dir)
             assert file_path.relative_to(docs_template_dir)
-            p = file_path.relative_to(docs_template_dir).parts[1:]
             expected_to_find.add(Path('docs') / rp)
 
         # pre-emptively any .pyc file from expected_to_find, since a bug was reported
@@ -952,7 +939,7 @@ def get_expected_generated_files(
 
         assert len(expected_gen_files) == so_far + len(
             expected_to_find
-        ), f"Our logic for deriving the expected files is wrong."
+        ), "Our logic for deriving the expected files is wrong."
 
         ## Inject Values in TEMPLATE placeholders ##
         # TODO: use comprenhesoin once stable, and then ease maintainace, with some automation
@@ -1065,7 +1052,7 @@ def assert_files_committed_if_flag_is_on(
             for f in runtime_generated_files:
                 # verify there is not top levevel distro log file generated/reported
                 assert not str(f).endswith('cookie-py.log'), f"Documented Bug: {f}"
-            assert 0, f"Print Runtime Generated Files: " + '\n'.join(
+            assert 0, "Print Runtime Generated Files: " + '\n'.join(
                 [str(f) for f in runtime_generated_files]
             )
             # below we assert that all the expected files have been commited:

@@ -79,7 +79,7 @@ def assert_interpreters_array_in_build_matrix() -> t.Callable[[str, t.Sequence[s
         p = Path(project_dir) / '.github' / 'workflows' / 'test.yaml'
         contents = p.read_text()
         b = ', '.join((fr'\"{int_ver}\"' for int_ver in interpreters))
-        assert fr'\"python-version\": ' in contents
+        assert r'\"python-version\": ' in contents
         assert fr'\"python-version\": [{b}]' in contents, f'"{b}" not in "{contents}"'
 
     return _assert_interpreters_array_in_build_matrix
