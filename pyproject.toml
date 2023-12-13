@@ -183,7 +183,8 @@ typing = [
 
 [tool.pytest.ini_options]
 minversion = "6.2"
-addopts = "--strict-markers"
+# hard-inject args, when invoking `pytest` CLI
+addopts = "--strict-markers --ignore=tests/data"
 markers = [
     "slow: Marks a slow test",
     "integration: Tests applicable to a newly Generated Project, running with tox",
