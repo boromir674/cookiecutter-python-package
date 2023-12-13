@@ -116,17 +116,6 @@ Free/Libre and Open Source Software (FLOSS)
 |ossf|
 
 
-Notes
-=====
-
-Currently, since the actual `cookiecutter` template does not reside on the `root` directory
-of the repository (but rather in `src/cookiecutter_python`), 'cloning' the repository
-locally is required at first.
-
-This was demonstrated in the `Quickstart` section, as well.
-
-For more complex use cases, you can modify the Template and also leverage all of
-`cookiecutter`'s features, according to your needs.
 
 
 .. URL LINKS
