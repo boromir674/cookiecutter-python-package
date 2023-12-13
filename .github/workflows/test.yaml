@@ -28,7 +28,7 @@ env:
 
   ##### JOB ON/OFF SWITCHES #####
   RUN_UNIT_TESTS: "true"
-  RUN_LINT_CHECKS: "false"
+  RUN_LINT_CHECKS: "true"
   BUILD_DOCKER: "true"
   PUBLISH_ON_PYPI: "true"
   DRAW_DEPENDENCIES: "true"
@@ -186,14 +186,36 @@ jobs:
         IMAGE_TAG="${GITHUB_REF_NAME}"  # this is branch name or tag name
         echo "IMAGE_REF=generate-python:${IMAGE_TAG}" >> $GITHUB_ENV
         docker build -t "${DOCKER_USER}/generate-python:${IMAGE_TAG}" .
-    - name: Publish Docker Image to DockerHub
+
+    - name: Login to Dockerhub, public Image Registry
       env:
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      run: echo "${DOCKER_PASSWORD}" | docker login --username "${DOCKER_USER}" --password-stdin
+
+    - name: Publish to DockerHub; Push Docker Image
       run: |
-        echo "${DOCKER_PASSWORD}" | docker login --username "${DOCKER_USER}" --password-stdin
-        docker push "${DOCKER_USER}/${IMAGE_REF}"
-        docker logout
-        echo "Published in Dockerhub :)"
+        push_success=1
+        docker push "${IMAGE_REF}" || push_success=0
+        if [ $push_success -eq 1 ]; then
+          echo "Docker Image "${IMAGE_REF}" pushed to DockerHub!"
+        else
+          echo "[ERROR] Docker push failed!"
+        fi
+        echo "push_success=$push_success" >> $GITHUB_ENV
+
+    - name: Logout from Dockerhub
+      run: docker logout
+
+    - name: Exit Job, with status code 0 if push was successful
+      run: |
+        if [ $push_success -eq 1 ]; then
+          job_status=0
+        else
+          echo "[ERROR] Docker push failed!"
+          job_status=1
+        fi
+        echo "Exiting with status code: $job_status"
+        exit $job_status
 
 # PUBLISH DISTRIBUTIONS ON PYPI
 # we consider publishing on tags starting with "v"
