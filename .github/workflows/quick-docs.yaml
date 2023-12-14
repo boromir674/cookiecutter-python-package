@@ -53,12 +53,28 @@ jobs:
         id: modify_init
         run: |
           # Get current version
-          current_version=$(grep -oP '(?<=__version__ = \x27)[^\'']+' src/cookiecutter_python/__init__.py)
-          # Bump version
-          new_version=$(python -c "from semver import bump_patch; print(bump_patch('$current_version'))")
+          current_version=$(grep -oP "(?<=__version__ = \x27)[^\"'\']+" src/cookiecutter_python/__init__.py)
+          echo "PARSED from __init__.py: $current_version"
+
+          # Bump version, by heuristically finding the patch and adding 1
+          # find value after 2nd dot (ie: 1.8.0)
+          patch_value=$(echo $current_version | cut -d '.' -f 3)
+          echo "PATCH_VALUE=$patch_value"
+
+          # increment patch value
+          new_patch_value=$(($patch_value + 1))
+          echo "NEW_PATCH_VALUE=$new_patch_value"
+          
+          # replace patch value, by keeping only till 2nd dot and concatenating new patch value
+          new_version=$(echo $current_version | cut -d '.' -f 1,2).$new_patch_value
+
+          echo "NEW_VERSION=$new_version"
+
           # Replace version in file
           sed -i "s/$current_version/$new_version/g" src/cookiecutter_python/__init__.py
-          # echo "NEW_VERSION=$new_version" >> $GITHUB_OUTPUT
+
+          echo "NEW_VERSION=$new_version" >> $GITHUB_OUTPUT
+         
 
       # # Modify pyproject.tml (line: version = "1.8.0")
       # - name: Modify pyproject.tml
