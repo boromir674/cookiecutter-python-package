@@ -19,10 +19,13 @@ class Checker:
 
     @staticmethod
     def from_hosting_info(config_file, default_config, hosting_infos):
+        """Activate Web Host Checks if user config and NOT default config"""
         return Checker(
             config_file,
             default_config,
             Checkers.from_hosting_info(
-                hosting_infos, config_file and not default_config, config_file
+                hosting_infos,
+                config_file and not default_config,
+                config_file,
             ),
         )

@@ -2,6 +2,48 @@
 Changelog
 =========
 
+1.8.0 (2023-12-12)
+==================
+
+Changes
+^^^^^^^
+
+feature
+"""""""
+- New Generator Option allows for `Mkdocs` doc site builder, along with `sphinx` 
+- Generator adds python Logging Configuration, with Handlers for streaming to `File` and `Std err`
+- Generator adds full CI/CD Pipeline as Github Actions Workflow, introducing new Jobs such as `Docker`, and `PyPI`
+
+fix
+"""
+- include pytest-run-subprocess in test Extras of Generated Project pyproject.toml
+
+test
+""""
+- add `Gold Standard` Generated Biskotaki Projects 
+- verify `No Regression` of Generator, with exhaustive comparison of Runtime result to `Gold Standard`
+- test `Gold Standard` passes `tox -e lint`
+- ignore Tests inside Snapshots, during `Test Discovery` of Pytest
+- verify `User Config` backwords compatibility, with regard to new `Docs` Generator Feature
+- test default gen behaviour related to Docs, is same as before adding mkdocs option
+- yaml validation and required/expected workflow vars checks
+
+documentation
+"""""""""""""
+- fix README badge
+- add docstring in backend.post_main:post_main function, to check out-of-the-box CD
+- add Docstring, for Cookiecutter Pre Hook, at Module (file/script) level
+
+dev
+"""
+- add Logging Configuration: DEBUG and above Stream to Std err and Write to Disk
+
+refactor
+""""""""
+- simplify 'main' code
+- simplify 'pre_main' code
+
+
 1.7.5 (2023-02-05)
 ==================
 

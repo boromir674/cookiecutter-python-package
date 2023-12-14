@@ -1,0 +1,12 @@
+[run]
+source =
+    biskotaki
+    tests
+
+[report]
+show_missing = true
+precision = 2
+omit = *migrations*
+exclude_lines =
+    raise NotImplementedError
+    raise NotImplemented

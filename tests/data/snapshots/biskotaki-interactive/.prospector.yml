@@ -1,0 +1,59 @@
+# output-format: json
+
+strictness: high
+test-warnings: true
+doc-warnings: false
+member-warnings: false
+inherits:
+  - default
+ignore-paths:
+  - docs
+ignore-patterns:
+  - (^|/)skip(this)?(/|$)
+autodetect: false
+max-line-length: 95
+
+
+# TOOLS
+
+pyflakes:
+  run: true
+
+
+pyroma:
+  run: true
+  disable:
+    - PYR15
+    - PYR18
+
+dodgy:
+  run: true
+
+mccabe:
+  run: true
+  options:
+    max-complexity: 12
+
+
+# INACTIVE
+
+pylint:
+  run: false
+
+bandit:
+  run: false
+
+frosted:
+  run: false
+
+pep8:
+  run: false
+
+pep257:
+  run: false
+
+mypy:
+  run: false
+
+vulture:
+  run: false

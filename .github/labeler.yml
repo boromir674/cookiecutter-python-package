@@ -5,9 +5,8 @@ ci:
 - any: ['.github/*', '.github/**/*']
 
 
-# Add 'template' label to any change within the 'src/cookiecutter_python' dir
-# Currently, this is where the cookiecutter template (cookiecutter.json, hooks, etc) is
-template:
+# Add 'business_logic' label to any change within the 'src/cookiecutter_python' dir
+business_logic:
 - any: ['src/cookiecutter_python/*', 'src/cookiecutter_python/**/*']
 
 

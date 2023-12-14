@@ -25,7 +25,7 @@ Features
 4. Extensively **Tested** on various systems, factoring the below:
    
    a. System's platform: **"Linux"**, **"MacOS"** & **"Windows"**
-   b. System's Python: **3.6**, **3.7**, **3.8**, **3.9** & **3.10**
+   b. System's Python: **3.7**, **3.8**, **3.9** & **3.10**, **3.11**
 
     See the `Test Workflow` on the `CI`_ server.
 
@@ -116,17 +116,6 @@ Free/Libre and Open Source Software (FLOSS)
 |ossf|
 
 
-Notes
-=====
-
-Currently, since the actual `cookiecutter` template does not reside on the `root` directory
-of the repository (but rather in `src/cookiecutter_python`), 'cloning' the repository
-locally is required at first.
-
-This was demonstrated in the `Quickstart` section, as well.
-
-For more complex use cases, you can modify the Template and also leverage all of
-`cookiecutter`'s features, according to your needs.
 
 
 .. URL LINKS
@@ -168,9 +157,10 @@ For more complex use cases, you can modify the Template and also leverage all of
 .. Build Status
 .. Github Actions: Test Workflow Status for specific branch <branch>
 
-.. |build| image:: https://img.shields.io/github/workflow/status/boromir674/cookiecutter-python-package/Test%20Python%20Package/master?label=build&logo=github-actions&logoColor=%233392FF
-    :alt: GitHub Workflow Status (branch)
-    :target: https://github.com/boromir674/cookiecutter-python-package/actions/workflows/test.yaml?query=branch%3Amaster
+.. |build| image:: https://img.shields.io/github/actions/workflow/status/boromir674/cookiecutter-python-package/test.yaml?link=https%3A%2F%2Fgithub.com%2Fboromir674%2Fcookiecutter-python-package%2Factions%2Fworkflows%2Ftest.yaml%3Fquery%3Dbranch%253Amaster
+   :alt: GitHub Workflow Status (with event)
+
+.. build target https://github.com/boromir674/cookiecutter-python-package/actions/workflows/test.yaml?query=branch%3Amaster
 
 
 .. Documentation
@@ -202,9 +192,9 @@ For more complex use cases, you can modify the Template and also leverage all of
 
 .. Github Releases & Tags
 
-.. |commits_since_specific_tag_on_master| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/v1.7.5/master?color=blue&logo=github
+.. |commits_since_specific_tag_on_master| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/v1.8.0/master?color=blue&logo=github
     :alt: GitHub commits since tagged version (branch)
-    :target: https://github.com/boromir674/cookiecutter-python-package/compare/v1.7.5..master
+    :target: https://github.com/boromir674/cookiecutter-python-package/compare/v1.8.0..master
 
 .. |commits_since_latest_github_release| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/latest?color=blue&logo=semver&sort=semver
     :alt: GitHub commits since latest release (by SemVer)
