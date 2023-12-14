@@ -116,18 +116,6 @@ jobs:
       # # https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md#events-and-checkout
       # https://github.com/peter-evans/create-pull-request/blob/main/docs/examples.md#using-a-markdown-template
 
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v5
-        with:
-          # Sets the pull request base branch.
-          # Defaults to the branch checked out in the workflow.
-          base: quick_docs_main
-          commit-message: 'Quick Release: Bump version to ${{ steps.modify_readme.outputs.new_version }}'
-          title: 'Quick Release: Bump version to ${{ steps.modify_readme.outputs.new_version }}'
-          body: Bump version to ${{ steps.modify_readme.outputs.new_version }}
-          # PR Branch name (ie update-authors --> main)
-          branch: docs
-          # Delete the branch when closing pull requests, and when undeleted after merging.
-          delete-branch: false
-          draft: false
-          labels: quick-release,docs
+      - name: Create pr
+        run: |
+          gh pr create --title "Quick Release $new_version" --body "Quick Release $new_version" --base quick_docs_main --head docs
