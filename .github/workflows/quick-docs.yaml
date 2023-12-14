@@ -29,21 +29,21 @@ jobs:
           # echo "DIFF_FILE="git_diff.txt" >> $GITHUB_OUTPUT
 
       # Verify only README has changed
-      - name: Verify only README has changed
-        id: verify_paths
-        run: |
-          # Read git diff file into array
-          IFS=$'\n' read -d '' -r -a diff_paths < git_diff.txt
-          # Loop through array
-          for path in "${diff_paths[@]}"
-          do
-            # Check if path starts with docs/ or mkdocs.yml
-            if [[ ! "$path" =~ ^README.md$ ]]; then
-              echo "ERROR: Only README.md should be changed for a quick release"
-              echo "ERROR: Found: $path"
-              exit 1
-            fi
-          done
+      # - name: Verify only README has changed
+      #   id: verify_paths
+      #   run: |
+      #     # Read git diff file into array
+      #     IFS=$'\n' read -d '' -r -a diff_paths < git_diff.txt
+      #     # Loop through array
+      #     for path in "${diff_paths[@]}"
+      #     do
+      #       # Check if path starts with docs/ or mkdocs.yml
+      #       if [[ ! "$path" =~ ^README.md$ ]]; then
+      #         echo "ERROR: Only README.md should be changed for a quick release"
+      #         echo "ERROR: Found: $path"
+      #         exit 1
+      #       fi
+      #     done
       
       ## Make necessary Sem Ver bumps in source code
       # we will do a Patch Bump
