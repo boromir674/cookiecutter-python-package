@@ -22,7 +22,7 @@ on:
     types:
       - closed
     branches:
-    - docs-auto
+      - docs-auto
 
 jobs:
   if_merged:
