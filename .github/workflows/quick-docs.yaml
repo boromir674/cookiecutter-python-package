@@ -8,7 +8,7 @@
 # 3. pushes the empemeral branch to GitHub
 # 4. creates a PR from empemeral branch to docs-auto branch
 # 5. merges the PR into docs-auto branch, on successful Docs Build
-# 6  Deletes the empemeral branch
+# 6.  Deletes the empemeral branch
 
 ###### Quick Release Tagging #######
 # export tt='quick-release'; git tag -d "$tt"; git push --delete origin "$tt"; git tag "$tt" && git push origin "$tt"
