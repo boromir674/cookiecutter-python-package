@@ -67,9 +67,43 @@ def test_snapshot_matches_runtime(snapshot, biskotaki_ci_project, test_root):
     # To fix: exit, clean dir an rerun test !
 
     ## THEN we expect the same files to have the same content
-    for relative_path in sorted([x for x in snap_relative_paths_set if x.is_file()]):
+
+    # runtime project generation yields a CHNADELOG file, where an initial item
+    # is added. The Release Date is set dynamically based on runtime current date
+    # so, we hard exclude the line starting with the '0.0.1' string, to avoid
+    # comparing rolling date with the static one in the snapshot
+
+    # first compare CHANGLOG files, then all other files
+    snapshot_changelog = snapshot_dir / 'CHANGELOG.rst'  # the expectation
+    runtime_changelog = runtime_biskotaki / 'CHANGELOG.rst'  # the reality
+
+    snap_file_content = snapshot_changelog.read_text().splitlines()
+    runtime_file_content = runtime_changelog.read_text().splitlines()
+    assert len(snap_file_content) == len(runtime_file_content)
+    assert all(
+        [
+            line_pair[0] == line_pair[1]
+            for line_pair in [
+                x
+                for x in zip(snap_file_content, runtime_file_content)
+                if not x[0].startswith('0.0.1')
+            ]
+        ]
+    ), (
+        f"File: CHANGELOG.rst has different content in Snapshot and Runtime\n"
+        "-------------------\n"
+        f"Snapshot: {snapshot_changelog}\n"
+        "-------------------\n"
+        f"Runtime: {runtime_changelog}\n"
+        "-------------------\n"
+    )
+
+    automated_files = snap_relative_paths_set - {Path('CHANGELOG.rst')}
+
+    for relative_path in sorted([x for x in automated_files if x.is_file()]):
         snap_file = snapshot_dir / relative_path
         runtime_file = runtime_biskotaki / relative_path
+
         assert snap_file.read_text() == runtime_file.read_text(), (
             f"File: {relative_path} has different content in Snapshot and Runtime\n"
             "-------------------\n"
