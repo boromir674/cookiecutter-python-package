@@ -21,19 +21,10 @@ on:
       - v*
 
 env:
-  # Job Matrix as an env var !
-  # FULL_MATRIX_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.7\", \"3.8\", \"3.9\", \"3.10\", \"3.11\"]}"
-
-  # on Ubuntu Latest with Python 3.6, we encounter below error:
-  
-  # Version 3.6 was not found in the local cache
-  # Error: The version '3.6' with architecture 'x64' was not found for Ubuntu 22.04.
-  # The list of all available versions can be found here: https://raw.githubusercontent.com/actions/python-versions/main/versions-manifest.json
-
-  # so for now we skip 3.6 on Ubuntu Latest
-  FULL_MATRIX_STRATEGY: "{\"platform\": [\"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.6\"]}"
-
-
+  ### STRESS TEST Job MATRIX ###
+  FULL_MATRIX_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.7\", \"3.8\", \"3.9\", \"3.10\", \"3.11\"]}"
+  # Python 3.7 has reached End of Life (EOL) on June 27th, 2023
+  # Python 3.12 is in bugfix mode, same as 3.11 -> can start supporting 3.12 it
   UBUNTU_PY310_STRATEGY: "{\"platform\":[\"ubuntu-latest\"], \"python-version\":[\"3.10\"]}"
   TEST_STRATEGY: "{\"platform\":[\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\":[\"3.9\"]}"
 
