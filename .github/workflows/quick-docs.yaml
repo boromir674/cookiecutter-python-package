@@ -126,7 +126,7 @@ jobs:
           title: 'Quick Release: Bump version to ${{ steps.modify_readme.outputs.new_version }}'
           body: Bump version to ${{ steps.modify_readme.outputs.new_version }}
           # PR Branch name (ie update-authors --> main)
-          branch: update-authors
+          branch: docs
           # Delete the branch when closing pull requests, and when undeleted after merging.
           delete-branch: false
           draft: false
