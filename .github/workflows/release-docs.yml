@@ -26,7 +26,7 @@ on:
 
 jobs:
   if_merged:
-    if: github.event.pull_request.merged == true
+    # if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - run: |
@@ -93,11 +93,11 @@ jobs:
 
 
 
-  if_not_merged:
-    if: github.event.pull_request.merged == false
-    runs-on: ubuntu-latest
-    steps:
-      - run: |
-          echo The PR was not merged, but closed, thus Cancellation was requested
-          echo "The PR was closed by ${{ github.actor }}"
+  # if_not_merged:
+  #   if: github.event.pull_request.merged == false
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - run: |
+  #         echo The PR was not merged, but closed, thus Cancellation was requested
+  #         echo "The PR was closed by ${{ github.actor }}"
 
