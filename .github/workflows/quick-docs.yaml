@@ -1,0 +1,117 @@
+################################
+## Docs Readme Publish ##
+##     Reusable Workflow      ##
+################################
+
+# Quickly Readme asap
+
+
+on:
+  # on tag with name 'quick-release' only
+  push:
+    tags:
+      - quick-release
+
+
+jobs:
+  release_readme:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # Store git diff of this code compared to master
+      - name: Store git diff
+        id: git_diff
+        run: |
+          git fetch origin master
+          git diff --name-only origin/master > git_diff.txt
+          # echo "DIFF_FILE="git_diff.txt" >> $GITHUB_OUTPUT
+
+      # Verify only README has changed
+      - name: Verify only README has changed
+        id: verify_paths
+        run: |
+          # Read git diff file into array
+          IFS=$'\n' read -d '' -r -a diff_paths < git_diff.txt
+          # Loop through array
+          for path in "${diff_paths[@]}"
+          do
+            # Check if path starts with docs/ or mkdocs.yml
+            if [[ ! "$path" =~ ^README.md$ ]]; then
+              echo "ERROR: Only README.md should be changed for a quick release"
+              echo "ERROR: Found: $path"
+              exit 1
+            fi
+          done
+      
+      ## Make necessary Sem Ver bumps in source code
+      # we will do a Patch Bump
+
+      # Modify src/cookiecutter_python/__init__.py  (line ie: __version__ = '1.8.0')
+      - name: Modify src/cookiecutter_python/__init__.py
+        id: modify_init
+        run: |
+          # Get current version
+          current_version=$(grep -oP '(?<=__version__ = \x27)[^\'']+' src/cookiecutter_python/__init__.py)
+          # Bump version
+          new_version=$(python -c "from semver import bump_patch; print(bump_patch('$current_version'))")
+          # Replace version in file
+          sed -i "s/$current_version/$new_version/g" src/cookiecutter_python/__init__.py
+          # echo "NEW_VERSION=$new_version" >> $GITHUB_OUTPUT
+
+      # # Modify pyproject.tml (line: version = "1.8.0")
+      # - name: Modify pyproject.tml
+      #   id: modify_pyproject
+      #   run: |
+      #     # Get current version
+      #     current_version=$(grep -oP '(?<=version = \x22)[^\'']+' pyproject.toml)
+      #     # Bump version
+      #     new_version=$(python -c "from semver import bump_patch; print(bump_patch('$current_version'))")
+      #     # Replace version in file
+      #     sed -i "s/$current_version/$new_version/g" pyproject.toml
+      #     # echo "NEW_VERSION=$new_version" >> $GITHUB_OUTPUT
+      
+      # # Modify docs/conf.py (line: release = '1.8.0')
+      # - name: Modify docs/conf.py
+      #   id: modify_docs
+      #   run: |
+      #     # Get current version
+      #     current_version=$(grep -oP '(?<=release = \x27)[^\'']+' docs/conf.py)
+      #     # Bump version
+      #     new_version=$(python -c "from semver import bump_patch; print(bump_patch('$current_version'))")
+      #     # Replace version in file
+      #     sed -i "s/$current_version/$new_version/g" docs/conf.py
+      #     # echo "NEW_VERSION=$new_version" >> $GITHUB_OUTPUT
+      
+      # # Modify README.rst in 2 places:
+      # - name: Modify README.rst
+      #   id: modify_readme
+      #   run: |
+      #     # Get current version
+      #     current_version=$(grep -oP '(?<=https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/v)[^\'']+' README.rst)
+      #     # Bump version
+      #     new_version=$(python -c "from semver import bump_patch; print(bump_patch('$current_version'))")
+      #     # Replace version in file
+      #     sed -i "s/$current_version/$new_version/g" README.rst
+      #     # echo "NEW_VERSION=$new_version" >> $GITHUB_OUTPUT
+
+      ## Create PR ##
+      # # https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md#events-and-checkout
+      # https://github.com/peter-evans/create-pull-request/blob/main/docs/examples.md#using-a-markdown-template
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          # Sets the pull request base branch.
+          # Defaults to the branch checked out in the workflow.
+          base: quick_docs_main
+          commit-message: 'Quick Release: Bump version to ${{ steps.modify_readme.outputs.new_version }}'
+          title: 'Quick Release: Bump version to ${{ steps.modify_readme.outputs.new_version }}'
+          body: Bump version to ${{ steps.modify_readme.outputs.new_version }}
+          # PR Branch name (ie update-authors --> main)
+          branch: update-authors
+          # Delete the branch when closing pull requests, and when undeleted after merging.
+          delete-branch: false
+          draft: false
+          labels: quick-release,docs
