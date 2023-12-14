@@ -25,7 +25,7 @@ Features
 4. Extensively **Tested** on various systems, factoring the below:
    
    a. System's platform: **"Linux"**, **"MacOS"** & **"Windows"**
-   b. System's Python: **3.6**, **3.7**, **3.8**, **3.9** & **3.10**
+   b. System's Python: **3.7**, **3.8**, **3.9** & **3.10**, **3.11**
 
     See the `Test Workflow` on the `CI`_ server.
 
