@@ -117,5 +117,7 @@ jobs:
       # https://github.com/peter-evans/create-pull-request/blob/main/docs/examples.md#using-a-markdown-template
 
       - name: Create pr
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh pr create --title "Quick Release $new_version" --body "Quick Release $new_version" --base quick_docs_main --head docs
