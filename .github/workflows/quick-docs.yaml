@@ -3,8 +3,24 @@
 ##     Reusable Workflow      ##
 ################################
 
-# PR: empemeral-doc-updates --> docs-auto
+# 1. Gets state on tagged commit
+# 2. creates an empemeral branch
+# 3. pushes the empemeral branch to GitHub
+# 4. creates a PR from empemeral branch to docs-auto branch
+# 5. merges the PR into docs-auto branch, on successful Docs Build
+# 6  Deletes the empemeral branch
 
+###### Quick Release Tagging #######
+# export tt='quick-release'; git tag -d "$tt"; git push --delete origin "$tt"; git tag "$tt" && git push origin "$tt"
+##############   OR   ##############
+# export tt='quick-release'
+# git tag -d "$tt"
+# git push --delete origin "$tt"
+# git tag "$tt"
+# git push origin "$tt"
+####################################
+
+# PR: empemeral-doc-updates --> docs-auto
 
 # Trigger only on push of a 'quick-release' tag, on any branch
 on:
@@ -46,7 +62,7 @@ jobs:
             \n\n\
             Please do not close this PR manually."
 
-      - name: Merge Pull Request into docs-auto and delete empemeral-doc-updates Branch
+      - name: 'Merge Pull Request into docs-auto and delete empemeral-doc-updates Branch'
 
       # gh pr merge          :  If required checks have not yet passed, AutoMerge will be enabled.
 
