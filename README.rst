@@ -1,7 +1,7 @@
 Python Package Generator
 ========================
 
-| Python Package Generator supporting 3 different Project `types` to scaffold.
+| Python Package Generator, able to scaffold 3 Project `Types`, with fully-featured **CI/CD Pipeline**.
 | Emphasizing on CI/CD, Testing and Automation, implemented on top of Cookiecutter.
 
 .. start-badges
