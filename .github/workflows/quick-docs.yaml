@@ -52,6 +52,9 @@ jobs:
 
       - run: git log --graph --decorate --color --all --stat
 
+      # here Codacy does not trigger, because branch does not have more than 2 commits over that past 2 weeks
+      # see: https://docs.codacy.com/repositories-configure/managing-branches/
+
       - name: Create Pull Request
         # --head is the branch where the changes were developed
         # --base is the branch you want to merge the changes into
@@ -75,8 +78,13 @@ jobs:
 
         run: |
           gh pr merge empemeral-doc-updates --auto --delete-branch --squash
+      
+      # Due to --delete-branch, our local HEAD is now in auto-docs (which is up-to-date with upstream)
+      # Local branch empemeral-doc-updates is deleted
 
+      - run: git fetch
       - run: git log --graph --decorate --color --all --stat
+      - run: echo "Expect above log to proove local and origin empemeral-doc-updates branches are deleted"
 
     #### WORKFLOW 2 EMBEDDED HERE ####
       - run: git checkout docs-auto
@@ -105,10 +113,12 @@ jobs:
 
       # error also can happen if pull request already exists, due to insufficient clean up, prior
 
-      # MERGE  'auto-docs' --> Base 'release' #
+      # MERGE  'auto-docs' --> Base 'release' + Delete auto-docs#
       - name: 'Merge Pull Request into release branch'
         run: |
-          gh pr merge docs-auto --auto --squash
+          # try with delete to prevent Codacy check, which fails, due there is nothing to analyze
+          gh pr merge docs-auto --auto --squash --delete-branch
+          # if not works, try removing squash 
 
       - run: git log --graph --decorate --color --all --stat
 
