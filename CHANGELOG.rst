@@ -2,6 +2,18 @@
 Changelog
 =========
 
+1.8.2 (2023-12-15)
+==================
+
+Changes
+^^^^^^^
+
+ci
+""
+- remove unused workflow
+- fix workflow syntax due to merge confict resolution artifacts
+
+
 1.8.1 (2023-12-15)
 ==================
 
