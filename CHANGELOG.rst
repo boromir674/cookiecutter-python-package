@@ -2,6 +2,17 @@
 Changelog
 =========
 
+1.8.3 (2023-12-15)
+==================
+
+Changes
+^^^^^^^
+
+documentation
+"""""""""""""
+- mention Documentation Site right after README.rst Subtitle and before badges
+
+
 1.8.2 (2023-12-15)
 ==================
 
