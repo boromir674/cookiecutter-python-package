@@ -114,11 +114,11 @@ jobs:
       # error also can happen if pull request already exists, due to insufficient clean up, prior
 
       # MERGE  'auto-docs' --> Base 'release' + Delete auto-docs#
+      # try with delete to prevent Codacy check, which fails, due there is nothing to analyze
+      # if not works, try removing squash 
       - name: 'Merge Pull Request into release branch'
         run: |
-          # try with delete to prevent Codacy check, which fails, due there is nothing to analyze
-          gh pr merge docs-auto --auto --squash --delete-branch
-          # if not works, try removing squash 
+          gh pr merge docs-auto
 
       - run: git log --graph --decorate --color --all --stat
 
