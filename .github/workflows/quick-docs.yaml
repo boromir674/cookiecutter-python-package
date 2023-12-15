@@ -118,7 +118,7 @@ jobs:
       # if not works, try removing squash 
       - name: 'Merge Pull Request into release branch'
         run: |
-          gh pr merge docs-auto
+          gh pr merge docs-auto --rebase
 
       - run: git log --graph --decorate --color --all --stat
 
