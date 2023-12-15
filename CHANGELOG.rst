@@ -2,6 +2,22 @@
 Changelog
 =========
 
+1.8.1 (2023-12-15)
+==================
+
+Changes
+^^^^^^^
+
+documentation
+"""""""""""""
+- add shell on-liner for firing up a 'quick-release' event
+- add 'Quick Docs Release' Guide & restructure some content based on Diataxis theory
+
+ci
+""
+- Open PR to master on 'quick-release' event, to release Docs only Updates
+
+
 1.8.0 (2023-12-12)
 ==================
 
