@@ -96,6 +96,8 @@ jobs:
       # NOTE: For the below to work release branch MUST be at master, because due to absence of protection rules
       # Merging is not done due to not linear history, and the PR is closed
 
+      # error also can happen if pull request already exists, due to insufficient clean up, prior
+
       # MERGE  'auto-docs' --> Base 'release' #
       - name: 'Merge Pull Request into release branch'
         run: |
