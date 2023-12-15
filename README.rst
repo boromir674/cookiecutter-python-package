@@ -4,6 +4,8 @@ Python Package Generator
 | Python Package Generator supporting 3 different Project `types` to scaffold.
 | Emphasizing on CI/CD, Testing and Automation, implemented on top of Cookiecutter.
 
+See the `Documentation Site <https://cookiecutter.readthedocs.io/en/stable/>`__ for a thorough read.
+
 .. start-badges
 
 | |build| |docs| |coverage| |ossf| |maintainability| |codacy| |tech-debt| |black|
