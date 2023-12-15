@@ -4,14 +4,14 @@
 
 
 Install as PyPi package
------------------------
+~~~~~~~~~~~~~~~~~~~~~~~
 
 Installing `cookiecutter-python` with `pip` is the way to go, for getting the
 `generate-python` cli onto your machine. Here we demonstrate how to do that using a
 
 
 In virtual environment (recommended)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+""""""""""""""""""""""""""""""""""""
 
 As with any Python Package, it is recommended to install *cookiecutter-python* inside a
 python *virtual environment*. You can use any of `virtualenv`, `venv`, `pyenv` of the
@@ -49,7 +49,7 @@ Now the *generate-python* executable should be available (assuming ~/.local/bin 
 
 
 For user (option 2)
-^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""
 
 One could also opt for a *user* installation of *cookiecutter-python* package:
 
@@ -59,7 +59,7 @@ One could also opt for a *user* installation of *cookiecutter-python* package:
 
 
 For all users (option 3)
-^^^^^^^^^^^^^^^^^^^^^^^^
+""""""""""""""""""""""""
 
 The least recommended way of installing *cookiecutter-python* package is to
 *directly* install in the *host* machine:
@@ -72,7 +72,7 @@ Note the need to invoke using *sudo*, hence not that much recommended.
 
 
 Check installation
-------------------
+~~~~~~~~~~~~~~~~~~
 
 | Now the `generate-python` cli should be available!
 | You can verify by running the following:
