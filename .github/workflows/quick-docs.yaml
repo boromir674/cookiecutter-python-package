@@ -44,10 +44,13 @@ jobs:
           # Default: true
           set-safe-directory: ''
 
-      # pushed tag that we checkout is not a branch, so we need to create a branch
+      - run: git log --graph --decorate --color --all --stat
 
+      # pushed tag that we checkout is not a branch, so we need to create a branch
       - run: git checkout -b empemeral-doc-updates
       - run: git push -u origin HEAD
+
+      - run: git log --graph --decorate --color --all --stat
 
       - name: Create Pull Request
         # --head is the branch where the changes were developed
@@ -73,11 +76,15 @@ jobs:
         run: |
           gh pr merge empemeral-doc-updates --auto --delete-branch --squash
 
+      - run: git log --graph --decorate --color --all --stat
 
     #### WORKFLOW 2 EMBEDDED HERE ####
       - run: git checkout docs-auto
+      - run: git branch -D empemeral-doc-updates || echo "Branch empemeral-doc-updates does not exist"
       - run: git pull origin docs-auto
-      - run: git status
+      - run: git checkout master
+
+      - run: git log --graph --decorate --color --all --stat
 
       ### PR: Head 'auto-docs' --> Base 'release' ###
       - name: Create Pull Request
@@ -103,9 +110,13 @@ jobs:
         run: |
           gh pr merge docs-auto --auto --squash
 
+      - run: git log --graph --decorate --color --all --stat
+
       - run: git fetch origin release
       - run: git checkout release
-      
+
+      - run: git log --graph --decorate --color --all --stat
+
       ### PR: Head 'release' --> Base 'master' ###
       - name: Create Pull Request
         run: |
