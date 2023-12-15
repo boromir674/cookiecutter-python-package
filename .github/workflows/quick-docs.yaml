@@ -75,9 +75,9 @@ jobs:
 
 
     #### WORKFLOW 2 EMBEDDED HERE ####
-      
-      - run: git branch --track docs-auto origin/docs-auto
       - run: git checkout docs-auto
+      - run: git pull origin docs-auto
+      - run: git status
 
       ### PR: Head 'auto-docs' --> Base 'release' ###
       - name: Create Pull Request
