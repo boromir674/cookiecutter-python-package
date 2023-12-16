@@ -29,10 +29,13 @@ What to expect?
 ===============
 
 You can to be up and running with a new Python Package, and run workflows on Github Actions, such as:
+.. image is expected to mostly be rendered on github.com, pypi.org, readthedocs.io
+   in any case we care for these pages. Adjust images props (ie width if needed)
 
 .. image:: assets/ci-open-v1.png
-   :width: 40pt
-   :alt: CI/CD Pipeline
+   :alt: CI Pipeline, running on Github Actions, for a Biskotaki Python Package
+   :align: center
+   :width: 100%
 
 Link: https://github.com/boromir674/biskotaki/actions/runs/4157571651
 
