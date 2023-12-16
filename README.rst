@@ -1,35 +1,50 @@
+========================
 Python Package Generator
 ========================
 
-| Python Package Generator supporting 3 different Project `types` to scaffold.
-| Emphasizing on CI/CD, Testing and Automation, implemented on top of Cookiecutter.
+| |build| |release_version| |wheel| |supported_versions|
+| |docs| |coverage| |maintainability| |codacy| |tech-debt|
+| |ossf| |black| |gh-lic| |commits_since_specific_tag_on_master| |commits_since_latest_github_release|
 
-See the `Documentation Site <https://python-package-generator.readthedocs.io/>`__ for a thorough read.
+| Generate Python Project, with CI/CD Pipeline for PyPI and Docker builds for easy DevOps.
+| **Documentation available at https://python-package-generator.readthedocs.io/.**
 
-.. start-badges
+What's included?
+================
 
-| |build| |docs| |coverage| |ossf| |maintainability| |codacy| |tech-debt| |black|
-| |release_version| |wheel| |supported_versions| |gh-lic| |commits_since_specific_tag_on_master| |commits_since_latest_github_release|
+* `Generator` **CLI** to scaffold a modern Python Project, with cross-platform support; **Linux**, **MacOS**, **Windows**
+* Option for Python Package "variant", supporting `module`, `module+cli`, and `pytest-plugin`
+* Template (source at `src/cookiecutter_python/`_) of over **24 files** (see `Quickstart`_), to generate Project featuring:
+  
+  * Fully featured **CI/CD Pipeline**, running on `Github Actions`_, defined in `.github/`
+  * **Documentation Pages**, with `sphinx` or `mkdocs`, hosted on `readthedocs` server, located in `docs` dir
+  * **Test Suite**, using `pytest`_, located in `tests` dir
+  * **Pypi Deploy Command**, supporting upload to both `pypi.org`_ and `test.pypi.org`_ servers
+  * **Type Check Command**, using `mypy`_
+  * **Lint** *Check* and `Apply` commands, using `isort`_ and `black`_
+  * **Build Command**, using the `build`_ python package
 
-|
-| **Source:** https://github.com/boromir674/cookiecutter-python-package
-| **Docs:** https://python-package-generator.readthedocs.io/en/master/
-| **PyPI:** https://pypi.org/project/cookiecutter-python/
-| **CI:** https://github.com/boromir674/cookiecutter-python-package/actions/
 
+What to expect?
+===============
 
-Features
-========
+You can to be up and running with a new Python Package, and run workflows on Github Actions, such as:
 
-1. Scaffold a modern `ready-to-develop` Python Package (see `Quickstart`_)
-2. Automatically generate over 24 files, to setup `Test Suite`, `build` scripts & CI Pipeline
-3. **Python Package Template** (source code at `src/cookiecutter_python/`_) implemented as a `Cookiecutter`
-4. Extensively **Tested** on various systems, factoring the below:
-   
-   a. System's platform: **"Linux"**, **"MacOS"** & **"Windows"**
-   b. System's Python: **3.7**, **3.8**, **3.9** & **3.10**, **3.11**
+.. image:: ci-open-v1.png
+   :width: 40pt
+   :alt: CI/CD Pipeline
 
-    See the `Test Workflow` on the `CI`_ server.
+Link: https://github.com/boromir674/biskotaki/actions/runs/4157571651
+
+1. **CI Pipeline**, running on `Github Actions`_, defined in `.github/`
+
+   a. **Job Matrix**, spanning different `platform`'s and `python version`'s
+
+      1. Platforms: `ubuntu-latest`, `macos-latest`
+      2. Python Interpreters: `3.6`, `3.7`, `3.8`, `3.9`, `3.10`
+   b. **Parallel Job** execution, generated from the `matrix`, that runs the `Test Suite`
+   c. **Artifact** store of **Source** and **Wheel** Distributions, factoring Platform and Python Version
+
 
 Auto Generated Sample Package **Biskotaki**
 -------------------------------------------
@@ -38,32 +53,9 @@ Check the **Biskotaki** *Python Package Project*, for a taste of the project str
 
 It it entirely generated using this **Python Package Template:**
 
-
 | **Source Code** hosted on *Github* at https://github.com/boromir674/biskotaki
 | **Python Package** hosted on *pypi.org* at https://pypi.org/project/biskotaki/
 | **CI Pipeline** hosted on *Github Actions* at https://github.com/boromir674/biskotaki/actions
-
-
-Generated Python Package Features
----------------------------------
-
-1. **Test Suite**, using `pytest`_, located in `tests` dir
-2. **Parallel Execution** of Unit Tests, on multiple cpu's
-3. **Documentation Pages**, hosted on `readthedocs` server, located in `docs` dir
-4. **Automation**, using `tox`_, driven by single `tox.ini` file
-
-   a. **Code Coverage** measuring
-   b. **Build Command**, using the `build`_ python package
-   c. **Pypi Deploy Command**, supporting upload to both `pypi.org`_ and `test.pypi.org`_ servers
-   d. **Type Check Command**, using `mypy`_
-   e. **Lint** *Check* and `Apply` commands, using `isort`_ and `black`_
-5. **CI Pipeline**, running on `Github Actions`_, defined in `.github/`
-
-   a. **Job Matrix**, spanning different `platform`'s and `python version`'s
-
-      1. Platforms: `ubuntu-latest`, `macos-latest`
-      2. Python Interpreters: `3.6`, `3.7`, `3.8`, `3.9`, `3.10`
-   b. **Parallel Job** execution, generated from the `matrix`, that runs the `Test Suite`
 
 
 Quickstart
