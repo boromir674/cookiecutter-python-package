@@ -29,6 +29,7 @@ What to expect?
 ===============
 
 You can to be up and running with a new Python Package, and run workflows on Github Actions, such as:
+
 .. image is expected to mostly be rendered on github.com, pypi.org, readthedocs.io
    in any case we care for these pages. Adjust images props (ie width if needed)
 
