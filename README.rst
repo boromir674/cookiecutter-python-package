@@ -92,9 +92,16 @@ To **generate** a Python Package Project, run:
 
 .. code-block:: sh
 
-    generate-python
+    mkdir gen-demo-dir
+    cd gen-demo-dir
+    
+    generate-python --config-file ../gen-config.yml --no-input
+
 
 Now, you should have generated a new Project for a Python Package, based on the `Template`_!
+
+The Project should be located in the newly created ``demo-generated-project`` directory.
+
 
 To leverage all out-of-the-box development operations (ie scripts), install `tox`_:
 
