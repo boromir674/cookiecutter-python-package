@@ -30,9 +30,13 @@ What to expect?
 
 You can to be up and running with a new Python Package, and run workflows on Github Actions, such as:
 
-.. image:: ci-open-v1.png
-   :width: 40pt
-   :alt: CI/CD Pipeline
+.. image is expected to mostly be rendered on github.com, pypi.org, readthedocs.io
+   in any case we care for these pages. Adjust images props (ie width if needed)
+
+.. image:: assets/ci-open-v1.png
+   :alt: CI Pipeline, running on Github Actions, for a Biskotaki Python Package
+   :align: center
+   :width: 100%
 
 Link: https://github.com/boromir674/biskotaki/actions/runs/4157571651
 
@@ -61,40 +65,116 @@ It it entirely generated using this **Python Package Template:**
 Quickstart
 ==========
 
-Installation
-------------
+To **install** the latest ``Generator`` in your environment, run:
 
-    .. code-block:: shell
+.. code-block:: shell
 
-        pip install --user cookiecutter-python
+    pip install cookiecutter-python
+
+The ``generate-python`` CLI should become available in your environment.
+
+Next, create a file, let's call it ``gen-config.yml``, with the following content:
+
+.. code-block:: yaml
+
+    default_context:
+        project_name: Demo Generated Project
+        project_type: module+cli
+        full_name: John Doe
+        email: john.doe@something.org
+        github_username: john-doe
+        project_short_description: 'Demo Generated Project Description'
+        initialize_git_repo: no
+        interpreters: {"supported-interpreters": ["3.8", "3.9", "3.10", "3.11"]}
 
 
-Usage
------
+To **generate** a Python Package Project, run:
 
-Open a console/terminal and run:
+.. code-block:: sh
 
-  .. code-block:: sh
+    mkdir gen-demo-dir
+    cd gen-demo-dir
+    
+    generate-python --config-file ../gen-config.yml --no-input
 
-      generate-python
 
 Now, you should have generated a new Project for a Python Package, based on the `Template`_!
 
-    Just 'enter' (`cd` into) the newly created directory, ie `cd <my-great-python-package>`.
+The Project should be located in the newly created ``demo-generated-project`` directory.
+
+
+To leverage all out-of-the-box development operations (ie scripts), install `tox`_:
+
+.. code-block:: shell
+
+    python3 -m pip install --user 'tox<4'
+
+To verify tox available in your environment, run: ``tox --version``
+
+
+Please, do a `cd` into the newly created directory, ie `cd <my-great-python-package>`.
+
+To run the Test Suite, `cd` into the newly created Project folder, and run:
+
+.. code-block:: shell
+
+    tox -e dev
+
+All Tests should pass, and you should see a `coverage` report!
+
+
+To run Type Checking against the Source Code, run:
+
+.. code-block:: shell
+
+    tox -e type
+
+All Type Checks should pass!
+
+
+To setup a Git Repository, run:
+
+.. code-block:: shell
+
+    git init
+    git add .
+    git checkout -b main
+    git commit -m "Initial commit"
+
+
+To setup a Remote Repository, run for example:
+
+.. code-block:: shell
+
+    git remote add origin <remote-repository-url>
+    git push -u origin main
+
+
+To trigger the CI/CD Pipeline, run:
+
+.. code-block:: shell
+
+    git push
+
+Navigate to your github.com/username/your-repo/actions page, to see the CI Pipeline running!
 
 | Develop your package's **Source Code** (`business logic`) inside `src/my_great_python_package` dir :)
 | Develop your package's **Test Suite** (ie `unit-tests`, `integration tests`) inside `tests` dir :-)
 
-
-Try Running the Test Suite!
-
-    .. code-block:: shell
-
-        tox
-
-
 Read the Documentation's `Use Cases`_ section for more on how to leverage your generated Python Package features.
 
+
+Next Steps
+----------
+
+To prepare for an Open Source Project Development Lifecycle, you should visit the following websites:
+
+* PyPI, test.pypi.org, Dockerhub, and Read the Docs, for setting up Release and Documentation Pipelines
+* github.com/your-account to configure Actions, through the web UI
+* Codecov, Codacy, and Codeclimate, for setting up Automated Code Quality, with CI Pipelines
+* https://www.bestpractices.dev/ for registering your Project for OpenSSF Best Practices Badge
+
+**Happy Developing!**
 
 License
 =======
@@ -186,9 +266,9 @@ Free/Libre and Open Source Software (FLOSS)
 
 .. Github Releases & Tags
 
-.. |commits_since_specific_tag_on_master| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/v1.8.3/master?color=blue&logo=github
+.. |commits_since_specific_tag_on_master| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/v1.8.6/master?color=blue&logo=github
     :alt: GitHub commits since tagged version (branch)
-    :target: https://github.com/boromir674/cookiecutter-python-package/compare/v1.8.3..master
+    :target: https://github.com/boromir674/cookiecutter-python-package/compare/v1.8.6..master
 
 .. |commits_since_latest_github_release| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/latest?color=blue&logo=semver&sort=semver
     :alt: GitHub commits since latest release (by SemVer)

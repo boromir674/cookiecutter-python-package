@@ -2,6 +2,17 @@
 Changelog
 =========
 
+1.8.6 (2023-12-15)
+==================
+
+Changes
+^^^^^^^
+
+documentation
+"""""""""""""
+- improve **Quickstart** Gide in README.rst
+
+
 1.8.3 (2023-12-15)
 ==================
 
