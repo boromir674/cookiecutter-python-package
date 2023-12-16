@@ -30,7 +30,7 @@ What to expect?
 
 You can to be up and running with a new Python Package, and run workflows on Github Actions, such as:
 
-.. image:: ci-open-v1.png
+.. image:: assets/ci-open-v1.png
    :width: 40pt
    :alt: CI/CD Pipeline
 
