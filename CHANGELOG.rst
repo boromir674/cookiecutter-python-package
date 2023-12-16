@@ -2,6 +2,21 @@
 Changelog
 =========
 
+1.8.7 (2023-12-16)
+==================
+
+Changes
+^^^^^^^
+
+ci
+""
+- run 1-Job Test, instead of Stress Tests, on push to master or main branch
+
+release
+"""""""
+- bump version to 1.8.7
+
+
 1.8.6 (2023-12-15)
 ==================
 
