@@ -343,8 +343,11 @@ jobs:
           else
             echo LINT_POLICY=0 >> $GITHUB_OUTPUT
           fi
+      - id: derive_sqa_py
+        run: echo SQA_PY=${{ env.STATIC_ANALYSIS_PY }} >> $GITHUB_OUTPUT
     outputs:
       PIPE_LINT_POLICY: ${{ steps.derive_lint_policy.outputs.LINT_POLICY }}
+      PIPE_SQA_PY: ${{ steps.derive_sqa_py.outputs.SQA_PY }}
 
   lint:
     name: Static Code Analysis
@@ -354,7 +357,7 @@ jobs:
       run_policy: ${{ needs.read_pipe_lint_settings.outputs.PIPE_LINT_POLICY }}
       dedicated_branches: 'master, main, dev'
       source_code_targets: 'src,tests,scripts'
-      python_version: '${{ env.STATIC_ANALYSIS_PY }}'
+      python_version: ${{ needs.read_pipe_lint_settings.outputs.PIPE_SQA_PY }}
       pylint_threshold: "8.2"
 
 
