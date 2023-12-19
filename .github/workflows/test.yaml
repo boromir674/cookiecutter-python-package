@@ -327,55 +327,34 @@ jobs:
 
   ### STATIC CODE ANALYSIS & LINTING ###
   # Check that Code passes 'Our Quality Standards'
-  lint:
-    name: "Static Code Analysis"
+  read_pipe_lint_settings:
     runs-on: ubuntu-latest
-    needs: set_github_outputs
-    if: ${{ needs.set_github_outputs.outputs.RUN_LINT == 'true' }}
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python ${{ env.STATIC_ANALYSIS_PY }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.STATIC_ANALYSIS_PY }}
-      - name: Install dependencies
+      - id: derive_lint_policy
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install tox==3.28
-
-      ## Isort ##
-      - name: "Isort\\: Require Semantic and Alphabetic order of the Python Imports"
-        if: ${{ matrix.platform != 'windows-latest' }}
-        run: tox -e isort -vv -s false
-
-      ## Black ##
-      - name: "Black\\: Require Project Style to be followed by the Python Code"
-        if: ${{ matrix.platform != 'windows-latest' }}
-        run: tox -e black -vv -s false
-
-      ## Pylint ##
-      - name: Run Pylint tool on Python Code Base
-        run: TOXPYTHON="python${STATIC_ANALYSIS_PY}" tox -e pylint -vv -s false | tee pylint-result.txt
-      # TODO: Retire Pylint and MIGRATE to RUFF
-      - run: cat pylint-result.txt
-
-      - name: "Check Pylint Score > ${{ env.PYLINT_SCORE_THRESHOLD }}/10"
-        if: ${{ matrix.platform != 'windows-latest' }}
-        run: |
-          SCORE=`sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' pylint-result.txt`
-          echo "SCORE -> $SCORE"
-          # threshold check
-          if awk "BEGIN {exit !($SCORE >= $PYLINT_SCORE_THRESHOLD)}"; then
-            echo "PyLint Passed! | Score: ${SCORE} out of 10 | Threshold: ${PYLINT_SCORE_THRESHOLD}"
+          if [[ $RUN_LINT_CHECKS == "true" ]]; then
+            if [[ $ALWAYS_LINT == "true" ]]; then
+              echo LINT_POLICY=1 >> $GITHUB_OUTPUT
+            else
+              echo LINT_POLICY="$LINT_JOB_POLICY" >> $GITHUB_OUTPUT
+            fi
           else
-            echo "PyLint Failed! | Score: ${SCORE} out of 10 | Threshold: ${PYLINT_SCORE_THRESHOLD}"
-            exit 1
+            echo LINT_POLICY=0 >> $GITHUB_OUTPUT
           fi
+    outputs:
+      PIPE_LINT_POLICY: ${{ steps.derive_lint_policy.outputs.LINT_POLICY }}
 
-      ## Pyflakes, Pyroma, McCabe, DodgyRun, Profile Validator ##
-      - name: Run tox -e prospector
-        if: ${{ matrix.platform != 'windows-latest' }}
-        run: tox -e prospector -vv -s false
+  lint:
+    name: Static Code Analysis
+    needs: read_pipe_lint_settings
+    uses: boromir674/automated-workflows/.github/workflows/lint.yml@test
+    with:
+      run_policy: ${{ needs.read_pipe_lint_settings.outputs.PIPE_LINT_POLICY }}
+      dedicated_branches: 'master, main, dev'
+      source_code_targets: 'src,tests,scripts'
+      python_version: ${{ env.STATIC_ANALYSIS_PY }}
+      pylint_threshold: "8.2"
+
 
 # DRAW PYTHON DEPENDENCY GRAPHS
   check_trigger_draw_dependency_graphs:
