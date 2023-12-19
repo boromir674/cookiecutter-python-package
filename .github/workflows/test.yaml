@@ -354,7 +354,7 @@ jobs:
       run_policy: ${{ needs.read_pipe_lint_settings.outputs.PIPE_LINT_POLICY }}
       dedicated_branches: 'master, main, dev'
       source_code_targets: 'src,tests,scripts'
-      python_version: ${{ env.STATIC_ANALYSIS_PY }}
+      python_version: '${{ env.STATIC_ANALYSIS_PY }}'
       pylint_threshold: "8.2"
 
 
