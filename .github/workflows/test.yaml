@@ -332,21 +332,13 @@ jobs:
   read_pipe_lint_settings:
     runs-on: ubuntu-latest
     steps:
-      - id: derive_lint_policy
-        run: |
-          if [[ $RUN_LINT_CHECKS == "true" ]]; then
-            if [[ $ALWAYS_LINT == "true" ]]; then
-              echo LINT_POLICY=1 >> $GITHUB_OUTPUT
-            else
-              echo LINT_POLICY="$LINT_JOB_POLICY" >> $GITHUB_OUTPUT
-            fi
-          else
-            echo LINT_POLICY=0 >> $GITHUB_OUTPUT
-          fi
+      - id: aka
+        run: echo "POL=${{ (env.RUN_LINT_CHECKS != 'true' && '0') || (env.ALWAYS_LINT == 'true' && '1') || env.LINT_JOB_POLICY }}" >> $GITHUB_OUTPUT
+      - run: echo "[DEBUG] aka = ${{ steps.aka.outputs.POL }}"
       - id: derive_sqa_py
         run: echo SQA_PY=${{ env.STATIC_ANALYSIS_PY }} >> $GITHUB_OUTPUT
     outputs:
-      PIPE_LINT_POLICY: ${{ steps.derive_lint_policy.outputs.LINT_POLICY }}
+      PIPE_LINT_POLICY: ${{ steps.aka.outputs.POL }}
       PIPE_SQA_PY: ${{ steps.derive_sqa_py.outputs.SQA_PY }}
 
   lint:
