@@ -30,10 +30,10 @@ env:
 
   ##### JOB ON/OFF SWITCHES #####
   RUN_UNIT_TESTS: "false"
-  RUN_LINT_CHECKS: "true"
+  RUN_LINT_CHECKS: "false"
   DOCKER_JOB_ON: "false"
   PUBLISH_ON_PYPI: "true"
-  DRAW_DEPENDENCIES: "false"
+  DRAW_DEPENDENCIES: "true"
   ###############################
 
   ### DOCKER Job Policy ####
@@ -54,6 +54,10 @@ env:
   STATIC_ANALYSIS_PY: "3.10"
   ## Pylint Minimum Acceptance Rating/Score ##
   PYLINT_SCORE_THRESHOLD: "8.2"
+
+  #### STATIC CODE ANALYSIS Job ####
+  ALWAYS_CODE_VIZ: "true"
+  CODE_VIZ_POLICY: '2'  # {2, 3}
   ##########################
 
 jobs:
@@ -354,65 +358,22 @@ jobs:
 
 
 # DRAW PYTHON DEPENDENCY GRAPHS
-  check_trigger_draw_dependency_graphs:
+  read_code_viz_settings:
     runs-on: ubuntu-latest
-    name: Draw Python Dependency Graphs ?
-    needs: set_github_outputs
-    if: needs.set_github_outputs.outputs.DRAW_DEPS_SVG_GRAPHS == 'true'
+    steps:
+      # Derive POLICY for Code Vizualization
+      - run: echo "POL=${{ (env.DRAW_DEPENDENCIES != 'true' && '0') || (env.ALWAYS_CODE_VIZ == 'true' && '1') || env.CODE_VIZ_POLICY }}" >> $GITHUB_OUTPUT
+        id: compute_policy
     outputs:
-      SHOULD_DRAW_GRAPHS: ${{ steps.decide_if_should_draw_graphs.outputs.SHOULD_DRAW_GRAPHS }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 2
-      - name: Decide if should draw graphs
-        id: decide_if_should_draw_graphs
-        run: |
-          # if branch is master or dev; or if we are on tag starting with "v"
-          if [[ ${GITHUB_REF_NAME} == "master" || ${GITHUB_REF_NAME} == "dev" || "${GITHUB_REF}" =~ refs/tags/v.* ]]; then
-            SHOULD_DRAW_GRAPHS=true
-          else
-            echo "=============== list modified files ==============="
-            git diff --name-only HEAD^ HEAD
-            echo "========== check paths of modified files =========="
-            git diff --name-only HEAD^ HEAD > files.txt
-            SHOULD_DRAW_GRAPHS=false
-            while read file; do
-              echo $file
-              if [[ $file =~ ^src/ ]]; then
-                echo "This modified file is under the 'src' folder."
-                SHOULD_DRAW_GRAPHS=true
-                break
-              fi
-            done < files.txt
-          fi
-          echo "SHOULD_DRAW_GRAPHS=$SHOULD_DRAW_GRAPHS" >> $GITHUB_OUTPUT
+      PIPE_CODE_VIZ_POLICY: ${{ steps.compute_policy.outputs.POL }}
 
-  draw-dependencies:
-    runs-on: ubuntu-latest
-    needs: check_trigger_draw_dependency_graphs
-    if: needs.check_trigger_draw_dependency_graphs.outputs.SHOULD_DRAW_GRAPHS == 'true'
-    name: Draw Python Dependencies as Graphs, in .svg
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-    - name: Install tox
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install tox==3.28
-    - name: Install dependencies (ie dot binary of graphviz)
-      run: |
-        sudo apt-get update -y --allow-releaseinfo-change
-        sudo apt-get install -y graphviz
-    - name: Draw Dependency Graphs as .svg files
-      run: tox -e pydeps -vv -s false
-    - name: Upload Dependency Graphs as artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: dependency-graphs
-        path: pydeps/
-        if-no-files-found: warn  # 'error' or 'ignore' are also available, defaults to `warn`
+  code_visualization:
+    needs: read_code_viz_settings
+    name: Code Visualization of Python Imports as Graphs, in .svg
+    uses: boromir674/automated-workflows/.github/workflows/python_imports.yml@test
+    with:
+      run_policy: '${{ needs.read_code_viz_settings.outputs.PIPE_CODE_VIZ_POLICY }}'
+      branches: 'main, master, dev'
+      source_code_targets: 'src'
+      python_version: '3.10'
+      artifacts_dir: 'dependency-graphs'
