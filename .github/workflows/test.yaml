@@ -67,12 +67,6 @@ jobs:
   set_github_outputs:
     name: Read Workflow Env Section Vars and set Github Outputs
     runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.pass-env-to-output.outputs.matrix }}
-      TESTS_ENABLED: ${{ steps.pass-env-to-output.outputs.TESTS_ENABLED }}
-      DRAW_DEPS_SVG_GRAPHS: ${{ steps.pass-env-to-output.outputs.DRAW_DEPS_SVG_GRAPHS }}
-      RUN_LINT: ${{ steps.pass-env-to-output.outputs.RUN_LINT }}
-      PUBLISH_ON_PYPI: ${{ steps.pass-env-to-output.outputs.PUBLISH_ON_PYPI }}
     steps:
       - name: Pass 'env' section variables to GITHUB_OUTPUT
         id: pass-env-to-output
@@ -85,9 +79,27 @@ jobs:
             echo "matrix=$UBUNTU_PY310_STRATEGY" >> $GITHUB_OUTPUT
           fi
           echo "TESTS_ENABLED=$RUN_UNIT_TESTS" >> $GITHUB_OUTPUT
-          echo "RUN_LINT=$RUN_LINT_CHECKS" >> $GITHUB_OUTPUT
           echo "PUBLISH_ON_PYPI=$PUBLISH_ON_PYPI" >> $GITHUB_OUTPUT
-          echo "DRAW_DEPS_SVG_GRAPHS=$DRAW_DEPENDENCIES" >> $GITHUB_OUTPUT
+      ## Static Code Analysis - Pipeline Settings ##
+      - id: derive_sqa_policy
+        run: echo "POL=${{ (env.RUN_LINT_CHECKS != 'true' && '0') || (env.ALWAYS_LINT == 'true' && '1') || env.LINT_JOB_POLICY }}" >> $GITHUB_OUTPUT
+      - id: read_sqa_py
+        run: echo SQA_PY=${{ env.STATIC_ANALYSIS_PY }} >> $GITHUB_OUTPUT
+      - id: read_pylint_score_threshold
+        run: echo PYLINT_SCORE_THRESHOLD=${{ env.PYLINT_SCORE_THRESHOLD }} >> $GITHUB_OUTPUT
+      ## Code Visualization - Pipeline Settings ##
+      - id: derive_code_viz_policy
+        run: echo "POL=${{ (env.DRAW_DEPENDENCIES != 'true' && '0') || (env.ALWAYS_CODE_VIZ == 'true' && '1') || env.CODE_VIZ_POLICY }}" >> $GITHUB_OUTPUT
+    outputs:
+      matrix: ${{ steps.pass-env-to-output.outputs.matrix }}
+      TESTS_ENABLED: ${{ steps.pass-env-to-output.outputs.TESTS_ENABLED }}
+      PUBLISH_ON_PYPI: ${{ steps.pass-env-to-output.outputs.PUBLISH_ON_PYPI }}
+    ## Static Code Analysis - Pipeline Settings ##
+      PIPE_SQA_POLICY: ${{ steps.derive_sqa_policy.outputs.POL }}
+      PIPE_SQA_PY: ${{ steps.read_sqa_py.outputs.SQA_PY }}
+      PIPE_SQA_PYLINT_PASS_SCORE: ${{ steps.read_pylint_score_threshold.outputs.PYLINT_SCORE_THRESHOLD }}
+    ## Code Visualization - Pipeline Settings ##
+      PIPE_CODE_VIZ_POLICY: ${{ steps.derive_code_viz_policy.outputs.POL }}
 
 # RUN TEST SUITE ON ALL PLATFORMS
   test_suite:
@@ -331,48 +343,25 @@ jobs:
     - run: echo "Published :\)"
 
 
-  ### STATIC CODE ANALYSIS & LINTING ###
-  # Check that Code passes 'Our Quality Standards'
-  read_pipe_lint_settings:
-    runs-on: ubuntu-latest
-    steps:
-      - id: aka
-        run: echo "POL=${{ (env.RUN_LINT_CHECKS != 'true' && '0') || (env.ALWAYS_LINT == 'true' && '1') || env.LINT_JOB_POLICY }}" >> $GITHUB_OUTPUT
-      - run: echo "[DEBUG] aka = ${{ steps.aka.outputs.POL }}"
-      - id: derive_sqa_py
-        run: echo SQA_PY=${{ env.STATIC_ANALYSIS_PY }} >> $GITHUB_OUTPUT
-    outputs:
-      PIPE_LINT_POLICY: ${{ steps.aka.outputs.POL }}
-      PIPE_SQA_PY: ${{ steps.derive_sqa_py.outputs.SQA_PY }}
-
+### STATIC CODE ANALYSIS & LINTING ###
   lint:
     name: Static Code Analysis
-    needs: read_pipe_lint_settings
+    needs: set_github_outputs
     uses: boromir674/automated-workflows/.github/workflows/lint.yml@test
     with:
-      run_policy: ${{ needs.read_pipe_lint_settings.outputs.PIPE_LINT_POLICY }}
+      run_policy: ${{ needs.set_github_outputs.outputs.PIPE_SQA_POLICY }}
       dedicated_branches: 'master, main, dev'
       source_code_targets: 'src,tests,scripts'
-      python_version: ${{ needs.read_pipe_lint_settings.outputs.PIPE_SQA_PY }}
-      pylint_threshold: "8.2"
+      python_version: ${{ needs.set_github_outputs.outputs.PIPE_SQA_PY }}
+      pylint_threshold: ${{ needs.set_github_outputs.outputs.PIPE_SQA_PYLINT_PASS_SCORE }}
 
-
-# DRAW PYTHON DEPENDENCY GRAPHS
-  read_code_viz_settings:
-    runs-on: ubuntu-latest
-    steps:
-      # Derive POLICY for Code Vizualization
-      - run: echo "POL=${{ (env.DRAW_DEPENDENCIES != 'true' && '0') || (env.ALWAYS_CODE_VIZ == 'true' && '1') || env.CODE_VIZ_POLICY }}" >> $GITHUB_OUTPUT
-        id: compute_policy
-    outputs:
-      PIPE_CODE_VIZ_POLICY: ${{ steps.compute_policy.outputs.POL }}
-
+### DRAW PYTHON DEPENDENCY GRAPHS ###
   code_visualization:
-    needs: read_code_viz_settings
+    needs: set_github_outputs
     name: Code Visualization of Python Imports as Graphs, in .svg
     uses: boromir674/automated-workflows/.github/workflows/python_imports.yml@test
     with:
-      run_policy: '${{ needs.read_code_viz_settings.outputs.PIPE_CODE_VIZ_POLICY }}'
+      run_policy: '${{ needs.set_github_outputs.outputs.PIPE_CODE_VIZ_POLICY }}'
       branches: 'main, master, dev'
       source_code_targets: 'src'
       python_version: '3.10'
