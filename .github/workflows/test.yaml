@@ -80,6 +80,9 @@ jobs:
           fi
           echo "TESTS_ENABLED=$RUN_UNIT_TESTS" >> $GITHUB_OUTPUT
           echo "PUBLISH_ON_PYPI=$PUBLISH_ON_PYPI" >> $GITHUB_OUTPUT
+      ## Docker - Pipeline Settings ##
+      - id: derive_docker_policy
+        run: echo "POL=${{ (env.DOCKER_JOB_ON != 'true' && '0') || (env.ALWAYS_BUILD_N_PUBLSIH_DOCKER == 'true' && '1') || (env.DOCKER_JOB_POLICY == 'CDeployment' && '2') || (env.DOCKER_JOB_POLICY == 'CDelivery' && '3') }}" >> $GITHUB_OUTPUT
       ## Static Code Analysis - Pipeline Settings ##
       - id: derive_sqa_policy
         run: echo "POL=${{ (env.RUN_LINT_CHECKS != 'true' && '0') || (env.ALWAYS_LINT == 'true' && '1') || env.LINT_JOB_POLICY }}" >> $GITHUB_OUTPUT
@@ -94,6 +97,8 @@ jobs:
       matrix: ${{ steps.pass-env-to-output.outputs.matrix }}
       TESTS_ENABLED: ${{ steps.pass-env-to-output.outputs.TESTS_ENABLED }}
       PUBLISH_ON_PYPI: ${{ steps.pass-env-to-output.outputs.PUBLISH_ON_PYPI }}
+    ## Docker - Pipeline Settings ##
+      PIPE_DOCKER_POLICY: ${{ steps.derive_docker_policy.outputs.POL }}
     ## Static Code Analysis - Pipeline Settings ##
       PIPE_SQA_POLICY: ${{ steps.derive_sqa_policy.outputs.POL }}
       PIPE_SQA_PY: ${{ steps.read_sqa_py.outputs.SQA_PY }}
@@ -200,36 +205,13 @@ jobs:
           echo "Sent to Codecov: $file !"
         done
 
-## AUTOMATED DOCKER BUILD and PUBLISH ON DOCKERHUB ##
-  read_docker_settings:
-    runs-on: ubuntu-latest
-    outputs:
-      CASE_POLICY: ${{ steps.derive_docker_policy.outputs.CASE_POLICY }}
-    steps:
-      - run: |
-          if [[ $DOCKER_JOB_ON == "true" ]]; then
-            if [[ $ALWAYS_BUILD_N_PUBLSIH_DOCKER == "true" ]]; then
-              DOCKER_POLICY=1
-            elif [[ $DOCKER_JOB_POLICY == "CDeployment" ]]; then
-              DOCKER_POLICY=2
-            elif [[ $DOCKER_JOB_POLICY == "CDelivery" ]]; then
-              DOCKER_POLICY=3
-            fi
-          else
-            DOCKER_POLICY=0
-          fi
-          echo "CASE_POLICY=$DOCKER_POLICY" >> $GITHUB_ENV
-
-      - run: echo "CASE_POLICY=$CASE_POLICY" >> $GITHUB_OUTPUT
-        id: derive_docker_policy
-
-# DOCKER BUILD AND PUBLISH ON DOCKERHUB
+## DOCKER BUILD and PUBLISH ON DOCKERHUB ##
   docker_build:
-    needs: [read_docker_settings, test_suite]
+    needs: [set_github_outputs, test_suite]
     uses: boromir674/automated-workflows/.github/workflows/docker.yml@v1.1.0
     if: always()
     with:
-      acceptance_policy: ${{ needs.read_docker_settings.outputs.CASE_POLICY }}
+      acceptance_policy: ${{ needs.read_docker_settings.outputs.PIPE_DOCKER_POLICY }}
       image_slug: "generate-python"
       # target_stage: "some_stage_alias"  # no stage, means no `--target` flag, on build
       tests_pass: ${{ needs.test_suite.result == 'success' }}
