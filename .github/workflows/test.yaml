@@ -215,7 +215,7 @@ jobs:
     uses: boromir674/automated-workflows/.github/workflows/docker.yml@v1.1.0
     if: always()
     with:
-      acceptance_policy: ${{ needs.read_docker_settings.outputs.PIPE_DOCKER_POLICY }}
+      acceptance_policy: ${{ needs.set_github_outputs.outputs.PIPE_DOCKER_POLICY }}
       image_slug: "generate-python"
       # target_stage: "some_stage_alias"  # no stage, means no `--target` flag, on build
       tests_pass: ${{ needs.test_suite.result == 'success' }}
