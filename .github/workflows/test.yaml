@@ -3,15 +3,19 @@ name: CI/CD Pipeline
 
 # Triggers on all branches and tags starting with v
 
-# Full Job Matrix for Stress Testing is activated on 'master', 'dev' and tags
-## We Test factoring Platforms and Python versions
+### Full Job Matrix for Stress Testing on: ###
+# - tags v*
+# - the 'stress-test' branch (GITHUB_REF_NAME == 'stress-test')
 
-# For other branches only one Job is spawned for Running (Unit) Tests
 
-# PyPI publish on v* tags on 'master' branch
-# Test PyPI publish on v* 'pre-release' tags on 'release' branch
+### PyPI publish on: ###
+# - v* tags on 'master' branch only
 
-# Dockerhub publish on all branches and tags
+## Test PyPI publish on: ##
+# - v*-rc 'pre-release' tags on 'release' branch
+
+### Dockerhub publish on ###
+# - all branches and tags
 
 on:
   push:
@@ -29,9 +33,9 @@ env:
   TEST_STRATEGY: "{\"platform\":[\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\":[\"3.9\"]}"
 
   ##### JOB ON/OFF SWITCHES #####
-  RUN_UNIT_TESTS: "false"
-  RUN_LINT_CHECKS: "false"
-  DOCKER_JOB_ON: "false"
+  RUN_UNIT_TESTS: "true"
+  RUN_LINT_CHECKS: "true"
+  DOCKER_JOB_ON: "true"
   PUBLISH_ON_PYPI: "true"
   DRAW_DEPENDENCIES: "true"
   ###############################
@@ -48,7 +52,7 @@ env:
   ############################
 
   #### STATIC CODE ANALYSIS Job ####
-  ALWAYS_LINT: "true"
+  ALWAYS_LINT: "false"
   LINT_JOB_POLICY: '2'  # {2, 3}
   ## Python Runtime version to set the Job runner with ##
   STATIC_ANALYSIS_PY: "3.10"
@@ -56,7 +60,7 @@ env:
   PYLINT_SCORE_THRESHOLD: "8.2"
 
   #### STATIC CODE ANALYSIS Job ####
-  ALWAYS_CODE_VIZ: "true"
+  ALWAYS_CODE_VIZ: "false"
   CODE_VIZ_POLICY: '2'  # {2, 3}
   ##########################
 
