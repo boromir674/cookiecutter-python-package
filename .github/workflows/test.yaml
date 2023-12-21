@@ -333,7 +333,7 @@ jobs:
   lint:
     name: Static Code Analysis
     needs: set_github_outputs
-    uses: boromir674/automated-workflows/.github/workflows/lint.yml@test
+    uses: ./.github/workflows/policy_lint.yml
     with:
       run_policy: ${{ needs.set_github_outputs.outputs.PIPE_SQA_POLICY }}
       dedicated_branches: 'master, main, dev'
