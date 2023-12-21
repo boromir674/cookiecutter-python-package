@@ -9,6 +9,7 @@ def test_post_gen_hook_docs_builder_initial_docs_location():
 
     def c1():
         return DOCS
+
     # GIVEN a callback to compute 'docs internal config', leveraging the runtime
     # installation of our python distro
     from cookiecutter_python.backend.gen_docs_common import get_docs_gen_internal_config
