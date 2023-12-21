@@ -1,14 +1,13 @@
-
 def test_log_file_not_present_in_newly_generated_project(
     biskotaki_ci_project,
 ):
     """Test that the log file is not present inside the `cookiecutter.project_slug` folder"""
 
     # GIVEN a the log file name, the Generator produces at runtime
-    from cookiecutter_python._logging_config import FILE_TARGET_LOGS
-
     # AND the expected parent directory of the log file, created at runtime
     from pathlib import Path
+
+    from cookiecutter_python._logging_config import FILE_TARGET_LOGS
 
     ## Implementation Option 1
     logs_folder = Path.cwd()
@@ -31,10 +30,9 @@ def test_log_file_not_present_in_newly_generated_project(
     UNINTENTIONALLY_PLACED_LOG_FILE: Path = runtime_generated_project / FILE_TARGET_LOGS
 
     bug_fixed = True
-    assert (
-        bug_fixed and not UNINTENTIONALLY_PLACED_LOG_FILE.exists()
-    ) or (
-        not bug_fixed and UNINTENTIONALLY_PLACED_LOG_FILE.exists() and \
-            UNINTENTIONALLY_PLACED_LOG_FILE.is_file() and \
-            UNINTENTIONALLY_PLACED_LOG_FILE.stat().st_size == 0
+    assert (bug_fixed and not UNINTENTIONALLY_PLACED_LOG_FILE.exists()) or (
+        not bug_fixed
+        and UNINTENTIONALLY_PLACED_LOG_FILE.exists()
+        and UNINTENTIONALLY_PLACED_LOG_FILE.is_file()
+        and UNINTENTIONALLY_PLACED_LOG_FILE.stat().st_size == 0
     )

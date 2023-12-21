@@ -43,13 +43,11 @@ def biskotaki_ci_project(
     assert gen_project_dir.is_dir()
     assert (gen_project_dir / 'src').exists() and (gen_project_dir / 'src').is_dir()
 
-
     ## Logging file created - Assertions ##
     from cookiecutter_python._logging_config import FILE_TARGET_LOGS
 
     # Expected and Intentend Logging behaviour:
     # - log file with records is created in PWD of the shell that runs the generator
-
     # get pwd of the shell that runs the generator
     pwd = Path.cwd()
     INTENTIONALLY_PLACED_LOG_FILE: Path = pwd / FILE_TARGET_LOGS
@@ -68,7 +66,7 @@ def biskotaki_ci_project(
     FIXED = True
     fixed_unintentional_placement_of_log_file_in_gen_proj_dir: bool = FIXED
     bug = not fixed_unintentional_placement_of_log_file_in_gen_proj_dir
-    
+
     UNINTENTIONALLY_PLACED_LOG_FILE: Path = gen_project_dir / FILE_TARGET_LOGS
     assert not bug
     ## Implementation Option 1

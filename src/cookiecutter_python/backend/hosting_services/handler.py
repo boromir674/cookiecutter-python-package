@@ -31,6 +31,5 @@ class CheckHostingServiceResultHandler:
     def __call__(self, request_result):
         if request_result:
             return CheckHostingServiceHandler(
-                lambda x: self.is_future_response_200(request_result),
-                self.service_name
+                lambda x: self.is_future_response_200(request_result), self.service_name
             )(request_result.name)
