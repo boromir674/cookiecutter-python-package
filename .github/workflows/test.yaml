@@ -33,11 +33,11 @@ env:
   TEST_STRATEGY: "{\"platform\":[\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\":[\"3.9\"]}"
 
   ##### JOB ON/OFF SWITCHES #####
-  RUN_UNIT_TESTS: "false"
+  RUN_UNIT_TESTS: "true"
   RUN_LINT_CHECKS: "true"
-  DOCKER_JOB_ON: "false"
+  DOCKER_JOB_ON: "true"
   PUBLISH_ON_PYPI: "true"
-  DRAW_DEPENDENCIES: "false"
+  DRAW_DEPENDENCIES: "true"
   ###############################
 
   ### DOCKER Job Policy ####
@@ -52,7 +52,7 @@ env:
   ############################
 
   #### STATIC CODE ANALYSIS Job ####
-  ALWAYS_LINT: "true"
+  ALWAYS_LINT: "false"
   LINT_JOB_POLICY: '2'  # {2, 3}
   ## Python Runtime version to set the Job runner with ##
   STATIC_ANALYSIS_PY: "3.10"
