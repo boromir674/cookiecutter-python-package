@@ -1,3 +1,3 @@
-__version__ = '1.8.7'
+__version__ = '1.9.0-rc'
 
 from . import _logging  # noqa
