@@ -59,7 +59,7 @@ env:
   ## Pylint Minimum Acceptance Rating/Score ##
   PYLINT_SCORE_THRESHOLD: "8.2"
 
-  #### STATIC CODE ANALYSIS Job ####
+  #### CODE VISUALIZATION Job ####
   ALWAYS_CODE_VIZ: "false"
   CODE_VIZ_POLICY: '2'  # {2, 3}
   ##########################
