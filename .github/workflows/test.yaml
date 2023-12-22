@@ -29,15 +29,15 @@ env:
   FULL_MATRIX_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.7\", \"3.8\", \"3.9\", \"3.10\", \"3.11\"]}"
   # Python 3.7 has reached End of Life (EOL) on June 27th, 2023
   # Python 3.12 is in bugfix mode, same as 3.11 -> can start supporting 3.12 it
-  UBUNTU_PY310_STRATEGY: "{\"platform\":[\"windows-latest\"], \"python-version\":[\"3.10\"]}"
+  UBUNTU_PY310_STRATEGY: "{\"platform\":[\"ubuntu-latest\"], \"python-version\":[\"3.10\"]}"
   TEST_STRATEGY: "{\"platform\":[\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\":[\"3.9\"]}"
 
   ##### JOB ON/OFF SWITCHES #####
   RUN_UNIT_TESTS: "true"
-  RUN_LINT_CHECKS: "false"
-  DOCKER_JOB_ON: "false"
-  PUBLISH_ON_PYPI: "false"
-  DRAW_DEPENDENCIES: "false"
+  RUN_LINT_CHECKS: "true"
+  DOCKER_JOB_ON: "true"
+  PUBLISH_ON_PYPI: "true"
+  DRAW_DEPENDENCIES: "true"
   ###############################
 
   ### DOCKER Job Policy ####
