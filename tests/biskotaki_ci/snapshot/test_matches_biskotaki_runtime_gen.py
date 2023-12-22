@@ -60,16 +60,23 @@ def test_snapshot_matches_runtime(snapshot, biskotaki_ci_project, test_root):
     ## THEN, the sets should be the same
     # same dirs and files, but not necessarily same content
     import sys
+
     running_on_windows: bool = sys.platform.startswith("win")
     # exception misbehaviour fixed on Windows?
     import os
-    has_developer_fixed_windows_mishap: bool = os.environ.get("BUG_LOG_DEL_WIN") != "permission_error"
+
+    has_developer_fixed_windows_mishap: bool = (
+        os.environ.get("BUG_LOG_DEL_WIN") != "permission_error"
+    )
 
     if has_developer_fixed_windows_mishap:
         assert runtime_relative_paths_set == snap_relative_paths_set
     else:
         if running_on_windows:  # there is a log mishappening that we exists on windows
-            from cookiecutter_python._logging_config import FILE_TARGET_LOGS as LOG_FILE_NAME
+            from cookiecutter_python._logging_config import (
+                FILE_TARGET_LOGS as LOG_FILE_NAME,
+            )
+
             # create augmented set, with added extra file, as union of both sets
             augmented_exp_set = snap_relative_paths_set.union({Path(LOG_FILE_NAME)})
             assert runtime_relative_paths_set == augmented_exp_set
