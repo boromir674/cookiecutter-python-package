@@ -148,17 +148,14 @@ jobs:
         echo "==== $PARSED_VERSION  -->  $WHEEL_VERSION"
         echo "PKG_VERSION=$WHEEL_VERSION" >> $GITHUB_ENV  # to be used in the next step
         echo "SEMVER_PIP_FORMAT=$WHEEL_VERSION" >> $GITHUB_OUTPUT  # to be used in other jobs
+
+    ###### TEST SUITE RUN ######
     - name: Run Unit Tests
-      # run: tox -vv -s false
       run: tox -vv -s false
       env:
         PLATFORM: ${{ matrix.platform }}
-    # - run: tox -vv -s false -e sdist
-    #   env:
-    #     PLATFORM: ${{ matrix.platform }}
-    # - run: tox -vv -s false -e wheel
-    #   env:
-    #     PLATFORM: ${{ matrix.platform }}
+
+    ## Code Coverage ##
     - name: "Combine Coverage (dev, sdist, wheel) & make Reports"
       run: tox -e coverage --sitepackages -vv -s false
 
