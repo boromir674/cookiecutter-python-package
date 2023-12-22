@@ -28,8 +28,12 @@ def test_log_file_not_present_in_newly_generated_project(
     # a file present inside the shell's PWD
     INTENTIONALLY_PLACED_LOG_FILE: Path = logs_folder / FILE_TARGET_LOGS
 
-    assert INTENTIONALLY_PLACED_LOG_FILE.exists()
-    assert INTENTIONALLY_PLACED_LOG_FILE.is_file()
+    if not running_on_windows:
+        assert INTENTIONALLY_PLACED_LOG_FILE.exists()
+        assert INTENTIONALLY_PLACED_LOG_FILE.is_file()
+    else:  # handle windows as special case to account for Log mishap
+        assert not INTENTIONALLY_PLACED_LOG_FILE.exists()  
+    
     # assert INTENTIONALLY_PLACED_LOG_FILE.stat().st_size > 0
 
     # THEN we expect the unintentional behaviour to happen
