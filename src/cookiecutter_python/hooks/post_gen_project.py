@@ -163,7 +163,14 @@ def post_file_removal(request):
         # unintentional behaviour, is still happening
         if logs_file.stat().st_size == 0:  # at least expect empty log file
             # safely remove the empty log file
-            logs_file.unlink()
+            try:
+                logs_file.unlink()
+            # windows erro reported on CI
+            # PermissionError: [WinError 32] The process cannot access the file because it is being used by another process
+            except PermissionError as e:
+                print(f"[WARNING]: {e}")
+                print(f"[WARNING]: Could not remove empty log file: {logs_file}")
+                print(f"[WARNING]: Please remove it manually, if you wish to do so.")
         else:  # captured logs were written in the file: shy from removing it
             # Tell user about this, and let them decide what to do
             print(f"[INFO]: Captured Logs were written in {logs_file}")
