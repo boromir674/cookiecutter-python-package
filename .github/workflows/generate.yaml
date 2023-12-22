@@ -81,6 +81,7 @@ jobs:
 
       - name: Run Isort, Black, Mypy, Build, Pyroma and PyDeps commands
         run: |
+          cd gen/biskotaki
           tox -e lint
           tox -e type
           tox -e build
