@@ -10,7 +10,7 @@ build-backend = "poetry.core.masonry.api"
 ## Also renders on pypi as 'subtitle'
 [tool.poetry]
 name = "cookiecutter_python"
-version = "1.8.7"
+version = "1.9.0"
 description = "Yet another modern Python Package (pypi) with emphasis in CI/CD and automation."
 authors = ["Konstantinos Lampridis <k.lampridis@hotmail.com>"]
 maintainers = ["Konstantinos Lampridis <k.lampridis@hotmail.com>"]
@@ -185,6 +185,7 @@ typing = [
 minversion = "6.2"
 # hard-inject args, when invoking `pytest` CLI
 addopts = "--strict-markers --ignore=tests/data"
+# for explict --run-integration -> pip install pytest-explicit
 markers = [
     "slow: Marks a slow test",
     "integration: Tests applicable to a newly Generated Project, running with tox",

@@ -15,68 +15,25 @@ jobs:
     env:
       branch: auto-generated
       SUPER_SECRET: ${{ secrets.BISKOTAKI_GH_TOKEN }}
-      # GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v3
-      - shell: bash
-        run: |
-          if ! [[ "$SUPER_SECRET" ]]
-          then
-            echo "No BISKOTAKI_GH_TOKEN!"
-            echo "Shall NOT authorize access to the biskotaki repo!"
-            echo "Exiting .."
-            exit 1
-          else
-            echo "BISKOTAKI_GH_TOKEN found :)"
-          fi
-
-      - run: |
-          if ! [[ ${{ secrets.GITHUB_TOKEN }} ]]
-          then
-            echo "No GITHUB_TOKEN!"
-            echo "Shall NOT authorize access to this repo!"
-            exit 1
-          else
-            echo "GITHUB_TOKEN found :)"
-          fi
-
-          if ! [[ "${{ secrets.BISKOTAKI_GH_TOKEN }}" ]]
-          then
-            echo "No BISKOTAKI_GH_TOKEN!"
-            echo "Shall NOT authorize access to the biskotaki repo!"
-            echo "Exiting .."
-            exit 1
-          else
-            echo "BISKOTAKI_GH_TOKEN found :)"
-          fi
-
-          echo "GG=V1" >> $GITHUB_ENV
-
-      - run: |
-          if ! [[ ${{ env.GG }} ]]
-          then
-            echo "Failed to read GG var, exported in previous step!"
-            echo "Exiting .."
-            exit 1
-          else
-            echo "Able to read the GG var exported from the previous step :)"
-          fi
-
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v2
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
         with:
-          python-version: "3.8"
+          python-version: "3.10"
       - name: Install dependencies
         run: |
-          # sudo apt update -y && sudo apt install -y aptitude
-          # sudo aptitude install -y graphviz
           python -m pip install --upgrade pip
-          python -m pip install tox==3.28
+          python -m pip install 'tox<4'
+
+        # For tox -e graphs (aka Pydeps)
+        # sudo apt update -y && sudo apt install -y aptitude
+        # sudo aptitude install -y graphviz
 
       ## CLONE BISKOTAKI REPO into cloned/biskotaki ##
       # ROOT : cloned/biskotaki/pyproject.toml
       - name: Clone Biskotaki repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: boromir674/biskotaki
           ref: ${{ env.branch }}
@@ -108,17 +65,21 @@ jobs:
       - name: Test distributions 'Source', 'Built' and 'edit' (dev env) mode installation
         run: |
           cd gen/biskotaki
-          tox -e "py38{-sdist, -wheel, -dev}"
+          tox -e "py310{-sdist, -wheel, -dev}"
           tox -e coverage
 
       ## Verify Development Scripts operate as intented out of the box
-      
+      - name: 'Ruff: Fast Python Linter -> PASS'
+        run: |
+          cd gen/biskotaki
+          tox -e ruff
+
       # Running Lint Check, on src and Test code: Passes
       # Running Type Check, on src and Test code: Passes
       # Running the Build script (sdist and wheel): produces Distro Artifacts: Source (.tar.gz) and Wheel (.whl) files
       # Running Quality Checks against Distro Metadata: Passes with 10/10 score
 
-      - name: Run Lint, Type Check, Build, Pyroma and PyDeps commands
+      - name: Run Isort, Black, Mypy, Build, Pyroma and PyDeps commands
         run: |
           cd gen/biskotaki
           tox -e lint

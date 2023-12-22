@@ -7,7 +7,9 @@ def test_post_gen_hook_docs_builder_initial_docs_location():
     # GIVEN a callback to retrieve the 'docs internal config' (dic), as computed by post_gen_hook
     from cookiecutter_python.hooks.post_gen_project import DOCS
 
-    c1 = lambda: DOCS
+    def c1():
+        return DOCS
+
     # GIVEN a callback to compute 'docs internal config', leveraging the runtime
     # installation of our python distro
     from cookiecutter_python.backend.gen_docs_common import get_docs_gen_internal_config

@@ -2,6 +2,60 @@
 Changelog
 =========
 
+1.9.0 (2023-12-22)
+==================
+
+Introducing `Ruff` as part of the `Static Code Analysis` Toolchain.  
+Generator, now features `CI/CD`, with the `Ruff` Fast Python Linter!
+
+Preparing, to retire `pylint`, in the future, by removing CI Job dedicated to it, at the moment.
+
+Changes
+^^^^^^^
+
+feature
+"""""""
+- introduce `Ruff`, Fast Python Linter, in updated `Developer's Tool chain <https://github.com/boromir674/biskotaki/tree/auto-generated?tab=readme-ov-file#development>`_
+- run `Ruff` against code, as part of the Tools included in the `Static Code Analysis` CI Workflow, produced by the **Generator's** Template
+- run legacy `Pylint` agaist code, in dedicated Job, for easier potential retirement
+- make Template Code pass Ruff Checks/Evaluations
+- add `Ruff`, `tox -e ruff`, as available `tox command`` for fast `Static Code Check`
+
+fix
+"""
+- remove extra but empty Log file, that appears inside the Gen Project
+
+test
+""""
+- automatically test that Rendered policy_lint.yml CI config is valid YAML
+- automatically verify that extra, but empty log file does NOT appear in Gen Proj
+
+documentation
+"""""""""""""
+- feature Ruff as New Fast Python Linter, and add Ruff Code Badge in README
+- mention pytest-explicit as requirement for all test suite features (ie cli flags)
+
+style
+"""""
+- apply isort and black code "fixes"
+
+refactor
+""""""""
+- apply Ruff fixes
+
+ci
+""
+- run Ruff in the Static Code Analysis CI Job and keep running legacy Pylint in separate Job
+- remove dedicated docker settings reading Job
+- refactor so that some intermediate Jobs are eliminated
+- delegate Code Visualization to Reusable Workflow, with configurable execution Policy
+- use workflow one-liner instead of bash if-else
+
+chore
+"""""
+- add 'Snapshot Update' Scripts, and dedicate README for the Process
+
+
 1.8.7 (2023-12-16)
 ==================
 

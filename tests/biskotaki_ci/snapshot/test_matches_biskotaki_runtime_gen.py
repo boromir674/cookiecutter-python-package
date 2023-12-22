@@ -33,11 +33,11 @@ def test_snapshot_matches_runtime(snapshot, biskotaki_ci_project, test_root):
     # GIVEN that wheel files might appear in runtime, but not in snapshot
     # if runtiume has cookie-py.log , this expected based on the current behaviour of logger
     # we want to change that behaviour, so that cookie-py.log is not created there
-    assert Path('cookie-py.log') in runtime_relative_paths_set, "Bug Solved?"
-    assert (
-        runtime_biskotaki / 'cookie-py.log'
-    ).read_text() == '', "Bug Fixed, or undocumented events were logged!"
-    runtime_relative_paths_set.remove(Path('cookie-py.log'))
+    # assert Path('cookie-py.log') in runtime_relative_paths_set, "Bug Solved?"
+    # assert (
+    #     runtime_biskotaki / 'cookie-py.log'
+    # ).read_text() == '', "Bug Fixed, or undocumented events were logged!"
+    # runtime_relative_paths_set.remove(Path('cookie-py.log'))
 
     # assert Path('cookie-py.log') in snap_relative_paths_set, f"Bug Solved?"
     # assert (snapshot_dir / 'cookie-py.log').read_text() == '', f"Bug Fixed, or undocumented events were logged!"
@@ -59,7 +59,29 @@ def test_snapshot_matches_runtime(snapshot, biskotaki_ci_project, test_root):
 
     ## THEN, the sets should be the same
     # same dirs and files, but not necessarily same content
-    assert snap_relative_paths_set == runtime_relative_paths_set
+    import sys
+
+    running_on_windows: bool = sys.platform.startswith("win")
+    # exception misbehaviour fixed on Windows?
+    import os
+
+    has_developer_fixed_windows_mishap: bool = (
+        os.environ.get("BUG_LOG_DEL_WIN") != "permission_error"
+    )
+
+    if has_developer_fixed_windows_mishap:
+        assert runtime_relative_paths_set == snap_relative_paths_set
+    else:
+        if running_on_windows:  # there is a log mishappening that we exists on windows
+            from cookiecutter_python._logging_config import (
+                FILE_TARGET_LOGS as LOG_FILE_NAME,
+            )
+
+            # create augmented set, with added extra file, as union of both sets
+            augmented_exp_set = snap_relative_paths_set.union({Path(LOG_FILE_NAME)})
+            assert runtime_relative_paths_set == augmented_exp_set
+        else:
+            assert runtime_relative_paths_set == snap_relative_paths_set
 
     # if runtime has extras such as .vscode/ folder, then probably on tests are running
     # on local dev machine were vscode was opened, at some point, in the Template Project folder

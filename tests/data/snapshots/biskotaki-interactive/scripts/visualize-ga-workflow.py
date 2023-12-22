@@ -49,7 +49,7 @@ def extract_job_dependencies(config: ParsedYaml) -> t.Dict[str, JobsNeedsValue]:
     # mapping of job names to their dependencies (previous steps in the dependency DAG)
     job_dependencies: t.Dict[str, JobsNeedsValue] = {}
 
-    if not 'jobs' in config:
+    if 'jobs' not in config:
         print("[WARNGING] No 'jobs' section found in config file")
 
     else:
