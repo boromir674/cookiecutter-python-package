@@ -25,10 +25,11 @@ class CheckHostingServiceResultHandler:
     service_name: str
 
     @staticmethod
-    def is_future_response_200(result):
+    def is_future_response_200(result) -> bool:
         return result.future.result().status_code == 200
 
     def __call__(self, request_result):
         if request_result:
-            callback = lambda x: self.is_future_response_200(request_result)
-            return CheckHostingServiceHandler(callback, self.service_name)(request_result.name)
+            return CheckHostingServiceHandler(
+                lambda x: self.is_future_response_200(request_result), self.service_name
+            )(request_result.name)

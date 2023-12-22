@@ -4,6 +4,7 @@ import re
 import typing as t
 from pathlib import Path
 
+
 def parse_dockerfile(dockerfile_path):
     # Stages built from 'FROM <a> AS <b> statements
     stages = {}
@@ -12,7 +13,9 @@ def parse_dockerfile(dockerfile_path):
     # Line match at current line
     current_stage = None
     stage_name_reg = r'[\w:\.\-]+'
-    stage_reg = re.compile(rf'^FROM\s+(?P<stage>{stage_name_reg})\s+[Aa][Ss]\s+(?P<alias>{stage_name_reg})')
+    stage_reg = re.compile(
+        rf'^FROM\s+(?P<stage>{stage_name_reg})\s+[Aa][Ss]\s+(?P<alias>{stage_name_reg})'
+    )
 
     copy_from_reg = re.compile(
         r'^COPY\s+\-\-from=(?P<prev_stage>[\w\.\-:]+)\s+(?P<path>[\w\.\-:/]+)'
@@ -75,13 +78,14 @@ def generate_mermaid_flow_chart(dockerfile_dag):
             # path_copied: str = prev_copy[1]
             # chart += f"  {prev_stage} " + dotted_arrow_with_text.format(text=path_copied) + f" {stage}\n"
             # write COPY (literal) in arrow text
-            chart += f"  {prev_stage} " + dotted_arrow_with_text.format(text='COPY') + f" {stage}\n"
+            chart += (
+                f"  {prev_stage} " + dotted_arrow_with_text.format(text='COPY') + f" {stage}\n"
+            )
 
     return chart
 
 
 def generate_markdown(dockerfile_path, output_path):
-
     dockerfile_dag = parse_dockerfile(dockerfile_path)
 
     flow_chart = generate_mermaid_flow_chart(dockerfile_dag)
@@ -102,18 +106,23 @@ def generate_markdown(dockerfile_path, output_path):
 
 def parse_cli_args() -> t.Tuple[Path, t.Optional[str]]:
     parser = argparse.ArgumentParser(description='Process Dockerfile paths.')
-    
-    parser.add_argument('dockerfile_path', nargs='?', default='Dockerfile', help='Path to the Dockerfile')
-    parser.add_argument('-o', '--output', help='Output path. If not specified, print to stdout.')
+
+    parser.add_argument(
+        'dockerfile_path', nargs='?', default='Dockerfile', help='Path to the Dockerfile'
+    )
+    parser.add_argument(
+        '-o', '--output', help='Output path. If not specified, print to stdout.'
+    )
 
     args = parser.parse_args()
 
     dockerfile: Path = Path(args.dockerfile_path)
     if not dockerfile.exists():
         # explicitly use cwd to try again to find it
-        dockerfile = Path.cwd() / args.dockerfile_path    
+        dockerfile = Path.cwd() / args.dockerfile_path
 
     return dockerfile, args.output
+
 
 if __name__ == '__main__':
     dockerfile_path, output_path = parse_cli_args()

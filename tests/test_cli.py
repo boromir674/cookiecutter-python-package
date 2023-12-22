@@ -17,8 +17,8 @@ def test_cli(cli_invoker_params, isolated_cli_runner):
             '--no-input': True,
         }
     )
-    assert type(kwargs) == dict
-    assert type(args) == list
+    assert isinstance(kwargs, dict)
+    assert isinstance(args, list)
     result = isolated_cli_runner.invoke(
         main,
         args=args,

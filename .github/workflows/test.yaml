@@ -3,15 +3,19 @@ name: CI/CD Pipeline
 
 # Triggers on all branches and tags starting with v
 
-# Full Job Matrix for Stress Testing is activated on 'master', 'dev' and tags
-## We Test factoring Platforms and Python versions
+### Full Job Matrix for Stress Testing on: ###
+# - tags v*
+# - the 'stress-test' branch (GITHUB_REF_NAME == 'stress-test')
 
-# For other branches only one Job is spawned for Running (Unit) Tests
 
-# PyPI publish on v* tags on 'master' branch
-# Test PyPI publish on v* 'pre-release' tags on 'release' branch
+### PyPI publish on: ###
+# - v* tags on 'master' branch only
 
-# Dockerhub publish on all branches and tags
+## Test PyPI publish on: ##
+# - v*-rc 'pre-release' tags on 'release' branch
+
+### Dockerhub publish on ###
+# - all branches and tags
 
 on:
   push:
@@ -48,10 +52,16 @@ env:
   ############################
 
   #### STATIC CODE ANALYSIS Job ####
+  ALWAYS_LINT: "false"
+  LINT_JOB_POLICY: '2'  # {2, 3}
   ## Python Runtime version to set the Job runner with ##
   STATIC_ANALYSIS_PY: "3.10"
   ## Pylint Minimum Acceptance Rating/Score ##
   PYLINT_SCORE_THRESHOLD: "8.2"
+
+  #### CODE VISUALIZATION Job ####
+  ALWAYS_CODE_VIZ: "false"
+  CODE_VIZ_POLICY: '2'  # {2, 3}
   ##########################
 
 jobs:
@@ -61,12 +71,6 @@ jobs:
   set_github_outputs:
     name: Read Workflow Env Section Vars and set Github Outputs
     runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.pass-env-to-output.outputs.matrix }}
-      TESTS_ENABLED: ${{ steps.pass-env-to-output.outputs.TESTS_ENABLED }}
-      DRAW_DEPS_SVG_GRAPHS: ${{ steps.pass-env-to-output.outputs.DRAW_DEPS_SVG_GRAPHS }}
-      RUN_LINT: ${{ steps.pass-env-to-output.outputs.RUN_LINT }}
-      PUBLISH_ON_PYPI: ${{ steps.pass-env-to-output.outputs.PUBLISH_ON_PYPI }}
     steps:
       - name: Pass 'env' section variables to GITHUB_OUTPUT
         id: pass-env-to-output
@@ -79,9 +83,32 @@ jobs:
             echo "matrix=$UBUNTU_PY310_STRATEGY" >> $GITHUB_OUTPUT
           fi
           echo "TESTS_ENABLED=$RUN_UNIT_TESTS" >> $GITHUB_OUTPUT
-          echo "RUN_LINT=$RUN_LINT_CHECKS" >> $GITHUB_OUTPUT
           echo "PUBLISH_ON_PYPI=$PUBLISH_ON_PYPI" >> $GITHUB_OUTPUT
-          echo "DRAW_DEPS_SVG_GRAPHS=$DRAW_DEPENDENCIES" >> $GITHUB_OUTPUT
+      ## Docker - Pipeline Settings ##
+      - id: derive_docker_policy
+        run: echo "POL=${{ (env.DOCKER_JOB_ON != 'true' && '0') || (env.ALWAYS_BUILD_N_PUBLSIH_DOCKER == 'true' && '1') || (env.DOCKER_JOB_POLICY == 'CDeployment' && '2') || (env.DOCKER_JOB_POLICY == 'CDelivery' && '3') }}" >> $GITHUB_OUTPUT
+      ## Static Code Analysis - Pipeline Settings ##
+      - id: derive_sqa_policy
+        run: echo "POL=${{ (env.RUN_LINT_CHECKS != 'true' && '0') || (env.ALWAYS_LINT == 'true' && '1') || env.LINT_JOB_POLICY }}" >> $GITHUB_OUTPUT
+      - id: read_sqa_py
+        run: echo SQA_PY=${{ env.STATIC_ANALYSIS_PY }} >> $GITHUB_OUTPUT
+      - id: read_pylint_score_threshold
+        run: echo PYLINT_SCORE_THRESHOLD=${{ env.PYLINT_SCORE_THRESHOLD }} >> $GITHUB_OUTPUT
+      ## Code Visualization - Pipeline Settings ##
+      - id: derive_code_viz_policy
+        run: echo "POL=${{ (env.DRAW_DEPENDENCIES != 'true' && '0') || (env.ALWAYS_CODE_VIZ == 'true' && '1') || env.CODE_VIZ_POLICY }}" >> $GITHUB_OUTPUT
+    outputs:
+      matrix: ${{ steps.pass-env-to-output.outputs.matrix }}
+      TESTS_ENABLED: ${{ steps.pass-env-to-output.outputs.TESTS_ENABLED }}
+      PUBLISH_ON_PYPI: ${{ steps.pass-env-to-output.outputs.PUBLISH_ON_PYPI }}
+    ## Docker - Pipeline Settings ##
+      PIPE_DOCKER_POLICY: ${{ steps.derive_docker_policy.outputs.POL }}
+    ## Static Code Analysis - Pipeline Settings ##
+      PIPE_SQA_POLICY: ${{ steps.derive_sqa_policy.outputs.POL }}
+      PIPE_SQA_PY: ${{ steps.read_sqa_py.outputs.SQA_PY }}
+      PIPE_SQA_PYLINT_PASS_SCORE: ${{ steps.read_pylint_score_threshold.outputs.PYLINT_SCORE_THRESHOLD }}
+    ## Code Visualization - Pipeline Settings ##
+      PIPE_CODE_VIZ_POLICY: ${{ steps.derive_code_viz_policy.outputs.POL }}
 
 # RUN TEST SUITE ON ALL PLATFORMS
   test_suite:
@@ -182,36 +209,13 @@ jobs:
           echo "Sent to Codecov: $file !"
         done
 
-## AUTOMATED DOCKER BUILD and PUBLISH ON DOCKERHUB ##
-  read_docker_settings:
-    runs-on: ubuntu-latest
-    outputs:
-      CASE_POLICY: ${{ steps.derive_docker_policy.outputs.CASE_POLICY }}
-    steps:
-      - run: |
-          if [[ $DOCKER_JOB_ON == "true" ]]; then
-            if [[ $ALWAYS_BUILD_N_PUBLSIH_DOCKER == "true" ]]; then
-              DOCKER_POLICY=1
-            elif [[ $DOCKER_JOB_POLICY == "CDeployment" ]]; then
-              DOCKER_POLICY=2
-            elif [[ $DOCKER_JOB_POLICY == "CDelivery" ]]; then
-              DOCKER_POLICY=3
-            fi
-          else
-            DOCKER_POLICY=0
-          fi
-          echo "CASE_POLICY=$DOCKER_POLICY" >> $GITHUB_ENV
-
-      - run: echo "CASE_POLICY=$CASE_POLICY" >> $GITHUB_OUTPUT
-        id: derive_docker_policy
-
-# DOCKER BUILD AND PUBLISH ON DOCKERHUB
+## DOCKER BUILD and PUBLISH ON DOCKERHUB ##
   docker_build:
-    needs: [read_docker_settings, test_suite]
+    needs: [set_github_outputs, test_suite]
     uses: boromir674/automated-workflows/.github/workflows/docker.yml@v1.1.0
     if: always()
     with:
-      acceptance_policy: ${{ needs.read_docker_settings.outputs.CASE_POLICY }}
+      acceptance_policy: ${{ needs.set_github_outputs.outputs.PIPE_DOCKER_POLICY }}
       image_slug: "generate-python"
       # target_stage: "some_stage_alias"  # no stage, means no `--target` flag, on build
       tests_pass: ${{ needs.test_suite.result == 'success' }}
@@ -325,118 +329,26 @@ jobs:
     - run: echo "Published :\)"
 
 
-  ### STATIC CODE ANALYSIS & LINTING ###
-  # Check that Code passes 'Our Quality Standards'
+### STATIC CODE ANALYSIS & LINTING ###
   lint:
-    name: "Static Code Analysis"
-    runs-on: ubuntu-latest
+    name: Static Code Analysis
     needs: set_github_outputs
-    if: ${{ needs.set_github_outputs.outputs.RUN_LINT == 'true' }}
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python ${{ env.STATIC_ANALYSIS_PY }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.STATIC_ANALYSIS_PY }}
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install tox==3.28
+    uses: ./.github/workflows/policy_lint.yml
+    with:
+      run_policy: ${{ needs.set_github_outputs.outputs.PIPE_SQA_POLICY }}
+      dedicated_branches: 'master, main, dev'
+      source_code_targets: 'src,tests,scripts'
+      python_version: ${{ needs.set_github_outputs.outputs.PIPE_SQA_PY }}
+      pylint_threshold: ${{ needs.set_github_outputs.outputs.PIPE_SQA_PYLINT_PASS_SCORE }}
 
-      ## Isort ##
-      - name: "Isort\\: Require Semantic and Alphabetic order of the Python Imports"
-        if: ${{ matrix.platform != 'windows-latest' }}
-        run: tox -e isort -vv -s false
-
-      ## Black ##
-      - name: "Black\\: Require Project Style to be followed by the Python Code"
-        if: ${{ matrix.platform != 'windows-latest' }}
-        run: tox -e black -vv -s false
-
-      ## Pylint ##
-      - name: Run Pylint tool on Python Code Base
-        run: TOXPYTHON="python${STATIC_ANALYSIS_PY}" tox -e pylint -vv -s false | tee pylint-result.txt
-      # TODO: Retire Pylint and MIGRATE to RUFF
-      - run: cat pylint-result.txt
-
-      - name: "Check Pylint Score > ${{ env.PYLINT_SCORE_THRESHOLD }}/10"
-        if: ${{ matrix.platform != 'windows-latest' }}
-        run: |
-          SCORE=`sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' pylint-result.txt`
-          echo "SCORE -> $SCORE"
-          # threshold check
-          if awk "BEGIN {exit !($SCORE >= $PYLINT_SCORE_THRESHOLD)}"; then
-            echo "PyLint Passed! | Score: ${SCORE} out of 10 | Threshold: ${PYLINT_SCORE_THRESHOLD}"
-          else
-            echo "PyLint Failed! | Score: ${SCORE} out of 10 | Threshold: ${PYLINT_SCORE_THRESHOLD}"
-            exit 1
-          fi
-
-      ## Pyflakes, Pyroma, McCabe, DodgyRun, Profile Validator ##
-      - name: Run tox -e prospector
-        if: ${{ matrix.platform != 'windows-latest' }}
-        run: tox -e prospector -vv -s false
-
-# DRAW PYTHON DEPENDENCY GRAPHS
-  check_trigger_draw_dependency_graphs:
-    runs-on: ubuntu-latest
-    name: Draw Python Dependency Graphs ?
+### DRAW PYTHON DEPENDENCY GRAPHS ###
+  code_visualization:
     needs: set_github_outputs
-    if: needs.set_github_outputs.outputs.DRAW_DEPS_SVG_GRAPHS == 'true'
-    outputs:
-      SHOULD_DRAW_GRAPHS: ${{ steps.decide_if_should_draw_graphs.outputs.SHOULD_DRAW_GRAPHS }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 2
-      - name: Decide if should draw graphs
-        id: decide_if_should_draw_graphs
-        run: |
-          # if branch is master or dev; or if we are on tag starting with "v"
-          if [[ ${GITHUB_REF_NAME} == "master" || ${GITHUB_REF_NAME} == "dev" || "${GITHUB_REF}" =~ refs/tags/v.* ]]; then
-            SHOULD_DRAW_GRAPHS=true
-          else
-            echo "=============== list modified files ==============="
-            git diff --name-only HEAD^ HEAD
-            echo "========== check paths of modified files =========="
-            git diff --name-only HEAD^ HEAD > files.txt
-            SHOULD_DRAW_GRAPHS=false
-            while read file; do
-              echo $file
-              if [[ $file =~ ^src/ ]]; then
-                echo "This modified file is under the 'src' folder."
-                SHOULD_DRAW_GRAPHS=true
-                break
-              fi
-            done < files.txt
-          fi
-          echo "SHOULD_DRAW_GRAPHS=$SHOULD_DRAW_GRAPHS" >> $GITHUB_OUTPUT
-
-  draw-dependencies:
-    runs-on: ubuntu-latest
-    needs: check_trigger_draw_dependency_graphs
-    if: needs.check_trigger_draw_dependency_graphs.outputs.SHOULD_DRAW_GRAPHS == 'true'
-    name: Draw Python Dependencies as Graphs, in .svg
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-    - name: Install tox
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install tox==3.28
-    - name: Install dependencies (ie dot binary of graphviz)
-      run: |
-        sudo apt-get update -y --allow-releaseinfo-change
-        sudo apt-get install -y graphviz
-    - name: Draw Dependency Graphs as .svg files
-      run: tox -e pydeps -vv -s false
-    - name: Upload Dependency Graphs as artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: dependency-graphs
-        path: pydeps/
-        if-no-files-found: warn  # 'error' or 'ignore' are also available, defaults to `warn`
+    name: Code Visualization of Python Imports as Graphs, in .svg
+    uses: boromir674/automated-workflows/.github/workflows/python_imports.yml@test
+    with:
+      run_policy: '${{ needs.set_github_outputs.outputs.PIPE_CODE_VIZ_POLICY }}'
+      branches: 'main, master, dev'
+      source_code_targets: 'src'
+      python_version: '3.10'
+      artifacts_dir: 'dependency-graphs'

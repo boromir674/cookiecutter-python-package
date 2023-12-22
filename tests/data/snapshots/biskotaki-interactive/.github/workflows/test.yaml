@@ -37,6 +37,13 @@ env:
   BUILD_DOCKER: "false"
   DRAW_DEPENDENCIES: "true"
 
+  #### STATIC CODE ANALYSIS Job ####
+  ALWAYS_LINT: "true"
+  LINT_JOB_POLICY: '2'  # {2, 3}
+  ## Python Runtime version to set the Job runner with ##
+  STATIC_ANALYSIS_PY: "3.10"
+  ## Pylint Minimum Acceptance Rating/Score ##
+  PYLINT_SCORE_THRESHOLD: "8.2"
 
 jobs:
   # we use the below to read the workflow env vars and be able to use in "- if:" Job conditionals
@@ -45,13 +52,6 @@ jobs:
   set_github_outputs:
     name: Read Workflow Env Section Vars and set Github Outputs
     runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.pass-env-to-output.outputs.matrix }}
-      TESTS_ENABLED: ${{ steps.pass-env-to-output.outputs.TESTS_ENABLED }}
-      DOCKER_ENABLED: ${{ steps.pass-env-to-output.outputs.DOCKER_ENABLED }}
-      DRAW_DEPS_SVG_GRAPHS: ${{ steps.pass-env-to-output.outputs.DRAW_DEPS_SVG_GRAPHS }}
-      RUN_LINT: ${{ steps.pass-env-to-output.outputs.RUN_LINT }}
-      PUBLISH_ON_PYPI: ${{ steps.pass-env-to-output.outputs.PUBLISH_ON_PYPI }}
     steps:
       - name: Pass 'env' section variables to GITHUB_OUTPUT
         id: pass-env-to-output
@@ -64,10 +64,26 @@ jobs:
             echo "matrix=$UBUNTU_PY310_STRATEGY" >> $GITHUB_OUTPUT
           fi
           echo "DRAW_DEPS_SVG_GRAPHS=$DRAW_DEPENDENCIES" >> $GITHUB_OUTPUT
-          echo "RUN_LINT=$RUN_LINT_CHECKS" >> $GITHUB_OUTPUT
           echo "TESTS_ENABLED=$RUN_UNIT_TESTS" >> $GITHUB_OUTPUT
           echo "DOCKER_ENABLED=$BUILD_DOCKER" >> $GITHUB_OUTPUT
           echo "PUBLISH_ON_PYPI=$PUBLISH_ON_PYPI" >> $GITHUB_OUTPUT
+      ## Static Code Analysis - Pipeline Settings ##
+      - id: derive_sqa_policy
+        run: echo "POL=${{ (env.RUN_LINT_CHECKS != 'true' && '0') || (env.ALWAYS_LINT == 'true' && '1') || env.LINT_JOB_POLICY }}" >> $GITHUB_OUTPUT
+      - id: read_sqa_py
+        run: echo SQA_PY=${{ env.STATIC_ANALYSIS_PY }} >> $GITHUB_OUTPUT
+      - id: read_pylint_score_threshold
+        run: echo PYLINT_SCORE_THRESHOLD=${{ env.PYLINT_SCORE_THRESHOLD }} >> $GITHUB_OUTPUT
+    outputs:
+      matrix: ${{ steps.pass-env-to-output.outputs.matrix }}
+      TESTS_ENABLED: ${{ steps.pass-env-to-output.outputs.TESTS_ENABLED }}
+      DOCKER_ENABLED: ${{ steps.pass-env-to-output.outputs.DOCKER_ENABLED }}
+      DRAW_DEPS_SVG_GRAPHS: ${{ steps.pass-env-to-output.outputs.DRAW_DEPS_SVG_GRAPHS }}
+      PUBLISH_ON_PYPI: ${{ steps.pass-env-to-output.outputs.PUBLISH_ON_PYPI }}
+      ## Static Code Analysis - Pipeline Settings ##
+      PIPE_SQA_POLICY: ${{ steps.derive_sqa_policy.outputs.POL }}
+      PIPE_SQA_PY: ${{ steps.read_sqa_py.outputs.SQA_PY }}
+      PIPE_SQA_PYLINT_PASS_SCORE: ${{ steps.read_pylint_score_threshold.outputs.PYLINT_SCORE_THRESHOLD }}
 
 # RUN TEST SUITE ON ALL PLATFORMS
   test_suite:
@@ -299,46 +315,17 @@ jobs:
       run: tox -vv -s false -e deploy -- upload --non-interactive --skip-existing
     - run: echo "Published :\)"
 
-# STATIC CODE ANALYSIS & LINTING
+### STATIC CODE ANALYSIS & LINTING ###
   lint:
-    name: "Static Code Analysis & Lint"
-    runs-on: ${{ matrix.platform }}
+    name: Static Code Analysis
     needs: set_github_outputs
-    if: ${{ needs.set_github_outputs.outputs.RUN_LINT == 'true' }}
-    strategy:
-      matrix: ${{fromJson(needs.set_github_outputs.outputs.matrix)}}
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install tox==3.28 tox-gh-actions
-      - name: Lint check code with Isort and Black
-        if: ${{ matrix.platform != 'windows-latest' }}
-        run: tox -e lint -vv -s false
-      - run: tox -e pylint -vv -s false | tee pylint-result.txt
-      - run: cat pylint-result.txt
-      - name: "Check Pylint Score > 8.2/10"
-        if: ${{ matrix.platform != 'windows-latest' }}
-        env:
-          PYLINT_THRESHOLD: 8.2
-        run: |
-          SCORE=`sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' pylint-result.txt`
-          echo "SCORE -> $SCORE"
-          # threshold check
-          if awk "BEGIN {exit !($SCORE >= $PYLINT_THRESHOLD)}"; then
-            echo "PyLint Passed | Score: ${SCORE} | Threshold: ${PYLINT_THRESHOLD}"
-          else
-            echo "PyLint Failed | Score: ${SCORE} | Threshold: ${PYLINT_THRESHOLD}"
-            exit 1
-          fi
-      - name: Run tox -e prospector
-        if: ${{ matrix.platform != 'windows-latest' }}
-        run: tox -e prospector -vv -s false
+    uses: ./.github/workflows/policy_lint.yml
+    with:
+      run_policy: ${{ needs.set_github_outputs.outputs.PIPE_SQA_POLICY }}
+      dedicated_branches: 'main, master, dev'
+      source_code_targets: 'src,tests,scripts'
+      python_version: ${{ needs.set_github_outputs.outputs.PIPE_SQA_PY }}
+      pylint_threshold: ${{ needs.set_github_outputs.outputs.PIPE_SQA_PYLINT_PASS_SCORE }}
 
 # DRAW PYTHON DEPENDENCY GRAPHS
   check_trigger_draw_dependency_graphs:
