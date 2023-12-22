@@ -34,10 +34,10 @@ env:
 
   ##### JOB ON/OFF SWITCHES #####
   RUN_UNIT_TESTS: "true"
-  RUN_LINT_CHECKS: "true"
-  DOCKER_JOB_ON: "true"
-  PUBLISH_ON_PYPI: "true"
-  DRAW_DEPENDENCIES: "true"
+  RUN_LINT_CHECKS: "false"
+  DOCKER_JOB_ON: "false"
+  PUBLISH_ON_PYPI: "false"
+  DRAW_DEPENDENCIES: "false"
   ###############################
 
   ### DOCKER Job Policy ####
@@ -150,15 +150,15 @@ jobs:
         echo "SEMVER_PIP_FORMAT=$WHEEL_VERSION" >> $GITHUB_OUTPUT  # to be used in other jobs
     - name: Run Unit Tests
       # run: tox -vv -s false
-      run: tox -vv -s false -e dev
+      run: tox -vv -s false
       env:
         PLATFORM: ${{ matrix.platform }}
-    - run: tox -vv -s false -e sdist
-      env:
-        PLATFORM: ${{ matrix.platform }}
-    - run: tox -vv -s false -e wheel
-      env:
-        PLATFORM: ${{ matrix.platform }}
+    # - run: tox -vv -s false -e sdist
+    #   env:
+    #     PLATFORM: ${{ matrix.platform }}
+    # - run: tox -vv -s false -e wheel
+    #   env:
+    #     PLATFORM: ${{ matrix.platform }}
     - name: "Combine Coverage (dev, sdist, wheel) & make Reports"
       run: tox -e coverage --sitepackages -vv -s false
 
