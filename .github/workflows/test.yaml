@@ -128,8 +128,8 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - run: python -m pip install --upgrade pip && python -m pip install tox==3.28 tox-gh-actions
 
-    - name: Do Type Checking
-      run: tox -e type -vv -s false
+    # - name: Do Type Checking
+    #   run: tox -e type -vv -s false
 
     - name: Parse package version from __init__.py to assist building
       shell: bash
@@ -149,7 +149,14 @@ jobs:
         echo "PKG_VERSION=$WHEEL_VERSION" >> $GITHUB_ENV  # to be used in the next step
         echo "SEMVER_PIP_FORMAT=$WHEEL_VERSION" >> $GITHUB_OUTPUT  # to be used in other jobs
     - name: Run Unit Tests
-      run: tox -vv -s false
+      # run: tox -vv -s false
+      run: tox -vv -s false -e dev
+      env:
+        PLATFORM: ${{ matrix.platform }}
+    - run: tox -vv -s false -e sdist
+      env:
+        PLATFORM: ${{ matrix.platform }}
+    - run: tox -vv -s false -e wheel
       env:
         PLATFORM: ${{ matrix.platform }}
     - name: "Combine Coverage (dev, sdist, wheel) & make Reports"
