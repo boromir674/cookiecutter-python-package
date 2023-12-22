@@ -170,7 +170,7 @@ def post_file_removal(request):
             except PermissionError as e:
                 print(f"[WARNING]: {e}")
                 print(f"[WARNING]: Could not remove empty log file: {logs_file}")
-                print(f"[WARNING]: Please remove it manually, if you wish to do so.")
+                print("[WARNING]: Please remove it manually, if you wish to do so.")
         else:  # captured logs were written in the file: shy from removing it
             # Tell user about this, and let them decide what to do
             print(f"[INFO]: Captured Logs were written in {logs_file}")

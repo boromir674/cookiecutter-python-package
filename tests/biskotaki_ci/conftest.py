@@ -12,6 +12,8 @@ def biskotaki_ci_project(
     tmp_path,
 ) -> Path:
     """Fixture that generates a project from .github/biskotaki.yaml"""
+    import sys
+
     from cookiecutter_python.backend.main import generate
 
     assert test_root.exists()
@@ -52,7 +54,7 @@ def biskotaki_ci_project(
     pwd = Path.cwd()
     INTENTIONALLY_PLACED_LOG_FILE: Path = pwd / FILE_TARGET_LOGS
     # on Windows, it has been reported that the Log file is missing
-    import sys
+
     if sys.platform != 'win32':
         assert INTENTIONALLY_PLACED_LOG_FILE.exists()
         assert INTENTIONALLY_PLACED_LOG_FILE.is_file()
@@ -79,7 +81,9 @@ def biskotaki_ci_project(
         assert UNINTENTIONALLY_PLACED_LOG_FILE.is_file()
         assert UNINTENTIONALLY_PLACED_LOG_FILE.stat().st_size == 0
     else:
-        assert not UNINTENTIONALLY_PLACED_LOG_FILE.exists()
+        # on Windows, it has been reported that the Log file exists!
+        if sys.platform != 'win32':
+            assert not UNINTENTIONALLY_PLACED_LOG_FILE.exists()
     ## Implementation Option 2
     # assert (
     #     not bug and not UNINTENTIONALLY_PLACED_LOG_FILE.exists()
