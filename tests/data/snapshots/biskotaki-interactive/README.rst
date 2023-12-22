@@ -4,8 +4,9 @@ Project generated from the https://github.com/boromir674/cookiecutter-python-pac
 
 .. start-badges
 
-| |build| |docs| |coverage| |maintainability| |tech-debt|
-| |release_version| |wheel| |supported_versions| |gh-lic| |commits_since_specific_tag_on_master| |commits_since_latest_github_release|
+| |build| |release_version| |wheel| |supported_versions|
+| |docs| |coverage| |maintainability| |tech-debt|
+| |ruff| |gh-lic| |commits_since_specific_tag_on_master| |commits_since_latest_github_release|
 
 |
 | **Code:** https://github.com/boromir674/biskotaki
@@ -26,7 +27,27 @@ Features
 
 Development
 -----------
-Here are some useful notes related to doing development on this project.
+
+| Get started:
+
+.. code-block:: shell
+
+    python3 -m pip install --user 'tox<4'
+
+OR: **`pipx install tox`**
+
+Then, to see all out-of-the-box available `tox` commands:
+
+.. code-block:: shell
+
+    tox -a
+    
+
+OR **`tox -av`** for showing `description` of each command
+
+Development Notes
+~~~~~~~~~~~~~~~~~
+Testing, Documentation Building, Scripts, CI/CD, Static Code Analysis for this project.
 
 1. **Test Suite**, using `pytest`_, located in `tests` dir
 2. **Parallel Execution** of Unit Tests, on multiple cpu's
@@ -37,14 +58,23 @@ Here are some useful notes related to doing development on this project.
    b. **Build Command**, using the `build`_ python package
    c. **Pypi Deploy Command**, supporting upload to both `pypi.org`_ and `test.pypi.org`_ servers
    d. **Type Check Command**, using `mypy`_
-   e. **Lint** *Check* and `Apply` commands, using `isort`_ and `black`_
-5. **CI Pipeline**, running on `Github Actions`_, defined in `.github/`
+   e. **Lint** *Check* and `Apply` commands, using the fast `Ruff`_ linter, along with `isort`_ and `black`_
+5. **CI/CD Pipeline**, running on `Github Actions`_, defined in `.github/`
 
-   a. **Job Matrix**, spanning different `platform`'s and `python version`'s
+   a. **Test Job Matrix**, spanning different `platform`'s and `python version`'s
 
       1. Platforms: `ubuntu-latest`, `macos-latest`
       2. Python Interpreters: `3.6`, `3.7`, `3.8`, `3.9`, `3.10`
-   b. **Parallel Job** execution, generated from the `matrix`, that runs the `Test Suite`
+   b. **Continuous Deployment**
+   
+      `Production`
+      
+         1. **Python Distristribution** to `pypi.org`_, on `tags` **v***, pushed to `main` branch
+         2. **Docker Image** to `Dockerhub`_, on every push, with automatic `Image Tagging`
+      
+      `Staging`
+
+         1. **Python Distristribution** to `test.pypi.org`_, on "pre-release" `tags` **v*-rc**, pushed to `release` branch
 
 
 Prerequisites
@@ -88,11 +118,15 @@ License
 
 .. _build: https://github.com/pypa/build
 
+.. _Dockerhub: https://hub.docker.com/
+
 .. _pypi.org: https://pypi.org/
 
 .. _test.pypi.org: https://test.pypi.org/
 
 .. _mypy: https://mypy.readthedocs.io/en/stable/
+
+.. _Ruff: https://docs.astral.sh/ruff/
 
 .. _isort: https://pycqa.github.io/isort/
 
@@ -157,6 +191,12 @@ License
 
 
 .. CODE QUALITY
+
+.. Ruff linter for Fast Python Linting
+
+.. |ruff| image:: https://img.shields.io/badge/code%20style-ruff-000000.svg
+    :alt: Ruff
+    :target: https://docs.astral.sh/ruff/
 
 .. Code Climate CI
 .. Code maintainability & Technical Debt
