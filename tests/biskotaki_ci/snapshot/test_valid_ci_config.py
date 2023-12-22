@@ -34,7 +34,6 @@ def test_snapshot_has_valid_ci_config_file_yaml(snapshot_name, test_root):
     # Check CI Config
     assert ci_config['name'] == 'CI/CD Pipeline'
 
-
     ### Validate .github/workflows/policy_lint.yml ###
 
     # Load CI Config File
