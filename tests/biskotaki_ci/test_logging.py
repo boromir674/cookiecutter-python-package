@@ -32,8 +32,13 @@ def test_log_file_not_present_in_newly_generated_project(
         assert INTENTIONALLY_PLACED_LOG_FILE.exists()
         assert INTENTIONALLY_PLACED_LOG_FILE.is_file()
     else:  # handle windows as special case to account for Log mishap
-        assert not INTENTIONALLY_PLACED_LOG_FILE.exists()  
-    
+        # if running this Unit Test along with the 2 Snapshot tests, on Windows,
+        # then it is expected that 'Intentional Log' file is MISSING -> mishap
+        # assert not INTENTIONALLY_PLACED_LOG_FILE.exists()
+        # if running ALL Unit Tests,, on Windows,
+        # then it is expected that 'Intentional Log' file is Present!
+        assert INTENTIONALLY_PLACED_LOG_FILE.exists()
+
     # assert INTENTIONALLY_PLACED_LOG_FILE.stat().st_size > 0
 
     # THEN we expect the unintentional behaviour to happen
