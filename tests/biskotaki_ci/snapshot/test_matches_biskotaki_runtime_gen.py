@@ -71,7 +71,7 @@ def test_snapshot_matches_runtime(snapshot, biskotaki_ci_project, test_root):
         if running_on_windows:  # there is a log mishappening that we exists on windows
             from cookiecutter_python._logging_config import FILE_TARGET_LOGS as LOG_FILE_NAME
             # create augmented set, with added extra file, as union of both sets
-            augmented_exp_set = snap_relative_paths_set.union(LOG_FILE_NAME)
+            augmented_exp_set = snap_relative_paths_set.union({LOG_FILE_NAME})
             assert runtime_relative_paths_set == augmented_exp_set
         else:
             assert runtime_relative_paths_set == snap_relative_paths_set
