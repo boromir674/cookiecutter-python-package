@@ -4,7 +4,7 @@ Python Package Generator
 
 | |build| |release_version| |wheel| |supported_versions|
 | |docs| |coverage| |maintainability| |codacy| |tech-debt|
-| |ossf| |black| |gh-lic| |commits_since_specific_tag_on_master| |commits_since_latest_github_release|
+| |ossf| |ruff| |black| |gh-lic| |commits_since_specific_tag_on_master| |commits_since_latest_github_release|
 
 | Generate Python Project, with CI/CD Pipeline for PyPI and Docker builds for easy DevOps.
 | **Documentation available at https://python-package-generator.readthedocs.io/.**
@@ -21,7 +21,7 @@ What's included?
   * **Test Suite**, using `pytest`_, located in `tests` dir
   * **Pypi Deploy Command**, supporting upload to both `pypi.org`_ and `test.pypi.org`_ servers
   * **Type Check Command**, using `mypy`_
-  * **Lint** *Check* and `Apply` commands, using `isort`_ and `black`_
+  * **Lint** *Check* and `Apply` commands, using the fast `Ruff`_ linter, along with standard `isort`_, and `black`_
   * **Build Command**, using the `build`_ python package
 
 
@@ -220,6 +220,8 @@ Free/Libre and Open Source Software (FLOSS)
 
 .. _GNU Affero General Public License v3.0: https://github.com/boromir674/cookiecutter-python-package/blob/master/LICENSE
 
+.. _Ruff: https://docs.astral.sh/ruff/
+
 .. _isort: https://pycqa.github.io/isort/
 
 .. _black: https://black.readthedocs.io/en/stable/
@@ -311,6 +313,11 @@ Free/Libre and Open Source Software (FLOSS)
     :alt: Code Climate technical debt
     :target: https://codeclimate.com/github/boromir674/cookiecutter-python-package/
 
+.. Ruff linter for Fast Python Linting
+
+.. |ruff| image:: https://img.shields.io/badge/code%20style-ruff-000000.svg
+    :alt: Ruff
+    :target: https://docs.astral.sh/ruff/
 
 .. Code Style with Black
 

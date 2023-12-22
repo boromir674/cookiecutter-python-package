@@ -185,6 +185,7 @@ typing = [
 minversion = "6.2"
 # hard-inject args, when invoking `pytest` CLI
 addopts = "--strict-markers --ignore=tests/data"
+# for explict --run-integration -> pip install pytest-explicit
 markers = [
     "slow: Marks a slow test",
     "integration: Tests applicable to a newly Generated Project, running with tox",

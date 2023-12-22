@@ -26,9 +26,22 @@ Usage:
     all submodules 'inherit' the logging configuration
 """
 import logging
+from pathlib import Path
 
-# for cookiecutter_python app/code
-FILE_TARGET_LOGS = 'cookie-py.log'
+LOGS_FILE_NAME: str
+"""File name, to write, captured runtime Log records, in disk (filesystem)."""
+
+try:
+    from ._logging_config import FILE_TARGET_LOGS
+    LOGS_FILE_NAME = FILE_TARGET_LOGS
+except ImportError:
+    LOGS_FILE_NAME = 'cookie-py.log'
+
+
+# get the Parent Working Directory (ie PWD) of running shell
+pwd: Path = Path.cwd()
+
+file_target_logs_full_path: Path = pwd / LOGS_FILE_NAME
 
 #### FILE LOGGING
 # set up logging to file for DEBUG Level and above
@@ -36,7 +49,7 @@ logging.basicConfig(
     level=logging.DEBUG,
     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
     datefmt='%m-%d %H:%M',
-    filename=FILE_TARGET_LOGS,
+    filename=file_target_logs_full_path,
     filemode='w',
 )
 

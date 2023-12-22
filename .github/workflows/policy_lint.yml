@@ -1,0 +1,179 @@
+#################################
+## PYTHON STATIC CODE ANALYSIS ##
+##      Reusable Workflow      ##
+#################################
+
+# Static Code Analysis (SCA) is a set of techniques for examining source code
+# without executing it.
+
+### TOOLS ###
+# - Ruff
+# - Isort
+# - Black
+# - Pyflakes, Pyroma, McCabe, DodgyRun, Profile Validator
+# - Pylint (legacy)
+
+## AUTONOMOUS JOB ##
+
+#  0. Never run
+#  1. Always run
+#  2. Run SQA on conditions
+#     - Triggered on a Long-living branch (ie main)
+#     - Triggered on a v* tag (ie v1.0.0)
+#     - Source Code changed, compared to previous commit
+#  3. Run SQA, if Source Code changed, compared to previous commit
+
+on:
+  workflow_call:
+    inputs:
+      # Defaults to Policy 2 (CI/CD)
+      run_policy:
+        required: false
+        type: string
+        default: '2'
+      dedicated_branches:
+        required: false
+        type: string
+        default: 'master, main, dev'
+      source_code_targets:
+        required: false
+        type: string
+        default: 'src'
+      ## Parametrizing Runtime Environment (ie py version)
+      python_version:
+        required: false
+        type: string
+        default: '3.10'
+      ## Parametrizing Code Analysis Acceptance Criteria
+      pylint_threshold:
+        required: false
+        type: string
+        default: '8.0'  # out of 10
+
+jobs:
+  # Decide whether to run Lint Job, given incoming Signal
+  lint_policy:
+    name: "Run Lint Job?"
+    runs-on: ubuntu-latest
+    if: always() && inputs.run_policy != 0
+    steps:
+      - if: ${{ !contains('1, 2, 3', inputs.run_policy) }}
+        run: 'echo "Invalid run_policy: ${{ inputs.run_policy }}. Must be >0 and <4" && exit 1'
+
+      - if: inputs.run_policy == 1
+        name: 'POLICY: 1 -> Trigger'
+        run: echo "SHOULD_RUN_SQA=true" >> $GITHUB_ENV
+
+      - if: inputs.run_policy == 2 && contains(inputs.dedicated_branches, github.ref_name)
+        name: 'POLICY: 2 & Branch: ${{ github.ref_name }} -> Trigger'
+        run: echo "SHOULD_RUN_SQA=true" >> $GITHUB_ENV
+
+      - if: inputs.run_policy == 2 && startsWith(github.ref, 'refs/tags/v')
+        name: 'POLICY: 2 & Tag: ${{ github.ref_name }} -> Trigger'
+        run: echo "SHOULD_RUN_SQA=true" >> $GITHUB_ENV
+
+      - if: ${{ env.SHOULD_RUN_SQA != 'true' && contains('2, 3', inputs.run_policy) }}
+        name: 'POLICY: 2, 3 -> Derive from DIFF'
+        run: echo "SHOULD_DERIVE_FROM_DIFF=true" >> $GITHUB_ENV
+
+      - if: ${{ env.SHOULD_DERIVE_FROM_DIFF }}
+        name: 'POLICY: 2, 3 -> Checkout Code to compute DIFF'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - if: ${{ env.SHOULD_DERIVE_FROM_DIFF }}
+        name: 'POLICY: 2, 3 -> Check Source Code DIFF'
+        run: |
+          echo "============ List Modified Files ============"
+          git diff --name-only HEAD^ HEAD
+          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+
+          # Read Folders we 'Watch' for changes
+          TARGETS=$(echo "${{ inputs.source_code_targets }}" | tr ',' '\n')
+
+          # Loop through the Watched Folders
+          for TARGET in $TARGETS; do
+            # if rel path of changed file matches glob pattern
+            if [[ $CHANGED_FILES == *"$TARGET"* ]]; then
+              echo "SHOULD_RUN_SQA=true" >> $GITHUB_ENV
+              echo "QA Target: $TARGET found in CHANGED_FILES!"
+              break
+            fi
+          done
+
+      ### OUTPUT of JOB ###
+      - name: "Set 'Run Static Code Analysis' Signal to ${{ env.SHOULD_RUN_SQA }}"
+        id: set_sqa_signal
+        run: echo "RUN_SQA=${{ env.SHOULD_RUN_SQA }}" >> $GITHUB_OUTPUT
+    outputs:
+      RUN_SQA: ${{ steps.set_sqa_signal.outputs.RUN_SQA }}
+
+  lint:
+    name: "Static Code Analysis"
+    runs-on: ubuntu-latest
+    needs: lint_policy
+    if: always() && needs.lint_policy.outputs.RUN_SQA == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ inputs.python_version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ inputs.python_version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install tox==3.28
+
+      ## Isort ##
+      - name: 'Isort: Require Semantic and Alphabetic order of the Python Imports'
+        if: ${{ matrix.platform != 'windows-latest' }}
+        run: tox -e isort -vv -s false
+
+      ## Black ##
+      - name: 'Black: Require Project Style "opinion" to be followed by the Python Code'
+        if: ${{ matrix.platform != 'windows-latest' }}
+        run: tox -e black -vv -s false
+
+      ## Ruff ##
+      - name: 'Ruff: Require Project to pass Ruff Checks'
+        run: tox -e ruff -vv -s false
+
+      ## Pyflakes, Pyroma, McCabe, DodgyRun, Profile Validator ##
+      - name: Run tox -e prospector
+        if: ${{ matrix.platform != 'windows-latest' }}
+        run: tox -e prospector -vv -s false
+
+  legacy_pylint:
+    runs-on: ubuntu-latest
+    needs: lint_policy
+    if: always() && needs.lint_policy.outputs.RUN_SQA == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ inputs.python_version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ inputs.python_version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install tox==3.28
+
+      ## Pylint (legacy) ##
+      - name: Run Pylint tool on Python Code Base
+        run: tox -e pylint -vv -s false | tee pylint-result.txt
+
+      - run: cat pylint-result.txt
+
+      - name: 'Check Pylint Score > ${{ inputs.pylint_threshold }}/10'
+        if: ${{ matrix.platform != 'windows-latest' }}
+        run: |
+          SCORE=`sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' pylint-result.txt`
+          echo "SCORE -> $SCORE"
+          # threshold check
+          if awk "BEGIN {exit !($SCORE >= ${{ inputs.pylint_threshold }})}"; then
+            echo "PyLint Passed! | Score: ${SCORE} out of 10 | Threshold: ${{ inputs.pylint_threshold }}"
+          else
+            echo "PyLint Failed! | Score: ${SCORE} out of 10 | Threshold: ${{ inputs.pylint_threshold }}"
+            exit 1
+          fi

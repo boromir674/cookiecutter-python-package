@@ -17,6 +17,7 @@ from os import path
 from pathlib import Path
 from git import Actor, Repo
 from cookiecutter_python.backend.gen_docs_common import get_docs_gen_internal_config
+from cookiecutter_python._logging_config import FILE_TARGET_LOGS
 
 import logging
 
@@ -147,6 +148,26 @@ def post_file_removal(request):
             for file in files:
                 os.remove(os.path.join(request.project_dir, file))
 
+    ## Remove Generator Log file, found inside the Generated Project ##
+    # this happens, based on our _logging.py configuration, which probably causes
+    # the cookiecutter code to inherit this Logger. Then probably, cookiecutter
+    # changes the CWD at runtime when it renders the Templates, and thus a log
+    # file is created inside the Generated Project Folder.
+    
+    # Note: at Generator runtime, the user should still expect Captured Logs to
+    # be written a File in their Shell's PWD, as designed and intented.
+
+    # remove the log file, if it exists and it is empty
+    logs_file: Path = Path(request.project_dir) / FILE_TARGET_LOGS
+    if logs_file.exists():
+        # unintentional behaviour, is still happening
+        if logs_file.stat().st_size == 0:  # at least expect empty log file
+            # safely remove the empty log file
+            logs_file.unlink()
+        else:  # captured logs were written in the file: shy from removing it
+            # Tell user about this, and let them decide what to do
+            print(f"[INFO]: Captured Logs were written in {logs_file}")
+
 
 def _get_run_parameters(python3_minor: int):
     def run(args: list, kwargs: dict):
@@ -267,6 +288,7 @@ def _post_hook():
     post_file_removal(request)
     # move/rename docs-builder-specific docs folder to 'docs/'
     try:
+        # ie for mkdocs: `mv docs-mkdocs docs`, ie for sphinx: `mv docs-sphinx docs`
         os.rename(
             str(Path(request.project_dir) / request.docs_extra_info[request.docs_website['builder']]),
             os.path.join(request.project_dir, 'docs')

@@ -495,7 +495,7 @@ def cli_invoker_params() -> t.Callable[[t.Any], CLIRunnerParameters]:
             for cli_arg, default_value in self.map.items():
                 if bool(default_value):
                     yield cli_arg
-                    if type(self.cli_defaults[cli_arg]) != bool:
+                    if not isinstance(self.cli_defaults[cli_arg], bool):
                         yield str(default_value)
 
     def parameters(
@@ -815,11 +815,11 @@ def get_expected_generated_files(
         for docs_builder_id, builder_files in builder_id_2_files.items():
             if docs_builder_id != config.data['docs_builder']:
                 assert all(
-                    [type(x) == str for x in builder_files]
+                    [isinstance(x, str) for x in builder_files]
                 ), f"Temporary Requirement of Test Code: builder_files must be a list of strings, not {builder_files}"
                 files_to_remove.update(builder_files)
         assert all(
-            [type(x) == str for x in files_to_remove]
+            [isinstance(x, str) for x in files_to_remove]
         ), f"Temporary Requirement of Test Code: files_to_remove must be a list of strings, not {files_to_remove}"
 
         ## Remove all Template Docs files from Expectations
@@ -854,7 +854,7 @@ def get_expected_generated_files(
                     str(file_path.relative_to(distro_loc / r'{{ cookiecutter.project_slug }}'))
                 )
         assert all(
-            [type(x) == str for x in files_to_remove]
+            [isinstance(x, str) for x in files_to_remove]
         ), f"Temporary Requirement of Test Code: files_to_remove must be a list of strings, not {files_to_remove}"
 
         # FIND WHAT is actually in GEN ProJ DIR
@@ -878,7 +878,7 @@ def get_expected_generated_files(
         # assert 'cookie-py.log' in files_to_remove
 
         assert all(
-            [type(x) == str for x in files_to_remove]
+            [isinstance(x, str) for x in files_to_remove]
         ), f"Temporary Requirement of Test Code: files_to_remove must be a list of strings, not {files_to_remove}"
 
         sanity_check_files = [  # build up proper info for the expected files
@@ -960,13 +960,19 @@ def get_expected_generated_files(
                 r'{{ cookiecutter.project_slug }}', config.data['project_slug']
             )
 
-            l = b.split(SEP)
-            assert len(l) > 0, f"Sanity check fail: {l}"
-            assert l[-1] != '', f"Sanity check fail: {l}"
-            assert len(l) == len(parts), f"Sanity check fail: {l}, {parts}"
-            assert len(l) == len(x.parts), f"Sanity check fail: {l}, {x.parts}"
-            assert type(l) == list, f"Sanity check fail: {l}"
-            c: Path = Path(*l)
+            expected_file_parts = b.split(SEP)
+            assert len(expected_file_parts) > 0, f"Sanity check fail: {expected_file_parts}"
+            assert expected_file_parts[-1] != '', f"Sanity check fail: {expected_file_parts}"
+            assert len(expected_file_parts) == len(
+                parts
+            ), f"Sanity check fail: {expected_file_parts}, {parts}"
+            assert len(expected_file_parts) == len(
+                x.parts
+            ), f"Sanity check fail: {expected_file_parts}, {x.parts}"
+            assert isinstance(
+                expected_file_parts, list
+            ), f"Sanity check fail: {expected_file_parts}"
+            c: Path = Path(*expected_file_parts)
             res.append(c)
 
         assert len(set([type(x) for x in res])) == 1, f"Sanity check fail: {res}"
