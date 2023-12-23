@@ -2,6 +2,21 @@
 Changelog
 =========
 
+1.10.0 (2023-12-24)
+===================
+
+Changes
+^^^^^^^
+
+feature
+"""""""
+- add **Dev Guides** Page in Docs Website, when selecting `Mkdocs` as Docs Builder
+
+test
+""""
+- improve automatically derived emulated project to use for Post Hook Unit Tests
+
+
 1.9.0 (2023-12-22)
 ==================
 
