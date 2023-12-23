@@ -270,7 +270,7 @@ def hook_request_new(distro_loc):
                 **{'mkdocs': 'docs-mkdocs', 'sphinx': 'docs-sphinx'},
             )
         )
-        docs_website: t.Optional[str] = attr.ib(
+        docs_website: t.Optional[t.Dict[str, str]] = attr.ib(
             default={
                 'builder': 'sphinx',
                 'python_runtime': '3.10',
@@ -738,22 +738,49 @@ def project_files():
 def get_expected_generated_files(
     distro_loc, project_files
 ) -> t.Callable[[str, t.Mapping[str, t.Any]], t.Set[Path]]:
-    """Automatically derive the expected generated files given a config file."""
+    """Derive Expected Files, Pre-Generation, for sanity checks Post-Generation.
+
+    Callable accepting a Config, User's Yaml or Default Json, and returning the
+    Files which should be created, if the Generator is called with that Config.
+
+    Useful for End-to-End Tests, with flow:
+     - Configure -> Generate -> Project -> Assert
+
+    Example Testing Scenario:
+     - 1. Declare what to Generate in a Config (User's yaml or Default json) file
+     - 2. Dynamically compute the Expected Files, given the Config
+     - 2. Call Generator: ie using the CLI, or the cookiecutter_python Python API
+     - 3. Assert Generated Files (runtime) are the Expected Files (pre-Generation)
+
+    Callable that, given Configuration info, derives what files should be
+    expected to be Generated (ie rendered from Templates), given the
+    Configuration, either User's Yaml or Default (json) file, intended to be
+    given as Input (ie values for Template Variables) to the Generator.
+
+    Checks the Config argument at runtime, to Automatically derive the Expected
+    Files, by consulting with the Template (jinja) Project contents.
+    
+    Template Project: src/cookiecutter_python/{{ cookiecutter.project_slug }}/
+
+    Args:
+        config (t.Mapping[str, t.Any]): Configuration, either User's Yaml or
+            Default (json) file, intended to be given as Input (ie values for
+            Template Variables) to the Generator.
+    """
     from pathlib import Path
 
     from cookiecutter_python.hooks.post_gen_project import (
         delete_files as proj_type_2_files_to_remove,
     )
 
-    def _get_expected_generated_files(folder: str, config):
-        print(f"\n  PROJ DIR in Folder: {folder}")
+    def _get_expected_generated_files(config):
         expected_project_type = config.data['project_type']
         print(f"\nDEBUG: expected_project_type: {expected_project_type}")
         pkg_name: str = config.data['pkg_name']
         assert (
             'docs_builder' in config.data
         ), f"Missing 'docs_builder' in {config.data}. Probaly, user config Yaml supplied is missing templated values, required by cookiecutter.json."
-        docs_builder: str = config.data['docs_builder']
+        user_docs_builder_id: str = config.data['docs_builder']
 
         expected_gen_files: t.Set[Path] = set()
         expected_to_find: t.Set = set()
@@ -767,8 +794,6 @@ def get_expected_generated_files(
                     'PostGenRequestLike',
                     (),
                     {
-                        'project_dir': folder,
-                        'project_type': expected_project_type,
                         'module_name': pkg_name,
                     },
                 )
@@ -780,19 +805,25 @@ def get_expected_generated_files(
         ## DERIVE expected files inside 'docs' gen dir
         from cookiecutter_python.backend import get_docs_gen_internal_config
 
-        doc_builder_id_2_docs_gen_folder: t.Dict[str, str] = get_docs_gen_internal_config()
-        builder_docs_folder_name: str = doc_builder_id_2_docs_gen_folder[docs_builder]
-        docs_template_dir: Path = (
+        # Find where each Docs Builder 'stores' its Template Files (ie source docs)
+        _doc_builder_id_2_template_docs_dir_name: t.Dict[str, str] = get_docs_gen_internal_config()
+        builder_docs_folder_name: str = _doc_builder_id_2_template_docs_dir_name[user_docs_builder_id]
+        source_docs_template_content_dir: Path = (
             distro_loc / r'{{ cookiecutter.project_slug }}' / builder_docs_folder_name
         )
 
         # those docs template dir, are expected to be found under 'docs' folder
-        for file_path in iter((x for x in docs_template_dir.rglob('*') if x.is_file())):
+        for file_path in iter((x for x in source_docs_template_content_dir.rglob('*') if x.is_file())):
             assert isinstance(file_path, Path)
             # assert file_path is relative to docs_template_dir
-            rp = file_path.relative_to(docs_template_dir)
-            assert file_path.relative_to(docs_template_dir)
+            rp = file_path.relative_to(source_docs_template_content_dir)
+            assert file_path.relative_to(source_docs_template_content_dir)
             expected_to_find.add(Path('docs') / rp)
+
+        # Now expected_to_find, should be populated with files names/paths that
+        # should be expected to be rendered for the requested docs builder in the config
+        # ie if mkdocs -> {{ cookiecutter.project_slug }}/docs-mkdocs/**
+        # are Put into our Expectations value 'expected_to_find'
 
         # pre-emptively any .pyc file from expected_to_find, since a bug was reported
         # where the .pyc file was not removed
@@ -805,8 +836,6 @@ def get_expected_generated_files(
         assert not any(
             [str(x).endswith('.pyc') for x in expected_to_find]
         ), f"Sanity check fail: {expected_to_find}"
-
-        assert docs_builder == 'sphinx' or not (Path(folder) / 'docs' / 'conf.py').exists()
 
         ## DERIVE the EXPECTED root-level files for post removal, based on docs-builer type
         # we leverage the same production mapping of builder_id to files
@@ -826,7 +855,7 @@ def get_expected_generated_files(
         for (
             docs_builder_id,
             builder_docs_folder_name,
-        ) in doc_builder_id_2_docs_gen_folder.items():
+        ) in _doc_builder_id_2_template_docs_dir_name.items():
             for file_path in iter(
                 (
                     x
@@ -850,9 +879,11 @@ def get_expected_generated_files(
                     ).parts[0]
                     == builder_docs_folder_name
                 ), f"Sanity check fail: {file_path.relative_to(distro_loc / r'{{ cookiecutter.project_slug }}')}, {file_path.relative_to(distro_loc / r'{{ cookiecutter.project_slug }}').parts[0]}"
+
                 files_to_remove.add(
                     str(file_path.relative_to(distro_loc / r'{{ cookiecutter.project_slug }}'))
                 )
+
         assert all(
             [isinstance(x, str) for x in files_to_remove]
         ), f"Temporary Requirement of Test Code: files_to_remove must be a list of strings, not {files_to_remove}"
@@ -1073,7 +1104,7 @@ def assert_files_committed_if_flag_is_on(
             for f in sorted(runtime_generated_files):
                 assert file_commited(f)
             # 2nd assert the generated files exactly match the expected ones
-            expected_generated_files = get_expected_generated_files(folder, config)
+            expected_generated_files = get_expected_generated_files(config)
             assert set(runtime_generated_files) == set(expected_generated_files)
 
             assert_commit_author_is_expected_author(

@@ -59,6 +59,7 @@ def get_request():
             'builder': cookie_dict['docs_builder'],
             'python_runtime': cookie_dict['rtd_python_version'],
         },
+        # internally used to get the template folder of each Doc Builder
         'docs_extra_info': DOCS,
     }
     # sanity check on data dict for docs_website and docs_extra_info
@@ -113,7 +114,10 @@ delete_files = {
 # delete mkdocs.yml if not using mkdocs
 # delete sphinx files if not using sphinx
 builder_id_2_files = {
-    'mkdocs': ['mkdocs.yml'],
+    'mkdocs': [
+        'mkdocs.yml',
+        'scripts/gen_api_refs_pages.py'
+    ],
 }
 
 def post_file_removal(request):
