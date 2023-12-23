@@ -1,4 +1,5 @@
 import pytest
+import typing as t
 
 
 ### IMPORTANT ###
@@ -15,6 +16,7 @@ def emulated_generated_project(
         print(f"[DEBUG]: Gen Proj Dir: {project_dir}")
         package_dir = path.join(project_dir, 'src', name)
         tests_dir = path.join(project_dir, 'tests')
+
         # emulate/create some Project files affecting production code
         mkdir(path.join(project_dir, 'src'))
         mkdir(path.join(project_dir, 'DEL-ME-UNIT-TESTS'))
@@ -25,13 +27,13 @@ def emulated_generated_project(
         mkdir(path.join(project_dir, 'docs-mkdocs'))
         from pathlib import Path
 
-        Path(path.join(project_dir, 'mkdocs.yml')).touch()
+        # Path(path.join(project_dir, 'mkdocs.yml')).touch()
 
         mkdir(path.join(project_dir, 'docs-sphinx'))
         Path(path.join(project_dir, 'docs-sphinx', 'conf.py')).touch()
 
         mkdir(path.join(project_dir, 'scripts'))
-        Path(path.join(project_dir, 'scripts', 'gen_api_refs_pages.py')).touch()
+        # Path(path.join(project_dir, 'scripts', 'gen_api_refs_pages.py')).touch()
 
         # Generate, for given name and project_dir
         emulated_post_gen_request = request_factory.post(
@@ -42,7 +44,10 @@ def emulated_generated_project(
         )
         from functools import reduce
 
-        files_set = reduce(
+        # Automatically, discover what files to create for an accurate emulated project
+        
+        ## Project Type Dependend Files ##
+        files_set: t.List[t.Tuple[str, ...]] = list(reduce(
             lambda i, j: i + j,
             (
                 # unique files per Project Type
@@ -52,9 +57,40 @@ def emulated_generated_project(
                     PYTEST_PLUGIN_ONLY,
                 ]
             ),
-        )
+        ))
+        assert isinstance(files_set, list) and len(files_set) > 2
+        # FILES so far, we should CREATE EMULATED, for Post Removal Hook to work
+        create_emulated: t.Set[t.Tuple[str, ...]] = set(files_set)
+        
+        # if someone checks the length of the file list, they expect the number of unique files
+        # to be equal to the length of the list
+        expected_unique_files = len(create_emulated)
+        # Sanity check that no-one inputs the same file twice
+        assert len(files_set) == expected_unique_files
+        
 
-        for path_tuple in files_set:
+        ## Docs Builder Type Dependend Files ##
+        from cookiecutter_python.hooks.post_gen_project import builder_id_2_files as builder_id_2_extra_files_map
+        # theoritically, it should suffice for us to create 'emulated' files, as:
+        # Excluding the Docs Builder defined in the Request, create file for all
+        # builders in the map
+        requested_docs_builder_id: str = emulated_post_gen_request.docs_website['builder']
+
+        assert requested_docs_builder_id == 'sphinx'
+        assert builder_id_2_extra_files_map == {'mkdocs': ['mkdocs.yml', 'scripts/gen_api_refs_pages.py']}
+        for builder_id, builder_files in builder_id_2_extra_files_map.items():
+            if builder_id != requested_docs_builder_id:
+                create_emulated.update([(file_path,) for file_path in builder_files])
+
+        assert len(create_emulated) == expected_unique_files + 2
+
+        expected_unique_files = expected_unique_files + sum([len(x) for x in builder_id_2_extra_files_map.values()])
+        # Sanity check that no-one inputs the same file twice
+        assert len(create_emulated) == expected_unique_files
+
+        # need to make sure to create all files, for Post Remove Hook to work
+
+        for path_tuple in sorted(create_emulated):
             with open(path.join(project_dir, *path_tuple), 'w') as _file:
                 _file.write('print("Hello World!"\n')
         return emulated_post_gen_request
@@ -116,22 +152,6 @@ def test_main(add_cli, get_post_gen_main, assert_initialized_git, tmpdir):
     # GIVEN a temporary directory, for the emulated generated project
     tmp_target_gen_dir = tmpdir.mkdir('cookiecutter_python.unit-tests.proj-targetr-gen-dir')
 
-    # name = 'gg'
-
-    # def get_pre_gen_hook_project_main(add_cli):
-    #     """"""
-    #     def mock_get_request():
-    #         emulated_request = emulated_generated_project(
-    #             tmpdir, name=name, project_type='module+cli' if add_cli else 'module'
-    #         )
-    #         return emulated_request
-
-    #     main_method = get_object(
-    #         "_post_hook",
-    #         "cookiecutter_python.hooks.post_gen_project",
-    #         overrides={'get_request': lambda: mock_get_request},
-    #     )
-    #     return main_method
     post_hook_main = get_post_gen_main(
         add_cli,
         tmp_target_gen_dir,
