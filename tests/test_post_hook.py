@@ -1,5 +1,6 @@
-import pytest
 import typing as t
+
+import pytest
 
 
 ### IMPORTANT ###
@@ -45,7 +46,7 @@ def emulated_generated_project(
         from functools import reduce
 
         # Automatically, discover what files to create for an accurate emulated project
-        
+
         ## Project Type Dependend Files ##
         files_set: t.List[t.Tuple[str, ...]] = list(reduce(
             lambda i, j: i + j,
@@ -70,7 +71,10 @@ def emulated_generated_project(
         
 
         ## Docs Builder Type Dependend Files ##
-        from cookiecutter_python.hooks.post_gen_project import builder_id_2_files as builder_id_2_extra_files_map
+        from cookiecutter_python.hooks.post_gen_project import (
+            builder_id_2_files as builder_id_2_extra_files_map,
+        )
+
         # theoritically, it should suffice for us to create 'emulated' files, as:
         # Excluding the Docs Builder defined in the Request, create file for all
         # builders in the map
