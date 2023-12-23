@@ -759,7 +759,7 @@ def get_expected_generated_files(
 
     Checks the Config argument at runtime, to Automatically derive the Expected
     Files, by consulting with the Template (jinja) Project contents.
-    
+
     Template Project: src/cookiecutter_python/{{ cookiecutter.project_slug }}/
 
     Args:
@@ -806,14 +806,20 @@ def get_expected_generated_files(
         from cookiecutter_python.backend import get_docs_gen_internal_config
 
         # Find where each Docs Builder 'stores' its Template Files (ie source docs)
-        _doc_builder_id_2_template_docs_dir_name: t.Dict[str, str] = get_docs_gen_internal_config()
-        builder_docs_folder_name: str = _doc_builder_id_2_template_docs_dir_name[user_docs_builder_id]
+        _doc_builder_id_2_template_docs_dir_name: t.Dict[
+            str, str
+        ] = get_docs_gen_internal_config()
+        builder_docs_folder_name: str = _doc_builder_id_2_template_docs_dir_name[
+            user_docs_builder_id
+        ]
         source_docs_template_content_dir: Path = (
             distro_loc / r'{{ cookiecutter.project_slug }}' / builder_docs_folder_name
         )
 
         # those docs template dir, are expected to be found under 'docs' folder
-        for file_path in iter((x for x in source_docs_template_content_dir.rglob('*') if x.is_file())):
+        for file_path in iter(
+            (x for x in source_docs_template_content_dir.rglob('*') if x.is_file())
+        ):
             assert isinstance(file_path, Path)
             # assert file_path is relative to docs_template_dir
             rp = file_path.relative_to(source_docs_template_content_dir)

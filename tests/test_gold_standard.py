@@ -88,7 +88,6 @@ def gen_gs_project(
     return gen_project_dir
 
 
-
 def test_gs_matches_runtime(gen_gs_project, test_root):
     ## GIVEN a Snapshot we maintain, reflecting the Gold Standard of Biskotaki
     from pathlib import Path
@@ -143,7 +142,8 @@ def test_gs_matches_runtime(gen_gs_project, test_root):
             [
                 x
                 for x in snap_relative_paths_set
-                if 'poetry.lock' not in x.parts  # in case we run poetry install inside biskotaki
+                if 'poetry.lock'
+                not in x.parts  # in case we run poetry install inside biskotaki
                 if '.vscode' not in x.parts
                 and 'settings.json' not in x.parts
                 and '.tox' not in x.parts
@@ -212,7 +212,9 @@ def test_gs_matches_runtime(gen_gs_project, test_root):
             # go line by line and assert each one for easier debugging
             snap_file_content = snap_file.read_text().splitlines()
             runtime_file_content = runtime_file.read_text().splitlines()
-            for line_index, line_pair in enumerate(zip(runtime_file_content, snap_file_content)):
+            for line_index, line_pair in enumerate(
+                zip(runtime_file_content, snap_file_content)
+            ):
                 assert line_pair[0] == line_pair[1], (
                     f"File: {relative_path} has different content at Runtime than in Snapshot\n"
                     f"Line Index: {line_index}\n"

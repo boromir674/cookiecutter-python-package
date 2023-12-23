@@ -48,27 +48,28 @@ def emulated_generated_project(
         # Automatically, discover what files to create for an accurate emulated project
 
         ## Project Type Dependend Files ##
-        files_set: t.List[t.Tuple[str, ...]] = list(reduce(
-            lambda i, j: i + j,
-            (
-                # unique files per Project Type
-                get_path_tuple(emulated_post_gen_request)  # list of tuples
-                for get_path_tuple in [
-                    CLI_ONLY,
-                    PYTEST_PLUGIN_ONLY,
-                ]
-            ),
-        ))
+        files_set: t.List[t.Tuple[str, ...]] = list(
+            reduce(
+                lambda i, j: i + j,
+                (
+                    # unique files per Project Type
+                    get_path_tuple(emulated_post_gen_request)  # list of tuples
+                    for get_path_tuple in [
+                        CLI_ONLY,
+                        PYTEST_PLUGIN_ONLY,
+                    ]
+                ),
+            )
+        )
         assert isinstance(files_set, list) and len(files_set) > 2
         # FILES so far, we should CREATE EMULATED, for Post Removal Hook to work
         create_emulated: t.Set[t.Tuple[str, ...]] = set(files_set)
-        
+
         # if someone checks the length of the file list, they expect the number of unique files
         # to be equal to the length of the list
         expected_unique_files = len(create_emulated)
         # Sanity check that no-one inputs the same file twice
         assert len(files_set) == expected_unique_files
-        
 
         ## Docs Builder Type Dependend Files ##
         from cookiecutter_python.hooks.post_gen_project import (
@@ -81,14 +82,18 @@ def emulated_generated_project(
         requested_docs_builder_id: str = emulated_post_gen_request.docs_website['builder']
 
         assert requested_docs_builder_id == 'sphinx'
-        assert builder_id_2_extra_files_map == {'mkdocs': ['mkdocs.yml', 'scripts/gen_api_refs_pages.py']}
+        assert builder_id_2_extra_files_map == {
+            'mkdocs': ['mkdocs.yml', 'scripts/gen_api_refs_pages.py']
+        }
         for builder_id, builder_files in builder_id_2_extra_files_map.items():
             if builder_id != requested_docs_builder_id:
                 create_emulated.update([(file_path,) for file_path in builder_files])
 
         assert len(create_emulated) == expected_unique_files + 2
 
-        expected_unique_files = expected_unique_files + sum([len(x) for x in builder_id_2_extra_files_map.values()])
+        expected_unique_files = expected_unique_files + sum(
+            [len(x) for x in builder_id_2_extra_files_map.values()]
+        )
         # Sanity check that no-one inputs the same file twice
         assert len(create_emulated) == expected_unique_files
 

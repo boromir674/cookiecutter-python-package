@@ -136,9 +136,7 @@ def test_cli_offline(
 
     # Assert Files found at runtime in Generated Project Root Dir are the expected ones
     runtime_generated_files = set(project_files(project_dir).relative_file_paths())
-    expected_gen_files: t.Set[Path] = set(
-        get_expected_generated_files(config)
-    )
+    expected_gen_files: t.Set[Path] = set(get_expected_generated_files(config))
 
     # TODO: obviously, remove if, with deterministic test config to control all aspect of Logs
     if Path('cookie-py.log') in runtime_generated_files:
