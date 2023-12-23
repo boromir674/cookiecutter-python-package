@@ -113,7 +113,10 @@ delete_files = {
 # delete mkdocs.yml if not using mkdocs
 # delete sphinx files if not using sphinx
 builder_id_2_files = {
-    'mkdocs': ['mkdocs.yml'],
+    'mkdocs': [
+        'mkdocs.yml',
+        'scripts/gen_api_refs_pages.py'
+    ],
 }
 
 def post_file_removal(request):

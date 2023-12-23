@@ -30,6 +30,9 @@ def emulated_generated_project(
         mkdir(path.join(project_dir, 'docs-sphinx'))
         Path(path.join(project_dir, 'docs-sphinx', 'conf.py')).touch()
 
+        mkdir(path.join(project_dir, 'scripts'))
+        Path(path.join(project_dir, 'scripts', 'gen_api_refs_pages.py')).touch()
+
         # Generate, for given name and project_dir
         emulated_post_gen_request = request_factory.post(
             project_dir=project_dir,
