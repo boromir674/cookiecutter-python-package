@@ -46,7 +46,6 @@ def emulated_generated_project(
         from functools import reduce
 
         # Automatically, discover what files to create for an accurate emulated project
-
         ## Project Type Dependend Files ##
         files_set: t.List[t.Tuple[str, ...]] = list(
             reduce(
