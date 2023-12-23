@@ -52,6 +52,7 @@ nav:
   - Developer:
     - "Docker": build-process_DAG.md
     - "CICD": cicd.md
+    - "Developer Guide": dev_guides/index.md
   - Code Reference: reference/
   - tags: tags.md
 

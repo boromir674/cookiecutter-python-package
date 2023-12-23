@@ -9,7 +9,7 @@ ENV POETRY_HOME=/opt/poetry
 RUN python -c 'from urllib.request import urlopen; print(urlopen("https://install.python-poetry.org").read().decode())' | python && \
     "$POETRY_HOME/bin/poetry" export -f requirements.txt > requirements.txt
 
-FROM python:3.9.16-slim-bullseye
+FROM python:3.9.16-slim-bullseye as install
 
 # Keep the requirements.txt file from the builder image
 COPY --from=builder requirements.txt .
