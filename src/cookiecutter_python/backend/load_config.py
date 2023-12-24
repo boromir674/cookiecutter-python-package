@@ -34,7 +34,7 @@ def get_interpreters_from_yaml(config_file: str) -> t.Optional[GivenInterpreters
         UserYamlDesignError: if yaml does not contain the 'default_context' key
 
     Returns:
-        GivenInterpreters: dictionary with intepreters as a sequence of strings,
+        GivenInterpreters: dictionary with interpreters as a sequence of strings,
             mapped to the 'supported-interpreters' key
     """
     data = load_yaml(config_file)

@@ -7,11 +7,11 @@ a Docker Image and **publish it to Dockerhub**, how to do `Static Code Analysis`
 
 ## How to prevent any Image from being published to Dockerhub
 
-1. Open your `.github/workflows/test.yaml`, and look for the **Worfklow Variables**
+1. Open your `.github/workflows/test.yaml`, and look for the **Workflow Variables**
  
-    **Worfklow Variables** are defined in the `env` *section*
+    **Workflow Variables** are defined in the `env` *section*
 
-2. Check the *value* of the `DOCKER_JOB_ON` **Worfklow Variable**
+2. Check the *value* of the `DOCKER_JOB_ON` **Workflow Variable**
     
     [this is line is not rendered; markdown comment]: #
 

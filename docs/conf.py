@@ -21,7 +21,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath('../src/cookiecutter_python'))
 
-# Please use the Sphinx format for writting docstrings (other fornats include Google and Numpy which require the 'napoleon' extension). 
+# Please use the Sphinx format for writing docstrings (other formats include Google and Numpy which require the 'napoleon' extension). 
 
 # -- Project information -----------------------------------------------------
 

@@ -57,6 +57,6 @@ class Engine:
         return Engine(
             config_file,
             default_config,
-            # load implementations and automatically instatiate all
+            # load implementations and automatically instantiate all
             tuple((HostingServices.create(x) for x in ('pypi', 'readthedocs'))),
         )

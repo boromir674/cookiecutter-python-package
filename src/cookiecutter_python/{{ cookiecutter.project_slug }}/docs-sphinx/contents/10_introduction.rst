@@ -2,7 +2,7 @@
 Introduction
 ============
 
-| This is **{{ cookiecutter.project_name }}**, a *Python Package* desinged to ...
+| This is **{{ cookiecutter.project_name }}**, a *Python Package* designed to ...
 
 | Goal of this project is to TODO Document
 | Additionally, TODO Document

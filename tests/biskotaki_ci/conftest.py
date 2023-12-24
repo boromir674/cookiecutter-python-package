@@ -64,7 +64,7 @@ def biskotaki_ci_project(
 
         # this commit somehow makes CI on Linux to break. But not on dev machine
 
-        # issue a pytest warning whever the Log File is not created as it should
+        # issue a pytest warning wherever the Log File is not created as it should
         if not INTENTIONALLY_PLACED_LOG_FILE.exists():
             pytest.warns(
                 UserWarning,
@@ -72,7 +72,7 @@ def biskotaki_ci_project(
             )
 
     ###### Document kind of Bug ######
-    # Expected but probably unintented behaviour:
+    # Expected but probably unintended behaviour:
     # - empty log file gets created inside the gen project dir
 
     # Log file is placed inside the generated project dir, after generation

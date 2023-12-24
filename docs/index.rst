@@ -35,7 +35,7 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
-.. Reminders on how to be consistent accross sectoining and their semantics
+.. Reminders on how to be consistent across sectoining and their semantics
    ========
    DocTitle
    ========

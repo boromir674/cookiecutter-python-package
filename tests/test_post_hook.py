@@ -52,7 +52,7 @@ def emulated_generated_project(
         )
 
         # Automatically, discover what files to create for an accurate emulated project
-        ## Project Type Dependend Files ##
+        ## Project Type Dependent Files ##
         # Types
         class RuntimeRequest(Protocol):
             module_name: str  # runtime value for {{ cookiecutter.pkg_name }}
@@ -104,12 +104,12 @@ def emulated_generated_project(
         # Sanity check that no-one inputs the same file twice
         assert len(extra_files_declared) == expected_unique_files
 
-        ## Docs Builder Type Dependend Files ##
+        ## Docs Builder Type Dependent Files ##
         from cookiecutter_python.hooks.post_gen_project import (
             builder_id_2_files as builder_id_2_extra_files_map,
         )
 
-        # theoritically, it should suffice for us to create 'emulated' files, as:
+        # theoretically, it should suffice for us to create 'emulated' files, as:
         # Excluding the Docs Builder defined in the Request, create file for all
         # builders in the map
         requested_docs_builder_id: str = emulated_post_gen_request.docs_website['builder']
@@ -154,7 +154,7 @@ def get_post_gen_main(get_object, emulated_generated_project):
             # to avoid bugs we require empty project dir, before emulated generation
             absolute_proj_dir = Path(project_dir).absolute()
             assert len(list(absolute_proj_dir.iterdir())) == 0
-            # EMULATE a GEN Project, by craeting minimal dummy files and folders
+            # EMULATE a GEN Project, by creating minimal dummy files and folders
             emulated_request = emulated_generated_project(
                 project_dir, name=name, project_type='module+cli' if add_cli else 'module'
             )

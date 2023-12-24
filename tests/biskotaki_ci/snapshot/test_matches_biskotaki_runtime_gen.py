@@ -112,7 +112,7 @@ def test_snapshot_matches_runtime(snapshot, biskotaki_ci_project, test_root):
     # so, we hard exclude the line starting with the '0.0.1' string, to avoid
     # comparing rolling date with the static one in the snapshot
 
-    # first compare CHANGLOG files, then all other files
+    # first compare CHANGELOG files, then all other files
     snapshot_changelog = snapshot_dir / 'CHANGELOG.rst'  # the expectation
     runtime_changelog = runtime_biskotaki / 'CHANGELOG.rst'  # the reality
 

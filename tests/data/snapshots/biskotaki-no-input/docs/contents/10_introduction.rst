@@ -2,7 +2,7 @@
 Introduction
 ============
 
-| This is **Biskotaki**, a *Python Package* desinged to ...
+| This is **Biskotaki**, a *Python Package* designed to ...
 
 | Goal of this project is to TODO Document
 | Additionally, TODO Document

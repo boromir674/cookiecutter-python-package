@@ -25,7 +25,7 @@ def distro_gen_docs_defaults(
 ):
     """The officially recognized defaults for the Docs Generator Feature.
 
-    Confidentlly, advertize that this is the default, which the generator will use,
+    Confidentlly, advertise that this is the default, which the generator will use,
     in case the user does not provide any input, for the Docs Generator Feature.
     """
     # Read Gen Doc Defaults Settings from cookiecutter.json
@@ -83,13 +83,13 @@ def test_gen_parametrized_only_from_user_config_defaults_to_sphinx_builder_n_py3
     # have parsed to attempt gathering the required information for URL resolution
     config = user_config[user_config_yaml]
 
-    # the below allows URL resolutoin, same as in prod, (ie same bug should appear, if syntax error in user yaml)
+    # the below allows URL resolution, same as in prod, (ie same bug should appear, if syntax error in user yaml)
     # and also allow mocking the 'web checks' feature, which is enabled automatically and independently, per web hosting service,
     mock_check.config = config
 
     # Emulate Asynchronous (Future) Responses, in case 'web checks' feature is enabled
     # feature is enabled automatically and independently, per web hosting service,
-    # in case it finds all the required information, whn doing URL resolution
+    # in case it finds all the required information, when doing URL resolution
 
     # we make sure no network calls are made, independently of URL resolution!
 

@@ -17,32 +17,32 @@ echo
 .tox/dev/bin/generate-python --no-input --config-file .github/biskotaki.yaml -o /tmp/
 
 
-### UPDATE SHAPSHOT, by Copying all Generated files and folders recursively ###
-NO_INPUT_SHAPSHOT=${NO_INPUT_SHAPSHOT:-tests/data/snapshots/biskotaki-no-input}
+### UPDATE SNAPSHOT, by Copying all Generated files and folders recursively ###
+NO_INPUT_SNAPSHOT=${NO_INPUT_SNAPSHOT:-tests/data/snapshots/biskotaki-no-input}
 set +e
-rm -rf "${NO_INPUT_SHAPSHOT}"
+rm -rf "${NO_INPUT_SNAPSHOT}"
 set -e
 # copy generated biskotaki to 'biskotaki-no-input' test Snapshot
-cp -r /tmp/biskotaki/ "${NO_INPUT_SHAPSHOT}"
+cp -r /tmp/biskotaki/ "${NO_INPUT_SNAPSHOT}"
 
 
 # show diff of biskotaki-no-input
 echo
-git diff --stat "${NO_INPUT_SHAPSHOT}"
+git diff --stat "${NO_INPUT_SNAPSHOT}"
 
-# get only last part of path from NO_INPUT_SHAPSHOT
-NO_INPUT_SHAPSHOT_NAME=$(echo "${NO_INPUT_SHAPSHOT}" | awk -F/ '{print $NF}')
+# get only last part of path from NO_INPUT_SNAPSHOT
+NO_INPUT_SNAPSHOT_NAME=$(echo "${NO_INPUT_SNAPSHOT}" | awk -F/ '{print $NF}')
 
 
 echo
 echo "Next steps:"
 echo
-echo "git add ${NO_INPUT_SHAPSHOT}"
-echo "git commit -m \"tests(data): update ${NO_INPUT_SHAPSHOT_NAME} Snapshot, used in Regression Testing\""
+echo "git add ${NO_INPUT_SNAPSHOT}"
+echo "git commit -m \"tests(data): update ${NO_INPUT_SNAPSHOT_NAME} Snapshot, used in Regression Testing\""
 echo
 
 ## GIT ADD ##
-# git add "${NO_INPUT_SHAPSHOT}"
+# git add "${NO_INPUT_SNAPSHOT}"
 # echo
 
 ## GIT COMMIT ##

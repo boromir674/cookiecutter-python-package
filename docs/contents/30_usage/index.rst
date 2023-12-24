@@ -24,7 +24,7 @@ Generated Python Project Use Cases
 .. include:: use_cases.rst
 
 
-.. Reminders on how to be consistent accross sectoining and their semantics
+.. Reminders on how to be consistent across sectoining and their semantics
     ========
     DocTitle
     ========
