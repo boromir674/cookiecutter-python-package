@@ -63,8 +63,11 @@ def emulated_generated_project(
         # TODO: Create Single Source of Truth (SoT), both to read here and for Post Removal
         # to read in Post Gen Hook
         # SEE 'get_docs_gen_internal_config', SoT solution for Docs post Removal
-        ProjectType = t.Literal['module+cli', 'pytest-plugin']
-        ProjectUniqueFilesMap = t.Dict[ProjectType, CreateProjectUniqueFilesList]
+        # Only Python >= 3.8
+        # ProjectType = t.Literal['module+cli', 'pytest-plugin']
+        # ProjectUniqueFilesMap = t.Dict[ProjectType, CreateProjectUniqueFilesList]
+
+        ProjectUniqueFilesMap = t.Dict[str, CreateProjectUniqueFilesList]
         expected_post_removal: ProjectUniqueFilesMap = {
             'module+cli': CLI_ONLY,
             'pytest-plugin': PYTEST_PLUGIN_ONLY,
