@@ -519,7 +519,7 @@ def cli_invoker_params() -> t.Callable[[t.Any], CLIRunnerParameters]:
 
 
 # keep in Sync with user_config Fixture, if Type Check fails
-class ConfigProtocol(t.Protocol):
+class ConfigProtocol(Protocol):
     data: t.Mapping
 
 
@@ -677,7 +677,7 @@ def user_config(distro_loc: Path) -> ConfigInterfaceGeneric[ConfigProtocol]:
     )()
 
 
-class RelativePathsGenerator(t.Protocol):
+class RelativePathsGenerator(Protocol):
     """Generate relative paths from a given root folder."""
 
     def relative_file_paths(self) -> t.Iterator[Path]:

@@ -1,5 +1,12 @@
 import typing as t
+import sys
 
+if sys.version_info >= (3, 8):
+    from typing import Protocol
+    from typing import Literal
+else:
+    from typing_extensions import Protocol
+    from typing_extensions import Literal
 import pytest
 
 
@@ -47,7 +54,7 @@ def emulated_generated_project(
         # Automatically, discover what files to create for an accurate emulated project
         ## Project Type Dependend Files ##
         # Types
-        class RuntimeRequest(t.Protocol):
+        class RuntimeRequest(Protocol):
             module_name: str  # runtime value for {{ cookiecutter.pkg_name }}
 
         UniqueFile = t.Tuple[str, ...]  # One Files of a Project Type
@@ -63,11 +70,11 @@ def emulated_generated_project(
         # TODO: Create Single Source of Truth (SoT), both to read here and for Post Removal
         # to read in Post Gen Hook
         # SEE 'get_docs_gen_internal_config', SoT solution for Docs post Removal
-        # Only Python >= 3.8
-        # ProjectType = t.Literal['module+cli', 'pytest-plugin']
-        # ProjectUniqueFilesMap = t.Dict[ProjectType, CreateProjectUniqueFilesList]
 
-        ProjectUniqueFilesMap = t.Dict[str, CreateProjectUniqueFilesList]
+        ProjectType = Literal['module+cli', 'pytest-plugin']
+        ProjectUniqueFilesMap = t.Dict[ProjectType, CreateProjectUniqueFilesList]
+
+        # ProjectUniqueFilesMap = t.Dict[str, CreateProjectUniqueFilesList]
         expected_post_removal: ProjectUniqueFilesMap = {
             'module+cli': CLI_ONLY,
             'pytest-plugin': PYTEST_PLUGIN_ONLY,
