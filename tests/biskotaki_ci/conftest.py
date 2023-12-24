@@ -71,7 +71,6 @@ def biskotaki_ci_project(
                 match="Bug re-appeared? Regression on Linux-based OS?",
             )
 
-
     ###### Document kind of Bug ######
     # Expected but probably unintented behaviour:
     # - empty log file gets created inside the gen project dir
