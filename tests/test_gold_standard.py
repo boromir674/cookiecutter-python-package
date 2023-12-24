@@ -60,7 +60,7 @@ def gen_gs_project(
     if not running_on_windows:
         assert (
             INTENTIONALLY_PLACED_LOG_FILE.exists()
-        ), f"Bug re-appeared? Regression on Linux-based OS?"
+        ), "Bug re-appeared? Regression on Linux-based OS?"
         assert INTENTIONALLY_PLACED_LOG_FILE.is_file()
         # AND has at least some Log records captured, during runtime code execution
         # assert INTENTIONALLY_PLACED_LOG_FILE.stat().st_size > 0
