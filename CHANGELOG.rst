@@ -5,11 +5,33 @@ Changelog
 1.10.0 (2023-12-24)
 ===================
 
+*Upgrade*, **Docker**, **Code Visualization** and **Docs** *Jobs*, which are
+out-of-the-box produced by the `Generator` as part of the **CI/CD Pipeline**
+configuration YAML files, to be **Configurable by Policy**.
+
+*Design* a **High-Level** interface, for *configuring the CI/CD Behaviour*, allowing:
+- seemless switching between **Policies**, on a per-Job level
+- Easy **Override** to `"shutdown" Job"`, ie to *prevent upload*, by-passing `decision-making`
+- Easy **Override** to `"force Job"`, ie for *quick trial*, by-passing `decision-making`
+ governing desicion-making, on the Workflows/Jobs.
+
+A **Policy** governs how a Job behaves (ie if it should trigger), and each
+one yiels a *distinct* behaviour.
+
+At CI runtime, each Job uses its **Policy** and the Status of the Build,
+triggered on the CI, to decide if it should `run or not`.
+
+A Job can take into **account** "things" such as:
+- whether the current `Build` passed the `Test`'s
+- whether the `Test Job` was intentionally skipped
+- whether `production code` (ie python distro) changed from previous commit 
+
 Changes
 ^^^^^^^
 
 feature
 """""""
+- support **Policy-based** Workflows/Job, in the **CI/CD Pipeline**
 - add **Dev Guides** Page in Docs Website, when selecting `Mkdocs` as Docs Builder
 
 test
