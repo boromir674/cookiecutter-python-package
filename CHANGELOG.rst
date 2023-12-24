@@ -2,6 +2,17 @@
 Changelog
 =========
 
+1.11.0 (2023-12-24)
+===================
+
+Changes
+^^^^^^^
+
+feature
+"""""""
+- drastically improve Developer's Guides section
+
+
 1.10.0 (2023-12-24)
 ===================
 
