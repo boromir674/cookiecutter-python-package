@@ -1,12 +1,12 @@
-import typing as t
 import sys
+import typing as t
 
 if sys.version_info >= (3, 8):
-    from typing import Protocol
-    from typing import Literal
+    from typing import Literal, Protocol
 else:
     from typing_extensions import Protocol
     from typing_extensions import Literal
+
 import pytest
 
 
