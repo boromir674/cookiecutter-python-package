@@ -538,9 +538,11 @@ def user_config(distro_loc: Path) -> ConfigInterfaceGeneric[ConfigProtocol]:
     Returns:
         [type]: [description]
     """    """"""
-    from pathlib import Path
     import json
+    from pathlib import Path
+
     from cookiecutter_python.backend.load_config import load_yaml as prod_load_yaml
+
     # Types
     PathLike = t.Union[str, bytes, os.PathLike]
     DataLoader = t.Callable[[t.Union[str, Path]], t.MutableMapping]
