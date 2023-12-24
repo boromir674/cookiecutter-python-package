@@ -43,7 +43,6 @@ def emulated_generated_project(
             project_type=kwargs.get('project_type', 'module+cli'),
             module_name=name,
         )
-        from functools import reduce
 
         # Automatically, discover what files to create for an accurate emulated project
         ## Project Type Dependend Files ##
