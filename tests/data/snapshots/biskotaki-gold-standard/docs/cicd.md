@@ -8,7 +8,7 @@ tags:
 About the `CI/CD Pipeline`, which is part the Project's Source Repository.
 
 The `Pipeline` is implemented as a `Github Actions` **Workflow**, and is part
-of the Projects Source Repository: [.github/workflows/test.yaml](.github/workflows/test.yaml)
+of the Projects Source Repository: [.github/workflows/test.yaml](https://github.com/boromir674/biskotaki-gold/blob/main/.github/workflows/test.yaml)
 
 It is designed with `"DevOps"` good-practices, and some of its features include:
 
