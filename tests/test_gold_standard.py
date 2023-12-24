@@ -55,7 +55,9 @@ def gen_gs_project(
     INTENTIONALLY_PLACED_LOG_FILE: Path = pwd / FILE_TARGET_LOGS
     # on Windows, it has been reported that the Log file is missing
 
-    if sys.platform != 'win32':
+    running_on_windows: bool = sys.platform.startswith("win")
+
+    if not running_on_windows:
         assert INTENTIONALLY_PLACED_LOG_FILE.exists()
         assert INTENTIONALLY_PLACED_LOG_FILE.is_file()
         # AND has at least some Log records captured, during runtime code execution
