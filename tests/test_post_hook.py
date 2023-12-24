@@ -49,10 +49,10 @@ def emulated_generated_project(
         ## Project Type Dependend Files ##
         # Types
         class RuntimeRequest(t.Protocol):
-            module_name: str   # runtime value for {{ cookiecutter.pkg_name }}
-        
-        UniqueFile = t.Tuple[str, ...]   # One Files of a Project Type
-        ProjectUniqueFiles = t.List[UniqueFile]   # All Files of a Project Type
+            module_name: str  # runtime value for {{ cookiecutter.pkg_name }}
+
+        UniqueFile = t.Tuple[str, ...]  # One Files of a Project Type
+        ProjectUniqueFiles = t.List[UniqueFile]  # All Files of a Project Type
 
         CreateProjectUniqueFilesList = t.Callable[[RuntimeRequest], ProjectUniqueFiles]
         """EG for 'module+cli' Project Type: lambda x: [
@@ -71,14 +71,19 @@ def emulated_generated_project(
             'pytest-plugin': PYTEST_PLUGIN_ONLY,
         }
 
-        def generate_all_extra_files(project_types: ProjectUniqueFilesMap) -> t.Iterator[UniqueFile]:
+        def generate_all_extra_files(
+            project_types: ProjectUniqueFilesMap,
+        ) -> t.Iterator[UniqueFile]:
             for proj_unique_files_from_request in project_types.values():
-                for file_path_parts_tuple in proj_unique_files_from_request(emulated_post_gen_request):
+                for file_path_parts_tuple in proj_unique_files_from_request(
+                    emulated_post_gen_request
+                ):
                     yield file_path_parts_tuple
 
         ## All files expected to be considered, for Post Removal ##
-        extra_files_declared: t.List[UniqueFile] = \
-            list(( x for x in generate_all_extra_files(expected_post_removal)))
+        extra_files_declared: t.List[UniqueFile] = list(
+            (x for x in generate_all_extra_files(expected_post_removal))
+        )
 
         assert isinstance(extra_files_declared, list) and len(extra_files_declared) > 2
         # FILES so far, we should CREATE EMULATED, for Post Removal Hook to work

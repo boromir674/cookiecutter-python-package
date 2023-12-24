@@ -522,10 +522,13 @@ def cli_invoker_params() -> t.Callable[[t.Any], CLIRunnerParameters]:
 class ConfigProtocol(t.Protocol):
     data: t.Mapping
 
+
 ConfigInterface = t.TypeVar('ConfigInterface')
 
+
 class ConfigInterfaceGeneric(t.Generic[ConfigInterface]):
-    def __getitem__(self, file_path_str: t.Union[str, None]) -> ConfigInterface: ...
+    def __getitem__(self, file_path_str: t.Union[str, None]) -> ConfigInterface:
+        ...
 
 
 @pytest.fixture
@@ -537,7 +540,7 @@ def user_config(distro_loc: Path) -> ConfigInterfaceGeneric[ConfigProtocol]:
 
     Returns:
         [type]: [description]
-    """    """"""
+    """ """"""
     import json
     from pathlib import Path
 
@@ -547,12 +550,12 @@ def user_config(distro_loc: Path) -> ConfigInterfaceGeneric[ConfigProtocol]:
     PathLike = t.Union[str, bytes, os.PathLike]
     DataLoader = t.Callable[[t.Union[str, Path]], t.MutableMapping]
 
-
     # Support Data
     def _load_context_json(file_path: PathLike) -> t.Dict:
         with open(file_path, 'r') as fp:
             data = json.load(fp)
         return data
+
     _prod_yaml_loader: t.Callable[[PathLike], t.MutableMapping] = prod_load_yaml
     # Aliases, for shortcuts
     config_files = {
@@ -673,10 +676,12 @@ def user_config(distro_loc: Path) -> ConfigInterfaceGeneric[ConfigProtocol]:
         },
     )()
 
+
 class RelativePathsGenerator(t.Protocol):
     """Generate relative paths from a given root folder."""
 
-    def relative_file_paths(self) -> t.Iterator[Path]: ...
+    def relative_file_paths(self) -> t.Iterator[Path]:
+        ...
 
 
 @pytest.fixture
@@ -739,14 +744,17 @@ def project_files() -> t.Callable[[t.Union[str, Path]], RelativePathsGenerator]:
                     #     "cookie-py.log"
                     # ), f"Found {relative_path} in {self.root_dir}."
                     yield relative_path
+
     def _ret(root_dir: t.Union[str, Path]) -> RelativePathsGenerator:
         return ProjectFiles(root_dir)
+
     return _ret
 
 
 @pytest.fixture
 def get_expected_generated_files(
-    distro_loc: Path, project_files: t.Callable[[t.Union[str, Path]], RelativePathsGenerator],
+    distro_loc: Path,
+    project_files: t.Callable[[t.Union[str, Path]], RelativePathsGenerator],
 ) -> t.Callable[[ConfigInterfaceGeneric[ConfigProtocol]], t.Set[Path]]:
     """Derive Expected Files, Pre-Generation, for sanity checks Post-Generation.
 
