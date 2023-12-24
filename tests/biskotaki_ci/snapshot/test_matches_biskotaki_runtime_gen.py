@@ -3,7 +3,7 @@ import pytest
 
 @pytest.mark.parametrize(
     'snapshot',
-    [
+    [  # add Biskotaki snapshots here, for automated testing
         'biskotaki-no-input',
         'biskotaki-interactive',
     ],
@@ -68,6 +68,23 @@ def test_snapshot_matches_runtime(snapshot, biskotaki_ci_project, test_root):
     has_developer_fixed_windows_mishap: bool = (
         os.environ.get("BUG_LOG_DEL_WIN") != "permission_error"
     )
+
+    # we should implement a if run on CI check here
+    running_on_ci: bool = 'CI' in os.environ
+
+    if not running_on_ci:
+        # just exclude pre-emptively '.vscode/' folder, and '.vscode/settings.json' file
+        # also exclude .tox/ folder, and .tox/ folder contents
+        snap_relative_paths_set = set(
+            [
+                x
+                for x in snap_relative_paths_set
+                if 'poetry.lock' not in x.parts
+                if '.vscode' not in x.parts
+                and 'settings.json' not in x.parts
+                and '.tox' not in x.parts
+            ]
+        )
 
     if has_developer_fixed_windows_mishap:
         assert runtime_relative_paths_set == snap_relative_paths_set

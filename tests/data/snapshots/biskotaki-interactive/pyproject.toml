@@ -1,7 +1,6 @@
 # BUILD
 
 [build-system]
-
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
@@ -90,10 +89,6 @@ exclude = [
 "Code of Conduct" = "https://github.com/boromir674/biskotaki/blob/master/CONTRIBUTING.rst"
 
 
-
-[tool.poetry.dependencies]
-python = "^3.6"
-
 # Caret requirements allow SemVer compatible updates to a specified version. An update is allowed if the new version number does not modify the left-most non-zero digit in the major, minor, patch grouping. For instance, if we previously ran poetry add requests@^2.13.0 and wanted to update the library and ran poetry update requests, poetry would update us to version 2.14.0 if it was available, but would not update us to 3.0.0. If instead we had specified the version string as ^0.1.13, poetry would update to 0.1.14 but not 0.2.0. 0.0.x is not considered compatible with any other version.
 # REQUIREMENT  VERSIONS ALLOWED
 # ^1.2.3	   >=1.2.3 <2.0.0
@@ -110,6 +105,11 @@ python = "^3.6"
 # ~1.2	       >=1.2.0 <1.3.0
 # ~1	       >=1.0.0 <2.0.0
 
+
+### Dependency Constraints, aka Requirements ###
+[tool.poetry.dependencies]
+python = "^3.10"
+
 # Test: packages imported in test code and packages required for the "test runner"
 pytest = { version = ">= 6.2.4", optional = true }
 pytest-cov = { version = ">= 2.12", optional = true }
@@ -118,14 +118,21 @@ pytest-xdist = { version = ">= 1.34", optional = true }
 
 
 # Docs: development and build dependencies
-sphinx = { version = "~= 4.0", optional = true }
-sphinx-autodoc-typehints = { version = ">= 1.10", optional = true }
-sphinx-rtd-theme = { version = "== 0.5.0", optional = true }
-sphinxcontrib-spelling = { version = "~= 7.3.3", optional = true }
+mkdocs = { version = "^1.5.3", optional = true }
+mkdocs-macros-plugin = { version = "^1.0.5", optional = true }
+mkdocs-material = { version = "^9.4.14", optional = true }
+mkdocs-mermaid2-plugin = { version = "^1.1.1", optional = true }
+mkdocs-section-index = { version = "^0.3.8", optional = true }
+mkdocs-gen-files = { version = "^0.5.0", optional = true }
+mkdocstrings = { version = "^0.24.0", optional = true }
+mkdocstrings-python = { version = "^1.7.5", optional = true }
+mkdocs-literate-nav = { version = "^0.6.1", optional = true }
+mkdocs-click = { version = "^0.8.1", optional = true }
+pymdown-extensions = { version = "^10.5", optional = true }
+
 
 # Type Checking: packages required for the type check (ie mypy) to pass
 mypy = { version = "== 0.961", optional = true }
-
 
 
 [tool.poetry.extras]
@@ -134,7 +141,6 @@ test = [
     "pytest-cov",
     "pytest-explicit",
     "pytest-xdist",
-
 ]
 docs = [
     "sphinx",
@@ -146,10 +152,7 @@ typing = [
     "mypy",
     "types-requests",
     "pytest",
-
 ]
-
-
 
 
 # TOOLS

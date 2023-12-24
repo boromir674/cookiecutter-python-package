@@ -1,0 +1,387 @@
+name: CI/CD Pipeline
+# Continuous Integration / Continuous Delivery
+
+# Triggers on all Branches and v* Tags
+
+### Stress-Testing, with Multi-Factor Job Matrix, on: ###
+# - tags v*
+# - the 'stress-test' branch (GITHUB_REF_NAME == 'stress-test')
+
+
+### Production PyPI Publish, pypi.org, on: ###
+# - v* tags on 'master' branch only
+
+### Staging/Test PyPI Publish, test.pypi.org, on: ###
+## Test PyPI publish on: ##
+# - v*-rc 'pre-release' tags on 'release' branch
+
+### Dockerhub publish on ###
+# - all branches and tags
+
+on:
+  push:
+    branches:
+      - "*"
+    tags:
+      - v*
+
+env:
+  ### STRESS TEST Job MATRIX ###
+  FULL_MATRIX_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.8\", \"3.9\", \"3.10\", \"3.11\"]}"
+  # Python 3.7 has reached End of Life (EOL) on June 27th, 2023
+  # Python 3.12 is in bugfix mode, same as 3.11 -> can start supporting 3.12 it
+  UBUNTU_PY310_STRATEGY: "{\"platform\":[\"ubuntu-latest\"], \"python-version\":[\"3.10\"]}"
+  TEST_STRATEGY: "{\"platform\":[\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\":[\"3.9\"]}"
+
+  ##### JOB ON/OFF SWITCHES #####
+  RUN_UNIT_TESTS: "true"
+  RUN_LINT_CHECKS: "true"
+  DOCKER_JOB_ON: "true"
+  PUBLISH_ON_PYPI: "true"
+  DOCS_ON: "true"
+  DRAW_DEPENDENCIES: "true"
+  ###############################
+
+  ### DOCKER Job Policy ####
+  # Override Docker Policy-dependent decision-making and
+  # Accept any ALL (branch/build) to Publish to Dockerhub
+  # if true, it will push image and ignore DOCKER_JOB_POLICY
+  ALWAYS_BUILD_N_PUBLSIH_DOCKER: "false"
+
+  DOCKER_JOB_POLICY: "CDeployment"
+  # - CDeployment : Builds and Publishes only if Tests ran and passed
+  # - CDelivery   : Builds and Publishes if Tests Passed or if Tests were Skipped
+  ############################
+
+  #### STATIC CODE ANALYSIS Job ####
+  ALWAYS_LINT: "false"
+  LINT_JOB_POLICY: '2'  # {2, 3}
+  ## Python Runtime version to set the Job runner with ##
+  STATIC_ANALYSIS_PY: "3.10"
+  ## Pylint Minimum Acceptance Rating/Score ##
+  PYLINT_SCORE_THRESHOLD: "8.2"
+
+  #### DOCS Build/Test ####
+  ALWAYS_DOCS: "false"
+  DOCS_JOB_POLICY: '2'  # {2, 3}
+  DOCS_BUILDER_RUNTIME: "3.10"
+
+  #### CODE VISUALIZATION Job ####
+  ALWAYS_CODE_VIZ: "false"
+  CODE_VIZ_POLICY: '2'  # {2, 3}
+  ##########################
+
+jobs:
+  # we use the below to read the workflow env vars and be able to use in "- if:" Job conditionals
+  # now we can do -> if: ${{ needs.set_github_outputs.outputs.TESTS_ENABLED == 'true' }}
+  # github does not have a way to simply do "- if: ${{ env.RUN_UNIT_TESTS == 'true' }} " !!
+  set_github_outputs:
+    name: Read Workflow Env Section Vars and set Github Outputs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pass 'env' section variables to GITHUB_OUTPUT
+        id: pass-env-to-output
+        run: |
+          # set the matrix strategy to Full Matrix Stress Test if on master/main or stress-test branch or any tag
+          BRANCH_NAME=${GITHUB_REF_NAME}
+          if [[ $BRANCH_NAME == "stress-test" || $GITHUB_REF == refs/tags/* ]]; then
+            echo "matrix=$FULL_MATRIX_STRATEGY" >> $GITHUB_OUTPUT
+          else
+            echo "matrix=$UBUNTU_PY310_STRATEGY" >> $GITHUB_OUTPUT
+          fi
+          echo "TESTS_ENABLED=$RUN_UNIT_TESTS" >> $GITHUB_OUTPUT
+          echo "PUBLISH_ON_PYPI=$PUBLISH_ON_PYPI" >> $GITHUB_OUTPUT
+      ## Docker - Pipeline Settings ##
+      - id: derive_docker_policy
+        run: echo "POL=${{ (env.DOCKER_JOB_ON != 'true' && '0') || (env.ALWAYS_BUILD_N_PUBLSIH_DOCKER == 'true' && '1') || (env.DOCKER_JOB_POLICY == 'CDeployment' && '2') || (env.DOCKER_JOB_POLICY == 'CDelivery' && '3') }}" >> $GITHUB_OUTPUT
+      ## Static Code Analysis - Pipeline Settings ##
+      - id: derive_sqa_policy
+        run: echo "POL=${{ (env.RUN_LINT_CHECKS != 'true' && '0') || (env.ALWAYS_LINT == 'true' && '1') || env.LINT_JOB_POLICY }}" >> $GITHUB_OUTPUT
+      - id: read_sqa_py
+        run: echo SQA_PY=${{ env.STATIC_ANALYSIS_PY }} >> $GITHUB_OUTPUT
+      - id: read_pylint_baseline_score
+        run: echo PYLINT_BASELINE_SCORE=${{ env.PYLINT_SCORE_THRESHOLD }} >> $GITHUB_OUTPUT
+      ## Docs Build/Test - Pipeline Settings ##
+      - id: derive_docs_policy
+        run: echo "POL=${{ (env.DOCS_ON != 'true' && '0') || (env.ALWAYS_DOCS == 'true' && '1') || env.DOCS_JOB_POLICY }}" >> $GITHUB_OUTPUT
+      - id: read_docs_py
+        run: echo DOCS_PY=${{ env.DOCS_BUILDER_RUNTIME }} >> $GITHUB_OUTPUT
+      ## Code Visualization - Pipeline Settings ##
+      - id: derive_code_viz_policy
+        run: echo "POL=${{ (env.DRAW_DEPENDENCIES != 'true' && '0') || (env.ALWAYS_CODE_VIZ == 'true' && '1') || env.CODE_VIZ_POLICY }}" >> $GITHUB_OUTPUT
+    outputs:
+      matrix: ${{ steps.pass-env-to-output.outputs.matrix }}
+      TESTS_ENABLED: ${{ steps.pass-env-to-output.outputs.TESTS_ENABLED }}
+      PUBLISH_ON_PYPI: ${{ steps.pass-env-to-output.outputs.PUBLISH_ON_PYPI }}
+    ## Docker - Pipeline Settings ##
+      PIPE_DOCKER_POLICY: ${{ steps.derive_docker_policy.outputs.POL }}
+    ## Static Code Analysis - Pipeline Settings ##
+      PIPE_SQA_POLICY: ${{ steps.derive_sqa_policy.outputs.POL }}
+      PIPE_SQA_PY: ${{ steps.read_sqa_py.outputs.SQA_PY }}
+      PIPE_SQA_PYLINT_PASS_SCORE: ${{ steps.read_pylint_baseline_score.outputs.PYLINT_BASELINE_SCORE }}
+    ## Docs Build/Test - Pipeline Settings ##
+      PIPE_DOCS_POLICY: ${{ steps.derive_docs_policy.outputs.POL }}
+      PIPE_DOCS_PY: ${{ steps.read_docs_py.outputs.DOCS_PY }}
+    ## Code Visualization - Pipeline Settings ##
+      PIPE_CODE_VIZ_POLICY: ${{ steps.derive_code_viz_policy.outputs.POL }}
+
+# RUN TEST SUITE ON ALL PLATFORMS
+  test_suite:
+    runs-on: ${{ matrix.platform }}
+    needs: set_github_outputs
+    if: ${{ needs.set_github_outputs.outputs.TESTS_ENABLED == 'true' }}
+    strategy:
+      matrix: ${{fromJSON(needs.set_github_outputs.outputs.matrix)}}
+    steps:
+      - run: echo "Platform -> ${{ matrix.platform }} , Python -> ${{ matrix.python-version }}"
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: python -m pip install --upgrade pip && python -m pip install tox==3.28 tox-gh-actions
+
+      - name: Do Type Checking
+        run: tox -e type -vv -s false
+
+      # Steps 'Run Unit Tests' and 'Check for compliance with Python Best Practices'
+      # require the PKG_VERSION environment variable at runtime
+
+      # We want to read the Version value from a file, that is part of the
+      # Python Distro (.tar.gz, or wheel)
+      - name: 'Define executable Parser, to read from same Source of Truth that Generator CLI utilizes, at runtime'
+        run: echo PARSER="./scripts/parse_version.py" >> $GITHUB_ENV
+
+      # Note: one Sem Ver is maintained in src/**/__init__.py file
+      # and the other in the pyproject.toml file
+      - name: 'Parse Sem Ver, same as `generate-python --version` value returned, at runtime'
+        run: echo VERSION_FROM_DISTRO_SOURCE_PY_FILE="$(${{ env.PARSER }})" >> $GITHUB_ENV
+
+      # PEP 440 requires that the version string be normalized to a canonical form.
+      # below should be enough to handle cases: '1.7.4', '1.7.4-rc', and '1.7.4-rc.1'
+      - name: 'Transform Version (ie 1.7.4-rc.1 -> 1.7.4rc1), to match the name of the wheel produced'
+        run: echo WHEEL_VERSION="$(echo $VERSION_FROM_DISTRO_SOURCE_PY_FILE | sed -E 's/([^.]*)\.([^.]*)\.([^-]*)-(rc)\.?(.*)/\1.\2.\3\4\5/')" >> $GITHUB_ENV
+
+      - name: "If Sem Ver ends with '-rc', append trailing 0 (ie *rc0)"
+        id: extract_sem_ver_last_two_chars
+        run: 'echo last_two="${${{ env.WHEEL_VERSION }}: -2}" >> $GITHUB_OUTPUT'
+
+      - name: "Sem Ver ends with 'rc' = ${{ steps.extract_sem_ver_last_two_chars.outputs.last_two == 'rc' }}"
+        if: ${{ steps.extract_sem_ver_last_two_chars.outputs.last_two == 'rc' }}
+        run: echo WHEEL_VERSION="${WHEEL_VERSION}0" >> $GITHUB_ENV
+
+      - name: 'Set Expected PEP 440 Version: ${{ env.WHEEL_VERSION }}'
+        id: set_expected_pep_440_version
+        run: echo "EXPECTED_PEP_440_VERSION=${{ env.WHEEL_VERSION }}" >> $GITHUB_OUTPUT
+      
+      ##### TEST SUITE / UNIT TESTS #####
+        # Before Test Suite, must derive expected PEP 440 Sem Ver
+      - name: Run Unit Tests
+        run: tox -vv -s false
+        env:
+          PLATFORM: ${{ matrix.platform }}
+          PKG_VERSION: ${{ steps.set_expected_pep_440_version.outputs.EXPECTED_PEP_440_VERSION }}
+
+      - name: "Combine Coverage (dev, sdist, wheel) & make Reports"
+        run: tox -e coverage --sitepackages -vv -s false
+
+      - name: Rename Coverage Files
+        run: mv ./.tox/coverage.xml ./coverage-${{ matrix.platform }}-${{ matrix.python-version }}.xml
+
+      - name: "Upload Test Coverage as Artifacts"
+        uses: actions/upload-artifact@v3
+        with:
+          name: all_coverage_raw
+          path: coverage-${{ matrix.platform }}-${{ matrix.python-version }}.xml
+          if-no-files-found: error
+
+      - name: Check for compliance with Python Best Practices
+        env:
+          PKG_VERSION: ${{ steps.set_expected_pep_440_version.outputs.EXPECTED_PEP_440_VERSION }}
+        run: |
+          DIST_DIR=dist
+          echo "DIST_DIR=dist" >> $GITHUB_ENV
+          mkdir ${DIST_DIR}
+          mv ".tox/${DIST_DIR}/biskotakigold-${PKG_VERSION}.tar.gz" "${DIST_DIR}"
+          mv ".tox/${DIST_DIR}/biskotakigold-${PKG_VERSION}-py3-none-any.whl" "${DIST_DIR}"
+          tox -e check -vv -s false
+
+      - name: Upload Source & Wheel distributions as Artefacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist-${{ matrix.platform }}-${{ matrix.python-version }}
+          path: ${{ env.DIST_DIR }}
+          if-no-files-found: error
+    outputs:
+      EXPECTED_PEP_440_VERSION: ${{ steps.set_expected_pep_440_version.outputs.EXPECTED_PEP_440_VERSION }}
+
+
+  codecov_coverage_host:
+    runs-on: ubuntu-latest
+    needs: test_suite
+    steps:
+    - uses: actions/checkout@v3
+    - name: Get Codecov binary
+      run: |
+        curl -Os https://uploader.codecov.io/latest/linux/codecov
+        chmod +x codecov
+    - name: Download Raw Coverage Data Artefacts
+      uses: actions/download-artifact@v3
+      with:
+        name: all_coverage_raw
+    - name: Upload Coverage Reports to Codecov
+      run: |
+        for file in coverage*.xml; do
+          OS_NAME=$(echo $file | sed -E "s/coverage-(\w\+)-/\1/")
+          PY_VERSION=$(echo $file | sed -E "s/coverage-\w\+-(\d\.)\+/\1/")
+          ./codecov -f $file -e "OS=$OS_NAME,PYTHON=$PY_VERSION" --flags unittests --verbose
+          echo "Sent to Codecov: $file !"
+        done
+
+## DOCKER BUILD and PUBLISH ON DOCKERHUB ##
+# Docs Ref Page: https://automated-workflows.readthedocs.io/en/main/ref_docker/
+  docker_build:
+    needs: [set_github_outputs, test_suite]
+    uses: boromir674/automated-workflows/.github/workflows/docker.yml@v1.1.0
+    if: always()
+    with:
+      acceptance_policy: ${{ needs.set_github_outputs.outputs.PIPE_DOCKER_POLICY }}
+      image_slug: "bgs"
+      # target_stage: "some_stage_alias"  # no stage, means no `--target` flag, on build
+      tests_pass: ${{ needs.test_suite.result == 'success' }}
+      tests_run: ${{ !contains(fromJSON('["skipped", "cancelled"]'), needs.test_suite.result) }}
+      DOCKER_USER: ${{ vars.DOCKER_USER }}
+    secrets:
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+# PUBLISH DISTRIBUTIONS ON PYPI
+# we consider publishing on tags starting with "v"
+  check_which_git_branch_we_are_on:
+    runs-on: ubuntu-latest
+    needs: set_github_outputs
+    if: startsWith(github.event.ref, 'refs/tags/v') && needs.set_github_outputs.outputs.PUBLISH_ON_PYPI == 'true'
+    outputs:
+      ENVIRONMENT_NAME: ${{ steps.set_environment_name.outputs.ENVIRONMENT_NAME }}
+      AUTOMATED_DEPLOY: ${{ steps.set_environment_name.outputs.AUTOMATED_DEPLOY }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: rickstaa/action-contains-tag@v1
+        id: main_contains_tag
+        with:
+          reference: "master"
+          tag: ${{ github.ref }}
+      - run: echo "ON_MAIN_BRANCH=${{ steps.main_contains_tag.outputs.retval }}" >> $GITHUB_OUTPUT
+      - uses: rickstaa/action-contains-tag@v1
+        id: release_contains_tag
+        with:
+          reference: "release"
+          tag: ${{ github.ref }}
+      - run: echo "ON_RELEASE_BRANCH=${{ steps.release_contains_tag.outputs.retval }}" >> $GITHUB_OUTPUT
+      - name: Pick Production or Test Environment, if tag on master or release branch respectively
+        id: set_environment_name
+        run: |
+          DEPLOY=true
+          if [[ "${{ steps.main_contains_tag.outputs.retval }}" == "true" ]]; then
+            echo "ENVIRONMENT_NAME=PROD_DEPLOYMENT" >> $GITHUB_OUTPUT
+          elif [[ "${{ steps.release_contains_tag.outputs.retval }}" == "true" ]]; then
+            echo "ENVIRONMENT_NAME=TEST_DEPLOYMENT" >> $GITHUB_OUTPUT
+          else
+            echo "A tag was pushed but not on master or release branch. No deployment will be done."
+            DEPLOY=false
+          fi
+          echo "AUTOMATED_DEPLOY=$DEPLOY" >> $GITHUB_OUTPUT
+
+  pypi_publish:
+    needs: [test_suite, check_which_git_branch_we_are_on]
+    runs-on: ubuntu-latest
+    # if we are on tag starting with "v" and if we are on master or dev branch
+    if: startsWith(github.event.ref, 'refs/tags/v') && ${{ needs.check_which_git_branch_we_are_on.outputs.AUTOMATED_DEPLOY == 'true' }}
+    environment:
+      name: ${{ needs.check_which_git_branch_we_are_on.outputs.ENVIRONMENT_NAME }}
+    env:
+      DIST_DIR: dist
+      PACKAGE_DIST_VERSION: ${{ needs.test_suite.outputs.EXPECTED_PEP_440_VERSION }}
+      TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
+      TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+      PYPI_SERVER: ${{ vars.PYPI_SERVER }}
+    steps:
+    - uses: actions/checkout@v3
+    - name: Download Source & Wheel distributions
+      uses: actions/download-artifact@v3
+      with:
+        path: downloaded-artifacts
+    - name: Get Publishable files from the Artifacts
+      run: |
+        TAG="${GITHUB_REF_NAME}"
+        SEM_VER="${TAG:1}"  # remove the first character (v)
+        PARSER="./scripts/parse_version.py"
+        PACKAGE_VERSION=$(python "${PARSER}")
+        if [[ "${PACKAGE_VERSION}" != "${SEM_VER}" ]]; then
+          echo "ERROR: Sem Ver, from Python Code (${PACKAGE_VERSION}), does not match tag version (${SEM_VER})"
+          exit 1
+        fi
+    - run: mkdir ${DIST_DIR}
+    - run: |
+        # Get Source Distribution (tar.gz of source code)
+        source_distributions=$(find downloaded-artifacts -type f -name biskotakigold*.tar.gz)
+        source_distributions_array=($source_distributions)
+        source_distribution=${source_distributions_array[0]}  # a *.tar.gz file path
+        # Extract the base name (without the path)
+        source_distribution_name=$(basename "$source_distribution")
+        # Check if all source distribution (.tar.gz) files have the same name
+        for file in "${source_distributions_array[@]}"; do
+          if [ "$source_distribution_name" != "$(basename "$file")" ]; then
+            echo "Error: Not all Source Distribution .tar.gz files have the same name!"
+            exit 1
+          fi
+        done
+        echo "source_distribution=$source_distribution" >> $GITHUB_ENV
+    - run: cp "$source_distribution" ${DIST_DIR}
+    - run: |
+        # Get all built Wheels and copy to dist folder
+        for f in `find downloaded-artifacts -type f -name biskotakigold*.whl`; do
+          echo "F: $f";
+          # TODO check for duplicates, which means that our build matrix produces the same wheel (need a different compiler that python such as pypy, cython, etc)
+          cp $f ${DIST_DIR}
+        done
+    - name: Install Dependencies
+      run: pip install tox==3.28
+    - run: echo "Publishing $PACKAGE_DIST_VERSION to $PYPI_SERVER PyPI"
+    - name: Publish to PyPI
+      run: tox -vv -s false -e deploy -- upload --non-interactive --skip-existing
+    - run: echo "Published :\)"
+
+### STATIC CODE ANALYSIS & LINTING ###
+  lint:
+    name: Static Code Analysis
+    needs: set_github_outputs
+    uses: ./.github/workflows/policy_lint.yml
+    with:
+      run_policy: ${{ needs.set_github_outputs.outputs.PIPE_SQA_POLICY }}
+      dedicated_branches: 'main, master, dev'
+      source_code_targets: 'src,tests,scripts'
+      python_version: ${{ needs.set_github_outputs.outputs.PIPE_SQA_PY }}
+      pylint_threshold: ${{ needs.set_github_outputs.outputs.PIPE_SQA_PYLINT_PASS_SCORE }}
+
+### DOCS BUILD/TEST - DOCUMENTATION SITE ###
+  docs:
+    name: Build Documentation
+    needs: set_github_outputs
+    uses: ./.github/workflows/policy_docs.yml
+    with:
+      run_policy: ${{ needs.set_github_outputs.outputs.PIPE_DOCS_POLICY }}
+      python_version: ${{ needs.set_github_outputs.outputs.PIPE_DOCS_PY }}
+
+### DRAW PYTHON DEPENDENCY GRAPHS ###
+  code_visualization:
+    needs: set_github_outputs
+    name: Code Visualization of Python Imports as Graphs, in .svg
+    uses: boromir674/automated-workflows/.github/workflows/python_imports.yml@8a441fa8fa008f1902ba892f8e8332fc77284597
+    with:
+      run_policy: '${{ needs.set_github_outputs.outputs.PIPE_CODE_VIZ_POLICY }}'
+      branches: 'main, master, dev'
+      source_code_targets: 'src'
+      python_version: '3.10'
+      artifacts_dir: 'dependency-graphs'
