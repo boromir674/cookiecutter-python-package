@@ -50,18 +50,6 @@ def distro_loc() -> Path:
     return distro_path
 
 
-@pytest.fixture
-def load_json():
-    import json
-
-    def _load_context_json(file_path: str) -> t.Dict:
-        with open(file_path, 'r') as fp:
-            data = json.load(fp)
-        return data
-
-    return _load_context_json
-
-
 class ProjectGenerationRequestDataProtocol(Protocol):
     template: str
     destination: str
@@ -530,28 +518,41 @@ def cli_invoker_params() -> t.Callable[[t.Any], CLIRunnerParameters]:
     return parameters
 
 
-# HELPERS
+# keep in Sync with user_config Fixture, if Type Check fails
+class ConfigProtocol(t.Protocol):
+    data: t.Mapping
 
-# Python Package Generator specific fixtures/fixtures
+ConfigInterface = t.TypeVar('ConfigInterface')
+
+class ConfigInterfaceGeneric(t.Generic[ConfigInterface]):
+    def __getitem__(self, file_path_str: t.Union[str, None]) -> ConfigInterface: ...
 
 
 @pytest.fixture
-def load_yaml():
-    """Parse a yaml file using the 'production' Yaml Parser.
+def user_config(distro_loc: Path) -> ConfigInterfaceGeneric[ConfigProtocol]:
+    """Context Values Interface, derived either from User's YAML or Default JSON
+
+    Args:
+        distro_loc (Path): [description]
 
     Returns:
-        t.Callable[[str], t.Mapping]: a callback that parses yaml files
-    """
-    from cookiecutter_python.backend.load_config import load_yaml
-
-    return load_yaml
-
-
-@pytest.fixture
-def user_config(load_yaml, load_json, distro_loc):
+        [type]: [description]
+    """    """"""
     from pathlib import Path
-
+    import json
+    from cookiecutter_python.backend.load_config import load_yaml as prod_load_yaml
+    # Types
+    PathLike = t.Union[str, bytes, os.PathLike]
     DataLoader = t.Callable[[t.Union[str, Path]], t.MutableMapping]
+
+
+    # Support Data
+    def _load_context_json(file_path: PathLike) -> t.Dict:
+        with open(file_path, 'r') as fp:
+            data = json.load(fp)
+        return data
+    _prod_yaml_loader: t.Callable[[PathLike], t.MutableMapping] = prod_load_yaml
+    # Aliases, for shortcuts
     config_files = {
         'biskotaki': '.github/biskotaki.yaml',
         'without-interpreters': 'tests/data/biskotaki-without-interpreters.yaml',
@@ -598,7 +599,7 @@ def user_config(load_yaml, load_json, distro_loc):
 
                 self._config_file_arg = data_file
                 self._data_file_path = data_file
-                self._loader = ConfigData.load_yaml(load_yaml)
+                self._loader = ConfigData.load_yaml(_prod_yaml_loader)
             else:
                 self._config_file_arg = None
                 self._data_file_path = distro_loc / 'cookiecutter.json'
@@ -608,7 +609,7 @@ def user_config(load_yaml, load_json, distro_loc):
                 assert (
                     self._data_file_path.suffix == '.json'
                 ), f"Invalid cookiecutter.json file {self._data_file_path}. Expected .json extension."
-                self._loader = ConfigData.load_json(load_json)
+                self._loader = ConfigData.load_json(_load_context_json)
 
             self._data = self._loader(self._data_file_path)
 
@@ -670,9 +671,14 @@ def user_config(load_yaml, load_json, distro_loc):
         },
     )()
 
+class RelativePathsGenerator(t.Protocol):
+    """Generate relative paths from a given root folder."""
+
+    def relative_file_paths(self) -> t.Iterator[Path]: ...
+
 
 @pytest.fixture
-def project_files():
+def project_files() -> t.Callable[[t.Union[str, Path]], RelativePathsGenerator]:
     """Files of a generated Project, as iterable of file paths (excluding dirs)."""
     from glob import glob
     from os import path
@@ -682,7 +688,8 @@ def project_files():
 
     @attr.s(auto_attribs=True, slots=True, frozen=True)
     class ProjectFiles:
-        root_dir: str
+        root_dir: t.Union[str, Path]
+
         _glob: t.List[str] = attr.ib(
             init=False,
             default=attr.Factory(
@@ -730,14 +737,15 @@ def project_files():
                     #     "cookie-py.log"
                     # ), f"Found {relative_path} in {self.root_dir}."
                     yield relative_path
-
-    return ProjectFiles
+    def _ret(root_dir: t.Union[str, Path]) -> RelativePathsGenerator:
+        return ProjectFiles(root_dir)
+    return _ret
 
 
 @pytest.fixture
 def get_expected_generated_files(
-    distro_loc, project_files
-) -> t.Callable[[str, t.Mapping[str, t.Any]], t.Set[Path]]:
+    distro_loc: Path, project_files: t.Callable[[t.Union[str, Path]], RelativePathsGenerator],
+) -> t.Callable[[ConfigInterfaceGeneric[ConfigProtocol]], t.Set[Path]]:
     """Derive Expected Files, Pre-Generation, for sanity checks Post-Generation.
 
     Callable accepting a Config, User's Yaml or Default Json, and returning the
@@ -775,7 +783,7 @@ def get_expected_generated_files(
 
     def _get_expected_generated_files(config):
         expected_project_type = config.data['project_type']
-        print(f"\nDEBUG: expected_project_type: {expected_project_type}")
+
         pkg_name: str = config.data['pkg_name']
         assert (
             'docs_builder' in config.data
@@ -896,23 +904,6 @@ def get_expected_generated_files(
 
         # FIND WHAT is actually in GEN ProJ DIR
         all_template_files = project_files(distro_loc / r'{{ cookiecutter.project_slug }}')
-
-        # gen_files: t.Set[Path] = set(all_template_files.relative_file_paths())
-        # assert all([isinstance(x, Path) for x in gen_files])
-
-        # # TODO: deterministically configure tests/logs and then remove below
-
-        # # Hard remove inconsitencies and add Pytest Log to handle better in the future
-        # # we know when git init is on, a log file sneeks into the gen proj location. we exclude it as a bypass
-        # # relative_path = Path(str(all_template_files.relative_file_paths()[0]))
-        # need_to_remove_log_file: bool = config.data['initialize_git_repo']
-        # assert need_to_remove_log_file == True
-        # if need_to_remove_log_file:
-        #     # assert (distro_loc / r'{{ cookiecutter.project_slug }}' / 'cookie-py.log').exists(), f"Sanity check fail: {distro_loc / r'{{ cookiecutter.project_slug }}' / 'cookie-py.log'}. Maybe BUG was fixed!?"
-        #     # assert (distro_loc / r'{{ cookiecutter.project_slug }}' / 'cookie-py.log').is_file()
-        #     # remove the log file from the expected files: exlude from structure
-        #     files_to_remove.add('cookie-py.log')
-        # assert 'cookie-py.log' in files_to_remove
 
         assert all(
             [isinstance(x, str) for x in files_to_remove]
