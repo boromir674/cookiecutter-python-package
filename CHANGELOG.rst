@@ -2,6 +2,17 @@
 Changelog
 =========
 
+1.11.3 (2023-12-25)
+===================
+
+Changes
+^^^^^^^
+
+fix
+"""
+- fix syntax error in pyproject.toml, causing build process to fail
+
+
 1.11.2 (2023-12-25)
 ===================
 
