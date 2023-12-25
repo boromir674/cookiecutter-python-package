@@ -2,25 +2,29 @@
 Python Package Generator
 ========================
 
+
 | |build| |release_version| |wheel| |supported_versions|
 | |docs| |coverage| |maintainability| |codacy| |tech-debt|
 | |ossf| |ruff| |black| |gh-lic| |commits_since_specific_tag_on_master| |commits_since_latest_github_release|
 
-| Generate Python Project, with CI/CD Pipeline for PyPI and Docker builds for easy DevOps.
-| **Documentation available at https://python-package-generator.readthedocs.io/.**
+|
+| **Generate** Python Project and enjoy **streamlined "DevOps"** using a powerful **CI/CD Pipeline.**
+|
+| **Documentation** available at https://python-package-generator.readthedocs.io/.
+
 
 What's included?
 ================
 
-* `Generator` **CLI** to scaffold a modern Python Project, with cross-platform support; **Linux**, **MacOS**, **Windows**
-* Option for Python Package "variant", supporting `module`, `module+cli`, and `pytest-plugin`
-* Template (source at `src/cookiecutter_python/`_) of over **24 files** (see `Quickstart`_), to generate Project featuring:
-  
-  * Fully featured **CI/CD Pipeline**, running on `Github Actions`_, defined in `.github/`
-  * **Documentation Pages**, with `sphinx` or `mkdocs`, hosted on `readthedocs` server, located in `docs` dir
-  * **Test Suite**, using `pytest`_, located in `tests` dir
-  * **Pypi Deploy Command**, supporting upload to both `pypi.org`_ and `test.pypi.org`_ servers
-  * **Type Check Command**, using `mypy`_
+* **Generator** of **Python Project** (see `Quickstart`_), with **CLI** for **Linux**, **MacOS**, and **Windows**
+* **Option** to Generate Python Package designed as `module`, `module+cli`, or `pytest-plugin`!
+* Scaffold over **24 files**, from `Template`_, to have a `ready-to-develop` **Project equiped** with:
+
+  * Fully-featured **CI/CD Pipeline**, running on `Github Actions`_, defined in `.github/`
+  * **Continuous Delivery** to *PyPI* (ie `pypi.org`_, `test.pypi.org`_) and *Dockerhub*
+  * **Continuous Integration**, with **Test Suite** running `pytest`_ , located in `tests` dir
+  * **Continuous Documentation**, building with `mkdocs` or `sphinx`, and hosting on `readthedocs`, located in `docs` dir
+  * **Static Type Checking**, using `mypy`_
   * **Lint** *Check* and `Apply` commands, using the fast `Ruff`_ linter, along with standard `isort`_, and `black`_
   * **Build Command**, using the `build`_ python package
 
@@ -214,7 +218,7 @@ Free/Libre and Open Source Software (FLOSS)
 
 .. _src/cookiecutter_python/: https://github.com/boromir674/cookiecutter-python-package/tree/master/src/cookiecutter_python
 
-.. _Template: https://github.com/boromir674/cookiecutter-python-package/tree/master/src/cookiecutter_python
+.. _Template: https://github.com/boromir674/cookiecutter-python-package/tree/master/src/cookiecutter_python/%7B%7B%20cookiecutter.project_slug%20%7D%7D
 
 .. _Use Cases: https://python-package-generator.readthedocs.io/en/master/contents/30_usage/index.html#new-python-package-use-cases
 
