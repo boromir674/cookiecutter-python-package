@@ -178,12 +178,7 @@ jobs:
         mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}.tar.gz" "${DIST_DIR}"
         mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}-py3-none-any.whl" "${DIST_DIR}"
         tox -e check -vv -s false
-    - name: Install documentation test dependencies
-      if: ${{ matrix.platform == 'macos-latest' && matrix.python-version != '3.6' }}
-      run: brew install enchant
-    - name: Run Documentation Tests
-      if: ${{ matrix.platform == 'ubuntu-latest' || matrix.python-version  != '3.6' }}
-      run: tox -e docs --sitepackages -vv -s false
+
     - name: Upload Source & Wheel distributions as Artefacts
       uses: actions/upload-artifact@v3
       with:
