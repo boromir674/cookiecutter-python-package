@@ -11,7 +11,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry]
 name = "cookiecutter_python"
 version = "1.11.2"
-description = "1-click Generator of Python Project, from Template with streamlined "DevOps" using a powerful CI/CD Pipeline."
+description = "1-click Generator of Python Project, from Template with streamlined \"DevOps\" using a powerful CI/CD Pipeline."
 authors = ["Konstantinos Lampridis <k.lampridis@hotmail.com>"]
 maintainers = ["Konstantinos Lampridis <k.lampridis@hotmail.com>"]
 license = "AGPL-3.0-only"
