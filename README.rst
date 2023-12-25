@@ -36,8 +36,9 @@ You can to be up and running with a new Python Package, and run workflows on Git
 
 .. image is expected to mostly be rendered on github.com, pypi.org, readthedocs.io
    in any case we care for these pages. Adjust images props (ie width if needed)
+    https://github.com/boromir674/cookiecutter-python-package/blob/master/assets/ci-open-v1.png
 
-.. image:: https://github.com/boromir674/cookiecutter-python-package/blob/master/assets/ci-open-v1.png
+.. image:: https://raw.githubusercontent.com/boromir674/cookiecutter-python-package/master/assets/ci-open-v1.png
    :alt: CI Pipeline, running on Github Actions, for a Biskotaki Python Package
    :align: center
    :width: 100%
