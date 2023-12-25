@@ -2,6 +2,30 @@
 Changelog
 =========
 
+
+1.11.4 (2023-12-25)
+===================
+
+| Revisiting the **`Why this Generator?`_** page in the Docs Website.  
+| And **updating motivation**, for reader to use our software.
+
+- We update content based on new Developments
+- We present it, in 4 top-level arguments: see `Diff`_ on github
+
+.. LINKS
+
+.. _`Why this Generator?`: https://python-package-generator.readthedocs.io/en/master/contents/20_why_this_package.html
+
+.. _Diff: https://github.com/boromir674/cookiecutter-python-package/pull/114/files#diff-1f6c4e1615922e41582cdc651b4dd501a73e90bb6109e18ac5bb526ec2c92297
+
+Changes
+^^^^^^^
+
+documentation
+"""""""""""""
+- redesign Motivation Documentation Page, around 4 Top Level arguments
+
+
 1.11.3 (2023-12-25)
 ===================
 
