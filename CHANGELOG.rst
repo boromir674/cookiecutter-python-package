@@ -2,6 +2,18 @@
 Changelog
 =========
 
+1.11.2 (2023-12-25)
+===================
+
+Changes
+^^^^^^^
+
+documentation
+"""""""""""""
+- improve README
+- fix URL link of CI/CD Pipeline, used in Docs site to demonstrate Generated Proj capabilities
+
+
 1.11.0 (2023-12-24)
 ===================
 
