@@ -7,31 +7,18 @@ Python Package Generator
 | |docs| |coverage| |maintainability| |codacy| |tech-debt|
 | |ossf| |ruff| |black| |gh-lic| |commits_since_specific_tag_on_master| |commits_since_latest_github_release|
 
-.. | Generate Python Project, with CI/CD Pipeline for PyPI and Docker builds for easy DevOps.
-
-.. this is an "alert box": two dots then note then 2 colons, then below write content
-   **Documentation available at https://python-package-generator.readthedocs.io/.**
-
 |
 | **Generate** Python Project and enjoy **streamlined "DevOps"** using a powerful **CI/CD Pipeline.**
 |
-| **Documentation** available at https://python-package-generator.readthedocs.io/_.
+| **Documentation** available at https://python-package-generator.readthedocs.io/.
 
 
 What's included?
 ================
 
-.. reminder .. _Python: http://www.python.org/
-   that is a directive allowing for anchoring arbitrary text to that URL
-
-.. eg
-   __ Python_
-   eg usage: Python_ is `my favourite programming language`__.
-
-
 * **Generator** of **Python Project** (see `Quickstart`_), with **CLI** for **Linux**, **MacOS**, and **Windows**
 * **Option** to Generate Python Package designed as `module`, `module+cli`, or `pytest-plugin`!
-* Scaffold over **24 files**, from Template_, to have a `ready-to-develop` **Project equiped** with:
+* Scaffold over **24 files**, from `Template`_, to have a `ready-to-develop` **Project equiped** with:
 
   * Fully-featured **CI/CD Pipeline**, running on `Github Actions`_, defined in `.github/`
   * **Continuous Delivery** to *PyPI* (ie `pypi.org`_, `test.pypi.org`_) and *Dockerhub*
@@ -40,9 +27,6 @@ What's included?
   * **Static Type Checking**, using `mypy`_
   * **Lint** *Check* and `Apply` commands, using the fast `Ruff`_ linter, along with standard `isort`_, and `black`_
   * **Build Command**, using the `build`_ python package
-
-
-.. _Template: https://github.com/boromir674/cookiecutter-python-package/tree/master/src/cookiecutter_python/%7B%7B%20cookiecutter.project_slug%20%7D%7D
 
 
 What to expect?
@@ -234,7 +218,7 @@ Free/Libre and Open Source Software (FLOSS)
 
 .. _src/cookiecutter_python/: https://github.com/boromir674/cookiecutter-python-package/tree/master/src/cookiecutter_python
 
-.. _Template: https://github.com/boromir674/cookiecutter-python-package/tree/master/src/cookiecutter_python
+.. _Template: https://github.com/boromir674/cookiecutter-python-package/tree/master/src/cookiecutter_python/%7B%7B%20cookiecutter.project_slug%20%7D%7D
 
 .. _Use Cases: https://python-package-generator.readthedocs.io/en/master/contents/30_usage/index.html#new-python-package-use-cases
 
