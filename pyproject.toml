@@ -10,8 +10,8 @@ build-backend = "poetry.core.masonry.api"
 ## Also renders on pypi as 'subtitle'
 [tool.poetry]
 name = "cookiecutter_python"
-version = "1.11.0"
-description = "Yet another modern Python Package (pypi) with emphasis in CI/CD and automation."
+version = "1.11.2"
+description = "1-click Generator of Python Project, from Template with streamlined "DevOps" using a powerful CI/CD Pipeline."
 authors = ["Konstantinos Lampridis <k.lampridis@hotmail.com>"]
 maintainers = ["Konstantinos Lampridis <k.lampridis@hotmail.com>"]
 license = "AGPL-3.0-only"
@@ -130,6 +130,7 @@ sphinx = { version = "~= 4.0", optional = true }
 sphinx-autodoc-typehints = { version = ">= 1.10", optional = true }
 sphinx-rtd-theme = { version = "== 0.5.0", optional = true }
 sphinxcontrib-spelling = { version = "~= 7.3.3", optional = true }
+sphinx-autobuild = { version = "^2021.3.14", optional = true }
 
 # Type Checking: packages required for the type check (ie mypy) to pass
 mypy = { version = "== 0.961", optional = true }
@@ -153,6 +154,13 @@ docs = [
     "sphinx-autodoc-typehints",
     "sphinx-rtd-theme",
     "sphinxcontrib-spelling",
+]
+docslive = [
+    "sphinx",
+    "sphinx-autodoc-typehints",
+    "sphinx-rtd-theme",
+    "sphinxcontrib-spelling",
+    "sphinx-autobuild",
 ]
 typing = [
     "mypy",
