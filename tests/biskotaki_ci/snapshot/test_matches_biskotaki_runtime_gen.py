@@ -55,6 +55,14 @@ def test_snapshot_matches_runtime(snapshot, biskotaki_ci_project, test_root):
         [x for x in runtime_relative_paths_set if '__pycache__' not in x.parts]
     )
 
+    # EXCLUDE from test .pytest_cache/ folders too
+    snap_relative_paths_set = set(
+        [x for x in snap_relative_paths_set if '.pytest_cache' not in x.parts]
+    )
+    runtime_relative_paths_set = set(
+        [x for x in runtime_relative_paths_set if '.pytest_cache' not in x.parts]
+    )
+
     # WHEN we compare the 2 sets of relative Paths
 
     ## THEN, the sets should be the same
@@ -69,10 +77,10 @@ def test_snapshot_matches_runtime(snapshot, biskotaki_ci_project, test_root):
         os.environ.get("BUG_LOG_DEL_WIN") != "permission_error"
     )
 
-    # we should implement a if run on CI check here
-    running_on_ci: bool = 'CI' in os.environ
+    # if running on CI
+    RUNNING_ON_CI: bool = 'CI' in os.environ
 
-    if not running_on_ci:
+    if not RUNNING_ON_CI:
         # just exclude pre-emptively '.vscode/' folder, and '.vscode/settings.json' file
         # also exclude .tox/ folder, and .tox/ folder contents
         snap_relative_paths_set = set(
@@ -113,42 +121,107 @@ def test_snapshot_matches_runtime(snapshot, biskotaki_ci_project, test_root):
     # comparing rolling date with the static one in the snapshot
 
     # first compare CHANGLOG files, then all other files
-    snapshot_changelog = snapshot_dir / 'CHANGELOG.rst'  # the expectation
     runtime_changelog = runtime_biskotaki / 'CHANGELOG.rst'  # the reality
+    snapshot_changelog = snapshot_dir / 'CHANGELOG.rst'  # the expectation
 
-    snap_file_content = snapshot_changelog.read_text().splitlines()
     runtime_file_content = runtime_changelog.read_text().splitlines()
-    assert len(snap_file_content) == len(runtime_file_content)
-    assert all(
-        [
-            line_pair[0] == line_pair[1]
-            for line_pair in [
-                x
-                for x in zip(snap_file_content, runtime_file_content)
-                if not x[0].startswith('0.0.1')
-            ]
-        ]
-    ), (
-        f"File: CHANGELOG.rst has different content in Snapshot and Runtime\n"
-        "-------------------\n"
-        f"Snapshot: {snapshot_changelog}\n"
-        "-------------------\n"
-        f"Runtime: {runtime_changelog}\n"
-        "-------------------\n"
-    )
+    snap_file_content = snapshot_changelog.read_text().splitlines()
+    assert len(runtime_file_content) == len(snap_file_content)
 
+    line_pairs_generator = iter([line_pair for line_pair in [
+                    x
+                    for x in zip(runtime_file_content, snap_file_content)
+                    if not x[0].startswith('0.0.1')
+                ]])
+
+    if RUNNING_ON_CI:  # quickly do sanity check
+        assert all(
+            [
+                line_pair[0] == line_pair[1]
+                for line_pair in line_pairs_generator
+            ]
+        ), (
+            f"File: CHANGELOG.rst has different content at Runtime vs Snapshot\n"
+            "-------------------\n"
+            f"Runtime: {runtime_changelog}\n"
+            "-------------------\n"
+            f"Snapshot: {snapshot_changelog}\n"
+            "-------------------\n"
+        )
+    else:  # sanity check indicating the exact failling line in case of error
+        for line_pair in line_pairs_generator:
+            assert line_pair[0] == line_pair[1], (
+                f"File: CHANGELOG.rst has different content at Runtime vs Snapshot\n"
+                "-------------------\n"
+                f"Runtime: {runtime_changelog}\n"
+                "-------------------\n"
+                f"Snapshot: {snapshot_changelog}\n"
+                "-------------------\n"
+                f"Line: {line_pair[0]}\n"
+                "-------------------\n"
+            )
+
+    # Remove CHANGELOG.rst from Automatic Comparison
     automated_files = snap_relative_paths_set - {Path('CHANGELOG.rst')}
 
-    for relative_path in sorted([x for x in automated_files if x.is_file()]):
-        snap_file = snapshot_dir / relative_path
-        runtime_file = runtime_biskotaki / relative_path
+    # THEN Compare docs/conf.py to disregard Calendar Year of Snapshot Creation vs Runtime
+    runtime_conf = runtime_biskotaki / 'docs' / 'conf.py'  # the reality
+    snapshot_conf = snapshot_dir / 'docs' / 'conf.py'  # the expectation
 
-        assert snap_file.read_text() == runtime_file.read_text(), (
-            f"File: {relative_path} has different content in Snapshot and Runtime\n"
+    runtime_file_content = runtime_conf.read_text().splitlines()
+    snap_file_content = snapshot_conf.read_text().splitlines()
+
+    assert len(runtime_file_content) == len(snap_file_content)
+    line_pairs_generator = iter(line_pair for line_pair in [
+                    x
+                    for x in zip(runtime_file_content, snap_file_content)
+                    if not (
+                        x[1].startswith('release =')
+                        or 'year=' in x[1]
+                    )
+                ])
+    if RUNNING_ON_CI:  # quickly do sanity check
+        assert all(
+            [
+                line_pair[0] == line_pair[1]
+                for line_pair in line_pairs_generator
+            ]
+        ), (
+            f"File: docs/conf.py has different content at Runtime vs Snapshot\n"
             "-------------------\n"
-            f"Snapshot: {snap_file}\n"
+            f"Runtime: {runtime_conf}\n"
+            "-------------------\n"
+            f"Snapshot: {snapshot_conf}\n"
+            "-------------------\n"
+        )
+    else:  # sanity check indicating the exact failling line in case of error
+        for line_pair in line_pairs_generator:
+            assert line_pair[0] == line_pair[1], (
+                f"File: docs/conf.py has different content at Runtime vs Snapshot\n"
+                "-------------------\n"
+                f"Runtime: {runtime_conf}\n"
+                "-------------------\n"
+                f"Snapshot: {snapshot_conf}\n"
+                "-------------------\n"
+                f"Line: {line_pair[0]}\n"
+                "-------------------\n"
+            )
+
+    # Remove docs/conf.py from Automatic Comparison
+    automated_files = automated_files - {Path('docs/conf.py')}
+
+    ## AUTOMATIC Snapshot COMPARISON ##
+
+    for relative_path in sorted([x for x in automated_files if x.is_file()]):
+        runtime_file = runtime_biskotaki / relative_path
+        snap_file = snapshot_dir / relative_path
+
+        assert runtime_file.read_text() == snap_file.read_text(), (
+            f"File: {relative_path} has different content at Runtime vs Snapshot\n"
             "-------------------\n"
             f"Runtime: {runtime_file}\n"
+            "-------------------\n"
+            f"Snapshot: {snap_file}\n"
             "-------------------\n"
         )
 
