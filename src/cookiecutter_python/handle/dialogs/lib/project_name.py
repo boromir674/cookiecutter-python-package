@@ -1,5 +1,5 @@
 from typing import Mapping, Optional
-from questionary import prompt
+from questionary import prompt, Choice
 from ..dialog import InteractiveDialog
 
 import datetime
@@ -7,26 +7,22 @@ import datetime
 @InteractiveDialog.register_as_subclass('project-name')
 class ProjectNameDialog:
 
-    def dialog(
-        self,
-        project_types,
-        full_name,
-        ci_matrix_interpreters,
-        default: Optional[str]) -> Mapping[str, str]:
+    def dialog(self, cookie_vars) -> Mapping[str, str]:
+        print(f"\n\n---- {cookie_vars['rtd_python_version']}")
         return prompt(
             [
                 {
                     'type': 'input',
                     'name': 'project_name',
                     'message': 'Enter the Project Name (ie human-readable text):',
-                    'default': default or None,
+                    'default': cookie_vars['project_name'],
                 },
                 {
                     'type': 'select',
                     'name': 'project_type',
                     'message': 'Select the Project Type:',
-                    'choices': project_types,
-                    'default': project_types[0],
+                    'choices': cookie_vars['project_type']['choices'],
+                    'default': cookie_vars['project_type']['default'],
                 },
                 {
                     'type': 'input',
@@ -63,28 +59,35 @@ class ProjectNameDialog:
                     'type': 'input',
                     'name': 'full_name',
                     'message': 'Enter full_name:',
-                    'default': full_name or 'Your Name',
+                    'default': cookie_vars['full_name'],
+                },
+                # author
+                {
+                    'type': 'input',
+                    'name': 'author',
+                    'message': 'Enter author:',
+                    'default': lambda answers: answers['full_name'],
                 },
                 # author_email
                 {
                     'type': 'input',
                     'name': 'author_email',
                     'message': 'Enter author_email:',
-                    'default': lambda answers: answers['full_name'].replace(' ', '.').lower() + '@example.com',
+                    'default': cookie_vars['author_email'],
                 },
                 # github_username
                 {
                     'type': 'input',
                     'name': 'github_username',
                     'message': 'Enter github_username:',
-                    # 'default': None,
+                    'default': cookie_vars['github_username'],
                 },
                 # project_short_description
                 {
                     'type': 'input',
                     'name': 'project_short_description',
                     'message': 'Enter project_short_description:',
-                    # 'default': None,
+                    'default': cookie_vars['project_short_description'],
                 },
                 # pypi_subtitle
                 {
@@ -114,22 +117,24 @@ class ProjectNameDialog:
                     'type': 'input',
                     'name': 'version',
                     'message': 'Enter version:',
-                    'default': '0.0.1',
+                    'default': cookie_vars['version'],
                 },
                 # initialize_git_repo
                 {
                     'type': 'select',
                     'name': 'initialize_git_repo',
                     'message': 'Initialize Git Repository?',
-                    'choices': ['yes', 'no'],
-                    'default': 'yes',
+                    'choices': cookie_vars['initialize_git_repo']['choices'],
+                    'default': cookie_vars['initialize_git_repo']['default'],
                 },
                 # interpreters
                 {
                     'type': 'checkbox',
                     'name': 'supported-interpreters',
                     'message': 'Select the python Interpreters you wish to support',
-                    'choices': ci_matrix_interpreters,
+                    'choices': [
+                        Choice(str(x[0]), checked=bool(x[1])) for x in cookie_vars['supported-interpreters']['choices']
+                    ]
                     # 'default': ['3.6', '3.7', '3.8', '3.9', '3.10', '3.11'],
                 },
                 # docs_builder
@@ -137,16 +142,17 @@ class ProjectNameDialog:
                     'type': 'select',
                     'name': 'docs_builder',
                     'message': 'Select the docs builder you wish to use',
-                    'choices': ['sphinx', 'mkdocs'],
-                    'default': 'sphinx',
+                    'choices': cookie_vars['docs_builder']['choices'],
+                    'default': cookie_vars['docs_builder']['default'],
                 },
                 # rtd_python_version
                 {
                     'type': 'select',
                     'name': 'rtd_python_version',
                     'message': 'Select the python version you wish to use for ReadTheDocs',
-                    'choices': ['3.8', '3.9', '3.10', '3.11', '3.12'],
-                    'default': '3.8',
+                    # 'choices': ['3.8', '3.9', '3.10', '3.11', '3.12'],
+                    'choices': cookie_vars['rtd_python_version']['choices'],
+                    'default': cookie_vars['rtd_python_version']['default'],
                 },
             ]
         )
