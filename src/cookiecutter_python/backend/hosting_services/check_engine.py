@@ -55,10 +55,10 @@ class Engine:
     @staticmethod
     def create(config_file: str, default_config: bool):
         """Initialize objects, for Asynchronous http with 3rd-party Services
-        
+
         Objects are designed to Ask PyPI and Read The Docs, if the soon to be
         generated package name, and readthedocs project slug are available.
-         
+
         These 'Checker' objects make asynchronous http requests to PyPI and RTD
         web servers, for non-blocking IO, and to avoid blocking the main thread.
 
@@ -68,7 +68,7 @@ class Engine:
         Then each Checker (pypi, rtd) requires:
         - PyPI requires the 'pkg_name' in User's yaml Config
         - RTD requires the 'readthedocs_project_slug' in User's yaml Config
-        
+
         to derive the URLs for Future Requests
 
         Args:

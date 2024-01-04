@@ -1,4 +1,5 @@
 import typing as t
+
 from .node_interface import Node
 
 

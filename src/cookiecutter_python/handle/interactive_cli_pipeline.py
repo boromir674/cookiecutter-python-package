@@ -5,6 +5,7 @@ from .node_factory import NodeFactory
 
 class InteractiveDialogsPipeline:
     """Handles sequence of Interactive User Dialogs, for Context Information."""
+
     dialogs = [
         'project-name',
         # 'project_type',

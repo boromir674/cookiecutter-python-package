@@ -34,17 +34,21 @@ def pre_main(request):
     # If INTERACTIVE, Run Dialog Pipeline, to update Context
     if interactive_mode:
         user_input = parse_context(request.config_file)
-        _context.update({
-            'interpreters': {'supported-interpreters': user_input.pop('supported-interpreters')},  # 'supported-interpreters
-            # 'supported-interpreters': user_input.pop('supported-interpreters'),
-            **user_input
-        })
+        _context.update(
+            {
+                'interpreters': {
+                    'supported-interpreters': user_input.pop('supported-interpreters')
+                },  # 'supported-interpreters
+                # 'supported-interpreters': user_input.pop('supported-interpreters'),
+                **user_input,
+            }
+        )
 
     else:
         if request.config_file:
             # just update interpreters cookiecutter extra_context
             from .load_config import get_interpreters_from_yaml
-            
+
             interpreters: t.Mapping[str, t.Sequence[str]] = get_interpreters_from_yaml(
                 request.config_file
             )

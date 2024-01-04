@@ -1,12 +1,11 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Generic, TypeVar
+from typing import Generic, Optional, TypeVar
 
 T = TypeVar('T')
-O = TypeVar('O')
+TT = TypeVar('TT')
 
 
-class Node(ABC, Generic[T, O]):
-
+class Node(ABC, Generic[T, TT]):
     @abstractmethod
-    def process(self, request: T) -> Optional[O]:
+    def process(self, request: T) -> Optional[TT]:
         raise NotImplementedError

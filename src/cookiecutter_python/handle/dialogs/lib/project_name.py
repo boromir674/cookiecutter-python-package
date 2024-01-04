@@ -1,12 +1,13 @@
-from typing import Mapping, Optional
-from questionary import prompt, Choice
+import datetime
+from typing import Mapping
+
+from questionary import Choice, prompt
+
 from ..dialog import InteractiveDialog
 
-import datetime
 
 @InteractiveDialog.register_as_subclass('project-name')
 class ProjectNameDialog:
-
     def dialog(self, cookie_vars) -> Mapping[str, str]:
         print(f"\n\n---- {cookie_vars['rtd_python_version']}")
         return prompt(
@@ -28,7 +29,9 @@ class ProjectNameDialog:
                     'type': 'input',
                     'name': 'project_slug',
                     'message': 'Enter the Project Slug (ie lowercase text, no spaces):',
-                    'default': lambda answers: answers['project_name'].lower().replace(' ', '-'),
+                    'default': lambda answers: answers['project_name']
+                    .lower()
+                    .replace(' ', '-'),
                 },
                 {
                     'type': 'input',
@@ -133,7 +136,8 @@ class ProjectNameDialog:
                     'name': 'supported-interpreters',
                     'message': 'Select the python Interpreters you wish to support',
                     'choices': [
-                        Choice(str(x[0]), checked=bool(x[1])) for x in cookie_vars['supported-interpreters']['choices']
+                        Choice(str(x[0]), checked=bool(x[1]))
+                        for x in cookie_vars['supported-interpreters']['choices']
                     ]
                     # 'default': ['3.6', '3.7', '3.8', '3.9', '3.10', '3.11'],
                 },

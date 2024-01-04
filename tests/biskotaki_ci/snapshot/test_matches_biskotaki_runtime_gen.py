@@ -128,19 +128,19 @@ def test_snapshot_matches_runtime(snapshot, biskotaki_ci_project, test_root):
     snap_file_content = snapshot_changelog.read_text().splitlines()
     assert len(runtime_file_content) == len(snap_file_content)
 
-    line_pairs_generator = iter([line_pair for line_pair in [
-                    x
-                    for x in zip(runtime_file_content, snap_file_content)
-                    if not x[0].startswith('0.0.1')
-                ]])
+    line_pairs_generator = iter(
+        [
+            line_pair
+            for line_pair in [
+                x
+                for x in zip(runtime_file_content, snap_file_content)
+                if not x[0].startswith('0.0.1')
+            ]
+        ]
+    )
 
     if RUNNING_ON_CI:  # quickly do sanity check
-        assert all(
-            [
-                line_pair[0] == line_pair[1]
-                for line_pair in line_pairs_generator
-            ]
-        ), (
+        assert all([line_pair[0] == line_pair[1] for line_pair in line_pairs_generator]), (
             f"File: CHANGELOG.rst has different content at Runtime vs Snapshot\n"
             "-------------------\n"
             f"Runtime: {runtime_changelog}\n"
@@ -172,21 +172,16 @@ def test_snapshot_matches_runtime(snapshot, biskotaki_ci_project, test_root):
     snap_file_content = snapshot_conf.read_text().splitlines()
 
     assert len(runtime_file_content) == len(snap_file_content)
-    line_pairs_generator = iter(line_pair for line_pair in [
-                    x
-                    for x in zip(runtime_file_content, snap_file_content)
-                    if not (
-                        x[1].startswith('release =')
-                        or 'year=' in x[1]
-                    )
-                ])
+    line_pairs_generator = iter(
+        line_pair
+        for line_pair in [
+            x
+            for x in zip(runtime_file_content, snap_file_content)
+            if not (x[1].startswith('release =') or 'year=' in x[1])
+        ]
+    )
     if RUNNING_ON_CI:  # quickly do sanity check
-        assert all(
-            [
-                line_pair[0] == line_pair[1]
-                for line_pair in line_pairs_generator
-            ]
-        ), (
+        assert all([line_pair[0] == line_pair[1] for line_pair in line_pairs_generator]), (
             f"File: docs/conf.py has different content at Runtime vs Snapshot\n"
             "-------------------\n"
             f"Runtime: {runtime_conf}\n"
