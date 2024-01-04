@@ -1,6 +1,6 @@
 import typing as t
 
-from .helpers import supported_interpreters
+from .helpers import parse_context
 from .hosting_services import Engine
 
 
@@ -21,10 +21,6 @@ def pre_main(request):
 
     # Start Requesting Futures! - Hosting Service: PyPI, Read The Docs
     request.check_results = request.check.check(request.web_servers)
-    # Skipped i:
-    # - User Config does not have pkg_name and, readthedocs_project_slug
-    #   which are used to rderive the URLs for Future Requests
-    # - checker property activate_flag is False
     """
     If skipped due to missing info in User Config, we can expect Logs roughly as:
     logger.info(
@@ -32,23 +28,28 @@ def pre_main(request):
     )
     logger.info(error)
     """
+    _context = request.extra_context or {}
+    interactive_mode = not bool(request.no_input)
 
-    # Case 1: NON Interactive Mode <--> `request.no_input == True`
-    #   - if interpreters is None, then no user config file supplied in CLI
-    # Case 2: Interactive Mode <--> `request.no_input == False`
-    #   - always meaningful value, since Interactive Dialog ensures that
-    interpreters: t.Optional[t.Mapping[str, t.Sequence[str]]] = supported_interpreters(
-        request.config_file, request.no_input
-    )
-    # if None, then we are in NON interactive mode, but no User Config, passed in CLI
+    # If INTERACTIVE, Run Dialog Pipeline, to update Context
+    if interactive_mode:
+        user_input = parse_context(request.config_file)
+        _context.update({
+            'interpreters': {'supported-interpreters': user_input.pop('supported-interpreters')},  # 'supported-interpreters
+            # 'supported-interpreters': user_input.pop('supported-interpreters'),
+            **user_input
+        })
 
-    if interpreters:  # update cookiecutter extra_context
-        # supported interpreters supplied either from yaml or from user's input
-        request.extra_context = dict(
-            request.extra_context or {},
-            **{
-                'interpreters': interpreters,
-            }
-        )
+    else:
+        if request.config_file:
+            # just update interpreters cookiecutter extra_context
+            from .load_config import get_interpreters_from_yaml
+            
+            interpreters: t.Mapping[str, t.Sequence[str]] = get_interpreters_from_yaml(
+                request.config_file
+            )
+            if interpreters:
+                _context['interpreters'] = interpreters
 
+    request.extra_context = dict(_context)
     return request
