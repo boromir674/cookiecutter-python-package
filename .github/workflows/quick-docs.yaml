@@ -87,7 +87,7 @@ jobs:
 
       - run: git fetch
       - run: git log --graph --decorate --color --all --stat
-      - run: echo "Expect above log to proove local and origin empemeral-doc-updates branches are deleted"
+      - run: echo "Expect above log to prove local and origin empemeral-doc-updates branches are deleted"
 
       ### WORKFLOW No 2 - EMBEDDED ###
 

@@ -65,7 +65,7 @@ def gen_gs_project(
         # assert INTENTIONALLY_PLACED_LOG_FILE.is_file()
         # this commit somehow makes CI on Linux to break. But not on dev machine
 
-        # issue a pytest warning whever the Log File is not created as it should
+        # issue a pytest warning wherever the Log File is not created as it should
         if not INTENTIONALLY_PLACED_LOG_FILE.exists():
             pytest.warns(
                 UserWarning,
@@ -76,7 +76,7 @@ def gen_gs_project(
         # assert INTENTIONALLY_PLACED_LOG_FILE.stat().st_size > 0
 
     ###### Document kind of Bug ######
-    # Expected but probably unintented behaviour:
+    # Expected but probably unintended behaviour:
     # - empty log file gets created inside the gen project dir
 
     # Log file is placed inside the generated project dir, after generation
@@ -190,7 +190,7 @@ def test_gs_matches_runtime(gen_gs_project, test_root):
     # so, we hard exclude the line starting with the '0.0.1' string, to avoid
     # comparing rolling date with the static one in the snapshot
 
-    # first compare CHANGLOG files, then all other files
+    # first compare CHANGELOG files, then all other files
     snapshot_changelog = snapshot_dir / 'CHANGELOG.rst'  # the expectation
     runtime_changelog = runtime_gs / 'CHANGELOG.rst'  # the reality
 

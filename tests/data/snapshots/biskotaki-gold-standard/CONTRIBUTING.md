@@ -19,7 +19,7 @@ You can contribute in many ways:
 
 Report bugs at [https://github.com/boromir674/biskotaki-gold/issues](https://github.com/boromir674/biskotaki-gold/issues).
 W
-Stambling upon a Bug means encountering different behaviour than the expected/advertised one. When you are reporting a bug, please include the following infromation by filling in [the template](https://github.com/boromir674/biskotaki-gold/.github/blob/master/.github/ISSUE_TEMPLATE/bug_report.md).
+Stambling upon a Bug means encountering different behaviour than the expected/advertised one. When you are reporting a bug, please include the following information by filling in [the template](https://github.com/boromir674/biskotaki-gold/.github/blob/master/.github/ISSUE_TEMPLATE/bug_report.md).
 
 * Your operating system name and version.
 * Any details about your local setup that might be helpful in troubleshooting.

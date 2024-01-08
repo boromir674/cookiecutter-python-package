@@ -68,7 +68,7 @@ jobs:
           tox -e "py310{-sdist, -wheel, -dev}"
           tox -e coverage
 
-      ## Verify Development Scripts operate as intented out of the box
+      ## Verify Development Scripts operate as intended out of the box
       - name: 'Ruff: Fast Python Linter -> PASS'
         run: |
           cd gen/biskotaki

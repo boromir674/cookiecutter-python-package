@@ -2,7 +2,7 @@
     This should not either.
     Content of the 'How to do quick Docs Release Guide'
     As a guide it is a sequence of steps, that one must follow to achieve a goal.
-    As a guide, each step's expected resuilt, can be described (soft requirement, but hard on tutorials).
+    As a guide, each step's expected result, can be described (soft requirement, but hard on tutorials).
     Where applicable, the effect of each step is described, so user knows what to expect.
 
     can be used with .. include::

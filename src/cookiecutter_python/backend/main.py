@@ -36,7 +36,7 @@ def generate(
     print('Start Python Generator !')
     # Initialize Generation Request:
     #  - store the CI Test Matrix Python Interpreters versions list
-    #       -  prompt for user input in interactive or atempt to read from yaml otherwise
+    #       -  prompt for user input in interactive or attempt to read from yaml otherwise
     #  - prepare Cookiecutter extra context:
     #      - add interpreters versions list
     #      - store 'docs' folder, per docs builder, that Generator supports
@@ -82,7 +82,7 @@ def generate(
     )
     ## POST GENERATION ##
     # Check if out-of-the-box Generated Project, coincidentally, requires slight modifications
-    # for automatic and seemless "PyPI Upload" and "ReadTheDocs Build" process to
+    # for automatic and seamless "PyPI Upload" and "ReadTheDocs Build" process to
     # work. This can happen if the project name is already taken by another project
     # on PyPI or ReadTheDocs.
     post_main(request)

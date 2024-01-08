@@ -25,7 +25,7 @@ class ServiceChecker:
     config_file_path: str
 
     def __call__(self):
-        """Check the remote server for existing resource, if feture is enabled.
+        """Check the remote server for existing resource, if feature is enabled.
 
         Returns:
             Optional[CheckResult]: result of the check operation
@@ -40,8 +40,8 @@ class ServiceChecker:
                 # we assume that client deliberately had the activate flag on
                 # only because they know that the way the Generator has been
                 # parametrized (ie from CLI),
-                # accounting for User Config or Default Config precedance, is such
-                # that on Generator call the User Config will have precendence.
+                # accounting for User Config or Default Config precedence, is such
+                # that on Generator call the User Config will have precedence.
                 # But this is design to be call in pre_main, so rendering has
                 # not happened yet, so we can't rely on the User Config.
 

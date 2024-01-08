@@ -29,7 +29,7 @@ deserialization
 discretization
 interpretable
 pre
-accomodate
+accommodate
 eg
 ie
 iterable

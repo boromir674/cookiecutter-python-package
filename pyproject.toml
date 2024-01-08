@@ -193,7 +193,7 @@ typing = [
 minversion = "6.2"
 # hard-inject args, when invoking `pytest` CLI
 addopts = "--strict-markers --ignore=tests/data"
-# for explict --run-integration -> pip install pytest-explicit
+# for explicit --run-integration -> pip install pytest-explicit
 markers = [
     "slow: Marks a slow test",
     "integration: Tests applicable to a newly Generated Project, running with tox",
@@ -214,7 +214,7 @@ explicit-only = [
 line-length = 95
 include = '\.pyi?$'
 extend-exclude = '''
-# A regex preceeded with ^/ will apply only to files and directories
+# A regex preceded with ^/ will apply only to files and directories
 # in the root of the project.
 # ^/foo.py  # exclude a file named foo.py in the root of the project (in addition to the defaults)
 tests/smoke_test.py|

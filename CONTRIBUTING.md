@@ -19,7 +19,7 @@ You can contribute in many ways:
 
 Report bugs at [https://github.com/boromir674/cookiecutter-python-package/issues](https://github.com/boromir674/cookiecutter-python-package/issues).
 
-Stmbling upon a Bug means encountering different behaviour than the expected/advertised one. When you are reporting a bug, please include the following infromation by filling in [the template](https://github.com/boromir674/cookiecutter-python-package/.github/blob/master/.github/ISSUE_TEMPLATE/bug_report.md).
+Stmbling upon a Bug means encountering different behaviour than the expected/advertised one. When you are reporting a bug, please include the following information by filling in [the template](https://github.com/boromir674/cookiecutter-python-package/.github/blob/master/.github/ISSUE_TEMPLATE/bug_report.md).
 
 * Your operating system name and version.
 * Any details about your local setup that might be helpful in troubleshooting.
@@ -90,7 +90,7 @@ git checkout -b name-of-your-bugfix-or-feature
 
 Now you can make your changes locally.
 
-Probably, you should start by writting test case(s) and then the production code.
+Probably, you should start by writing test case(s) and then the production code.
 
 
 1. When you're done making changes, check that your changes pass the tests locally.

@@ -65,7 +65,7 @@ def generate_project() -> t.Callable[[ProjectGenerationRequestDataProtocol], str
     def _generate_project(generate_request: ProjectGenerationRequestDataProtocol) -> str:
         assert isinstance(
             generate_request.template, str
-        ), f"Expexted str for template, got {type(generate_request.template)}"
+        ), f"Expected str for template, got {type(generate_request.template)}"
         return cookiecutter(
             generate_request.template,
             no_input=True,
@@ -119,7 +119,7 @@ def hook_request_new(distro_loc):
     MUST be kept in SYNC with the 'pre' and 'post' hook scripts, and their
     interface.
 
-    Before and after the actual generation process (ie read the termplate files,
+    Before and after the actual generation process (ie read the template files,
     generate the output files, etc), there 2 scripts that run. The 'pre' script
     (implemented as src/cookiecutter/hooks/pre_gen_project.py) and the 'post'
     script (implemented as src/cookiecutter/hooks/post_gen_project.py) run
@@ -326,7 +326,7 @@ def mock_hosting_services(future_session_mock):
                     cls._instance.future_session_mock_instance = future_session_mock(
                         url_2_code
                     )
-                    # when 'get' method is called, the insted of real futures behavior
+                    # when 'get' method is called, the instead of real futures behavior
                     # our mock will be called instead, which immediately returns
                     # an object, which provides the 'result' attribute, which can
                     # immediately be evaluated.
@@ -394,7 +394,7 @@ def mock_check(get_object, mock_hosting_services):
                 overrides={'FuturesSession': lambda: futures_session_class_mock},
             )
             # EFFECT:
-            # when client code invokes the __call__ method of a WebHostingServiceChecker isntance obj
+            # when client code invokes the __call__ method of a WebHostingServiceChecker instance obj
             # then 1. will create a session, not (as in prod) as an instance of FuturesSession class,
             # but as an instance of our mock class (singleton)
             # 2. will call the 'get' method of our mock session (not the prod instance method of FuturesSession class)
@@ -419,7 +419,7 @@ def mock_check(get_object, mock_hosting_services):
                     "cannot determine 'name' (ie pypi, readthedocs) from config file",
                 )
             )
-            # Emulate singal emitted by the WebHostingServiceChecker
+            # Emulate signal emitted by the WebHostingServiceChecker
             self.futures_session_instance_mock.url_2_code[url] = 200 if found else 404
 
     return MockCheck()
@@ -502,7 +502,7 @@ def cli_invoker_params() -> t.Callable[[t.Any], CLIRunnerParameters]:
 
         Generate, positional and/or optional (ie flags) cli arguments.
 
-        Input kwargs can be used to overide the default values for the flags
+        Input kwargs can be used to override the default values for the flags
         specified in class Args (see above).
 
         Args:
@@ -797,7 +797,7 @@ def get_expected_generated_files(
         pkg_name: str = config.data['pkg_name']
         assert (
             'docs_builder' in config.data
-        ), f"Missing 'docs_builder' in {config.data}. Probaly, user config Yaml supplied is missing templated values, required by cookiecutter.json."
+        ), f"Missing 'docs_builder' in {config.data}. Probably, user config Yaml supplied is missing templated values, required by cookiecutter.json."
         user_docs_builder_id: str = config.data['docs_builder']
 
         expected_gen_files: t.Set[Path] = set()
@@ -956,7 +956,7 @@ def get_expected_generated_files(
             ]
         )
         # Regression Test
-        # assert no .pyc files apear as has reported on sdist installation
+        # assert no .pyc files appear as has reported on sdist installation
         assert not any(
             [str(x).endswith('.pyc') for x in expected_gen_files]
         ), f"Sanity check fail: {expected_gen_files}"
@@ -1072,7 +1072,7 @@ def assert_files_committed_if_flag_is_on(
         blobs_set = {Path(blob.path) for blob in parent_tree}
         return rel_path in blobs_set
 
-    def _assert_files_commited(folder, config):
+    def _assert_files_committed(folder, config):
         print("\n HERE")
         try:
             repo = assert_initialized_git(folder)
@@ -1081,7 +1081,7 @@ def assert_files_committed_if_flag_is_on(
             assert head
             tree = repo.heads.master.commit.tree
 
-            def file_commited(relative_path: Path):
+            def file_committed(relative_path: Path):
                 assert str(relative_path)[-1] != '/'
                 splitted = path.split(relative_path)
 
@@ -1106,10 +1106,10 @@ def assert_files_committed_if_flag_is_on(
             assert 0, "Print Runtime Generated Files: " + '\n'.join(
                 [str(f) for f in runtime_generated_files]
             )
-            # below we assert that all the expected files have been commited:
-            # 1st assert all generated runtime project files have been commited
+            # below we assert that all the expected files have been committed:
+            # 1st assert all generated runtime project files have been committed
             for f in sorted(runtime_generated_files):
-                assert file_commited(f)
+                assert file_committed(f)
             # 2nd assert the generated files exactly match the expected ones
             expected_generated_files = get_expected_generated_files(config)
             assert set(runtime_generated_files) == set(expected_generated_files)
@@ -1129,4 +1129,4 @@ def assert_files_committed_if_flag_is_on(
         except InvalidGitRepositoryError:
             return
 
-    return _assert_files_commited
+    return _assert_files_committed

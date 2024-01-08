@@ -27,7 +27,6 @@ logger = logging.getLogger(__name__)
 # ie: if we scaffold new Project at /data/my-project/README.md, /data/my-project/src
 # then GEN_PROJ_LOC = /data/my-project
 GEN_PROJ_LOC = os.path.realpath(os.path.curdir)
-
 # Doc Builders docs default location, after Generation
 DOCS: t.Dict[str, str] = get_docs_gen_internal_config()
 
@@ -93,9 +92,9 @@ CLI_ONLY = lambda x: [
     ('tests', 'test_cli.py'),
     ('tests', 'test_invoking_cli.py'),
 ]
-# Pytest plugin must use the legacy setuptools backend (no poetry)
+# Pytest plugins must use the legacy setuptools backend (no poetry)
 # thus the setup.cfg and MANIFEST.in files are required
-# Pytest pluging usually declare their public API in fixtures.py
+# Pytest plugin usually declare their public API in fixtures.py
 PYTEST_PLUGIN_ONLY = lambda x: [
     ('src', x.module_name, 'fixtures.py'),
     ('tests', 'conftest.py'),
@@ -159,7 +158,7 @@ def post_file_removal(request):
     # file is created inside the Generated Project Folder.
     
     # Note: at Generator runtime, the user should still expect Captured Logs to
-    # be written a File in their Shell's PWD, as designed and intented.
+    # be written a File in their Shell's PWD, as designed and intended.
 
     # remove the log file, if it exists and it is empty
     logs_file: Path = Path(request.project_dir) / FILE_TARGET_LOGS
@@ -169,7 +168,7 @@ def post_file_removal(request):
             # safely remove the empty log file
             try:
                 logs_file.unlink()
-            # windows erro reported on CI
+            # windows error reported on CI
             # PermissionError: [WinError 32] The process cannot access the file because it is being used by another process
             except PermissionError as e:
                 print(f"[WARNING]: {e}")

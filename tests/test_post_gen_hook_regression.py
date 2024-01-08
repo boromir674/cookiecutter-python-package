@@ -1,6 +1,6 @@
 # verify that post_gen_hook knows the docs builder initial docs location
 # this will make sure the PostGenProject hook can the necessary file removals
-# and replacements for Docs. If Gneration docs features get update, but ie we forget to
+# and replacements for Docs. If Generation docs features get update, but ie we forget to
 # update the post_gen_hook, this test will fail and remind us to update the hook
 # Regressoin Test, if you will
 def test_post_gen_hook_docs_builder_initial_docs_location():

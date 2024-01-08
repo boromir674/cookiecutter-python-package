@@ -73,7 +73,7 @@ def test_cli_offline(
     # GIVEN the CLI main entrypoint
     from cookiecutter_python.cli import main as cli_main
 
-    # GIVEN a way to compute expectatoins, either in case
+    # GIVEN a way to compute expectations, either in case
     #  - user config yaml, was passed as input to the CLI
     #  - or in case no yaml, but default config was passed as input to the CLI
     config = user_config[config_file]
@@ -116,7 +116,7 @@ def test_cli_offline(
 
     project_dir: str = path.abspath(path.join(gen_proj_dir, config.project_slug))
 
-    # our code introduced WARNING logs due to git commit from issued to GEnerator
+    # our code introduced WARNING logs due to git commit from issued to Generator
     # assert config.data['initialize_git_repo'] is True and path.exists(
     #     path.join(project_dir, 'cookie-py.log')
     # )
@@ -207,7 +207,7 @@ def check_web_server() -> t.Callable[[str, t.Any], t.Optional[bool]]:
 
 @pytest.fixture
 def check_web_server_expected_result():
-    webserver_2_templaet_variable = {
+    webserver_2_template_variable = {
         'pypi': 'pkg_name',
         'readthedocs': 'readthedocs_project_slug',
     }
@@ -216,7 +216,7 @@ def check_web_server_expected_result():
         def _get_check_web_server_expected_result(config, mock_flag: bool):
             if (
                 config.config_file is not None
-                and webserver_2_templaet_variable[webserver] in config.data
+                and webserver_2_template_variable[webserver] in config.data
             ):
                 return mock_flag
             return None

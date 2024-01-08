@@ -3,7 +3,7 @@ FROM python:3.9.16-slim-bullseye as builder
 # for inspiration
 COPY poetry.lock pyproject.toml ./
 
-# Envrironment Configuration
+# Environment Configuration
 ## See https://github.com/alejandro-angulo/poetry/blob/master/docs/configuration.md
 # Determine where to install poetry
 ENV POETRY_HOME=/opt/poetry

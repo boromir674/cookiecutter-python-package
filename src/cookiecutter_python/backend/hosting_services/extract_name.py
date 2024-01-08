@@ -32,7 +32,7 @@ class NameExtractor:
         except KeyError as error:
             raise ContextVariableDoesNotExist(
                 "{msg}: {data}".format(
-                    msg="Attempted to retrieve non-existant variable",
+                    msg="Attempted to retrieve non-existent variable",
                     data=json.dumps(
                         {
                             'variable_name': str(self.name_extractor),

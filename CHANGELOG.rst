@@ -68,10 +68,10 @@ out-of-the-box produced by the `Generator` as part of the **CI/CD Pipeline**
 configuration YAML files, to be **Configurable by Policy**.
 
 *Design* a **High-Level** interface, for *configuring the CI/CD Behaviour*, allowing:
-- seemless switching between **Policies**, on a per-Job level
+- seamless switching between **Policies**, on a per-Job level
 - Easy **Override** to `"shutdown" Job"`, ie to *prevent upload*, by-passing `decision-making`
 - Easy **Override** to `"force Job"`, ie for *quick trial*, by-passing `decision-making`
- governing desicion-making, on the Workflows/Jobs.
+ governing decision-making, on the Workflows/Jobs.
 
 A **Policy** governs how a Job behaves (ie if it should trigger), and each
 one yiels a *distinct* behaviour.
@@ -112,7 +112,7 @@ feature
 """""""
 - introduce `Ruff`, Fast Python Linter, in updated `Developer's Tool chain <https://github.com/boromir674/biskotaki/tree/auto-generated?tab=readme-ov-file#development>`_
 - run `Ruff` against code, as part of the Tools included in the `Static Code Analysis` CI Workflow, produced by the **Generator's** Template
-- run legacy `Pylint` agaist code, in dedicated Job, for easier potential retirement
+- run legacy `Pylint` against code, in dedicated Job, for easier potential retirement
 - make Template Code pass Ruff Checks/Evaluations
 - add `Ruff`, `tox -e ruff`, as available `tox command`` for fast `Static Code Check`
 
@@ -197,7 +197,7 @@ Changes
 ci
 ""
 - remove unused workflow
-- fix workflow syntax due to merge confict resolution artifacts
+- fix workflow syntax due to merge conflict resolution artifacts
 
 
 1.8.1 (2023-12-15)
@@ -238,7 +238,7 @@ test
 - verify `No Regression` of Generator, with exhaustive comparison of Runtime result to `Gold Standard`
 - test `Gold Standard` passes `tox -e lint`
 - ignore Tests inside Snapshots, during `Test Discovery` of Pytest
-- verify `User Config` backwords compatibility, with regard to new `Docs` Generator Feature
+- verify `User Config` backwards compatibility, with regard to new `Docs` Generator Feature
 - test default gen behaviour related to Docs, is same as before adding mkdocs option
 - yaml validation and required/expected workflow vars checks
 
@@ -415,7 +415,7 @@ Changes
 
 test
 """"
-- manually covert gitpython outputted string paths into Path instances
+- manually convert gitpython outputted string paths into Path instances
 - use Path from pathlib instead of the os.path module
 
 refactor
@@ -426,7 +426,7 @@ refactor
 
 ci
 ""
-- excplicitly use bash as the shell for some job steps
+- explicitly use bash as the shell for some job steps
 
 
 1.6.0 (2022-06-28)
@@ -454,7 +454,7 @@ Changes
 feature
 """""""
 - add 'project_type' Variable allowing for 'module', 'module+cli' or 'pytest-plugin' Projects
-- conditionaly populate 'test' dependencies, ie based on whether there is a cli entrypoint
+- conditionally populate 'test' dependencies, ie based on whether there is a cli entrypoint
 
 
 1.5.2 (2022-06-22)
@@ -598,7 +598,7 @@ to support and be tested on.
 The generator then creates the Test Matrix in the CI config file, which factors in the
 Python Interpreter versions supplied by the user. 
 
-Consistent with the currect behaviour of the cli, passing the '--no-input' flag,
+Consistent with the current behaviour of the cli, passing the '--no-input' flag,
 instructs the Generator to try find the selected interpreters in a config yaml file,
 if given, or else to use the information in the cookiecutter.json.
 
@@ -612,7 +612,7 @@ Development
 -----------
 
 All tox environments related to 'Linting' now all do by default a 'check'.
-Doing a 'check' means returning a 0 as exit code in case the check is successfull
+Doing a 'check' means returning a 0 as exit code in case the check is successful
 and it is suitable for local and remote running on a CI server.
 
 The aforementioned environments are 'lint', 'black', 'isort':
@@ -653,7 +653,7 @@ build
 1.2.1 (2022-05-27)
 ==================
 
-Compeltely migrate away from *setup.cfg*.
+Completely migrate away from *setup.cfg*.
 Add Issue Templates, as markdown files, to help create well documented Issues on github.
 
 Changes

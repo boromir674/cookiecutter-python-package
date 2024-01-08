@@ -2,7 +2,7 @@
 
 `docker build`  possible execution paths.
 
-Flow Chart, of how exection navigates docker stages (see --target of docker build).
+Flow Chart, of how execution navigates docker stages (see --target of docker build).
 
 If you run `docker build .` the `target` used by default is the `default_with_demo` Stage in the Graph.
 

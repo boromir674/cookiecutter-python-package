@@ -5,7 +5,7 @@ from questionary import prompt
 from ..dialog import InteractiveDialog
 
 QuestionaryQuestion = Mapping[str, Optional[Union[str, Mapping, Callable]]]
-QuestionaryPromtQuestions = Union[QuestionaryQuestion, Sequence[QuestionaryQuestion]]
+QuestionaryPromptQuestions = Union[QuestionaryQuestion, Sequence[QuestionaryQuestion]]
 
 QuestionaryAnswers = Mapping[str, Any]
 
@@ -14,7 +14,7 @@ QuestionaryAnswers = Mapping[str, Any]
 # except ImportError:
 
 #     def prompt(
-#         questions: PyInquirerPromtQuestions, answers: PyInquirerAnswers = None, **kwargs: Any
+#         questions: PyInquirerPromptQuestions, answers: PyInquirerAnswers = None, **kwargs: Any
 #     ) -> PyInquirerAnswers:
 #         return {}
 
