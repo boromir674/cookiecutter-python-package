@@ -3,6 +3,48 @@ Changelog
 =========
 
 
+1.12.0 (2024-01-18)
+===================
+
+In this release, we fix then [known issue](https://github.com/boromir674/cookiecutter-python-package/issues/63),
+when running the `Generator` CLI in `interactive` mode.
+
+**Now**, in case the CLI is ran in `interactive` mode, all interactive dialogs / prompts
+are delegated to `Questionnaire`, which is already a python dependency of the `Generator`.
+
+The `Cookiecutter` callable / executable is **now** always called, with the `no_input` boolean
+flag set to `True`.
+
+The idea was to refrain from updating our locked `cookiecutter` dependency, from 1.7.x to 2.x,  
+for the time being.
+
+
+Changes
+^^^^^^^
+
+feature
+"""""""
+- support running interactive CLI, without supplying User's Config Yaml file
+- populate Context, in pre_main, if interactive mode is ON
+
+test
+""""
+- make snapshot testinng robust against runtime Calendar Year changes!
+
+refactor
+""""""""
+- exclude DEBUG-level logs from being emitted in the Console (just in file)
+- Ruff, Black, Isort, Mypy
+
+chore
+"""""
+- remove Handler Chain Infra, since we delegate handling Input to Questionnaire
+
+release
+"""""""
+- bump version to 1.12.0
+
+
 1.11.4 (2023-12-25)
 ===================
 
