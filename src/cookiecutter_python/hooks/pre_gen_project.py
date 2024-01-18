@@ -17,6 +17,8 @@ def get_request():
     cookiecutter = OrderedDict()
     cookiecutter: OrderedDict = {{cookiecutter}}
 
+    logger.info("Cookiecutter Data: %s", json.dumps(cookiecutter, sort_keys=True, indent=4))
+
     interpreters = cookiecutter['interpreters']
     if isinstance(interpreters, str):  # we assume it is json
         interpreters = json.loads(interpreters)
