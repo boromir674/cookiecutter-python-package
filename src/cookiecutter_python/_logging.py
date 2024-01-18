@@ -58,8 +58,8 @@ console = logging.StreamHandler()
 
 
 ### Handler which writes DEBUG messages or higher to the sys.stderr ###
-console.setLevel(logging.DEBUG)
-# console.setLevel(logging.INFO)
+# console.setLevel(logging.DEBUG)
+console.setLevel(logging.INFO)
 
 
 # set a format which is simpler for console use

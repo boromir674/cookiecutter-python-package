@@ -53,7 +53,28 @@ class Engine:
         return iter(filter(None, [getattr(self, server)() for server in servers]))
 
     @staticmethod
-    def create(config_file, default_config):
+    def create(config_file: str, default_config: bool):
+        """Initialize objects, for Asynchronous http with 3rd-party Services
+
+        Objects are designed to Ask PyPI and Read The Docs, if the soon to be
+        generated package name, and readthedocs project slug are available.
+
+        These 'Checker' objects make asynchronous http requests to PyPI and RTD
+        web servers, for non-blocking IO, and to avoid blocking the main thread.
+
+        Checkers are initialized as 'Activated' if User Config is given and
+        Default Config is False.
+
+        Then each Checker (pypi, rtd) requires:
+        - PyPI requires the 'pkg_name' in User's yaml Config
+        - RTD requires the 'readthedocs_project_slug' in User's yaml Config
+
+        to derive the URLs for Future Requests
+
+        Args:
+            config_file (str): user's yaml config file
+            default_config (bool): default config flag
+        """
         return Engine(
             config_file,
             default_config,

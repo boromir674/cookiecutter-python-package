@@ -91,8 +91,8 @@ def main(
     # TODO Improvement: add logging configuration
     try:
         project: str = generate(
-            checkout,
-            no_input,
+            checkout=checkout,
+            no_input=no_input,
             replay=replay,
             overwrite=overwrite,
             output_dir=output_dir,
