@@ -15,17 +15,20 @@ WEB_SERVERS = ['pypi', 'readthedocs']
 
 
 def generate(
-    checkout=None,
-    no_input=False,
+    # interactive=True,
+    no_input=False,  # INTERACTIVE ON by Default
     extra_context=None,
     replay=False,
     overwrite=False,
     output_dir='.',
     config_file=None,
+    skip_if_file_exists=False,
+    # deprecated
     default_config=False,
     password=None,
     directory=None,
-    skip_if_file_exists=False,
+    checkout=None,
+    ###
 ) -> str:
     """Create Python Project, with CI/CD pipeline, from the project template.
 
@@ -39,7 +42,6 @@ def generate(
     #       -  prompt for user input in interactive or atempt to read from yaml otherwise
     #  - prepare Cookiecutter extra context:
     #      - add interpreters versions list
-    #      - store 'docs' folder, per docs builder, that Generator supports
     request = pre_main(
         Request(
             config_file=config_file,
@@ -54,7 +56,8 @@ def generate(
     project_dir = generator(
         os.path.abspath(os.path.join(my_dir, '..')),  # template dir path
         checkout=checkout,
-        no_input=no_input,
+        # no_input=no_input,
+        no_input=True,
         # we pass the Request computed context in the Cookiecutter Extra Context
         # if extra_context includes a 'supported-interpreters' key:
         #  no_input == True: automatic generation of CI Test Matrix Python Interpreters versions list, should happen

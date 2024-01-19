@@ -14,5 +14,4 @@ class DialogRegistry(SubclassRegistry[Dialog]):
 
 
 class InteractiveDialog(metaclass=DialogRegistry):
-    def dialog(self, *args, **kwargs):
-        raise NotImplementedError
+    pass
