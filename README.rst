@@ -3,9 +3,9 @@ Python Package Generator
 ========================
 
 
-| |build| |release_version| |wheel| |supported_versions|
-| |docs| |coverage| |maintainability| |codacy| |tech-debt|
-| |ossf| |ruff| |black| |gh-lic| |commits_since_specific_tag_on_master| |commits_since_latest_github_release|
+| |build| |coverage| |docs| |maintainability| |codacy| |tech-debt|
+| |release_version| |wheel| |supported_versions| |commits_since_specific_tag_on_master| |commits_since_latest_github_release|
+| |pypi_stats| |ossf| |ruff| |black| |gh-lic|
 
 |
 | **Generate** Python Project and enjoy **streamlined "DevOps"** using a powerful **CI/CD Pipeline.**
@@ -269,6 +269,9 @@ Free/Libre and Open Source Software (FLOSS)
     :alt: Supported Python versions
     :target: https://pypi.org/project/cookiecutter-python
 
+.. |pypi_stats| image:: https://img.shields.io/pypi/dm/cookiecutter-python?logo=pypi&logoColor=%23849ED9&color=%23849ED9&link=https%3A%2F%2Fpypi.org%2Fproject%2Fcookiecutter-python%2F&link=https%3A%2F%2Fpypistats.org%2Fpackages%2Fcookiecutter-python
+    :alt: PyPI - Downloads
+    :target: https://pypistats.org/packages/cookiecutter-python
 
 .. Github Releases & Tags
 
