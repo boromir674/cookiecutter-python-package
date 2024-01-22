@@ -58,21 +58,6 @@ def generate(
         checkout=checkout,
         # no_input=no_input,
         no_input=True,
-        # we pass the Request computed context in the Cookiecutter Extra Context
-        # if extra_context includes a 'supported-interpreters' key:
-        #  no_input == True: automatic generation of CI Test Matrix Python Interpreters versions list, should happen
-        #  no_input == False: we should first expect a Radio List Dialog to select the Python Interpreters versions list
-        # then that list is passed in the Cookiecutter Extra Context, to exclude
-        # "propmting for interpreters" from the set of prompts that Cookiecutter
-        # is going to ask the user
-        # Letting Cookiecutter ask the user for Interpreters data
-        # ie 'interpreters': {"supported-interpreters": ["3.10", "3.11"]},
-        # seems to result in a bug.
-        # TODO:
-        # Investigate if Dict[str, List[str]] is too complicated
-        # for Cookiecutter to handle. And if being the case is an
-        # "expected" cookiecutter behaviour.
-        # then decide on whether changing data type to List[str] is needed
         extra_context=request.extra_context,
         replay=replay,
         overwrite_if_exists=overwrite,
