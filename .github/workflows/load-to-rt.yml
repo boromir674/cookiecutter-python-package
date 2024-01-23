@@ -44,8 +44,8 @@ jobs:
         run: |
           name=$(git branch -a --contains "$(git rev-parse HEAD)" | \
             sed -n '2p' | \
-            sed 's/.*\///')
-            
+            sed 's/.*remotes\///')
+
           echo "NAME:" $name
 
           echo USER_BRANCH=$name >> $GITHUB_OUTPUT
