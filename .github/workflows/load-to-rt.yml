@@ -44,11 +44,10 @@ jobs:
         run: |
           name=$(git branch -a --contains "$(git rev-parse HEAD)" | \
             sed -n '2p' | \
-            sed 's/^[ *]*//g' | \
-            sed 's/^[ *]*//g' | \
-            sed 's/^[ *]*//g')
-
+            sed 's/.*\///')
+            
           echo "NAME:" $name
+
           echo USER_BRANCH=$name >> $GITHUB_OUTPUT
 
       ### Test User Branch before Boarding ###
