@@ -60,9 +60,12 @@ jobs:
       # Push Boarding and Trigger CI Tests on the 'CI/CD Pipeline'
       - run: git push -u origin HEAD
 
+      - run: echo "${{ github.ref }}"
+      - run: git branch -a
+
       # if Release Train does not exist, create it
-      - name: If Release Train branch does not exist, create it
-        if: ${{ !contains(github.ref, 'refs/heads/release-train') }}
+      - name: If Upstream Release Train branch does not exist, create it
+        if: ${{ !contains(github.ref, 'refs/heads/remotes/origin/release-train') }}
         run: |
           git checkout ${{ env.MAIN_BRANCH }}
           git checkout -b ${{ env.TRAIN }}
