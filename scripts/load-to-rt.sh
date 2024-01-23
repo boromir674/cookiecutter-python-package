@@ -21,11 +21,11 @@ git push -u origin HEAD
 # GIT OPS
 export tt='board-rt'
 
-echo "[STEP]: Create Tag: $tt"
-git tag "$tt" || (echo "Tag $tt already exists!" && git tag -d "$tt" && echo "Deleted tag ${tt}" && git tag "$tt" && echo "Created tag $tt")
+echo "[STEP]: Tag Commit: $tt"
+git tag "$tt" || (echo "[INFO] Tag $tt already exists" && git tag -d "$tt" && echo "[INFO] Deleted tag ${tt}" && git tag "$tt" && echo "[INFO] Created tag $tt")
 
 echo "[STEP]: Push Tag: $tt"
-git push origin "$tt" || (echo "Remote Tag $tt already exists!" && git push --delete origin "$tt" && echo "Deleted Remote tag ${tt}" && git push origin "$tt" && echo "Pushed tag $tt")
+git push origin "$tt" || (echo "[INFO] Remote Tag $tt already exists!" && git push --delete origin "$tt" && echo "[INFO] Deleted Remote tag ${tt}" && git push origin "$tt" && echo "[INFO] Pushed tag $tt")
 
 echo
 echo " DONE !!"
