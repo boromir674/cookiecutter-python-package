@@ -5,13 +5,6 @@
 ### TRIGGER event ###
 # export tt='onboard-rt'; git tag -d "$tt"; git push --delete origin "$tt"; git tag "$tt" && git push origin "$tt"
 
-########   OR   ########
-# export tt='quick-release'
-# git tag -d "$tt"
-# git push --delete origin "$tt"
-# git tag "$tt"
-# git push origin "$tt"
-########################
 
 # PR: HEAD --> release-train
 
@@ -58,7 +51,8 @@ jobs:
       - run: git config --global user.email "k.lampridis@hotmail.com"
       - run: git config --global user.name "Konstantinos Lampridis"
 
-      - run: git merge "${{ steps.user_branch.outputs.USER_BRANCH }}" --no-edit --no-ff -m "${MERGE_MSG}"
+      - name: 'Merge   ${{ steps.user_branch.outputs.USER_BRANCH }}  -->  ${{ env.BOARDING }}'
+        run: git merge "${{ steps.user_branch.outputs.USER_BRANCH }}" --no-edit --no-ff -m "${MERGE_MSG}"
         env:
           MERGE_MSG: "Carry User's Code, and do Boarding CI Tests"  # triggers Boarding CI Tests
           # MERGE_MSG: "Carry User's Code"  # skip Boarding CI Tests
@@ -67,7 +61,7 @@ jobs:
       - run: git push -u origin HEAD
 
       # if Release Train does not exist, create it
-      - name: If Release Train branch does not exit, create it
+      - name: If Release Train branch does not exist, create it
         if: ${{ !contains(github.ref, 'refs/heads/release-train') }}
         run: |
           git checkout ${{ env.MAIN_BRANCH }}
@@ -89,8 +83,8 @@ jobs:
             Please do not close this PR manually."
 
       ############## Merge ##############
-      - name: 'Merge PR   ${{ env.BOARDING }}  -->  ${{ env.TRAIN }}'
-        run: gh pr merge "${{ env.BOARDING }}" --auto --delete-branch --squash
+      # - name: 'Merge PR   ${{ env.BOARDING }}  -->  ${{ env.TRAIN }}'
+      #   run: gh pr merge "${{ env.BOARDING }}" --auto --delete-branch --squash
         # HEAD is now at ${{ env.TRAIN }}
 
 

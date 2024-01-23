@@ -1,25 +1,11 @@
 #!/usr/bin/env sh
 
-# Load Changes into Release Train
-
 set -e
 
-## Branches
+# Load Changes into Release Train
 
 # branch with user's changes (ie code developed)
 CHANGES_BR="${1:-$(git rev-parse --abbrev-ref HEAD)}"
-
-MAIN_BRANCH="${2:-master}"
-
-# 'Boarding' git branch
-BRD_RT="${3:-boarding-rt}"
-
-echo
-echo "BOARDING Branch: $BRD_RT"
-echo " Changes Branch: $CHANGES_BR"
-echo "    Main Branch: $MAIN_BRANCH"
-
-# exit if CHANGES_BR is main, master or release-train
 
 if [ "$CHANGES_BR" = "main" ] || [ "$CHANGES_BR" = "master" ] || [ "$CHANGES_BR" = "release-train" ]; then
   echo "  [REQ]: CHANGES_BR must not be main, master or release-train!"
@@ -29,13 +15,13 @@ if [ "$CHANGES_BR" = "main" ] || [ "$CHANGES_BR" = "master" ] || [ "$CHANGES_BR"
   exit 1
 fi
 
-# 1. push changes to topical branch of User's
 git push -u origin HEAD
 
+# GIT OPS
 export tt='board-rt'
 
-git tag "$tt" || (echo "Tag $tt already exists!" && git tag -d "$tt" && git tag "$tt")
-git push origin "$tt" || (echo "Tag $tt already exists!" && git push --delete origin "$tt" && git push origin "$tt")
+git tag "$tt" || (echo "Tag $tt already exists!" && git tag -d "$tt" && echo "Deleted local tag" && git tag "$tt" && echo "Created new tag")
+git push -f origin "$tt" || (echo "Tag $tt already exists!" && git push --delete origin "$tt" && git push origin "$tt")
 
 echo
 echo "Triggered Boarding Worklow!"
