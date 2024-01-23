@@ -23,21 +23,18 @@ echo
 echo "PREPARING for Release.."
 echo
 
+git fetch
 git checkout "$MAIN_BRANCH"
 git pull origin "$MAIN_BRANCH"
 
-# Point Release Branch to MAIN
-git branch -f "$RELEASE_BRANCH" HEAD
+# Setup Release Branch to Point to Main/Master
+git branch -f "$RELEASE_BRANCH" HEAD || git checkout -b "$RELEASE_BRANCH"
 
-git checkout "$RT_BRANCH"
-git merge "$RELEASE_BRANCH" --no-ff
-
-git checkout "$RELEASE_BRANCH"
-
+# Merge Release Train into Release Branch
 git merge "$RT_BRANCH" --no-ff
 
+# Update Sem Ver and Changelog, and commit
 $RW_BIN -c release.yml
-git push -u origin HEAD
 
 
 if [[ "$RC_TEST" = true ]]; then
@@ -54,8 +51,11 @@ if [[ "$RC_TEST" = true ]]; then
   git status -uno
 
   echo
+  RC_MSG="chore(semver): add -rc (release candidate) to Source and Distro versions"
   git add -u
-  git commit -m "chore(semver): add -rc (release candidate) to Source and Distro versions"
+  git commit -m "$RC_MSG"
+  
+  commit_sha=$(git rev-parse HEAD)
 
   echo
   rc_tag="v$(./scripts/parse_version.py)-rc"
@@ -64,7 +64,13 @@ if [[ "$RC_TEST" = true ]]; then
   ## TRIGGER RELEASE CANDIDATE - TESTS
   git push origin "$rc_tag" || (echo "Tag already exists: $rc_tag" && git push --delete origin "$rc_tag" && git push origin "$rc_tag")
 
+  git revert "$commit_sha" --no-commit
+  git commit -m "revert: $RC_MSG\n\nThis reverts commit $commit_sha."
 fi
+
+# Update Release Upstream Branch
+git push -u origin HEAD
+
 
 echo
 echo " DONE !!"
