@@ -55,6 +55,9 @@ jobs:
       - run: git checkout ${{ env.MAIN_BRANCH }}
       - run: git checkout -b ${{ env.BOARDING }}
 
+      - run: git config --global user.email "k.lampridis@hotmail.com"
+      - run: git config --global user.name "Konstantinos Lampridis"
+
       - run: git merge "${{ steps.user_branch.outputs.USER_BRANCH }}" --no-edit --no-ff -m "${MERGE_MSG}"
         env:
           MERGE_MSG: "Carry User's Code, and do Boarding CI Tests"  # triggers Boarding CI Tests
