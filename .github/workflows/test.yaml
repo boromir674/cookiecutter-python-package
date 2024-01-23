@@ -74,11 +74,17 @@ jobs:
     steps:
       - name: Pass 'env' section variables to GITHUB_OUTPUT
         id: pass-env-to-output
+        env:
+          BOARDING_EVENT: 'do Boarding CI Tests'
         run: |
           # set the matrix strategy to Full Matrix Stress Test if on master/main or stress-test branch or any tag
           BRANCH_NAME=${GITHUB_REF_NAME}
           if [[ $BRANCH_NAME == "stress-test" || $GITHUB_REF == refs/tags/* ]]; then
             echo "matrix=$FULL_MATRIX_STRATEGY" >> $GITHUB_OUTPUT
+          
+          # if commit message (github.event.head_commit.message) has 'do Boarding CI Tests' string
+          elif [[ ${{ github.event.head_commit.message }} == "*${{ env.BOARDING_EVENT }}*" ]]; then
+            echo "matrix=$TEST_STRATEGY" >> $GITHUB_OUTPUT 
           else
             echo "matrix=$UBUNTU_PY310_STRATEGY" >> $GITHUB_OUTPUT
           fi
