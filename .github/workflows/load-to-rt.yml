@@ -17,7 +17,7 @@ on:
       - board-rt
 
 jobs:
-  release_readme:
+  board_release_train:
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -60,12 +60,18 @@ jobs:
       # Push Boarding and Trigger CI Tests on the 'CI/CD Pipeline'
       - run: git push -u origin HEAD
 
-      - run: echo "${{ github.ref }}"
-      - run: git branch -a
+      - run: echo UPSTREAM_TRAIN="$(git ls-remote --heads origin '${{ env.TRAIN }})" >> $GITHUB_ENV
+      - id: remote_train
+        run: |
+          if [[ -z "${{ env.UPSTREAM_TRAIN }}" ]]; then
+            echo TRAIN_EXISTS=false >> $GITHUB_OUTPUT
+          else
+            echo TRAIN_EXISTS=true >> $GITHUB_OUTPUT
+          fi
 
       # if Release Train does not exist, create it
       - name: If Upstream Release Train branch does not exist, create it
-        if: ${{ !contains(github.ref, 'refs/heads/remotes/origin/release-train') }}
+        if: ${{ steps.remote_train.outputs.TRAIN_EXISTS }} == 'false'
         run: |
           git checkout ${{ env.MAIN_BRANCH }}
           git checkout -b ${{ env.TRAIN }}
