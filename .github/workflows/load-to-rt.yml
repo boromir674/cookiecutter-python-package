@@ -60,7 +60,7 @@ jobs:
       # Push Boarding and Trigger CI Tests on the 'CI/CD Pipeline'
       - run: git push -u origin HEAD
 
-      - run: echo UPSTREAM_TRAIN="$(git ls-remote --heads origin '${{ env.TRAIN }})" >> $GITHUB_ENV
+      - run: echo UPSTREAM_TRAIN="$(git ls-remote --heads origin '${{ env.TRAIN }}')" >> $GITHUB_ENV
       - id: remote_train
         run: |
           if [[ -z "${{ env.UPSTREAM_TRAIN }}" ]]; then
