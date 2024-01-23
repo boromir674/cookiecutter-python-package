@@ -65,8 +65,10 @@ jobs:
         run: |
           if [[ -z "${{ env.UPSTREAM_TRAIN }}" ]]; then
             echo TRAIN_EXISTS=false >> $GITHUB_OUTPUT
+            echo "[INFO] TRAIN DOES NOT EXIST"
           else
             echo TRAIN_EXISTS=true >> $GITHUB_OUTPUT
+            echo "[INFO] TRAIN EXISTS"
           fi
 
       # if Release Train does not exist, create it
