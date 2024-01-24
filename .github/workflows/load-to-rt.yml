@@ -106,6 +106,9 @@ jobs:
             \n\n\
             Please do not close this PR manually."
 
+      - run: git checkout -b ${{ env.BOARDING }}
+      - run: git push -u origin HEAD
+
       ############## Merge ##############
       # - name: 'Merge PR   ${{ env.BOARDING }}  -->  ${{ env.TRAIN }}'
       #   run: gh pr merge "${{ env.BOARDING }}" --auto --delete-branch --squash
