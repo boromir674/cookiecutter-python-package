@@ -25,7 +25,7 @@ echo "[STEP]: Tag Commit: $tt"
 git tag "$tt" || (echo "[INFO] Tag $tt already exists" && git tag -d "$tt" && echo "[INFO] Deleted tag ${tt}" && git tag "$tt" && echo "[INFO] Created tag $tt")
 
 echo "[STEP]: Push Tag: $tt"
-git push origin "$tt" || (echo "[INFO] Remote Tag $tt already exists!" && git push --delete origin "$tt" && echo "[INFO] Deleted Remote tag ${tt}" && git push origin "$tt" && echo "[INFO] Pushed tag $tt")
+git push --delete origin || (echo "[INFO] Remote Tag $tt does not exist!" && git push origin --delete "$tt" && echo "[INFO] Deleted Remote tag ${tt}" && git push origin "$tt" && echo "[INFO] Pushed tag $tt")
 
 echo
 echo " DONE !!"
