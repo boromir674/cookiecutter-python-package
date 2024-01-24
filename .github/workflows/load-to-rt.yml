@@ -75,7 +75,7 @@ jobs:
 
       # if Release Train does not exist, create it
       - name: If Upstream Release Train branch does not exist, create it
-        if: ${{ steps.remote_train.outputs.TRAIN_EXISTS  }}
+        if: ${{ ! steps.remote_train.outputs.TRAIN_EXISTS }}
         run: |
           git checkout ${{ env.MAIN_BRANCH }}
           git checkout -b ${{ env.TRAIN }}
