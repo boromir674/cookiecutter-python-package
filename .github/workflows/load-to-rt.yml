@@ -81,6 +81,13 @@ jobs:
           git checkout -b ${{ env.TRAIN }}
           git push -u origin HEAD
 
+      # if Release Train exists, pull it
+      - name: If Upstream Release Train branch exists, pull it
+        if: ${{ steps.remote_train.outputs.TRAIN_EXISTS }}
+        run: |
+          git branch --track "${{ env.TRAIN }}" "origin/${{ env.TRAIN }}"
+          git checkout ${{ env.TRAIN }}
+
       ### Release Train - Check ###
       - name: "Verify 'release-train' is found in list of local branches"
         run: |
