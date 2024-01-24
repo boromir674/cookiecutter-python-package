@@ -83,7 +83,7 @@ jobs:
             echo "matrix=$FULL_MATRIX_STRATEGY" >> $GITHUB_OUTPUT
           
           # github.event.head_commit.message has 'do Boarding CI Tests' string
-          elif [[ "${{ github.event.head_commit.message }}" == "*${{ env.BOARDING_EVENT }}*" ]]; then
+          elif [[ "${{ contains(github.event.head_commit.message, env.BOARDING_EVENT) }}" == 'true' ]]; then
             echo "matrix=$TEST_STRATEGY" >> $GITHUB_OUTPUT 
           else
             echo "matrix=$UBUNTU_PY310_STRATEGY" >> $GITHUB_OUTPUT
