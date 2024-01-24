@@ -22,10 +22,11 @@ git push -u origin HEAD
 export tt='board-rt'
 
 echo "[STEP]: Tag Commit: $tt"
-git tag "$tt" || (echo "[INFO] Tag $tt already exists" && git tag -d "$tt" && echo "[INFO] Deleted tag ${tt}" && git tag "$tt" && echo "[INFO] Created tag $tt")
+(git tag "$tt" || (echo "[INFO] Tag $tt already exists" && git tag -d "$tt" && echo "[INFO] Deleted tag ${tt}" && git tag "$tt") && echo " -> Tagged with $tt")
 
 echo "[STEP]: Push Tag: $tt"
-git push --delete origin || (echo "[INFO] Remote Tag $tt does not exist!" && git push origin --delete "$tt" && echo "[INFO] Deleted Remote tag ${tt}" && git push origin "$tt" && echo "[INFO] Pushed tag $tt")
+(git push origin --delete "$tt" && echo "* Deleted Remote tag ${tt}") || echo "* Remote Tag $tt does not exist"
+git push origin "$tt" && echo " -> Pushed tag $tt"
 
 echo
 echo " DONE !!"

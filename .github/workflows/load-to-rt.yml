@@ -138,6 +138,3 @@ jobs:
       - name: 'Merge PR   ${{ env.BOARDING }}  -->  ${{ env.TRAIN }}'
         run: gh pr merge "${{ env.BOARDING }}" --auto --delete-branch --squash
         # HEAD is now at ${{ env.TRAIN }}
-
-
-      ## DONE ##
