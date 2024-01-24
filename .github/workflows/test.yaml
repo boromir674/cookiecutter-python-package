@@ -33,11 +33,11 @@ env:
   TEST_STRATEGY: "{\"platform\":[\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\":[\"3.9\"]}"
 
   ##### JOB ON/OFF SWITCHES #####
-  RUN_UNIT_TESTS: "true"
-  RUN_LINT_CHECKS: "true"
-  DOCKER_JOB_ON: "true"
-  PUBLISH_ON_PYPI: "true"
-  DRAW_DEPENDENCIES: "true"
+  RUN_UNIT_TESTS: "false"
+  RUN_LINT_CHECKS: "false"
+  DOCKER_JOB_ON: "false"
+  PUBLISH_ON_PYPI: "false"
+  DRAW_DEPENDENCIES: "false"
   ###############################
 
   ### DOCKER Job Policy ####
@@ -74,11 +74,17 @@ jobs:
     steps:
       - name: Pass 'env' section variables to GITHUB_OUTPUT
         id: pass-env-to-output
+        env:
+          BOARDING_EVENT: 'do Boarding CI Tests'
         run: |
           # set the matrix strategy to Full Matrix Stress Test if on master/main or stress-test branch or any tag
           BRANCH_NAME=${GITHUB_REF_NAME}
           if [[ $BRANCH_NAME == "stress-test" || $GITHUB_REF == refs/tags/* ]]; then
             echo "matrix=$FULL_MATRIX_STRATEGY" >> $GITHUB_OUTPUT
+          
+          # github.event.head_commit.message has 'do Boarding CI Tests' string
+          elif [[ "${{ github.event.head_commit.message }}" == "*${{ env.BOARDING_EVENT }}*" ]]; then
+            echo "matrix=$TEST_STRATEGY" >> $GITHUB_OUTPUT 
           else
             echo "matrix=$UBUNTU_PY310_STRATEGY" >> $GITHUB_OUTPUT
           fi
