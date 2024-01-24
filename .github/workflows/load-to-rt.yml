@@ -85,7 +85,7 @@ jobs:
 
       # if Release Train exists, pull it
       - name: If Upstream Release Train branch exists, pull it
-        if: ${{ steps.remote_train.outputs.TRAIN_EXISTS }}
+        if: ${{ steps.remote_train.outputs.TRAIN_EXISTS == 'true' }}
         run: |
           git branch --track "${{ env.TRAIN }}" "origin/${{ env.TRAIN }}"
           git checkout ${{ env.TRAIN }}
