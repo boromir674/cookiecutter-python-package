@@ -43,7 +43,7 @@ jobs:
 
           echo USER_BRANCH=$name >> $GITHUB_OUTPUT
 
-      ### Test User Branch before Boarding ###
+      ### Put User Branch on Boarding Branch to Test before merging to Release Train
 
       - run: git checkout ${{ env.MAIN_BRANCH }}
       - run: git checkout -b ${{ env.BOARDING }}
@@ -73,11 +73,14 @@ jobs:
 
       # if Release Train does not exist, create it
       - name: If Upstream Release Train branch does not exist, create it
-        if: ${{ ! steps.remote_train.outputs.TRAIN_EXISTS }}
+        if: ${{ steps.remote_train.outputs.TRAIN_EXISTS  }}
         run: |
           git checkout ${{ env.MAIN_BRANCH }}
           git checkout -b ${{ env.TRAIN }}
           git push -u origin HEAD
+
+      - run: git branch -a
+      - run: git log --graph --decorate --color --all --stat
 
       ############## PR ##############
       - name: 'Create PR   ${{ env.BOARDING }}  -->  ${{ env.TRAIN }}'
