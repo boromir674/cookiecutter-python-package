@@ -18,12 +18,6 @@ name: CI/CD Pipeline
 # - all branches and tags
 
 on:
-  # trigger on PR from 'boarding' to 'release-train' branch
-  pull_request:
-    branches:
-      - release-train
-    paths:
-      - 'boarding'
   push:
     branches:
       - "*"
