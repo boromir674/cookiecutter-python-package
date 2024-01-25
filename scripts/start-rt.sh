@@ -24,13 +24,21 @@ echo "PREPARING for Release.."
 echo
 
 git fetch
+
+# UPDATE Master/Main
 git checkout "$MAIN_BRANCH"
 git pull origin "$MAIN_BRANCH"
 
-# Setup Release Branch to Point to Main/Master
-git branch -f "$RELEASE_BRANCH" HEAD || git checkout -b "$RELEASE_BRANCH"
+# UPDATE Release Train
+git branch --track "$RT_BRANCH" "origin/${RT_BRANCH}" || echo "* Branch $RT_BRANCH already exists"
+git checkout "$RT_BRANCH"
+git pull
 
-# Merge Release Train into Release Branch
+# Setup Release Branch to Point to Main/Master
+(git branch --track "$RELEASE_BRANCH" "origin/${RELEASE_BRANCH}" && git checkout "$RELEASE_BRANCH") || (echo "* Upstream Release Branch does not exist. Creating.." && git checkout -b "$RELEASE_BRANCH")
+git rebase "$MAIN_BRANCH"
+
+# MERGE 'Release Train' into 'Release'
 git merge "$RT_BRANCH" --no-ff
 
 # Update Sem Ver and Changelog, and commit
