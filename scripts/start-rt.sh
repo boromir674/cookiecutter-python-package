@@ -29,10 +29,7 @@ git fetch
 # git checkout "$MAIN_BRANCH"
 # git pull origin "$MAIN_BRANCH"
 
-# # UPDATE Release Train
-# git branch --track "$RT_BRANCH" "origin/${RT_BRANCH}" || echo "* Branch $RT_BRANCH already exists"
-# git checkout "$RT_BRANCH"
-# git pull
+
 
 # Setup Release Branch to Point to Main/Master
 UPSTREAM_RELEASE=$(git ls-remote --heads origin "${RELEASE_BRANCH}")
@@ -68,12 +65,20 @@ echo "[STEP]: Rebase 'Release' on top of 'Master/Main'"
 git rebase "$MAIN_BRANCH"
 # Local Release branch is ready
 
+
+# # UPDATE Release Train
+# git branch --track "$RT_BRANCH" "origin/${RT_BRANCH}" || echo "* Branch $RT_BRANCH already exists"
+# git checkout "$RT_BRANCH"
+# git pull
+
 # MERGE 'Release Train' into 'Release'
 echo "[STEP]: Merge 'Release Train' into 'Release'"
 git merge "$RT_BRANCH" --no-ff --no-edit
 
-# Update Sem Ver and Changelog, and commit
+
+### Update Sem Ver and Changelog, and commit ###
 $RW_BIN -c release.yml
+
 
 if [[ "$RC_TEST" = true ]]; then
   echo
