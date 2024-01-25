@@ -58,12 +58,21 @@ if [[ "$RC_TEST" = true ]]; then
   commit_sha=$(git rev-parse HEAD)
 
   echo
+
+  ###### GIT OPS ######
   rc_tag="v$(./scripts/parse_version.py)-rc"
-  git tag "$rc_tag" || (echo "Tag already exists: $rc_tag" && git tag -d "$rc_tag" && git tag "$rc_tag")
 
-  ## TRIGGER RELEASE CANDIDATE - TESTS
-  git push origin "$rc_tag" || (echo "Tag already exists: $rc_tag" && git push --delete origin "$rc_tag" && git push origin "$rc_tag")
+  export tt="${rc_tag}"
 
+  echo "[STEP]: Tag Commit: $tt"
+  (git tag "$tt" || (echo "* Tag $tt already exists" && git tag -d "$tt" && echo "* Deleted tag ${tt}" && git tag "$tt") && echo " -> Created tag $tt")
+
+  ### TRIGGER RELEASE CANDIDATE - TESTS ###
+  echo "[STEP]: Push Tag: $tt"
+  (git push origin --delete "$tt" && echo "* Deleted Remote tag ${tt}") || echo "* Remote Tag $tt does not exist"
+  git push origin "$tt" && echo " -> Pushed tag $tt"
+
+  ### Revert to Production Sem Ver ###
   git revert "$commit_sha" --no-commit
   git commit -m "revert: $RC_MSG\n\nThis reverts commit $commit_sha."
 fi
