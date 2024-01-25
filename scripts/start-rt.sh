@@ -70,7 +70,7 @@ git rebase "$MAIN_BRANCH"
 
 # MERGE 'Release Train' into 'Release'
 echo "[STEP]: Merge 'Release Train' into 'Release'"
-git merge "$RT_BRANCH" --no-ff
+git merge "$RT_BRANCH" --no-ff --no-edit
 
 # Update Sem Ver and Changelog, and commit
 $RW_BIN -c release.yml
