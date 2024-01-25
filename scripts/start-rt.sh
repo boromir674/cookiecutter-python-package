@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 # Prepare Release Train
 # Eg: create a release-candidate, do a pre-release, stress testing, etc
@@ -26,24 +26,54 @@ echo
 git fetch
 
 # UPDATE Master/Main
-git checkout "$MAIN_BRANCH"
-git pull origin "$MAIN_BRANCH"
+# git checkout "$MAIN_BRANCH"
+# git pull origin "$MAIN_BRANCH"
 
-# UPDATE Release Train
-git branch --track "$RT_BRANCH" "origin/${RT_BRANCH}" || echo "* Branch $RT_BRANCH already exists"
-git checkout "$RT_BRANCH"
-git pull
+# # UPDATE Release Train
+# git branch --track "$RT_BRANCH" "origin/${RT_BRANCH}" || echo "* Branch $RT_BRANCH already exists"
+# git checkout "$RT_BRANCH"
+# git pull
 
 # Setup Release Branch to Point to Main/Master
-(git branch --track "$RELEASE_BRANCH" "origin/${RELEASE_BRANCH}" && git checkout "$RELEASE_BRANCH") || (echo "* Upstream Release Branch does not exist. Creating.." && git checkout -b "$RELEASE_BRANCH")
+UPSTREAM_RELEASE=$(git ls-remote --heads origin "${RELEASE_BRANCH}")
+
+if [[ -z "${UPSTREAM_RELEASE}" ]]; then
+  echo "* Upstream '${UPSTREAM_RELEASE}' does not exist"
+  if [[ -n $(git branch --list "${RELEASE_BRANCH}") ]]; then
+    echo "* Local '${RELEASE_BRANCH}' exists"
+    # CHECKOUT
+    git checkout "$RELEASE_BRANCH"
+  else
+    echo "* Local '${RELEASE_BRANCH}' does not exist"
+    # CHECKOUT -b
+    git checkout -b "$RELEASE_BRANCH"
+  fi
+else  # pull or track remote and checkout
+  echo "* Upstream '${UPSTREAM_RELEASE}' exists"
+  if [[ -n $(git branch --list "${RELEASE_BRANCH}") ]]; then
+    echo "* Local '${RELEASE_BRANCH}' exists"
+    git checkout "$RELEASE_BRANCH"
+    # PULL Remote
+    git pull origin "$RELEASE_BRANCH"
+  else
+    echo "* Local '${RELEASE_BRANCH}' does not exist"
+    # TRACK Upstream and CHECKOUT
+    git branch --track "$RELEASE_BRANCH" "origin/${RELEASE_BRANCH}"
+    git checkout "$RELEASE_BRANCH"
+  fi 
+fi
+
+# REBASE 'Release' on 'Master/Main'
+echo "[STEP]: Rebase 'Release' on top of 'Master/Main'"
 git rebase "$MAIN_BRANCH"
+# Local Release branch is ready
 
 # MERGE 'Release Train' into 'Release'
+echo "[STEP]: Merge 'Release Train' into 'Release'"
 git merge "$RT_BRANCH" --no-ff
 
 # Update Sem Ver and Changelog, and commit
 $RW_BIN -c release.yml
-
 
 if [[ "$RC_TEST" = true ]]; then
   echo
@@ -63,6 +93,8 @@ if [[ "$RC_TEST" = true ]]; then
   git add -u
   git commit -m "$RC_MSG"
   
+  # Local Release branch is ready for RC Test/Release
+
   commit_sha=$(git rev-parse HEAD)
 
   echo
@@ -85,9 +117,9 @@ if [[ "$RC_TEST" = true ]]; then
   git commit -m "revert: $RC_MSG\n\nThis reverts commit $commit_sha."
 fi
 
-# Update Release Upstream Branch
-git push -u origin HEAD
-
+echo "[STEP]: Push 'Release' to Remote"
+git push origin "$RELEASE_BRANCH"
+# Upstream Release branch is ready for Prod Release
 
 echo
 echo " DONE !!"
