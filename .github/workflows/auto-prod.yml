@@ -67,8 +67,15 @@ jobs:
         id: rc_msg
         run: "echo RC_MSG=\"chore(rc): mark source code Sem Ver as '-rc', Release Candidate\" >> $GITHUB_OUTPUT"
 
+      # ENABLE GIT COMMITS
+      - name: Enable Git Commits, by setting git user.name and user.email
+        run: |
+          git config --global user.name "Konstantinos Lampridis"
+          git config --global user.email "k.lampridis@hotmail.com"
+
       # COMMIT Source Sem Ver
-      - run: 'git commit -am "${{ steps.rc_msg.outputs.RC_MSG }}"'
+      - name: "Commit Source Sem Ver, as Release Candidate"
+        run: git commit -am "${{ steps.rc_msg.outputs.RC_MSG }}"
 
       ## Trigger (gitops) Release Candidate 'Stress Tests' ##
       - name: "Trigger Release Candidate - Stress Tests"
