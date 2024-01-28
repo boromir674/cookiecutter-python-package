@@ -1,8 +1,28 @@
 #!/usr/bin/env sh
 
+# Takes Changes in HEAD, and puts them on 'Release Train' (RT)
+
 set -e
 
-# Load Changes into Release Train
+# Initialize variables
+CHANGES_BR="$(git rev-parse --abbrev-ref HEAD)"
+tag='board-rt'  # Default value for tag
+
+# Process arguments
+for arg in "$@"
+do
+    case $arg in
+        # Put Changes in RT, and start RT --> Release
+        --close)
+            tag='auto-release'
+            shift # Remove --close from processing
+            ;;
+        *)
+            # If it's not '--close', treat it as CHANGES_BR
+            CHANGES_BR="$arg"
+            ;;
+    esac
+done
 
 # branch with user's changes (ie code developed)
 CHANGES_BR="${1:-$(git rev-parse --abbrev-ref HEAD)}"
@@ -19,14 +39,14 @@ echo "[STEP]: Ensure Upstream is up-to-date with User's Branch"
 git push -u origin HEAD
 
 # GIT OPS
-export tt='board-rt'
+export tag='board-rt'
 
-echo "[STEP]: Tag Commit: $tt"
-(git tag "$tt" || (echo "* Tag $tt already exists" && git tag -d "$tt" && echo "* Deleted tag ${tt}" && git tag "$tt") && echo " -> Created tag $tt")
+echo "[STEP]: Tag Commit: $tag"
+(git tag "$tag" || (echo "* Tag $tag already exists" && git tag -d "$tag" && echo "* Deleted tag ${tag}" && git tag "$tag") && echo " -> Created tag $tag")
 
-echo "[STEP]: Push Tag: $tt"
-(git push origin --delete "$tt" && echo "* Deleted Remote tag ${tt}") || echo "* Remote Tag $tt does not exist"
-git push origin "$tt" && echo " -> Pushed tag $tt"
+echo "[STEP]: Push Tag: $tag"
+(git push origin --delete "$tag" && echo "* Deleted Remote tag ${tag}") || echo "* Remote Tag $tag does not exist"
+git push origin "$tag" && echo " -> Pushed tag $tag"
 
 echo
 echo " DONE !!"

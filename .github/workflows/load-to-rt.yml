@@ -2,19 +2,23 @@
 ## Onboard Release Train ##
 ###########################
 
-### TRIGGER event ###
-# export tt='onboard-rt'; git tag -d "$tt"; git push --delete origin "$tt"; git tag "$tt" && git push origin "$tt"
-
-
 # PR: HEAD --> release-train
 
+### TRIGGER event ###
 
-# Trigger only on push of an 'board-rt' tag
+# export tt='board-rt'
+# OR
+# export tt='auto-release'
+# for Automatically merging Release Train in Release
+
+# git tag -d "$tt"; git push --delete origin "$tt"; git tag "$tt" && git push origin "$tt"
+
 on:
   push:
     tags:
       # on tag with name 'board-rt' only
       - board-rt
+      - auto-release
 
 jobs:
   board_release_train:
@@ -22,7 +26,7 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       TRAIN: 'release-train'
-      BOARDING: 'boarding'
+      BOARDING: ${{ github.event.ref == 'refs/tags/auto-release' && 'auto-release' || 'boarding' }}
       MAIN_BRANCH: 'master'
     steps:
       - uses: actions/checkout@v4
@@ -36,9 +40,7 @@ jobs:
       - name: Discover User's Branch Name
         id: user_branch
         run: |
-          name=$(git branch -a --contains "$(git rev-parse HEAD)" | \
-            sed -n '2p' | \
-            sed 's/.*remotes\///')
+          name=$(git branch -a --contains "$(git rev-parse HEAD)" | sed -n '2p' | sed 's/.*remotes\///')
 
           echo "NAME:" $name
 

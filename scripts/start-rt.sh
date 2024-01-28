@@ -7,7 +7,7 @@ set -e
 
 RC_TEST=true
 
-RW_BIN="${1:-release-software-rolling}"
+NEW_VERSION="${1}"
 
 ## Branches
 
@@ -77,6 +77,17 @@ git merge "$RT_BRANCH" --no-ff --no-edit
 
 
 ### Update Sem Ver and Changelog, and commit ###
+# Ask user for Sem Ver of New Release
+echo
+echo "Enter Sem Ver of New Release (ie 2.0.0): "
+read -r VERSION
+
+# Bump Sem Ver: Distro files (src, pyproject.toml), README, and Docs
+./scripts/sem-ver-bump.sh "$VERSION"
+
+git add -p
+
+# Generate Changelog and ask user
 $RW_BIN -c release.yml
 
 
