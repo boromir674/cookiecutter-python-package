@@ -53,13 +53,13 @@ jobs:
         id: sem_ver
 
       # Derive RC Sem Ver Tag
-      - run: 'echo RC_TAG="v${{ steps.sem_ver.outputs.SEMVER }}-rc" >> $GITHUB_OUTPUT'
+      - run: 'echo RC_VER="${{ steps.sem_ver.outputs.SEMVER }}-rc" >> $GITHUB_OUTPUT'
         id: rc_sem_ver
 
       # Update Source Sem Ver to Release Candidate Sem Ver
       - name: Mark Sem Ver in source as '-rc', Release Candidate
         shell: bash
-        run: sh ./scripts/distro-sem-ver-bump.sh "${{ steps.rc_sem_ver.outputs.RC_TAG }}"
+        run: sh ./scripts/distro-sem-ver-bump.sh "${{ steps.rc_sem_ver.outputs.RC_VER }}"
 
       - run: git status
 
@@ -80,7 +80,7 @@ jobs:
       ## Trigger (gitops) Release Candidate 'Stress Tests' ##
       - name: "Trigger Release Candidate - Stress Tests"
         env: 
-          rc_tag: ${{ steps.rc_sem_ver.outputs.RC_TAG }}
+          rc_tag: 'v${{ steps.rc_sem_ver.outputs.RC_VER }}'
         run: |
           echo "[STEP]: Tag Commit: ${rc_tag}"
           git tag "$rc_tag"
