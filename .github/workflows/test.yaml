@@ -283,7 +283,7 @@ jobs:
     env:
       DIST_DIR: dist
       PACKAGE_DIST_VERSION: ${{ needs.test_suite.outputs.SEMVER_PIP_FORMAT }}
-      TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
+      TWINE_USERNAME: "__token__"
       TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
       PYPI_SERVER: ${{ vars.PYPI_SERVER }}
     steps:
