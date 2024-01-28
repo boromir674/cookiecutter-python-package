@@ -1,0 +1,134 @@
+#############################
+## Merge Release in Master ##
+#############################
+
+# Triggered on tag 'auto-prod' push
+
+# export tt='auto-prod'
+# git tag -d "$tt"; git push --delete origin "$tt"; git tag "$tt" && git push origin "$tt"
+
+#### Does the following:
+#  1. Triggers 'Release' Stress Tests
+#  2. if Tests and Code Review OK
+#  3. Merge PR 'release' -->  'Master'
+####
+
+on:
+  push:
+    tags:
+      - auto-prod
+
+jobs:
+  merge_release_in_master:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      RELEASE: 'release'
+      MAIN_BR: 'master'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 0 indicates all history for all branches and tags.
+          set-safe-directory: ''  # `git config --global --add safe.directory <path>`
+          token: '${{ secrets.GH_TOKEN }}'
+
+      - name: "Check if tag is on '${{ env.RELEASE }}' branch"
+        uses: rickstaa/action-contains-tag@v1
+        id: tag_on_release
+        with:
+          tag: "${{ github.ref }}"
+          reference: "${{ env.RELEASE }}"  # the branch to check if the tag is on
+
+      # REQUIRE Tag to be on Release Branch, else Exit with Error
+      - if: ${{ steps.tag_on_release.outputs.retval }} == 'false'
+        name: "Exit if '${{ github.ref }}' NOT on '${{ env.RELEASE }}' branch"
+        run: echo "Tag '${{ github.ref }}' is not on '${{ env.RELEASE }}' branch" && exit 1
+
+      - run: git branch --track "${{ env.RELEASE }}" "origin/${{ env.RELEASE }}" 
+      - run: git checkout "${{ env.RELEASE }}"
+
+      # Derive PROD Sem Ver
+      - run: 'echo SEMVER="$(./scripts/parse_version.py)" >> $GITHUB_OUTPUT'
+        id: sem_ver
+
+      # Derive RC Sem Ver Tag
+      - run: 'echo RC_TAG="v${{ steps.sem_ver.outputs.SEMVER }}-rc" >> $GITHUB_OUTPUT'
+        id: rc_sem_ver
+
+      # Update Source Sem Ver to Release Candidate Sem Ver
+      - name: Mark Sem Ver in source as '-rc', Release Candidate
+        shell: bash
+        run: ./scripts/distro-sem-ver-bump.sh "${{ steps.rc_sem_ver.outputs.RC_TAG }}"
+
+      - run: git status
+
+      - name: Set text of commit message (aka subject), to use for RC (-rc) Sem Ver update
+        id: rc_msg
+        run: "echo RC_MSG=\"chore(rc): mark source code Sem Ver as '-rc', Release Candidate\" >> $GITHUB_OUTPUT"
+
+      # COMMIT Source Sem Ver
+      - run: 'git commit -am "${{ steps.rc_msg.outputs.RC_MSG }}"'
+
+      ## Trigger (gitops) Release Candidate 'Stress Tests' ##
+      - name: "Trigger Release Candidate - Stress Tests"
+        env: 
+          rc_tag: ${{ steps.rc_sem_ver.outputs.RC_TAG }}
+        run: |
+          echo "[STEP]: Tag Commit: ${rc_tag}"
+          git tag "$rc_tag"
+
+          echo "[STEP]: Delete Remote Tag ${rc_tag}, if exists"
+          (git push origin --delete "$rc_tag" && echo "* Deleted Remote tag $rc_tag") || echo "* Remote Tag ${rc_tag} does not exist"
+
+          echo "[STEP]: Push Tag: $rc_tag"
+          git push origin "$rc_tag"
+          echo
+          echo " -> Pushed tag $rc_tag"
+          echo
+          echo "## TRIGGERED RELEASE CANDIDATE - TESTS ##"
+          echo
+
+      ## Update Source Sem Ver to Prod Release Sem Ver
+      
+      # 1. Find Previous Commit SHA
+      - name: Find previous commit sha
+        run: 'echo COMMIT_SHA="$(git rev-parse HEAD~1)" >> $GITHUB_ENV'
+
+      # 2. COMMIT Revert operation, for Production Sem Ver
+      - name: "Revert to Production Sem Ver, from Release Candidate, '-rc"
+        run: |
+          git revert "$COMMIT_SHA" --no-commit
+          git commit -m "revert: ${{ steps.rc_msg.outputs.RC_MSG }}\n\nThis reverts commit ${COMMIT_SHA}."
+
+      # Push Release Branch
+      - run: git push
+
+      ### Open PR ###
+      - name: "Open PR   'head': ${{ env.RELEASE }}  -->  'base': ${{ env.MAIN_BR }}"
+        run: |
+          gh pr create --head "${{ env.RELEASE }}" --base "${{ env.MAIN_BR }}" \
+            --title "Release Version '${{ steps.sem_ver.outputs.SEMVER }}' into '${{ env.MAIN_BR }}' Branch" \
+            --body "## :rocket: Release '${{ steps.sem_ver.outputs.SEMVER }}' into '${{ env.MAIN_BR }}' Branch :rocket:
+            
+            This PR marks a pivotal moment in our deployment cycle, signaling that all changes on the **Release** branch are deemed ready for production. It represents the collective decision of our developers that the changes bundled in the Release are suitable to be released together.
+
+            ### What's Happening in This PR?
+
+            - We are merging the '${{ env.RELEASE }}' branch into the '${{ env.MAIN_BR }}' branch.
+            - This action is a critical step, transitioning us from the release phase to the production phase.
+
+            ### :white_check_mark: Automatic Merging Upon CI Checks :white_check_mark:
+            
+            This PR will be automatically merged into the '${{ env.MAIN_BR }}' branch, if the following conditions are met:
+
+            - All CI Checks pass
+            - Code Review is approved by at least one developer
+
+            ### :warning: Manual Merging Upon CI Checks and Code Review :warning:
+
+            If the above conditions are not met, this PR will be manually merged into the '${{ env.MAIN_BR }}' branch, by a developer.
+            "
+
+      ### Merge PR, when CI Pass + Human Review OK ###
+      - name: "Merge PR   'head': ${{ env.RELEASE }}  -->  'base': ${{ env.MAIN_BR }}"
+        run: gh pr merge "${{ env.RELEASE }}" --auto --delete-branch --squash
