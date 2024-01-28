@@ -32,6 +32,7 @@ jobs:
           set-safe-directory: ''  # `git config --global --add safe.directory <path>`
           token: '${{ secrets.GH_TOKEN }}'
       - run: git branch --track "${{ env.RELEASE }}" "origin/${{ env.RELEASE }}" 
+      - run: git log --graph --decorate --color --all --stat
       - name: "Check if tag is on '${{ env.RELEASE }}' branch"
         uses: rickstaa/action-contains-tag@v1
         id: tag_on_release
@@ -44,7 +45,6 @@ jobs:
         name: "Exit if '${{ github.ref }}' NOT on '${{ env.RELEASE }}' branch"
         run: echo "Tag '${{ github.ref }}' is not on '${{ env.RELEASE }}' branch" && exit 1
 
-      - run: git branch --track "${{ env.RELEASE }}" "origin/${{ env.RELEASE }}" 
       - run: git checkout "${{ env.RELEASE }}"
 
       # Derive PROD Sem Ver
