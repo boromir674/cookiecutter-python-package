@@ -527,8 +527,7 @@ ConfigInterface = t.TypeVar('ConfigInterface')
 
 
 class ConfigInterfaceGeneric(t.Generic[ConfigInterface]):
-    def __getitem__(self, file_path_str: t.Union[str, None]) -> ConfigInterface:
-        ...
+    def __getitem__(self, file_path_str: t.Union[str, None]) -> ConfigInterface: ...
 
 
 @pytest.fixture
@@ -680,8 +679,7 @@ def user_config(distro_loc: Path) -> ConfigInterfaceGeneric[ConfigProtocol]:
 class RelativePathsGenerator(Protocol):
     """Generate relative paths from a given root folder."""
 
-    def relative_file_paths(self) -> t.Iterator[Path]:
-        ...
+    def relative_file_paths(self) -> t.Iterator[Path]: ...
 
 
 @pytest.fixture
@@ -824,9 +822,9 @@ def get_expected_generated_files(
         from cookiecutter_python.backend import get_docs_gen_internal_config
 
         # Find where each Docs Builder 'stores' its Template Files (ie source docs)
-        _doc_builder_id_2_template_docs_dir_name: t.Dict[
-            str, str
-        ] = get_docs_gen_internal_config()
+        _doc_builder_id_2_template_docs_dir_name: t.Dict[str, str] = (
+            get_docs_gen_internal_config()
+        )
         builder_docs_folder_name: str = _doc_builder_id_2_template_docs_dir_name[
             user_docs_builder_id
         ]
