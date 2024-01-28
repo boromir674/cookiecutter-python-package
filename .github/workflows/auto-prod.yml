@@ -59,7 +59,7 @@ jobs:
       # Update Source Sem Ver to Release Candidate Sem Ver
       - name: Mark Sem Ver in source as '-rc', Release Candidate
         shell: bash
-        run: ./scripts/distro-sem-ver-bump.sh "${{ steps.rc_sem_ver.outputs.RC_TAG }}"
+        run: chmod +x ./scripts/distro-sem-ver-bump.sh && ./scripts/distro-sem-ver-bump.sh "${{ steps.rc_sem_ver.outputs.RC_TAG }}"
 
       - run: git status
 
