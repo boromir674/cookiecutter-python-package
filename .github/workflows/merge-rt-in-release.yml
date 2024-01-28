@@ -12,7 +12,7 @@
 # We Test RT, and do auto merge if CI Checks Pass
 
 on:
-  pull_request_target:
+  pull_request:
     types: [closed]
   # push:
   #   tags:
@@ -21,10 +21,9 @@ on:
 jobs:
   merge_rt_in_release:
     # When 'boarding-n-auto-release --> 'release-train' PR is merged
-    if: ${{ github.event.pull_request.merged == true && \
+    if: ${{ github.event.pull_request.merged == true && 
       github.event.pull_request.head.ref == 'boarding-n-auto-release' && \
       github.event.pull_request.base.ref == 'release-train' }}
-    # ${{ contains(github.event.head_commit.message, env.BOARDING_EVENT) }}" == 'true'
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -43,9 +42,7 @@ jobs:
       - run: git branch --track "${{ env.RELEASE_BR }}" "origin/${{ env.RELEASE_BR }}"
 
       ############## PR ##############
-      - name: 'Create PR   ${{ env.TRAIN }}  -->  ${{ env.RELEASE_BR }}'
-        # --head is the branch where the changes were developed
-        # --base is the branch you want to merge the changes into
+      - name: "Create PR  'head': ${{ env.TRAIN }}  -->  'base': ${{ env.RELEASE_BR }}"
         run: |
           gh pr create --head "${{ env.TRAIN }}" --base "${{ env.RELEASE_BR }}" \
             --title "Initiate Release Process - Merging '${{ env.TRAIN }}' in '${{ env.RELEASE_BR }}'" \
@@ -85,18 +82,5 @@ jobs:
             "
 
       ############## Merge ##############
-      # - if: ${{ github.event.pull_request.head.ref == 'auto-release' }}
-      #   run: echo MRG_MSG="Merge '${{ env.TRAIN }}' into '${{ env.RELEASE_BR }}' - Initiating Release Process" >> $GITHUB_OUTPUT
-      #   id: merge_msg
-
       - name: 'Merge PR   ${{ env.TRAIN }}  -->  ${{ env.RELEASE_BR }}'
         run: gh pr merge "${{ env.TRAIN }}" --auto --delete-branch --squash
-        # if 'auto-release' merged on RT previously, then use custom commit msg
-        # run: |
-        #   if [[ -n "${{ steps.merge_msg.outputs.MRG_MSG }}" ]]; then
-        #     gh pr merge "${{ env.TRAIN }}" --auto --delete-branch --squash --subject "${{ steps.merge_msg.outputs.MRG_MSG }}"
-        #   else
-        #     gh pr merge "${{ env.TRAIN }}" --auto --delete-branch --squash
-        #   fi
-
-      # The commit message, might trigger (gitops) workflows
