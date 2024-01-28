@@ -1,0 +1,86 @@
+############################
+## Merge Train in Release ##
+############################
+
+# Triggered when PR from 'auto-release' merges into 'release-train'
+
+# 1. PR: release-train --> release
+# 2. Test
+# 3. Merge
+
+# Release Train (RT) has All changes needed for Release
+# We Test RT, and do auto merge if CI Checks Pass
+
+on:
+  pull_request:
+    types: [closed]
+  # push:
+  #   tags:
+  #     - merge-rt-in-release
+
+jobs:
+  merge_rt_in_release:
+    # When 'boarding-n-auto-release --> 'release-train' PR is merged
+    if: ${{ github.event.pull_request.merged == true && 
+      github.event.pull_request.head.ref == 'boarding-n-auto-release' && \
+      github.event.pull_request.base.ref == 'release-train' }}
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TRAIN: 'release-train'
+      RELEASE_BR: 'release'
+      MAIN_BR: 'master'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 0 indicates all history for all branches and tags.
+          set-safe-directory: ''  # `git config --global --add safe.directory <path>`
+          token: '${{ secrets.GH_TOKEN }}'
+      
+      # Track the remote branches
+      - run: git branch --track "${{ env.TRAIN }}" "origin/${{ env.TRAIN }}"
+      - run: git branch --track "${{ env.RELEASE_BR }}" "origin/${{ env.RELEASE_BR }}"
+
+      ############## PR ##############
+      - name: "Create PR  'head': ${{ env.TRAIN }}  -->  'base': ${{ env.RELEASE_BR }}"
+        run: |
+          gh pr create --head "${{ env.TRAIN }}" --base "${{ env.RELEASE_BR }}" \
+            --title "Initiate Release Process - Merging '${{ env.TRAIN }}' in '${{ env.RELEASE_BR }}'" \
+            --body "## :rocket: Initiating Release Process :rocket:
+
+            This PR marks a pivotal moment in our deployment cycle, signaling that all changes on the **Release Train (RT)** are deemed ready for release. It represents the collective decision of our developers that the changes bundled in the RT are suitable to be released together.
+
+            ### What's Happening in This PR?
+
+            - We are merging the `${{ env.TRAIN }}` branch into the `${{ env.RELEASE_BR }}` branch.
+            - This action is a critical step, transitioning us from the development phase to the release phase.
+
+            ### :white_check_mark: Automatic Merging Upon CI Checks :white_check_mark:
+
+            - This PR is configured to **automatically merge** once all CI checks successfully pass.
+            - These checks include running our comprehensive test suite on the RT branch to ensure a minimum standard of quality, covering sanity checks, QA, and unit tests.
+
+            ### Ensuring Quality and Preparing for Release:
+
+            - Our focus now shifts to **stress testing** and executing a CI job matrix to rigorously evaluate our changes under varied conditions.
+            - We'll also handle essential chores, like **semantic versioning bumps** across source/distribution files and updating the changelog with details of the imminent release.
+
+            ### :bulb: Next Steps in Our Journey:
+
+            - Following the successful merge of this PR, we'll initiate the next phase, which involves merging the `${{ env.RELEASE_BR }}` into the **Main/Master** branch.
+            - This next PR will continue the narrative we're building here, ensuring a smooth transition and a consistent story from development to final release.
+
+            ### :handshake: Collaborative Efforts:
+
+            - Your reviews, insights, and contributions have brought us to this stage. Let's keep up the momentum as we move closer to our goal.
+            - Please coordinate for any final adjustments or critical issues that need addressing before the merge.
+
+            ### :hourglass_flowing_sand: Looking Ahead:
+
+            - Once merged, our changes are set for the final stage of release preparation.
+            - The team should be prepared to monitor and address any issues in the subsequent phase of merging into the Main/Master branch.
+            "
+
+      ############## Merge ##############
+      - name: 'Merge PR   ${{ env.TRAIN }}  -->  ${{ env.RELEASE_BR }}'
+        run: gh pr merge "${{ env.TRAIN }}" --auto --delete-branch --squash
