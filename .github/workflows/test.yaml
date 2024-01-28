@@ -275,63 +275,21 @@ jobs:
   ## JOB: PYPI UPLOAD ##
   pypi_publish:
     needs: [test_suite, check_which_git_branch_we_are_on]
-    runs-on: ubuntu-latest
-    # if we are on tag starting with "v" and if we are on master or dev branch
-    if: startsWith(github.event.ref, 'refs/tags/v') && ${{ needs.check_which_git_branch_we_are_on.outputs.AUTOMATED_DEPLOY == 'true' }}
-    environment:
-      name: ${{ needs.check_which_git_branch_we_are_on.outputs.ENVIRONMENT_NAME }}
-    env:
-      DIST_DIR: dist
-      PACKAGE_DIST_VERSION: ${{ needs.test_suite.outputs.SEMVER_PIP_FORMAT }}
-      TWINE_USERNAME: "__token__"
+    if: always()
+    uses: boromir674/automated-workflows/.github/workflows/pypi_env.yml@v1.2.0
+    with:
+      should_trigger: ${{ startsWith(github.event.ref, 'refs/tags/v') && \
+        needs.check_which_git_branch_we_are_on.outputs.AUTOMATED_DEPLOY == 'true' }}
+
+      distro_name: cookiecutter_python
+      distro_version: ${{ needs.test_suite.outputs.SEMVER_PIP_FORMAT }}
+      pypi_env: '${{ needs.check_which_git_branch_we_are_on.outputs.ENVIRONMENT_NAME }}'
+      artifacts_path: downloaded-artifacts
+
+      require_wheel: true
+      allow_existing: true
+    secrets:
       TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
-      PYPI_SERVER: ${{ vars.PYPI_SERVER }}
-    steps:
-    - uses: actions/checkout@v3
-    - name: Download Source & Wheel distributions
-      uses: actions/download-artifact@v3
-      with:
-        path: downloaded-artifacts
-    - name: Get Publishable files from the Artifacts
-      run: |
-        TAG="${GITHUB_REF_NAME}"
-        SEM_VER="${TAG:1}"  # remove the first character (v)
-        PARSER="src/cookiecutter_python/{{ cookiecutter.project_slug }}/scripts/parse_version.py"
-        PARSED_VERSION=$(python "${PARSER}")
-        if [[ "${PARSED_VERSION}" != "${SEM_VER}" ]]; then
-          echo "ERROR: Version in __init__.py (${PARSED_VERSION}) does not match tag (${SEM_VER})"
-          exit 1
-        fi
-    - run: mkdir ${DIST_DIR}
-    - run: |
-        # Get Source Distribution (tar.gz of source code)
-        source_distributions=$(find downloaded-artifacts -type f -name cookiecutter_python*.tar.gz)
-        source_distributions_array=($source_distributions)
-        source_distribution=${source_distributions_array[0]}  # a *.tar.gz file path
-        # Extract the base name (without the path)
-        source_distribution_name=$(basename "$source_distribution")
-        # Check if all source distribution (.tar.gz) files have the same name
-        for file in "${source_distributions_array[@]}"; do
-          if [ "$source_distribution_name" != "$(basename "$file")" ]; then
-            echo "Error: Not all Source Distribution .tar.gz files have the same name!"
-            exit 1
-          fi
-        done
-        echo "source_distribution=$source_distribution" >> $GITHUB_ENV
-    - run: cp "$source_distribution" ${DIST_DIR}
-    - run: |
-        # Get all built Wheels and copy to dist folder
-        for f in `find downloaded-artifacts -type f -name cookiecutter_python*.whl`; do
-          echo "F: $f";
-          # TODO check for duplicates, which means that our build matrix produces the same wheel (need a different compiler that python such as pypy, cython, etc)
-          cp $f ${DIST_DIR}
-        done
-    - name: Install Dependencies
-      run: pip install tox==3.28
-    - run: echo "Publishing $PACKAGE_DIST_VERSION to $PYPI_SERVER PyPI"
-    - name: Publish to PyPI
-      run: tox -vv -s false -e deploy -- upload --non-interactive --skip-existing
-    - run: echo "Published :\)"
 
 
 ## PUBLISH Github Release ##
