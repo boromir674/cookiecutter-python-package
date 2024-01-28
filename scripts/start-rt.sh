@@ -7,8 +7,6 @@ set -e
 
 RC_TEST=true
 
-NEW_VERSION="${1}"
-
 ## Branches
 
 # 'Release Train' git branch
@@ -24,12 +22,6 @@ echo "PREPARING for Release.."
 echo
 
 git fetch
-
-# UPDATE Master/Main
-# git checkout "$MAIN_BRANCH"
-# git pull origin "$MAIN_BRANCH"
-
-
 
 # Setup Release Branch to Point to Main/Master
 UPSTREAM_RELEASE=$(git ls-remote --heads origin "${RELEASE_BRANCH}")
@@ -66,29 +58,42 @@ git rebase "$MAIN_BRANCH"
 # Local Release branch is ready
 
 
-# # UPDATE Release Train
-# git branch --track "$RT_BRANCH" "origin/${RT_BRANCH}" || echo "* Branch $RT_BRANCH already exists"
-# git checkout "$RT_BRANCH"
-# git pull
+# UPDATE Release Train
+git branch --track "$RT_BRANCH" "origin/${RT_BRANCH}" || echo "* Branch $RT_BRANCH already exists"
+git checkout "$RT_BRANCH"
+git pull
 
 # MERGE 'Release Train' into 'Release'
 echo "[STEP]: Merge 'Release Train' into 'Release'"
 git merge "$RT_BRANCH" --no-ff --no-edit
 
 
+## OPT 1
 ### Update Sem Ver and Changelog, and commit ###
 # Ask user for Sem Ver of New Release
-echo
-echo "Enter Sem Ver of New Release (ie 2.0.0): "
-read -r VERSION
+# echo
+# echo "Enter Sem Ver of New Release (ie 2.0.0): "
+# read -r VERSION
+# # Bump Sem Ver: Distro files (src, pyproject.toml), README, and Docs
+# ./scripts/sem-ver-bump.sh "$VERSION"
+# git diff
+# git commit -a -m "chore(release): bump Semantic Version to ${VERSION}"
 
-# Bump Sem Ver: Distro files (src, pyproject.toml), README, and Docs
-./scripts/sem-ver-bump.sh "$VERSION"
+# # Ask user to manually modify CHANGELOG
+# echo
+# echo "Modify CHANGELOG.md to reflect changes in this Release"
+# echo "Press Enter to continue.."
+# read -r
 
-git add -p
+# git diff --stat
+# git commit -a -m "chore(release): add Release ${VERSION} entry in CHANGELOG.rst"
 
+## OPT 2
 # Generate Changelog and ask user
+source ../software-release/.env
 $RW_BIN -c release.yml
+
+### END ####
 
 
 if [[ "$RC_TEST" = true ]]; then
