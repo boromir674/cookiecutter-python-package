@@ -3,6 +3,55 @@ Changelog
 =========
 
 
+1.12.1 (2024-01-28)
+===================
+
+Adding Continous Deployment for `Github Release`, with a dedicated **CI Job**.
+
+This Release prepares for new GitOps-based Release Process.
+It adopts the concept of `Release Train`, which is represented by a
+**dedicated** git branch.
+
+The process is designed to be semi-automatic, since a developer is expected
+to:
+- input a `Semantic Version`, for bumping the previous **Release** Version
+- add a Changelog entry, corresponding to the new **Release**
+
+The process involves `gitops operations`, simple `shell scripts`,
+and `github workflows`.
+
+
+Changes
+^^^^^^^
+
+documentation
+"""""""""""""
+- add Badge to count monthly pypi downloads (#116)
+
+ci
+""
+- add Job for `gh release create`, and trigger load-to-rt on 'auto-release' tag
+- gitops "boarding" on `Release Train`
+- gitops "release" User's Branch
+- improve messages rendered on github actions web ui
+
+test
+""""
+- expect either empty log file in PWD, after generator run, or no file at all
+
+refactor
+""""""""
+- apply new black version 24.1, with the 2024 style
+
+style
+"""""
+- clean code, by removing obsolete code comments related to cookiecutter callable
+
+release
+"""""""
+- bump version to 1.12.1
+
+
 1.12.0 (2024-01-18)
 ===================
 
