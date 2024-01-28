@@ -74,11 +74,17 @@ jobs:
     steps:
       - name: Pass 'env' section variables to GITHUB_OUTPUT
         id: pass-env-to-output
+        env:
+          BOARDING_EVENT: 'do Boarding CI Tests'
         run: |
           # set the matrix strategy to Full Matrix Stress Test if on master/main or stress-test branch or any tag
           BRANCH_NAME=${GITHUB_REF_NAME}
           if [[ $BRANCH_NAME == "stress-test" || $GITHUB_REF == refs/tags/* ]]; then
             echo "matrix=$FULL_MATRIX_STRATEGY" >> $GITHUB_OUTPUT
+          
+          # github.event.head_commit.message has 'do Boarding CI Tests' string
+          elif [[ "${{ contains(github.event.head_commit.message, env.BOARDING_EVENT) }}" == 'true' ]]; then
+            echo "matrix=$TEST_STRATEGY" >> $GITHUB_OUTPUT 
           else
             echo "matrix=$UBUNTU_PY310_STRATEGY" >> $GITHUB_OUTPUT
           fi
@@ -228,10 +234,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: set_github_outputs
     if: ${{ startsWith(github.event.ref, 'refs/tags/v') && needs.set_github_outputs.outputs.PUBLISH_ON_PYPI == 'true' }}
-    outputs:
-      ENVIRONMENT_NAME: ${{ steps.set_environment_name.outputs.ENVIRONMENT_NAME }}
-      AUTOMATED_DEPLOY: ${{ steps.set_environment_name.outputs.AUTOMATED_DEPLOY }}
-
     # Signals only if all below are True:
     #  - PyPI Job Switch is ON
     #  - Workflow Event is a 'v*' Tag (e.g. v1.0.0, v-test)
@@ -245,13 +247,13 @@ jobs:
         with:
           reference: "master"
           tag: "${{ github.ref }}"
-      - run: echo "ON_MAIN_BRANCH=${{ steps.main_contains_tag.outputs.retval }}" >> $GITHUB_OUTPUT
+
       - uses: rickstaa/action-contains-tag@v1
         id: release_contains_tag
         with:
           reference: "release"
           tag: "${{ github.ref }}"
-      - run: echo "ON_RELEASE_BRANCH=${{ steps.release_contains_tag.outputs.retval }}" >> $GITHUB_OUTPUT
+
       - name: Pick Production or Test Environment, if tag on master or release branch respectively
         id: set_environment_name
         run: |
@@ -265,6 +267,10 @@ jobs:
             DEPLOY=false
           fi
           echo "AUTOMATED_DEPLOY=$DEPLOY" >> $GITHUB_OUTPUT
+    outputs:
+      ENVIRONMENT_NAME: ${{ steps.set_environment_name.outputs.ENVIRONMENT_NAME }}
+      AUTOMATED_DEPLOY: ${{ steps.set_environment_name.outputs.AUTOMATED_DEPLOY }}
+      TAG_ON_MASTER: ${{ steps.main_contains_tag.outputs.retval }}
 
   ## JOB: PYPI UPLOAD ##
   pypi_publish:
@@ -326,6 +332,40 @@ jobs:
     - name: Publish to PyPI
       run: tox -vv -s false -e deploy -- upload --non-interactive --skip-existing
     - run: echo "Published :\)"
+
+
+## PUBLISH Github Release ##
+  gh_release:
+    name: GH Release, created from Tag on Master
+    needs: [test_suite, check_which_git_branch_we_are_on]
+    if: startsWith(github.event.ref, 'refs/tags/v') && ${{ needs.check_which_git_branch_we_are_on.outputs.TAG_ON_MASTER == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      # Download Artifacts from CI
+      - name: Download built Distro Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: dist
+          path: dist-local
+
+      - run: ls -l dist-local
+
+      - name: Create a Github Release, from Tag on Master
+      # To be consistent with already published GH Releases at time of writing (2024/01):
+      # * ommit --title flag so in github UI, content start direclty below the
+      #   git tag, which is rendered as the top section rendered as clickable link
+      # * use --generate-notes to generate the automatic content
+      # * ommit --notes-start-tag string param
+
+      # * fails if tag not pushed on remote
+      # * here we Prepend some content passed as --notes string param above the
+      #   auto-generated notes content
+        run: |
+          gh release create "${{ github.ref }}" dist-local/* --verify-tag \
+            --generate-notes \
+            --notes "Release Notes: ${{ github.event.head_commit.message }}"
+      # use  -p, --prerelease  to publish it as pre-release
+      # use  -F, --notes-file file   to possibly Prepend content from file
 
 
 ### STATIC CODE ANALYSIS & LINTING ###
