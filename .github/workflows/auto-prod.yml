@@ -49,7 +49,7 @@ jobs:
       - run: git checkout "${{ env.RELEASE }}"
 
       # Derive PROD Sem Ver
-      - run: 'echo SEMVER="$(./src/cookiecutter_python/\{\{ cookiecutter.project_slug \}\}scripts/parse_version.py)" >> $GITHUB_OUTPUT'
+      - run: echo SEMVER=$(grep -E -o '^version\s*=\s*\".*\"' pyproject.toml | cut -d'"' -f2) >> $GITHUB_OUTPUT
         id: sem_ver
 
       # Derive RC Sem Ver Tag
