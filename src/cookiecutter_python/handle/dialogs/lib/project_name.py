@@ -138,7 +138,7 @@ class ProjectNameDialog:
                     'choices': [
                         Choice(str(x[0]), checked=bool(x[1]))
                         for x in cookie_vars['supported-interpreters']['choices']
-                    ]
+                    ],
                     # 'default': ['3.6', '3.7', '3.8', '3.9', '3.10', '3.11'],
                 },
                 # docs_builder
