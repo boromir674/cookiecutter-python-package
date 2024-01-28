@@ -31,8 +31,9 @@ jobs:
           fetch-depth: 0  # 0 indicates all history for all branches and tags.
           set-safe-directory: ''  # `git config --global --add safe.directory <path>`
           token: '${{ secrets.GH_TOKEN }}'
+
       - run: git branch --track "${{ env.RELEASE }}" "origin/${{ env.RELEASE }}" 
-      - run: git log --graph --decorate --color --all --stat
+
       - name: "Check if tag is on '${{ env.RELEASE }}' branch"
         uses: rickstaa/action-contains-tag@v1
         id: tag_on_release
@@ -41,9 +42,9 @@ jobs:
           reference: "${{ env.RELEASE }}"  # the branch to check if the tag is on
 
       # REQUIRE Tag to be on Release Branch, else Exit with Error
-      - if: ${{ steps.tag_on_release.outputs.retval }} == 'false'
+      - if: ${{ steps.tag_on_release.outputs.retval == 'false' }}
         name: "Exit if '${{ github.ref }}' NOT on '${{ env.RELEASE }}' branch"
-        run: echo "Tag '${{ github.ref }}' is not on '${{ env.RELEASE }}' branch" && exit 1
+        run: echo "Tag '${{ github.ref }}' on '${{ env.RELEASE }}' = ${{ steps.tag_on_release.outputs.retval }}" && exit 1
 
       - run: git checkout "${{ env.RELEASE }}"
 
