@@ -83,13 +83,7 @@ jobs:
           rc_tag: 'v${{ steps.rc_sem_ver.outputs.RC_VER }}'
         run: |
           echo "[STEP]: Tag Commit: ${rc_tag}"
-          git tag "$rc_tag"
-
-          echo "[STEP]: Delete Remote Tag ${rc_tag}, if exists"
-          (git push origin --delete "$rc_tag" && echo "* Deleted Remote tag $rc_tag") || echo "* Remote Tag ${rc_tag} does not exist"
-
-          echo "[STEP]: Push Tag: $rc_tag"
-          git push origin "$rc_tag"
+          git tag -d "$rc_tag"; git push --delete origin "$rc_tag"; git tag "$rc_tag" && git push origin "$rc_tag"
           echo
           echo " -> Pushed tag $rc_tag"
           echo
