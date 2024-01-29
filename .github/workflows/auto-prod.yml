@@ -73,7 +73,7 @@ jobs:
           git config --global user.name "Konstantinos Lampridis"
           git config --global user.email "k.lampridis@hotmail.com"
 
-      # COMMIT Source Sem Ver
+      # COMMIT RC Sem Ver
       - name: "Commit Source Sem Ver, as Release Candidate"
         run: git commit -am "${{ steps.rc_msg.outputs.RC_MSG }}"
 
@@ -92,14 +92,14 @@ jobs:
 
       ## Update Source Sem Ver to Prod Release Sem Ver
       
-      # COMMIT Revert operation, for Production Sem Ver
-      - name: "Revert to Production Sem Ver, from Release Candidate, '-rc"
-        run: |
-          git revert "$(git rev-parse HEAD)" --no-commit
-          git commit -m "revert: ${{ steps.rc_msg.outputs.RC_MSG }}\n\nThis reverts commit ${COMMIT_SHA}."
+      # # COMMIT Revert operation, for Production Sem Ver
+      # - name: "Revert to Production Sem Ver, from Release Candidate, '-rc"
+      #   run: |
+      #     git revert "$(git rev-parse HEAD)" --no-commit
+      #     git commit -m "revert: ${{ steps.rc_msg.outputs.RC_MSG }}\n\nThis reverts commit ${COMMIT_SHA}."
 
-      # Push Release Branch
-      - run: git push
+      # # Push Release Branch
+      # - run: git push
 
       ### Open PR ###
       - name: "Open PR   'head': ${{ env.RELEASE }}  -->  'base': ${{ env.MAIN_BR }}"
@@ -128,5 +128,5 @@ jobs:
             "
 
       ### Merge PR, when CI Pass + Human Review OK ###
-      - name: "Merge PR   'head': ${{ env.RELEASE }}  -->  'base': ${{ env.MAIN_BR }}"
-        run: gh pr merge "${{ env.RELEASE }}" --auto --delete-branch --squash
+      # - name: "Merge PR   'head': ${{ env.RELEASE }}  -->  'base': ${{ env.MAIN_BR }}"
+      #   run: gh pr merge "${{ env.RELEASE }}" --auto --delete-branch --squash
