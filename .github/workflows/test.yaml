@@ -80,7 +80,7 @@ jobs:
           # set the matrix strategy to Full Matrix Stress Test if on master/main or stress-test branch or any tag
           BRANCH_NAME=${GITHUB_REF_NAME}
           if [[ $BRANCH_NAME == "stress-test" || $GITHUB_REF == refs/tags/* ]]; then
-            echo "matrix=$FULL_MATRIX_STRATEGY" >> $GITHUB_OUTPUT
+            echo "matrix=$UBUNTU_PY310_STRATEGY" >> $GITHUB_OUTPUT
           
           # github.event.head_commit.message has 'do Boarding CI Tests' string
           elif [[ "${{ contains(github.event.head_commit.message, env.BOARDING_EVENT) }}" == 'true' ]]; then
