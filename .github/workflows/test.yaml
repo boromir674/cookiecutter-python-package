@@ -242,10 +242,12 @@ jobs:
       RELEASE_BR: 'release'
       MAIN_BR: 'master'
     steps:
-      - run: git branch --track "${{ env.RELEASE_BR }}" "origin/${{ env.RELEASE_BR }}"
+      # Fetch 'master' and 'release' branches
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+      - run: git branch --track "${{ env.RELEASE_BR }}" "origin/${{ env.RELEASE_BR }}"
+
       - name: "Check if '${{ github.ref }}' tag is on '${{ env.MAIN_BR }}' branch"
         uses: rickstaa/action-contains-tag@v1
         id: main_contains_tag
