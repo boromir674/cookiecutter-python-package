@@ -242,7 +242,7 @@ jobs:
       RELEASE_BR: 'release'
       MAIN_BR: 'master'
     steps:
-      - run: git branch --track "${{ env.RELEASE }}" "origin/${{ env.RELEASE }}"
+      - run: git branch --track "${{ env.RELEASE_BR }}" "origin/${{ env.RELEASE_BR }}"
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
@@ -252,11 +252,11 @@ jobs:
         with:
           reference: ${{ env.MAIN_BR }}
           tag: "${{ github.ref }}"
-      - name: "Check if '${{ github.ref }}' tag is on '${{ env.RELEASE }}' branch"
+      - name: "Check if '${{ github.ref }}' tag is on '${{ env.RELEASE_BR }}' branch"
         uses: rickstaa/action-contains-tag@v1
         id: release_contains_tag
         with:
-          reference: ${{ env.RELEASE }}
+          reference: ${{ env.RELEASE_BR }}
           tag: "${{ github.ref }}"
 
       - name: Pick Production or Test Environment, if tag on master or release branch respectively
