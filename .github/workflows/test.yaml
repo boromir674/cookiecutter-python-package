@@ -238,20 +238,25 @@ jobs:
     #  - PyPI Job Switch is ON
     #  - Workflow Event is a 'v*' Tag (e.g. v1.0.0, v-test)
     #  - Tag is tagging a commit on either the 'master' or 'release' Branch
+    env:
+      RELEASE_BR: 'release'
+      MAIN_BR: 'master'
     steps:
+      - run: git branch --track "${{ env.RELEASE }}" "origin/${{ env.RELEASE }}"
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - uses: rickstaa/action-contains-tag@v1
+      - name: "Check if '${{ github.ref }}' tag is on '${{ env.MAIN_BR }}' branch"
+        uses: rickstaa/action-contains-tag@v1
         id: main_contains_tag
         with:
-          reference: "master"
+          reference: ${{ env.MAIN_BR }}
           tag: "${{ github.ref }}"
-
-      - uses: rickstaa/action-contains-tag@v1
+      - name: "Check if '${{ github.ref }}' tag is on '${{ env.RELEASE }}' branch"
+        uses: rickstaa/action-contains-tag@v1
         id: release_contains_tag
         with:
-          reference: "release"
+          reference: ${{ env.RELEASE }}
           tag: "${{ github.ref }}"
 
       - name: Pick Production or Test Environment, if tag on master or release branch respectively
