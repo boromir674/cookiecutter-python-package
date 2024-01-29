@@ -3,7 +3,7 @@ Changelog
 =========
 
 
-1.12.1 (2024-01-28)
+1.12.1 (2024-01-29)
 ===================
 
 Adding Continous Deployment for `Github Release`, with a dedicated **CI Job**.
