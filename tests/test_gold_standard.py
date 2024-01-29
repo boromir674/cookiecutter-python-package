@@ -136,7 +136,15 @@ def test_gs_matches_runtime(gen_gs_project, test_root):
     assert Path('tests/test_cli.py') in snap_relative_paths_set, (
         f"tests/test_cli.py is missing from Snapshot: {snapshot_dir}\n"
         "-------------------\n"
-        "Files in 'tests' folder: [\n" + '\n'.join([' ' + str(x) for x in snap_relative_paths_set if x.parts[0] == 'tests' and len(x.parts) > 1]) + "\n]\n"
+        "Files in 'tests' folder: [\n"
+        + '\n'.join(
+            [
+                ' ' + str(x)
+                for x in snap_relative_paths_set
+                if x.parts[0] == 'tests' and len(x.parts) > 1
+            ]
+        )
+        + "\n]\n"
     )
 
     # WHEN we compare the 2 sets of relative Paths
