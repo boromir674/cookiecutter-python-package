@@ -26,7 +26,8 @@ on:
 
 env:
   ### STRESS TEST Job MATRIX ###
-  FULL_MATRIX_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.7\", \"3.8\", \"3.9\", \"3.10\", \"3.11\"]}"
+  # FULL_MATRIX_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.7\", \"3.8\", \"3.9\", \"3.10\", \"3.11\"]}"
+  FULL_MATRIX_STRATEGY: "{\"platform\": [\"ubuntu-latest\"], \"python-version\": [\"3.10\", \"3.11\"]}"
   # Python 3.7 has reached End of Life (EOL) on June 27th, 2023
   # Python 3.12 is in bugfix mode, same as 3.11 -> can start supporting 3.12 it
   UBUNTU_PY310_STRATEGY: "{\"platform\":[\"ubuntu-latest\"], \"python-version\":[\"3.10\"]}"
@@ -283,16 +284,14 @@ jobs:
   pypi_publish:
     needs: [test_suite, check_which_git_branch_we_are_on]
     if: always()
-    uses: boromir674/automated-workflows/.github/workflows/pypi_env.yml@v1.2.0
+    uses: boromir674/automated-workflows/.github/workflows/pypi_env.yml@test
     with:
-      should_trigger: ${{ needs.check_which_git_branch_we_are_on.outputs.AUTOMATED_DEPLOY == 'true' }}
       distro_name: cookiecutter_python
+      should_trigger: ${{ needs.check_which_git_branch_we_are_on.outputs.AUTOMATED_DEPLOY == 'true' }}
       distro_version: ${{ needs.test_suite.outputs.SEMVER_PIP_FORMAT }}
       pypi_env: '${{ needs.check_which_git_branch_we_are_on.outputs.ENVIRONMENT_NAME }}'
-      artifacts_path: downloaded-artifacts
-
-      require_wheel: true
-      allow_existing: true
+      # require_wheel: true
+      # allow_existing: true
     secrets:
       TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
 
