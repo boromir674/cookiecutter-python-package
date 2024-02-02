@@ -132,6 +132,21 @@ def test_gs_matches_runtime(gen_gs_project, test_root):
         [x for x in runtime_relative_paths_set if '__pycache__' not in x.parts]
     )
 
+    # Sanity Check that tests/test_cli.py is part of the comparison below
+    assert Path('tests/test_cli.py') in snap_relative_paths_set, (
+        f"tests/test_cli.py is missing from Snapshot: {snapshot_dir}\n"
+        "-------------------\n"
+        "Files in 'tests' folder: [\n"
+        + '\n'.join(
+            [
+                ' ' + str(x)
+                for x in snap_relative_paths_set
+                if x.parts[0] == 'tests' and len(x.parts) > 1
+            ]
+        )
+        + "\n]\n"
+    )
+
     # WHEN we compare the 2 sets of relative Paths
 
     ## THEN, the sets should be the same
@@ -146,7 +161,7 @@ def test_gs_matches_runtime(gen_gs_project, test_root):
         os.environ.get("BUG_LOG_DEL_WIN") != "permission_error"
     )
 
-    # we should implement a if run on CI check here
+    # we should implement an if run on CI check here
     running_on_ci: bool = 'CI' in os.environ
 
     if not running_on_ci:
@@ -161,6 +176,8 @@ def test_gs_matches_runtime(gen_gs_project, test_root):
                 if '.vscode' not in x.parts
                 and 'settings.json' not in x.parts
                 and '.tox' not in x.parts
+                # EXCLUDE .pytest_cache/ folder
+                if x.parts[0] != '.pytest_cache'
             ]
         )
 
