@@ -29,7 +29,7 @@ def get_templated_vars():
             project_slug='biskotaki',
             package_name='biskotaki',
             author_name='Konstantinos Lampridis',
-            year='2023',
+            year='2024',
             version='0.0.1',
             github_username='boromir674',
             repo_name='biskotaki',
