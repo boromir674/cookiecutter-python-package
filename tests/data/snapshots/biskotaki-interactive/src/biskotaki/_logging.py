@@ -25,6 +25,7 @@ Usage:
     Do a 'from . import _logging' in the root __init__.py of your package and
     all submodules 'inherit' the logging configuration
 """
+
 import logging
 
 # for 'biskotaki' app/code

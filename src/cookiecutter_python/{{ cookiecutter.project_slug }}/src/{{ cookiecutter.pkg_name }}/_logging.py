@@ -25,10 +25,11 @@ Usage:
     Do a 'from . import _logging' in the root __init__.py of your package and
     all submodules 'inherit' the logging configuration
 """
+
 import logging
 
-# for '{{ cookiecutter.project_slug }}' app/code
-FILE_TARGET_LOGS = '{{ cookiecutter.pkg_name }}.log'
+# for 'biskotaki' app/code
+FILE_TARGET_LOGS = 'biskotaki.log'
 
 #### FILE LOGGING
 # set up logging to file for DEBUG Level and above
