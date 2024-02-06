@@ -20,9 +20,9 @@ on:
 
 jobs:
   merge_rt_in_release:
-    # When 'boarding-n-auto-release --> 'release-train' PR is merged
+    # When 'boarding-auto --> 'release-train' PR is merged
     if: ${{ github.event.pull_request.merged == true && 
-      github.event.pull_request.head.ref == 'boarding-n-auto-release' && \
+      github.event.pull_request.head.ref == 'boarding-auto' && \
       github.event.pull_request.base.ref == 'release-train' }}
     runs-on: ubuntu-latest
     env:

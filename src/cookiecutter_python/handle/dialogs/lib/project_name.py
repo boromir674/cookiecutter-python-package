@@ -9,7 +9,7 @@ from ..dialog import InteractiveDialog
 @InteractiveDialog.register_as_subclass('project-name')
 class ProjectNameDialog:
     def dialog(self, cookie_vars) -> Mapping[str, str]:
-        print(f"\n\n---- {cookie_vars['rtd_python_version']}")
+
         return prompt(
             [
                 {
