@@ -34,8 +34,8 @@ jobs:
       RELEASE_BR: 'release'
       MAIN_BR: 'master'
     steps:
-      - run: "[DEBUG] HEAD: '${{ github.head_ref }}', should be 'boarding-auto'"
-      - run: "[DEBUG] BASE: '${{ github.base_ref }}', should be 'release-train'"
+      - run: "echo \"[DEBUG] HEAD: '${{ github.head_ref }}', should be 'boarding-auto'\""
+      - run: "echo \"[DEBUG] BASE: '${{ github.base_ref }}', should be 'release-train'\""
 
       - uses: actions/checkout@v4
         with:
