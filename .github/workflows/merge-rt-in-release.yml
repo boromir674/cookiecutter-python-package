@@ -14,15 +14,17 @@ name: Merge RT in Release
 
 on:
   pull_request:
+    # When a pull request merges, the pull request is automatically closed.
+    # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#running-your-pull_request-workflow-when-a-pull-request-merges
     types: [closed]
-  # push:
-  #   tags:
-  #     - merge-rt-in-release
+    branches:  # ALLOWED Base Branches
+      - release-train
 
 jobs:
+  # RUN Job when 'boarding-auto --> 'release-train' PR is merged
   merge_rt_in_release:
-    # When 'boarding-auto --> 'release-train' PR is merged
-    if: github.event.pull_request.merged == true && github.event.pull_request.head.ref == 'boarding-auto' && github.event.pull_request.base.ref == 'release-train'
+    # ALLOWED Head Branches
+    if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'boarding-auto')
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

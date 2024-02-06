@@ -33,6 +33,7 @@ jobs:
         with:
           fetch-depth: 0  # 0 indicates all history for all branches and tags.
           set-safe-directory: ''  # `git config --global --add safe.directory <path>`
+          # GH_TOKEN should be a PAT, that allows to trigger Actions Workflow (default GITHUB_TOKEN cannot invoke Worklflows!)
           token: '${{ secrets.GH_TOKEN }}'
 
       - run: git log --graph --decorate --color --all --stat
