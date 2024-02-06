@@ -82,8 +82,13 @@ jobs:
         env: 
           rc_tag: 'v${{ steps.rc_sem_ver.outputs.RC_VER }}'
         run: |
-          echo "[STEP]: Tag Commit: ${rc_tag}"
-          git tag -d "$rc_tag"; git push --delete origin "$rc_tag"; git tag "$rc_tag" && git push origin "$rc_tag"
+          echo "[STEP]: Tag Local: ${rc_tag}"
+          git tag -d "$rc_tag" || echo "Ensured Local Tag $rc_tag does not exist"
+          git tag "$rc_tag"
+          echo
+          echo "[STEP]: Tag Remote: ${rc_tag}"
+          git push --delete origin "$rc_tag" || echo "Ensured Remote Tag $rc_tag does not exist"
+          git push origin "$rc_tag"
           echo
           echo " -> Pushed tag $rc_tag"
           echo
