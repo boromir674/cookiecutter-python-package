@@ -8,6 +8,7 @@
 # 2. Test
 # 3. Merge
 
+name: Merge RT in Release
 # Release Train (RT) has All changes needed for Release
 # We Test RT, and do auto merge if CI Checks Pass
 
@@ -21,9 +22,7 @@ on:
 jobs:
   merge_rt_in_release:
     # When 'boarding-auto --> 'release-train' PR is merged
-    if: ${{ github.event.pull_request.merged == true && 
-      github.event.pull_request.head.ref == 'boarding-auto' && \
-      github.event.pull_request.base.ref == 'release-train' }}
+    if: github.event.pull_request.merged == true && github.event.pull_request.head.ref == 'boarding-auto' && github.event.pull_request.base.ref == 'release-train'
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
