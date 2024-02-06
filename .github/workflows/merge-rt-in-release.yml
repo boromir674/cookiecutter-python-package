@@ -24,7 +24,9 @@ jobs:
   # RUN Job when 'boarding-auto --> 'release-train' PR is merged
   merge_rt_in_release:
     # ALLOWED Head Branches
-    if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'boarding-auto')
+    # if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'boarding-auto')
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -32,6 +34,9 @@ jobs:
       RELEASE_BR: 'release'
       MAIN_BR: 'master'
     steps:
+      - run: "[DEBUG] HEAD: '${{ github.head_ref }}', should be 'boarding-auto'"
+      - run: "[DEBUG] BASE: '${{ github.base_ref }}', should be 'release-train'"
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0  # 0 indicates all history for all branches and tags.
