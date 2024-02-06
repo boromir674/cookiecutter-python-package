@@ -8,6 +8,9 @@
 # 2. Test
 # 3. Merge
 
+# Tested to Trigger when a developer merges PR from github UI
+# to test if triggers on programmatic merge: `gh pr merge boarding-auto --auto --delete-branch --squash`
+
 name: Merge RT in Release
 # Release Train (RT) has All changes needed for Release
 # We Test RT, and do auto merge if CI Checks Pass
@@ -44,8 +47,8 @@ jobs:
           token: '${{ secrets.GH_TOKEN }}'
       
       # Track the remote branches
-      - run: git branch --track "${{ env.TRAIN }}" "origin/${{ env.TRAIN }}"
-      - run: git branch --track "${{ env.RELEASE_BR }}" "origin/${{ env.RELEASE_BR }}"
+      - run: git branch --track "${{ env.TRAIN }}" "origin/${{ env.TRAIN }}" || echo "Branch '${{ env.TRAIN }}' already exists"
+      - run: git branch --track "${{ env.RELEASE_BR }}" "origin/${{ env.RELEASE_BR }}" || echo "Branch '${{ env.RELEASE_BR }}' already exists"
 
       ############## PR ##############
       - name: "Create PR  'head': ${{ env.TRAIN }}  -->  'base': ${{ env.RELEASE_BR }}"
