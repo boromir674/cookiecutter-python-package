@@ -8,7 +8,7 @@
 
 # export tt='board-rt'
 # OR
-# export tt='boarding-n-auto-release'
+# export tt='boarding-auto'
 # for Automatically merging Release Train in Release
 
 # git tag -d "$tt"; git push --delete origin "$tt"; git tag "$tt" && git push origin "$tt"
@@ -26,7 +26,7 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       TRAIN: 'release-train'
-      BOARDING: ${{ github.event.ref == 'refs/tags/auto-release' && 'boarding-n-auto-release' || 'boarding' }}
+      BOARDING: ${{ github.event.ref == 'refs/tags/auto-release' && 'boarding-auto' || 'boarding' }}
       MAIN_BRANCH: 'master'
     steps:
       - uses: actions/checkout@v4
