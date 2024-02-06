@@ -3,6 +3,38 @@ Changelog
 =========
 
 
+1.12.2 (2024-02-07)
+===================
+
+**Regression and Backwards Compatibility - Tests**
+
+This Release features the addition of Automated Regression Test for 'Generator Docs Default Settings'.  
+By Default Generator v2.x promises that upon invocation, the generated Project with be configured for
+| Doc Builds with Sphinx and RTD Python3.8.  
+
+The Test will fail if Defaults change.  
+If Test is fixed, by updating assertion in Test Code, then then this is evidence that if we release these future changes,
+they possibly introduce "breaking changes".
+
+Also, we add a new Test on the Dialog Prompts to verify that they prompt the User for each and every one of the Cookiecutter Tempalte Variables.  
+If this test fails, then the Dialog System and the Cookiecutter Tempalte Vars are out of Sync, which should be addressed, preventing a Bug from shipping Code with the 2 components being NOT synced.
+
+From this Relase onward, we also start measuring Code Coverage only on Production Code.  
+We only measure the 'src' dir, and stop measuring Test Code, in 'tests' dir.
+
+Changes
+^^^^^^^
+
+test
+""""
+- verify Gen Project configured with Sphinx and RTD Py3.8, as advertised Defaults
+- verify prompts user for each and everyone of Cookiecutter Template Variables
+
+release
+"""""""
+- bump version to 1.12.2
+
+
 1.12.1 (2024-01-29)
 ===================
 
