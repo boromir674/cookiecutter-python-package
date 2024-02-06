@@ -8,22 +8,28 @@
 # 2. Test
 # 3. Merge
 
+# Tested to Trigger when a developer merges PR from github UI
+# to test if triggers on programmatic merge: `gh pr merge boarding-auto --auto --delete-branch --squash`
+
+name: Merge RT in Release
 # Release Train (RT) has All changes needed for Release
 # We Test RT, and do auto merge if CI Checks Pass
 
 on:
   pull_request:
+    # When a pull request merges, the pull request is automatically closed.
+    # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#running-your-pull_request-workflow-when-a-pull-request-merges
     types: [closed]
-  # push:
-  #   tags:
-  #     - merge-rt-in-release
+    branches:  # ALLOWED Base Branches
+      - release-train
 
 jobs:
+  # RUN Job when 'boarding-auto --> 'release-train' PR is merged
   merge_rt_in_release:
-    # When 'boarding-n-auto-release --> 'release-train' PR is merged
-    if: ${{ github.event.pull_request.merged == true && 
-      github.event.pull_request.head.ref == 'boarding-n-auto-release' && \
-      github.event.pull_request.base.ref == 'release-train' }}
+    # ALLOWED Head Branches
+    # if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'boarding-auto')
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -31,6 +37,9 @@ jobs:
       RELEASE_BR: 'release'
       MAIN_BR: 'master'
     steps:
+      - run: "echo \"[DEBUG] HEAD: '${{ github.head_ref }}', should be 'boarding-auto'\""
+      - run: "echo \"[DEBUG] BASE: '${{ github.base_ref }}', should be 'release-train'\""
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0  # 0 indicates all history for all branches and tags.
@@ -38,8 +47,8 @@ jobs:
           token: '${{ secrets.GH_TOKEN }}'
       
       # Track the remote branches
-      - run: git branch --track "${{ env.TRAIN }}" "origin/${{ env.TRAIN }}"
-      - run: git branch --track "${{ env.RELEASE_BR }}" "origin/${{ env.RELEASE_BR }}"
+      - run: git branch --track "${{ env.TRAIN }}" "origin/${{ env.TRAIN }}" || echo "Branch '${{ env.TRAIN }}' already exists"
+      - run: git branch --track "${{ env.RELEASE_BR }}" "origin/${{ env.RELEASE_BR }}" || echo "Branch '${{ env.RELEASE_BR }}' already exists"
 
       ############## PR ##############
       - name: "Create PR  'head': ${{ env.TRAIN }}  -->  'base': ${{ env.RELEASE_BR }}"
