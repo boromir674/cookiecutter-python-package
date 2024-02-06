@@ -1,7 +1,6 @@
 [run]
 source =
     cookiecutter_python
-    tests
 
 [report]
 show_missing = true
