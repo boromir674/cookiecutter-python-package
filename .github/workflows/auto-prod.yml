@@ -78,6 +78,9 @@ jobs:
         run: git commit -am "${{ steps.rc_msg.outputs.RC_MSG }}"
 
       ## Trigger (gitops) Release Candidate 'Stress Tests' ##
+      - name: Push '${{ env.RELEASE }}' Branch, to sync RC Sem Ver in Remote
+        run: git push
+
       - name: "Trigger Release Candidate - Stress Tests"
         env: 
           rc_tag: 'v${{ steps.rc_sem_ver.outputs.RC_VER }}'
