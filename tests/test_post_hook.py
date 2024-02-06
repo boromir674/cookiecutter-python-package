@@ -168,11 +168,38 @@ def get_post_gen_main(get_object, emulated_generated_project):
         # the emulated `get_request`, when called,
         # first Generates the Emulated Project, and then returns
         # the a Request object
+        import sys
+
+        def emulated_exit(exit_code: int):
+            assert exit_code == 0
+            return exit_code
+
+        get_object(
+            "main",
+            "cookiecutter_python.hooks.post_gen_project",
+            overrides={
+                'sys': lambda: type(
+                    'MockedSys',
+                    (),
+                    {
+                        'exit': emulated_exit,
+                        'version_info': type(
+                            'Mocked_version_info',
+                            (),
+                            {
+                                'minor': sys.version_info.minor,
+                            },
+                        ),
+                    },
+                )
+            },
+        )
         main_method = get_object(
-            "_post_hook",
+            "main",
             "cookiecutter_python.hooks.post_gen_project",
             overrides={'get_request': lambda: mock_get_request},
         )
+
         return main_method
 
     return get_pre_gen_hook_project_main
@@ -213,8 +240,9 @@ def test_main(add_cli, get_post_gen_main, assert_initialized_git, tmpdir):
     # there is an Emulated Generated Project, with all the necessary files
     # that are required for the post_gen_project to run successfully
     # WHEN the post_gen_project.main is called
-    result = post_hook_main()
+    result = post_hook_main()  # raises error, if post gen exit code != 0
+
     # THEN the post_gen_project.main runs successfully
-    assert result == 0
+    assert result is None
 
     assert_initialized_git(expexpected_gen_dir)
