@@ -1,5 +1,6 @@
 import sys
 import typing as t
+from pathlib import Path
 
 if sys.version_info >= (3, 8):
     from typing import Literal, Protocol
@@ -130,11 +131,11 @@ def emulated_generated_project(
         # Sanity check that no-one inputs the same file twice
         assert len(create_emulated) == expected_unique_files
 
-        # need to make sure to create all files, for Post Remove Hook to work
-
+        # create all derived files, for Post Remove Hook to work
         for path_tuple in sorted(create_emulated):
             with open(path.join(project_dir, *path_tuple), 'w') as _file:
-                _file.write('print("Hello World!"\n')
+                _file.write('print("Hello World!")\n')
+
         return emulated_post_gen_request
 
     return _emulated_generated_project
@@ -147,19 +148,41 @@ def get_post_gen_main(get_object, emulated_generated_project):
 
     name = 'gg'
 
-    def get_pre_gen_hook_project_main(add_cli: bool, project_dir: Path):
+    def get_pre_gen_hook_project_main(
+        add_cli: bool,
+        project_dir: Path,
+        extra_files: t.Optional[t.List[t.Union[str, t.Tuple[str, ...]]]] = None,
+        extra_non_empty_files: t.Optional[t.List[t.Union[str, t.Tuple[str, ...]]]] = None,
+    ):
         """"""
 
         def mock_get_request():
             # to avoid bugs we require empty project dir, before emulated generation
             absolute_proj_dir = Path(project_dir).absolute()
             assert len(list(absolute_proj_dir.iterdir())) == 0
-            # EMULATE a GEN Project, by craeting minimal dummy files and folders
+
+            # EMULATE a GEN Project, by creating minimal dummy files and folders
             emulated_request = emulated_generated_project(
                 project_dir, name=name, project_type='module+cli' if add_cli else 'module'
             )
             # sanity check that sth got generated
             assert len(list(absolute_proj_dir.iterdir())) > 0
+
+            # Emulate Extra Empty files, given specific Test Case Scenario
+            if extra_files:
+                for _file_path in extra_files:
+                    if isinstance(_file_path, str):
+                        file_path = (_file_path,)
+                    absolute_proj_dir.joinpath(*file_path).touch()
+
+            # Emulate Extra Non-Empty files, given specific Test Case Scenario
+            if extra_non_empty_files:
+                for _file_path in extra_non_empty_files:
+                    if isinstance(_file_path, str):
+                        file_path = (_file_path,)
+                    with open(absolute_proj_dir.joinpath(*file_path), 'w') as _file:
+                        _file.write('print("Hello World!")\n')
+
             return emulated_request
 
         # Get a main method, with a mocked get_request
@@ -167,13 +190,14 @@ def get_post_gen_main(get_object, emulated_generated_project):
         # By monekypatching the `get_request`, with the emulated one
         # the emulated `get_request`, when called,
         # first Generates the Emulated Project, and then returns
-        # the a Request object
+        # the Request object
         import sys
 
         def emulated_exit(exit_code: int):
             assert exit_code == 0
             return exit_code
 
+        # Monkeypatch with MOCKs the 'sys.exit' and 'sys.version_info' objects
         get_object(
             "main",
             "cookiecutter_python.hooks.post_gen_project",
@@ -194,6 +218,7 @@ def get_post_gen_main(get_object, emulated_generated_project):
                 )
             },
         )
+        # Monkeypatch with MOCK the 'get_request' function
         main_method = get_object(
             "main",
             "cookiecutter_python.hooks.post_gen_project",
@@ -246,3 +271,63 @@ def test_main(add_cli, get_post_gen_main, assert_initialized_git, tmpdir):
     assert result is None
 
     assert_initialized_git(expexpected_gen_dir)
+
+
+# REQUIRES well maintained emulated generated project (fixtures)
+def test_post_file_removal_deletes_empty_logfile_if_found(get_post_gen_main, tmp_path):
+
+    # GIVEN a temporary directory, to store the emulated generated project
+    project_dir: Path = tmp_path
+
+    # GIVEN a suitably monkeypatched post_gen_project.main method
+    
+    # Emulate placement of empty log file inside the project
+    from cookiecutter_python._logging_config import FILE_TARGET_LOGS
+    extra_files: t.List[str] = [FILE_TARGET_LOGS]
+    
+    post_hook_main = get_post_gen_main(
+        True,  # True -> with module+cli, else module
+        # gen_output_dir,
+        tmp_path,
+        extra_files=extra_files,
+    )
+
+    # WHEN the post_gen_project.main is called
+    result = post_hook_main()  # raises error, if post gen exit code != 0
+
+    # THEN the post_gen_project.main runs successfully
+    assert result is None
+
+    # AND the Logs File is deleted in Post Gen Hook, since it is empty
+    assert not (project_dir / FILE_TARGET_LOGS).exists()
+
+
+# REQUIRES well maintained emulated generated project (fixtures)
+def test_post_file_removal_keeps_logfile_if_found_non_empty(get_post_gen_main, tmp_path):
+
+    # GIVEN a temporary directory, to store the emulated generated project
+    project_dir: Path = tmp_path
+
+    # GIVEN a suitably monkeypatched post_gen_project.main method
+    
+    # Emulate placement of empty log file inside the project
+    from cookiecutter_python._logging_config import FILE_TARGET_LOGS
+    extra_files: t.List[str] = [FILE_TARGET_LOGS]
+    
+    post_hook_main = get_post_gen_main(
+        True,  # True -> with module+cli, else module
+        # gen_output_dir,
+        tmp_path,
+        extra_non_empty_files=[FILE_TARGET_LOGS],
+    )
+
+    # WHEN the post_gen_project.main is called
+    result = post_hook_main()  # raises error, if post gen exit code != 0
+
+    # THEN the post_gen_project.main runs successfully
+    assert result is None
+
+    # AND the Logs File is kept during Post Gen Hook, since it is not empty
+    assert (project_dir / FILE_TARGET_LOGS).exists()
+    assert (project_dir / FILE_TARGET_LOGS).is_file()
+    assert (project_dir / FILE_TARGET_LOGS).stat().st_size > 0
