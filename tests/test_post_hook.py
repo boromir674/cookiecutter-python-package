@@ -280,11 +280,12 @@ def test_post_file_removal_deletes_empty_logfile_if_found(get_post_gen_main, tmp
     project_dir: Path = tmp_path
 
     # GIVEN a suitably monkeypatched post_gen_project.main method
-    
+
     # Emulate placement of empty log file inside the project
     from cookiecutter_python._logging_config import FILE_TARGET_LOGS
+
     extra_files: t.List[str] = [FILE_TARGET_LOGS]
-    
+
     post_hook_main = get_post_gen_main(
         True,  # True -> with module+cli, else module
         # gen_output_dir,
@@ -309,11 +310,10 @@ def test_post_file_removal_keeps_logfile_if_found_non_empty(get_post_gen_main, t
     project_dir: Path = tmp_path
 
     # GIVEN a suitably monkeypatched post_gen_project.main method
-    
+
     # Emulate placement of empty log file inside the project
     from cookiecutter_python._logging_config import FILE_TARGET_LOGS
-    extra_files: t.List[str] = [FILE_TARGET_LOGS]
-    
+
     post_hook_main = get_post_gen_main(
         True,  # True -> with module+cli, else module
         # gen_output_dir,
