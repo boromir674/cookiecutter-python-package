@@ -5,9 +5,9 @@ template project is used to generate a target project.
 """
 #!/usr/bin/env python3
 
+import json
 import shutil
 import os
-import re
 import subprocess
 import sys
 import typing as t
@@ -41,18 +41,11 @@ def get_context() -> OrderedDict:
 
 def get_request():
     cookie_dict: OrderedDict = get_context()
-    INITIALIZE_GIT_REPO_FLAG = "{{ cookiecutter.initialize_git_repo|lower }}"
-
-    # DATA: str to value mapping
     data: t.Dict[str, t.Any] = {
-        'cookiecutter': cookie_dict,
+        'vars': cookie_dict,
         'project_dir': GEN_PROJ_LOC,
         'module_name': cookie_dict['pkg_name'],
-        'author': "{{ cookiecutter.author }}",
-        'author_email': "{{ cookiecutter.author_email }}",
-        'initialize_git_repo': {'yes': True}.get(INITIALIZE_GIT_REPO_FLAG, False),
-        'project_type': "{{ cookiecutter.project_type }}",
-        # 'add_cli': {'module+cli': True}.get(project_type, False),
+        'initialize_git_repo': {'yes': True}.get(cookie_dict['initialize_git_repo'].lower(), False),
         'repo': None,
         # Docs Website: build/infra config, and Content Templates
         'docs_website': {
@@ -62,21 +55,7 @@ def get_request():
         # internally used to get the template folder of each Doc Builder
         'docs_extra_info': DOCS,
     }
-    # sanity check on data dict for docs_website and docs_extra_info
-    # TODO: remove sanity checks
-    assert 'docs_website' in data.keys(), f"ERROR 1: 'docs_website' not in data.keys()={data.keys()}"
-    assert 'builder' in data['docs_website'].keys(), f"ERROR 2: 'builder' not in data['docs_website'].keys()={data['docs_website'].keys()}"
-    assert 'docs_extra_info' in data.keys(), f"ERROR 3a: 'docs_extra_info' not in data.keys()={data.keys()}"
-    assert data['docs_website']['builder'] in {'mkdocs', 'sphinx'}, f"ERROR 3b: docs_website.builder={data['docs_website']['builder']} not in ['mkdocs', 'sphinx']"
-
-    from pprint import pprint
-    pprint("\n\n")
-    pprint(data)
-    assert data['docs_website']['builder'] in data['docs_extra_info'].keys(), f"ERROR 3: docs_website.builder={data['docs_website']['builder']} not in docs_extra_info.keys()={data['docs_extra_info'].keys()}"
-    request = type('PostGenProjectRequest', (), data)
-    assert hasattr(request, 'docs_extra_info')
-    assert hasattr(request, 'docs_website')
-    return request
+    return type('PostGenProjectRequest', (), data)
 
 
 class PostFileRemovalError(Exception):
@@ -135,7 +114,7 @@ def post_file_removal(request):
     from pathlib import Path
     
     files_to_remove = [
-        os.path.join(request.project_dir, *x) for x in delete_files[request.project_type](request)
+        os.path.join(request.project_dir, *x) for x in delete_files[request.vars['project_type']](request)
     ]
     ## Post Removal, given 'Project Type', of potentially extra files ##
     for file in files_to_remove:
@@ -166,36 +145,19 @@ def post_file_removal(request):
     if logs_file.exists():
         # unintentional behaviour, is still happening
         if logs_file.stat().st_size == 0:  # at least expect empty log file
-            # safely remove the empty log file
-            try:
+            try:  # safely remove the empty log file
                 logs_file.unlink()
-            # windows erro reported on CI
-            # PermissionError: [WinError 32] The process cannot access the file because it is being used by another process
-            except PermissionError as e:
-                print(f"[WARNING]: {e}")
-                print(f"[WARNING]: Could not remove empty log file: {logs_file}")
-                print("[WARNING]: Please remove it manually, if you wish to do so.")
+            except PermissionError as e:  # has happened on Windows CI
+                # PermissionError: [WinError 32] The process cannot access the
+                # file because it is being used by another process
+                logger.debug("Permission Error, when removing empty log file: %s", json.dumps({
+                    'file': str(logs_file),
+                    'error': str(e),
+                    'platform': str(sys.platform),
+                }, indent=4, sort_keys=True))
         else:  # captured logs were written in the file: shy from removing it
             # Tell user about this, and let them decide what to do
             print(f"[INFO]: Captured Logs were written in {logs_file}")
-
-
-def _get_run_parameters(python3_minor: int):
-    def run(args: list, kwargs: dict):
-        return subprocess.run(*args, **dict(kwargs, check=True)) # pylint: disable=W1510 #nosec
-    def _subprocess_run(get_params):
-        def run1(*args, **kwargs):
-            return run(*get_params(*args, **kwargs))
-        return run1
-
-    return {
-        'legacy': _subprocess_run(run_process_python36_n_below),
-        'new': _subprocess_run(run_process_python37_n_above),
-    }[
-        {True: 'legacy', False: 'new'}[
-            python3_minor < 7  # is legacy Python 3.x version (ie 3.5 or 3.6) ?
-        ]
-    ]
 
 
 def run_process_python37_n_above(*args, **kwargs):
@@ -206,7 +168,21 @@ def run_process_python36_n_below(*args, **kwargs):
 
 
 def subprocess_run(*args, **kwargs):
-    return _get_run_parameters(sys.version_info.minor)(*args, **kwargs)
+    def _subprocess_run(get_params):
+        def run1(*args, **kwargs):
+            args_list, kwargs_dict = get_params(*args, **kwargs)
+            return subprocess.run(*args_list, **dict(kwargs_dict, check=True)) # pylint: disable=W1510 #nosec
+        return run1
+
+    d = {
+        'legacy': _subprocess_run(run_process_python36_n_below),
+        'new': _subprocess_run(run_process_python37_n_above),
+    }[
+        {True: 'legacy', False: 'new'}[
+            sys.version_info.minor < 7  # is legacy Python 3.x version (ie 3.5 or 3.6) ?
+        ]
+    ]
+    return d(*args, **kwargs)
 
 
 def initialize_git_repo(project_dir: str):
@@ -214,25 +190,6 @@ def initialize_git_repo(project_dir: str):
     Initialize the Git repository in the generated project.
     """
     subprocess_run('git', 'init', cwd=project_dir)
-
-
-def exception(subprocess_exception: subprocess.CalledProcessError):
-    error_message = str(subprocess_exception.stderr, encoding='utf-8')
-    if re.match(r'error: could not lock config file .+\.gitconfig File exists',
-        error_message):
-        return type('LockFileError', (Exception,), {})(error_message)
-    return subprocess_exception
-
-def grant_basic_permissions(project_dir: str):
-    try:
-        return subprocess_run(
-            'git', 'config', '--global', '--add', 'safe.directory', str(project_dir),
-            cwd=project_dir,
-        )
-    except subprocess.CalledProcessError as error:
-        print('Did not add an entry in ~/.gitconfig!')
-        print(str(error.stderr, encoding='utf-8'))
-        print(exception(error))
 
 
 def iter_files(request):
@@ -250,7 +207,7 @@ def iter_files(request):
 def git_commit(request):
     """Commit the staged changes in the generated project."""
     cookiecutter_config_str = (
-        '\n'.join((f"  {key}: {val}" for key, val in request.cookiecutter.items())) + '\n'
+        '\n'.join((f"  {key}: {val}" for key, val in request.vars.items())) + '\n'
     )
     commit_message = (
         "Template applied from"
@@ -263,7 +220,7 @@ def git_commit(request):
     request.repo.index.add(list(
         iter((path.relpath(x, start=request.project_dir) for x in iter_files(request)))
     ))
-    author = Actor(request.author, request.author_email)
+    author = Actor(request.vars['author'], request.vars['author_email'])
 
     request.repo.index.commit(
         commit_message,
@@ -290,7 +247,7 @@ def is_git_repo_clean(project_directory: str) -> bool:
     return False
 
 
-def _post_hook():
+def post_hook():
     """Delete irrelevant to Project Type files and optionally do git commit."""
     request = get_request()
     # Delete gen Files related to
@@ -312,7 +269,6 @@ def _post_hook():
     # Git commit
     if request.initialize_git_repo:
         initialize_git_repo(request.project_dir)
-        # grant_basic_permissions(request.project_dir)
         request.repo = Repo(request.project_dir)
         if not is_git_repo_clean(request.project_dir):
             git_commit(request)
@@ -321,14 +277,9 @@ def _post_hook():
     return 0
 
 
-def post_hook():
-    """Delete irrelevant to Project Type files and optionally do git commit."""
-    sys.exit(_post_hook())
-
-
 def main():
     """Delete irrelevant to Project Type files and optionally do git commit."""
-    post_hook()
+    sys.exit(post_hook())
 
 
 if __name__ == "__main__":
