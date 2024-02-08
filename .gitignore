@@ -32,3 +32,7 @@ notes\.org~
 cookie-py\.log
 soft-rel\.log
 notes\.md
+
+# LOGS generate by our python code
+
+cookie-py.log

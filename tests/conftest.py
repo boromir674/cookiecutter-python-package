@@ -229,11 +229,11 @@ def hook_request_new(distro_loc):
         # TODO improvement: add key/value types
         ### We want to skip running the templating engine, so we mock the state
         ### that the templating engine would have produced.
-        cookiecutter: t.Optional[t.Dict] = attr.ib(
+
+        # Templated Vars (cookiecutter) use in Context for Jinja Rendering
+        vars: t.Optional[t.Dict] = attr.ib(
             default=OrderedDict(td_cookiecutter_json_data, **engine_state['cookiecutter'])
         )
-        author: t.Optional[str] = attr.ib(default='Konstantinos Lampridis')
-        author_email: t.Optional[str] = attr.ib(default='boromir674@hotmail.com')
         initialize_git_repo: t.Optional[bool] = attr.ib(default=True)
         interpreters: t.Optional[t.Dict] = attr.ib(
             default=[
@@ -264,6 +264,9 @@ def hook_request_new(distro_loc):
                 'python_runtime': '3.10',
             }
         )
+
+        def __attrs_post_init__(self):
+            self.vars['project_type'] = self.project_type
 
     class BaseHookRequest(metaclass=SubclassRegistry):
         pass
