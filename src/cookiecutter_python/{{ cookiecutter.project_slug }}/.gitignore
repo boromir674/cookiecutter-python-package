@@ -21,3 +21,7 @@ dependency-graphs/
 test-results/
 uml-diagrams/
 pydoer-graphs/
+
+# LOGS
+
+cookie-py.log

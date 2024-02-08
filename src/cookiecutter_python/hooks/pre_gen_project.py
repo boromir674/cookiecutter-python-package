@@ -65,11 +65,11 @@ def input_sanitization(request):
         sanitize['interpreters'](request.interpreters)
     except sanitize.exceptions['interpreters'] as error:
         logger.warning("Interpreters Data Error: %s", json.dumps({
-            'error': error,
+            'error': str(error),
             'interpreters_data': request.interpreters,
         }, sort_keys=True, indent=4))
         raise InputSanitizationError(
-            "ERROR: {request.interpreters} are not valid 'supported interpreters'!"
+            f"ERROR: {request.interpreters} are not valid 'supported interpreters'!"
         ) from error
 
     print("Sanitized Input Variables :)")

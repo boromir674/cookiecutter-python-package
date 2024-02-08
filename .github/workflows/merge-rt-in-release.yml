@@ -28,7 +28,10 @@ jobs:
   merge_rt_in_release:
     # ALLOWED Head Branches
     # if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'boarding-auto')
-    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+    # if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    # && github.event.pull_request.head.ref == 'boarding-auto' && github.event.pull_request.merged == true
+    # github.event.pull_request.auto_merge_enabled
 
     runs-on: ubuntu-latest
     env:
@@ -37,6 +40,10 @@ jobs:
       RELEASE_BR: 'release'
       MAIN_BR: 'master'
     steps:
+      - run: 'echo [DEBUG] github.event.pull_request.auto_merge_enabled --> "${{ github.event.pull_request.auto_merge_enabled }}"'
+      - run: 'echo github.event.pull_request --> "${{ github.event.pull_request }}"'
+      - run: "echo \"[DEBUG] github.event.pull_request.merged: '${{ github.event.pull_request.merged == true }}', should be 'true'\""
+      - run: "echo \"[DEBUG] github.head_ref: '${{ startsWith(github.head_ref, 'boarding-auto') }}', should be 'true'\""
       - run: "echo \"[DEBUG] HEAD: '${{ github.head_ref }}', should be 'boarding-auto'\""
       - run: "echo \"[DEBUG] BASE: '${{ github.base_ref }}', should be 'release-train'\""
 
