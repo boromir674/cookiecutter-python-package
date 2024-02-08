@@ -1,4 +1,5 @@
 import os
+import typing as t
 
 import pytest
 
@@ -51,6 +52,35 @@ def test_incorrect_module_name(is_valid_python_module_name):
     assert not result
 
 
+def test_prehook_sanitization_throws_error_on_duplicate_interpreters():
+    from cookiecutter_python.hooks.pre_gen_project import sanitize
+
+    with pytest.raises(sanitize.exceptions['interpreters']):
+        sanitize['interpreters'](["3.10", "3.10"])
+
+
+def test_prehook_sanitization_throws_error_on_unsupported_interpreters():
+    from cookiecutter_python.backend.sanitization.interpreters_support import SUPPORTED
+
+    SUPPORTED_SET: t.Set[str] = SUPPORTED
+    unsupported_interpreter = '3.5'
+
+    # SANITY to make test case valid
+    assert unsupported_interpreter not in SUPPORTED_SET
+
+    from cookiecutter_python.hooks.pre_gen_project import sanitize
+
+    with pytest.raises(sanitize.exceptions['interpreters']):
+        sanitize['interpreters']([unsupported_interpreter])
+
+
+def test_prehook_sanitization_passes_given_interpreters_supported_by_gen():
+    supported_subset = {"3.8", "3.9", "3.10", "3.11"}
+    from cookiecutter_python.hooks.pre_gen_project import sanitize
+
+    sanitize['interpreters'](supported_subset)
+
+
 @pytest.fixture
 def get_main_with_mocked_template(get_object, request_factory):
     def get_pre_gen_hook_project_main(overrides={}):
@@ -64,6 +94,15 @@ def get_main_with_mocked_template(get_object, request_factory):
         return main_method
 
     return get_pre_gen_hook_project_main
+
+
+def test_main_with_invalid_interpreters(get_main_with_mocked_template, request_factory):
+    result = get_main_with_mocked_template(
+        overrides={
+            "get_request": lambda: lambda: request_factory.pre(interpreters=['3.5', '3.10'])
+        }
+    )()
+    assert result == 1  # exit code of 1 indicates failed execution
 
 
 def test_main_with_invalid_module_name(get_main_with_mocked_template, request_factory):
