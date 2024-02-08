@@ -1,5 +1,6 @@
 import json
 import logging
+import typing as t
 from typing import Pattern, Tuple
 
 from ..input_sanitization import Sanitize
@@ -12,8 +13,8 @@ logger = logging.getLogger(__name__)
 
 
 class RegExSanitizer:
-    regex: Pattern
-    sanitizer: BaseSanitizer
+    regex: t.ClassVar[Pattern]
+    sanitizer: t.ClassVar[BaseSanitizer]
 
     def __call__(self, data):
         self.sanitizer(data)
