@@ -8,7 +8,6 @@ InterpretersSequence = t.Sequence[str]
 # TODO Improvement: use an Enum
 
 SUPPORTED = {
-    '3.5',
     '3.6',
     '3.7',
     '3.8',

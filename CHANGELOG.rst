@@ -3,6 +3,32 @@ Changelog
 =========
 
 
+1.12.3 (2024-02-08)
+===================
+
+**Improved Code Coverage.**
+
+
+Changes
+^^^^^^^
+
+test
+""""
+- verify expected exceptions are thrown, in cases of errors, and add new sanitization test cases
+
+chore
+"""""
+- chore(gitignore): update .gitignore
+
+ci
+""
+- trigger Job of merge-rt-in-release only if github.event_name == 'pull_request' && github.event.pull_request.merged == true
+
+release
+"""""""
+- bump version to 1.12.3
+
+
 1.12.2 (2024-02-07)
 ===================
 
