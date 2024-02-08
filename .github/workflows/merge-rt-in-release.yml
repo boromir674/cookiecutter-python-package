@@ -29,7 +29,7 @@ jobs:
     # ALLOWED Head Branches
     # if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'boarding-auto')
     # if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
-    if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'boarding-auto') && github.event.pull_request.merged == true
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
 
     runs-on: ubuntu-latest
     env:
