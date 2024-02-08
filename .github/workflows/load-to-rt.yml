@@ -51,6 +51,7 @@ jobs:
 
       - run: git checkout ${{ env.MAIN_BRANCH }}
       - run: git checkout -b ${{ env.BOARDING }}
+      - run: git push origin --delete ${{ env.BOARDING }} || echo "Remote Branch '${{ env.BOARDING }}' does not exist"
 
       - run: git config --global user.email "k.lampridis@hotmail.com"
       - run: git config --global user.name "Konstantinos Lampridis"
