@@ -26,11 +26,7 @@ on:
 jobs:
   # RUN Job when 'boarding-auto --> 'release-train' PR is merged
   merge_rt_in_release:
-    # ALLOWED Head Branches
-    # if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'boarding-auto')
-    # if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
-    if: github.event_name == 'pull_request' && github.event.action == 'closed'
-    # && github.event.pull_request.head.ref == 'boarding-auto' && github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'boarding-auto')
     # github.event.pull_request.auto_merge_enabled
 
     runs-on: ubuntu-latest
