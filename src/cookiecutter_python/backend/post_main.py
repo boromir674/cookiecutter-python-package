@@ -14,4 +14,5 @@ def post_main(request):
 
 
 class CheckWebServerError(Exception):
+    """Raised on Connection Error, when Requesting a Web Server's Future."""
     pass
