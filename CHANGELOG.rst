@@ -3,6 +3,40 @@ Changelog
 =========
 
 
+1.12.4 (2024-02-09)
+===================
+
+**Improved Code Coverage.**
+
+
+Changes
+^^^^^^^
+
+fix
+"""
+- dynamic runtime loading of all CookiecutterException subclasses from cookiecutter
+
+test
+""""
+- unit-test *Exception Classifier* and cover all possible returned values
+
+documentation
+"""""""""""""
+- add docstrings
+
+ci
+""
+- use pat with Commit, PR, Workflow Trigger in merge-to-rt Workflow
+
+refactor
+""""""""
+- Exception Classifier more readable code and comment on *critical* / *not-critical* classification decisions
+
+release
+"""""""
+- bump version to 1.12.4
+
+
 1.12.3 (2024-02-08)
 ===================
 
