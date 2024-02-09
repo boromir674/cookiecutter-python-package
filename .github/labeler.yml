@@ -1,20 +1,43 @@
-# Pull Request Labeling Rules based on changed files
+## Pull Request Labeling Rules based on changed files
 
 # Add 'ci' label to any change within the '.github' dir
 ci:
-- any: ['.github/*', '.github/**/*']
-
+- any:
+  - changed-files:
+    - any-glob-to-any-file: ['.github/*', '.github/**/*']
 
 # Add 'business_logic' label to any change within the 'src/cookiecutter_python' dir
 business_logic:
-- any: ['src/cookiecutter_python/*', 'src/cookiecutter_python/**/*']
+- any:
+  - changed-files:
+    - any-glob-to-any-file: ['src/cookiecutter_python/*', 'src/cookiecutter_python/**/*']
 
-
-# Add 'docs' label to any change within the 'docs' dir
+## Add 'docs' label to any change within the 'docs' dir ##
+# Add 'Documentation' label to any changes within 'docs' folder or any subfolders
+# Add 'Documentation' label to any file changes within 'docs' folder
 docs:
-- any: ['docs/*', 'docs/**/*']
+- any:
+  - changed-files:
+    - any-glob-to-any-file: ['docs/*', 'docs/**/*']
 
 
-# Add 'test' label to any change within the 'tests' dir
+## Add 'test' label to any change within the 'tests' dir #
 test:
-- any: ['tests/*', 'tests/**/*']
+- any:
+  - changed-files:
+    - any-glob-to-any-file: ['tests/*', 'tests/**/*']
+
+
+##########################################################
+
+## Pull Request Labeling Rules based Base Branch
+
+# Add 'release' label to any PR that is opened against the `main` branch
+release:
+ - base-branch: 'master'
+
+
+ # Add 'feature' label to any PR where the head branch name starts with
+ # `feature` or has a `feature` section in the name
+feature:
+ - head-branch: ['^feature', 'feature']
