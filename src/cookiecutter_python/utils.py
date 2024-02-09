@@ -45,7 +45,7 @@ def load(interface: Type[T], module: Optional[str] = None) -> List[Type[T]]:
         # if top-level init is at '/site-packages/some_python_package/__init__.py'
         # then distro_path is '/site-packages/some_python_package'
         from pathlib import Path
-        distro_path: Path = Path(module_object.__file__).parent
+        distro_path: Path = Path(str(module_object.__file__)).parent
         directory = str(distro_path) 
         _module = module
 
