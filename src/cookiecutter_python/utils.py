@@ -40,6 +40,13 @@ def load(interface: Type[T], module: Optional[str] = None) -> List[Type[T]]:
         _module = relative_path.replace('\\', '/').replace('/', '.')
     else:
         directory = str(module).replace('/', '.')
+        # find the distro path as installed at runtime
+        module_object = import_module(directory)
+        # if top-level init is at '/site-packages/some_python_package/__init__.py'
+        # then distro_path is '/site-packages/some_python_package'
+        from pathlib import Path
+        distro_path: Path = Path(module_object.__file__).parent
+        directory = str(distro_path) 
         _module = module
 
     objects = []
@@ -53,7 +60,7 @@ def load(interface: Type[T], module: Optional[str] = None) -> List[Type[T]]:
         for attribute_name in dir(module_object):
             attribute = getattr(module_object, attribute_name)
 
-            if isclass(attribute) and issubclass(attribute, interface):
+            if attribute != interface and isclass(attribute) and issubclass(attribute, interface):
                 # Add the class to this package's variables
                 globals()[attribute_name] = attribute
                 objects.append(attribute)
