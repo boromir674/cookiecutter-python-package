@@ -183,6 +183,7 @@ jobs:
     # starting line with 'Created wheel for' and extracting filename value and size value
     - name: Extract Wheel Name and Size
       id: extract_wheel_info
+      shell: bash
       run: |
         WHEEL_INFO=$(grep -E "Created wheel for" test_output.log | sed -E "s/.*filename=([^ ]+) size=([^ ]+) .*/\1 \2/")
 
