@@ -3,6 +3,25 @@ Changelog
 =========
 
 
+1.12.5-dev (2024-02-09)
+=======================
+
+Changes
+^^^^^^^
+
+ci
+""
+- migrate from action v4 to v5
+
+chore
+"""""
+- improve build env description
+
+release
+"""""""
+- bump version to 1.12.5-dev
+
+
 1.12.4 (2024-02-09)
 ===================
 
