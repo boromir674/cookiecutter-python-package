@@ -2,6 +2,28 @@
 Changelog
 =========
 
+1.12.5-dev1 (2024-02-10)
+========================
+
+Release with CI changes to support **Git Ops.**  
+Plus, new **Docs Task** as **CI/CD Job.**
+
+
+Changes
+^^^^^^^
+
+ci
+""
+- automatically run Cross-Platform or Doc Tests based on file changes
+- call Reusable Workflow, for Docs Build, and wire up Git Ops, to Policy system
+- use PEP_VERSION env var to store the version section from the wheel file name
+- bump all 'setup-python' action to v5, from v4
+- parse distro name and pep version from 'pip wheel' cmd console output
+
+release
+"""""""
+- bump version to 1.12.5-dev1
+
 
 1.12.5-dev (2024-02-09)
 =======================

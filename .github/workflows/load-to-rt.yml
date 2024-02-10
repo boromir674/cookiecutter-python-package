@@ -35,16 +35,16 @@ jobs:
           # GH_TOKEN should be a PAT, that allows to trigger Actions Workflow (default GITHUB_TOKEN cannot invoke Worklflows!)
           token: '${{ secrets.GH_TOKEN }}'
 
-      - run: git log --graph --decorate --color --all --stat
-
       - name: Discover User's Branch Name
         id: user_branch
         run: |
           name=$(git branch -a --contains "$(git rev-parse HEAD)" | sed -n '2p' | sed 's/.*remotes\///')
-
           echo "NAME:" $name
-
           echo USER_BRANCH=$name >> $GITHUB_OUTPUT
+
+      - name: "Exit Job, if User Branch is empty: '${{ steps.user_branch.outputs.USER_BRANCH }}'"
+        if: steps.user_branch.outputs.USER_BRANCH == ''
+        run: echo "[ERROR] User Branch not found. Searched for an Upstream branch, but was not found on the remote. Exiting.." && exit 1
 
       ### Put User Branch on Boarding Branch to Test before merging to Release Train
 
