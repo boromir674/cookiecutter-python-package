@@ -348,27 +348,16 @@ jobs:
     secrets:
       TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
 
-## DOCUMENTATION BUILD ##
+### DOCS BUILD/TEST - DOCUMENTATION SITE ###
   docs:
-    name: "Docs Build"
+    name: Build Documentation
     needs: set_github_outputs
-    if: always() && contains('1 3', needs.set_github_outputs.outputs.PIPE_DOCS_POLICY)
-    runs-on: ubuntu-latest
-    env:
-      PYTHON_RUNTIME: "3.11"
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python ${{ env.PYTHON_RUNTIME }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_RUNTIME }}
-      - name: Install tox
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install tox==3.28
-
-      - name: Build Docs, inside a virtualenv
-        run: tox -e pin-docs,docs -vv -s false
+    # bafaa2c2a014758a4421fe9b5c02ba66dbfdbef6
+    uses: boromir674/automated-workflows/.github/workflows/policy_docs.yml@test
+    with:
+      run_policy: ${{ {needs.set_github_outputs.outputs.PIPE_DOCS_POLICY }}
+      python_version: ${{ needs.set_github_outputs.outputs.PIPE_DOCS_PY }}
+      command: "tox -e pin-docs,docs --sitepackages -vv -s false"
 
 ### STATIC CODE ANALYSIS & LINTING ###
   lint:
