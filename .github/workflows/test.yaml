@@ -48,14 +48,14 @@ env:
   ALWAYS_BUILD_N_PUBLISH_DOCKER: "false"
 
   DOCKER_JOB_POLICY: "CDeployment"
-  # - CDeployment : Builds and Publishes only if Tests ran and passed
-  # - CDelivery   : Builds and Publishes if Tests Passed or if Tests were Skipped
+  # - CDeployment : '2' Builds and Publishes only if Tests ran and passed
+  # - CDelivery   : '3' Builds and Publishes if Tests Passed or if Tests were Skipped
   ############################
 
   #### DOCS Job ####
   # 2nd level override
   ALWAYS_DOCS: "false"
-  DOCS_JOB_POLICY: '2'
+  DOCS_JOB_POLICY: '2'  # {2, 3}
 
   #### STATIC CODE ANALYSIS Job ####
   ALWAYS_LINT: "false"
@@ -105,7 +105,8 @@ jobs:
               echo "matrix=$TEST_STRATEGY" >> $GITHUB_OUTPUT
             fi
             if [[ "$affected_components" =~ "Docs" ]]; then
-              PIPE_DOCS_POLICY="${{ (env.DOCS_JOB_ON != 'true' && '0') || (env.ALWAYS_DOCS == 'true' && '1') || '3' }}"
+              # set policy to 1 to trigger Docs Build (higher level override might be in place)
+              PIPE_DOCS_POLICY="${{ (env.DOCS_JOB_ON != 'true' && '0') || (env.ALWAYS_DOCS == 'true' && '1') || '1' }}"
             fi
 
           # Fall back to the default strategy
@@ -355,7 +356,7 @@ jobs:
     # bafaa2c2a014758a4421fe9b5c02ba66dbfdbef6
     uses: boromir674/automated-workflows/.github/workflows/policy_docs.yml@test
     with:
-      run_policy: ${{ {needs.set_github_outputs.outputs.PIPE_DOCS_POLICY }}
+      run_policy: '${{ needs.set_github_outputs.outputs.PIPE_DOCS_POLICY }}'
       python_version: ${{ needs.set_github_outputs.outputs.PIPE_DOCS_PY }}
       command: "tox -e pin-docs,docs --sitepackages -vv -s false"
 
