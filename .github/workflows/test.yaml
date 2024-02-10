@@ -150,6 +150,8 @@ jobs:
     if: ${{ needs.set_github_outputs.outputs.TESTS_ENABLED == 'true' }}
     strategy:
       matrix: ${{fromJSON(needs.set_github_outputs.outputs.matrix)}}
+    env:
+      WHEELS_PIP_DIR: "wheels-pip"
     outputs:
       SEMVER_PIP_FORMAT: ${{ steps.parse_version.outputs.SEMVER_PIP_FORMAT }}
     steps:
@@ -186,9 +188,44 @@ jobs:
 
     ###### TEST SUITE RUN ######
     - name: Run Unit Tests
-      run: tox -vv -s false
+      run: tox -vv -s false | tee test_output.log
       env:
         PLATFORM: ${{ matrix.platform }}
+        BUILD_DEST: ${{ env.WHEELS_PIP_DIR }}
+
+    - name: Show produced Wheel(s)
+      run: ls -l ${{ env.WHEELS_PIP_DIR }}
+
+    # parse test_output.log and match string, like:
+    # Created wheel for cookiecutter_python: filename=cookiecutter_python-1.12.5.dev0-py3-none-any.whl size=199750 sha256=446c75803a6eea1d7ac6af60e0fbb0000483f97ef44eb39469ab3bd997b2a7d8
+
+    # starting line with 'Created wheel for' and extracting filename value and size value
+    - name: Extract Wheel Name and Size
+      id: extract_wheel_info
+      run: |
+        WHEEL_INFO=$(grep -E "Created wheel for" test_output.log | sed -E "s/.*filename=([^ ]+) size=([^ ]+) .*/\1 \2/")
+
+        # extract file name
+        WHEEL_NAME=$(echo $WHEEL_INFO | cut -d ' ' -f 1)
+        echo "WHEEL_NAME=$WHEEL_NAME" >> $GITHUB_ENV
+
+        # extract file size
+        WHEEL_SIZE=$(echo $WHEEL_INFO | cut -d ' ' -f 2)
+        echo "WHEEL_SIZE=$WHEEL_SIZE" >> $GITHUB_ENV
+
+        # extract '1.12.5.dev0' from 'cookiecutter_python-1.12.5.dev0-py3-none-any.whl'
+        PKG_VERSION=$(echo $WHEEL_NAME | sed -E "s/cookiecutter_python-([^ ]+)-py3-none-any.whl/\1/")
+
+        echo "PKG_VERSION=${PKG_VERSION}" >> $GITHUB_OUTPUT
+
+    - run: 'echo "WHEEL_NAME: $WHEEL_NAME SIZE: $WHEEL_SIZE"'
+
+    - name: Run Test Suite Against Wheel
+      run: tox -e wheel-test -s false
+      env:
+        PLATFORM: ${{ matrix.platform }}
+        BUILD_DEST: ${{ env.WHEELS_PIP_DIR }}
+        WHEEL: ${{ env.WHEEL_NAME }}
 
     ## Code Coverage ##
     - name: "Combine Coverage (dev, sdist, wheel) & make Reports"
@@ -198,20 +235,25 @@ jobs:
       shell: bash
       run: |
         mv ./.tox/coverage.xml ./coverage-${{ matrix.platform }}-${{ matrix.python-version }}.xml
+
     - name: "Upload Test Coverage as Artifacts"
       uses: actions/upload-artifact@v3
       with:
         name: all_coverage_raw
         path: coverage-${{ matrix.platform }}-${{ matrix.python-version }}.xml
         if-no-files-found: error
+
     - name: Check for compliance with Python Best Practices
       shell: bash
+      env:
+        PKG_VERSION: ${{ steps.extract_wheel_info.outputs.PKG_VERSION }}
+        WHEEL_PATH: ${{ env.WHEELS_PIP_DIR }}/${{ env.WHEEL_NAME }}
       run: |
         DIST_DIR=dist
-        echo "DIST_DIR=dist" >> $GITHUB_ENV
+        echo "DIST_DIR=${DIST_DIR}" >> $GITHUB_ENV
         mkdir ${DIST_DIR}
         mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}.tar.gz" "${DIST_DIR}"
-        mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}-py3-none-any.whl" "${DIST_DIR}"
+        mv "${{ env.WHEEL_PATH }}" "${DIST_DIR}"
         tox -e check -vv -s false
 
     - name: Upload Source & Wheel distributions as Artefacts
