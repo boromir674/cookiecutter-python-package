@@ -153,7 +153,7 @@ jobs:
     env:
       WHEELS_PIP_DIR: "wheels-pip"
     outputs:
-      SEMVER_PIP_FORMAT: ${{ steps.parse_version.outputs.SEMVER_PIP_FORMAT }}
+      PEP_VERSION: ${{ steps.extract_wheel_info.outputs.PEP_VERSION }}
     steps:
     - run: echo "Platform -> ${{ matrix.platform }} , Python -> ${{ matrix.python-version }}"
     - uses: actions/checkout@v3
@@ -165,26 +165,6 @@ jobs:
 
     - name: Do Type Checking
       run: tox -e type -vv -s false
-
-    - name: Parse package version from __init__.py to assist building
-      shell: bash
-      id: parse_version
-      run: |
-        PARSER="src/cookiecutter_python/{{ cookiecutter.project_slug }}/scripts/parse_version.py"
-        PARSED_VERSION=$(python "${PARSER}")
-        # transform version (ie 1.7.4-rc.1) to match the name of the wheel produced (ie 1.7.4rc1)
-        WHEEL_VERSION=$(echo $PARSED_VERSION | sed -E 's/([^.]*)\.([^.]*)\.([^-]*)-(rc)\.?(.*)/\1.\2.\3\4\5/')
-        # manually append the 0 to index the release candidate
-        # we account for wheel building that automatically does the above
-        last_two=${WHEEL_VERSION: -2}
-        if [[ $last_two == "rc" ]]; then
-          WHEEL_VERSION="${WHEEL_VERSION}0"
-        elif [[ "${WHEEL_VERSION: -3}" == "dev" ]]; then
-          WHEEL_VERSION="${WHEEL_VERSION}0"
-        fi
-        echo "==== $PARSED_VERSION  -->  $WHEEL_VERSION"
-        echo "PKG_VERSION=$WHEEL_VERSION" >> $GITHUB_ENV  # to be used in the next step
-        echo "SEMVER_PIP_FORMAT=$WHEEL_VERSION" >> $GITHUB_OUTPUT  # to be used in other jobs
 
     ###### TEST SUITE RUN ######
     - name: Run Unit Tests
@@ -214,11 +194,12 @@ jobs:
         echo "WHEEL_SIZE=$WHEEL_SIZE" >> $GITHUB_ENV
 
         # extract '1.12.5.dev0' from 'cookiecutter_python-1.12.5.dev0-py3-none-any.whl'
-        PKG_VERSION=$(echo $WHEEL_NAME | sed -E "s/cookiecutter_python-([^ ]+)-py3-none-any.whl/\1/")
+        PEP_VERSION=$(echo $WHEEL_NAME | sed -E "s/cookiecutter_python-([^ ]+)-py3-none-any.whl/\1/")
 
-        echo "PKG_VERSION=${PKG_VERSION}" >> $GITHUB_OUTPUT
+        echo "PEP_VERSION=${PEP_VERSION}" >> $GITHUB_OUTPUT
 
     - run: 'echo "WHEEL_NAME: $WHEEL_NAME SIZE: $WHEEL_SIZE"'
+    - run: 'echo "PEP_VERSION: $PEP_VERSION"'
 
     - name: Run Test Suite Against Wheel
       run: tox -e wheel-test -s false
@@ -246,7 +227,7 @@ jobs:
     - name: Check for compliance with Python Best Practices
       shell: bash
       env:
-        PKG_VERSION: ${{ steps.extract_wheel_info.outputs.PKG_VERSION }}
+        PKG_VERSION: ${{ steps.extract_wheel_info.outputs.PEP_VERSION }}
         WHEEL_PATH: ${{ env.WHEELS_PIP_DIR }}/${{ env.WHEEL_NAME }}
       run: |
         DIST_DIR=dist
@@ -358,7 +339,7 @@ jobs:
     with:
       should_trigger: ${{ needs.check_which_git_branch_we_are_on.outputs.AUTOMATED_DEPLOY == 'true' }}
       distro_name: cookiecutter_python
-      distro_version: ${{ needs.test_suite.outputs.SEMVER_PIP_FORMAT }}
+      distro_version: ${{ needs.test_suite.outputs.PEP_VERSION }}
       pypi_env: '${{ needs.check_which_git_branch_we_are_on.outputs.ENVIRONMENT_NAME }}'
       artifacts_path: downloaded-artifacts
 
