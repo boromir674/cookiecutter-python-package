@@ -37,6 +37,11 @@ release:
  - base-branch: 'master'
 
 
+# Add 'boarding_auto' label to any PR that is opened against the `boarding-auto` branch
+boarding_auto:
+ - base-branch: ['^boarding-auto', 'boarding-auto']
+
+
  # Add 'feature' label to any PR where the head branch name starts with
  # `feature` or has a `feature` section in the name
 feature:

@@ -1,0 +1,67 @@
+name: Merge into Boarding
+on:
+  pull_request:
+    types: [labeled]
+
+jobs:
+  boarding_train:
+    if: github.event.label.name == 'boarding_auto'
+    runs-on: ubuntu-latest
+    env:
+      TRAIN: 'release-train'
+      MAIN_BRANCH: 'master'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 0 indicates all history for all branches and tags.
+          set-safe-directory: ''  # `git config --global --add safe.directory <path>`
+          token: '${{ secrets.GH_TOKEN }}'
+
+      - run: echo "BASE_BR=${{ github.event.pull_request.base.ref }}" >> $GITHUB_ENV
+
+      ### stop workflow if env.BASE_BR != 'boarding-auto' or else do auto merge
+      - name: 'Check PR Target Branch'
+        run: |
+          if [ "${{ env.BASE_BR }}" != 'boarding-auto' ]; then
+            echo "[WARNING] PR is not targeted to 'boarding-auto' branch. Skipping Auto Merge, making sure Jogb is green"
+            exit 1
+          fi
+        shell: bash
+      - if: ${{ failure() }}
+        run: echo "Exiting gracefully"
+
+      - name: Find PR Labels
+        run: echo PR_LABELS="$(gh pr view ${{ github.event.pull_request.number }} --json labels --jq '.labels[].name')" >> $GITHUB_ENV
+
+      - run: echo "TOPICAL_BR=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
+
+      ## Derive Merge Message given PR labels
+      - name: 'Derive Merge Message, given PR labels'
+      # Recognized labels: ['business_logic', 'test', 'docs']
+      # if 'docs' label -> Docs Tests
+      # if 'business_logic' or 'test' label -> Cross-Platform Tests
+        run: |
+          DISTRO="Distro"
+          DOCS="Docs"
+          buffer_string=""
+
+          for label in ${PR_LABELS}; do
+            if { [ "$label" == "business_logic" ] || [ "$label" == "test" ]; } && ! [[ $buffer_string =~ $DISTRO ]]; then
+              buffer_string="${buffer_string} ${DISTRO}"
+            elif [ "$label" == "docs" ] && ! [[ $buffer_string =~ $DOCS ]]; then
+              buffer_string="${buffer_string} ${DOCS}"
+            fi
+          done
+
+          buffer_string=$(echo $buffer_string | sed 's/ / AND /g')
+          MERGE_MSG="Auto Merging '${TOPICAL_BR}' carrying '${buffer_string}' Changes"
+          echo "MERGE_MSG=${MERGE_MSG}" >> $GITHUB_OUTPUT
+        id: merge_msg
+      ############## Auto Merge ##############
+      - run: echo "PR_ID=${{ github.event.pull_request.number }}" >> $GITHUB_ENV
+
+      - name: 'Auto Merge PR   ${{ env.TOPICAL_BR }}  -->  ${{ env.BASE_BR }}'
+        run: "gh pr merge \"${{ env.PR_ID }}\" --auto --text \"${{ env.BOARDING_MSG }}\""
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          BOARDING_MSG: ${{ steps.merge_msg.outputs.MERGE_MSG }}

@@ -30,26 +30,32 @@ env:
   # Python 3.7 has reached End of Life (EOL) on June 27th, 2023
   # Python 3.12 is in bugfix mode, same as 3.11 -> can start supporting 3.12 it
   UBUNTU_PY310_STRATEGY: "{\"platform\":[\"ubuntu-latest\"], \"python-version\":[\"3.10\"]}"
-  TEST_STRATEGY: "{\"platform\":[\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\":[\"3.9\"]}"
+  TEST_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\":[\"3.9\"]}"
 
-  ##### JOB ON/OFF SWITCHES #####
+  ##### JOB ON/OFF SWITCHES - 1st level overrides #####
   RUN_UNIT_TESTS: "true"
   RUN_LINT_CHECKS: "true"
   DOCKER_JOB_ON: "true"
   PUBLISH_ON_PYPI: "true"
+  DOCS_JOB_ON: "true"
   DRAW_DEPENDENCIES: "true"
-  ###############################
+  ##########################
 
   ### DOCKER Job Policy ####
   # Override Docker Policy-dependent decision-making and
   # Accept any ALL (branch/build) to Publish to Dockerhub
   # if true, it will push image and ignore DOCKER_JOB_POLICY
-  ALWAYS_BUILD_N_PUBLSIH_DOCKER: "false"
+  ALWAYS_BUILD_N_PUBLISH_DOCKER: "false"
 
   DOCKER_JOB_POLICY: "CDeployment"
   # - CDeployment : Builds and Publishes only if Tests ran and passed
   # - CDelivery   : Builds and Publishes if Tests Passed or if Tests were Skipped
   ############################
+
+  #### DOCS Job ####
+  # 2nd level override
+  ALWAYS_DOCS: "false"
+  DOCS_JOB_POLICY: '2'
 
   #### STATIC CODE ANALYSIS Job ####
   ALWAYS_LINT: "false"
@@ -76,23 +82,42 @@ jobs:
         id: pass-env-to-output
         env:
           BOARDING_EVENT: 'do Boarding CI Tests'
+          BOARDING_MSG: "Auto Merging '[^']+' carrying '([^']+)' Changes"
         run: |
-          # set the matrix strategy to Full Matrix Stress Test if on master/main or stress-test branch or any tag
           BRANCH_NAME=${GITHUB_REF_NAME}
+          PIPE_DOCS_POLICY="${{ (env.DOCS_JOB_ON != 'true' && '0') || (env.ALWAYS_DOCS == 'true' && '1') || env.DOCS_JOB_POLICY }}"
+
+          # set the matrix strategy to Full Matrix Stress Test if on master/main or stress-test branch or any tag
           if [[ $BRANCH_NAME == "stress-test" || $GITHUB_REF == refs/tags/* ]]; then
             echo "matrix=$FULL_MATRIX_STRATEGY" >> $GITHUB_OUTPUT
-          
+
           # github.event.head_commit.message has 'do Boarding CI Tests' string
           elif [[ "${{ contains(github.event.head_commit.message, env.BOARDING_EVENT) }}" == 'true' ]]; then
             echo "matrix=$TEST_STRATEGY" >> $GITHUB_OUTPUT 
+
+          # interpret Boarding Message: if head_commit.message matches BOARDING_MSG regex
+          elif [[ "${{ github.event.head_commit.message }}" =~ ${{ env.BOARDING_MSG }} ]]; then
+
+            affected_components="${BASH_REMATCH[1]}"
+            echo "--> Detected Affected Components: $affected_components <--"
+
+            if [[ "$affected_components" =~ "Distro" ]]; then
+              echo "matrix=$TEST_STRATEGY" >> $GITHUB_OUTPUT
+            fi
+            if [[ "$affected_components" =~ "Docs" ]]; then
+              PIPE_DOCS_POLICY="${{ (env.DOCS_JOB_ON != 'true' && '0') || (env.ALWAYS_DOCS == 'true' && '1') || '3' }}"
+            fi
+
+          # Fall back to the default strategy
           else
             echo "matrix=$UBUNTU_PY310_STRATEGY" >> $GITHUB_OUTPUT
           fi
           echo "TESTS_ENABLED=$RUN_UNIT_TESTS" >> $GITHUB_OUTPUT
           echo "PUBLISH_ON_PYPI=$PUBLISH_ON_PYPI" >> $GITHUB_OUTPUT
+          echo "PIPE_DOCS_POLICY=$PIPE_DOCS_POLICY" >> $GITHUB_OUTPUT
       ## Docker - Pipeline Settings ##
       - id: derive_docker_policy
-        run: echo "POL=${{ (env.DOCKER_JOB_ON != 'true' && '0') || (env.ALWAYS_BUILD_N_PUBLSIH_DOCKER == 'true' && '1') || (env.DOCKER_JOB_POLICY == 'CDeployment' && '2') || (env.DOCKER_JOB_POLICY == 'CDelivery' && '3') }}" >> $GITHUB_OUTPUT
+        run: echo "POL=${{ (env.DOCKER_JOB_ON != 'true' && '0') || (env.ALWAYS_BUILD_N_PUBLISH_DOCKER == 'true' && '1') || (env.DOCKER_JOB_POLICY == 'CDeployment' && '2') || (env.DOCKER_JOB_POLICY == 'CDelivery' && '3') }}" >> $GITHUB_OUTPUT
       ## Static Code Analysis - Pipeline Settings ##
       - id: derive_sqa_policy
         run: echo "POL=${{ (env.RUN_LINT_CHECKS != 'true' && '0') || (env.ALWAYS_LINT == 'true' && '1') || env.LINT_JOB_POLICY }}" >> $GITHUB_OUTPUT
@@ -107,6 +132,8 @@ jobs:
       matrix: ${{ steps.pass-env-to-output.outputs.matrix }}
       TESTS_ENABLED: ${{ steps.pass-env-to-output.outputs.TESTS_ENABLED }}
       PUBLISH_ON_PYPI: ${{ steps.pass-env-to-output.outputs.PUBLISH_ON_PYPI }}
+    ## DOCS - Pipeline Settings ##
+      PIPE_DOCS_POLICY: ${{ steps.pass-env-to-output.outputs.PIPE_DOCS_POLICY }}
     ## Docker - Pipeline Settings ##
       PIPE_DOCKER_POLICY: ${{ steps.derive_docker_policy.outputs.POL }}
     ## Static Code Analysis - Pipeline Settings ##
@@ -149,6 +176,8 @@ jobs:
         # we account for wheel building that automatically does the above
         last_two=${WHEEL_VERSION: -2}
         if [[ $last_two == "rc" ]]; then
+          WHEEL_VERSION="${WHEEL_VERSION}0"
+        elif [[ "${WHEEL_VERSION: -3}" == "dev" ]]; then
           WHEEL_VERSION="${WHEEL_VERSION}0"
         fi
         echo "==== $PARSED_VERSION  -->  $WHEEL_VERSION"
@@ -296,6 +325,26 @@ jobs:
     secrets:
       TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
 
+## DOCUMENTATION BUILD ##
+  docs:
+    name: "Docs Build"
+    if: always() && contains('1 3', needs.set_github_outputs.outputs.PIPE_DOCS_POLICY)
+    runs-on: ubuntu-latest
+    env:
+      PYTHON_RUNTIME: "3.11"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ env.PYTHON_RUNTIME }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_RUNTIME }}
+      - name: Install tox
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install tox==3.28
+
+      - name: Build Docs, inside a virtualenv
+        run: tox -e pin-docs,docs -vv -s false
 
 ### STATIC CODE ANALYSIS & LINTING ###
   lint:
