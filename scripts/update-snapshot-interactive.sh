@@ -15,7 +15,7 @@ set -e
 
 ### RUN Generator in Interactive Mode, prompting/asking for user input ###
 echo
-.tox/dev/bin/generate-python --config-file .github/biskotaki.yaml -o /tmp/
+.tox/dev/bin/generate-python --offline --config-file .github/biskotaki.yaml -o /tmp/
 
 ### UPDATE SHAPSHOT, by Copying all Generated files and folders recursively ###
 INTERACTIVE_SHAPSHOT=${INTERACTIVE_SHAPSHOT:-tests/data/snapshots/biskotaki-interactive}

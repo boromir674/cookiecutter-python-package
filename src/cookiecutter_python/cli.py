@@ -29,6 +29,11 @@ def version_msg():
     help=u'Do not prompt for parameters and only use cookiecutter.json ' u'file content',
 )
 @click.option(
+    u'--offline',
+    is_flag=True,
+    help=u'Disable Async Http Project Existence Check, on PyPI and RTD servers',
+)
+@click.option(
     u'-c',
     u'--checkout',
     help=u'branch, tag or commit to checkout after git clone',
@@ -73,6 +78,7 @@ def version_msg():
 )
 def main(
     no_input,
+    offline: bool,
     checkout,
     replay,
     overwrite,
@@ -92,6 +98,7 @@ def main(
     try:
         project: str = generate(
             checkout=checkout,
+            offline=offline,
             no_input=no_input,
             replay=replay,
             overwrite=overwrite,

@@ -14,7 +14,7 @@ set -e
 
 ### RUN Generator in Non-Interactive Mode ###
 echo
-.tox/dev/bin/generate-python --no-input --config-file .github/biskotaki.yaml -o /tmp/
+.tox/dev/bin/generate-python --offline --no-input --config-file .github/biskotaki.yaml -o /tmp/
 
 
 ### UPDATE SHAPSHOT, by Copying all Generated files and folders recursively ###

@@ -1,3 +1,4 @@
+import typing as t
 from cookiecutter.exceptions import (
     CookiecutterException,
     UndefinedVariableInTemplate,
@@ -9,7 +10,7 @@ from cookiecutter_python.utils import load
 cookiecutter_exceptions = load(CookiecutterException, 'cookiecutter')
 
 
-exceptions = {
+exceptions: t.MutableMapping[str, t.Tuple[t.Type[Exception], ...]] = {
     'critical': tuple(cookiecutter_exceptions + [ContextVariableDoesNotExist]),  # type: ignore
     'non-critical': (
         CheckWebServerError,
