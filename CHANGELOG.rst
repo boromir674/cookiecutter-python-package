@@ -2,6 +2,29 @@
 Changelog
 =========
 
+1.12.5 (2024-02-11)
+===================
+
+We add `--offline` as optional CLI flag to the `generate-python` CLI.
+We keep the default behaviour of the CLI to be `online`, ie to make Async Http requests.
+
+
+Changes
+^^^^^^^
+
+feature
+"""""""
+- add CLI option to deactivate Async Http requests for PyPI and RTD web servers
+
+dev
+"""
+- run with --offline flag the Snapshot Update Scripts
+
+release
+"""""""
+- bump version to 1.12.5
+
+
 1.12.5-dev1 (2024-02-10)
 ========================
 
