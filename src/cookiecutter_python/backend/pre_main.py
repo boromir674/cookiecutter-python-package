@@ -15,9 +15,18 @@ def pre_main(request):
     # making http request to web servers hosting endpoints for APIs
 
     # Checkers are initialized as 'Activated'
-    #  if User Config is True and Default Config is False
 
-    request.check = Engine.create(request.config_file, request.default_config)
+    # Activate Async HTTP only if all below are True:
+    # - User did not pass the --offline CLI flag
+    # - User did not pass the --default-config CLI flag
+    # - User passed a Config file YAML
+
+    # Activate: if User Config is given and Default Config is False
+    deactivate_signal: bool = bool(request.default_config)
+    if request.offline:
+        deactivate_signal = True
+
+    request.check = Engine.create(request.config_file, deactivate_signal)
 
     # Start Requesting Futures! - Hosting Service: PyPI, Read The Docs
     request.check_results = request.check.check(request.web_servers)
