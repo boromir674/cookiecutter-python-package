@@ -48,14 +48,14 @@ env:
   ALWAYS_BUILD_N_PUBLISH_DOCKER: "false"
 
   DOCKER_JOB_POLICY: "CDeployment"
-  # - CDeployment : Builds and Publishes only if Tests ran and passed
-  # - CDelivery   : Builds and Publishes if Tests Passed or if Tests were Skipped
+  # - CDeployment : '2' Builds and Publishes only if Tests ran and passed
+  # - CDelivery   : '3' Builds and Publishes if Tests Passed or if Tests were Skipped
   ############################
 
   #### DOCS Job ####
   # 2nd level override
   ALWAYS_DOCS: "false"
-  DOCS_JOB_POLICY: '2'
+  DOCS_JOB_POLICY: '2'  # {2, 3}
 
   #### STATIC CODE ANALYSIS Job ####
   ALWAYS_LINT: "false"
@@ -96,7 +96,7 @@ jobs:
             echo "matrix=$TEST_STRATEGY" >> $GITHUB_OUTPUT 
 
           # interpret Boarding Message: if head_commit.message matches BOARDING_MSG regex
-          elif [[ "${{ github.event.head_commit.message }}" =~ ${{ env.BOARDING_MSG }} ]]; then
+          elif [[ "${{ github.event.head_commit.message }}" =~ "${{ env.BOARDING_MSG }}" ]]; then
 
             affected_components="${BASH_REMATCH[1]}"
             echo "--> Detected Affected Components: $affected_components <--"
@@ -105,7 +105,8 @@ jobs:
               echo "matrix=$TEST_STRATEGY" >> $GITHUB_OUTPUT
             fi
             if [[ "$affected_components" =~ "Docs" ]]; then
-              PIPE_DOCS_POLICY="${{ (env.DOCS_JOB_ON != 'true' && '0') || (env.ALWAYS_DOCS == 'true' && '1') || '3' }}"
+              # set policy to 1 to trigger Docs Build (higher level override might be in place)
+              PIPE_DOCS_POLICY="${{ (env.DOCS_JOB_ON != 'true' && '0') || (env.ALWAYS_DOCS == 'true' && '1') || '1' }}"
             fi
 
           # Fall back to the default strategy
@@ -150,13 +151,15 @@ jobs:
     if: ${{ needs.set_github_outputs.outputs.TESTS_ENABLED == 'true' }}
     strategy:
       matrix: ${{fromJSON(needs.set_github_outputs.outputs.matrix)}}
+    env:
+      WHEELS_PIP_DIR: "wheels-pip"
     outputs:
-      SEMVER_PIP_FORMAT: ${{ steps.parse_version.outputs.SEMVER_PIP_FORMAT }}
+      PEP_VERSION: ${{ steps.extract_wheel_info.outputs.PEP_VERSION }}
     steps:
     - run: echo "Platform -> ${{ matrix.platform }} , Python -> ${{ matrix.python-version }}"
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
     - run: python -m pip install --upgrade pip && python -m pip install tox==3.28 tox-gh-actions
@@ -164,31 +167,48 @@ jobs:
     - name: Do Type Checking
       run: tox -e type -vv -s false
 
-    - name: Parse package version from __init__.py to assist building
-      shell: bash
-      id: parse_version
-      run: |
-        PARSER="src/cookiecutter_python/{{ cookiecutter.project_slug }}/scripts/parse_version.py"
-        PARSED_VERSION=$(python "${PARSER}")
-        # transform version (ie 1.7.4-rc.1) to match the name of the wheel produced (ie 1.7.4rc1)
-        WHEEL_VERSION=$(echo $PARSED_VERSION | sed -E 's/([^.]*)\.([^.]*)\.([^-]*)-(rc)\.?(.*)/\1.\2.\3\4\5/')
-        # manually append the 0 to index the release candidate
-        # we account for wheel building that automatically does the above
-        last_two=${WHEEL_VERSION: -2}
-        if [[ $last_two == "rc" ]]; then
-          WHEEL_VERSION="${WHEEL_VERSION}0"
-        elif [[ "${WHEEL_VERSION: -3}" == "dev" ]]; then
-          WHEEL_VERSION="${WHEEL_VERSION}0"
-        fi
-        echo "==== $PARSED_VERSION  -->  $WHEEL_VERSION"
-        echo "PKG_VERSION=$WHEEL_VERSION" >> $GITHUB_ENV  # to be used in the next step
-        echo "SEMVER_PIP_FORMAT=$WHEEL_VERSION" >> $GITHUB_OUTPUT  # to be used in other jobs
-
     ###### TEST SUITE RUN ######
     - name: Run Unit Tests
-      run: tox -vv -s false
+      run: tox -vv -s false | tee test_output.log
       env:
         PLATFORM: ${{ matrix.platform }}
+        BUILD_DEST: ${{ env.WHEELS_PIP_DIR }}
+
+    - name: Show produced Wheel(s)
+      run: ls -l ${{ env.WHEELS_PIP_DIR }}
+
+    # parse test_output.log and match string, like:
+    # Created wheel for cookiecutter_python: filename=cookiecutter_python-1.12.5.dev0-py3-none-any.whl size=199750 sha256=446c75803a6eea1d7ac6af60e0fbb0000483f97ef44eb39469ab3bd997b2a7d8
+
+    # starting line with 'Created wheel for' and extracting filename value and size value
+    - name: Extract Wheel Name and Size
+      id: extract_wheel_info
+      shell: bash
+      run: |
+        WHEEL_INFO=$(grep -E "Created wheel for" test_output.log | sed -E "s/.*filename=([^ ]+) size=([^ ]+) .*/\1 \2/")
+
+        # extract file name
+        WHEEL_NAME=$(echo $WHEEL_INFO | cut -d ' ' -f 1)
+        echo "WHEEL_NAME=$WHEEL_NAME" >> $GITHUB_ENV
+
+        # extract file size
+        WHEEL_SIZE=$(echo $WHEEL_INFO | cut -d ' ' -f 2)
+        echo "WHEEL_SIZE=$WHEEL_SIZE" >> $GITHUB_ENV
+
+        # extract '1.12.5.dev0' from 'cookiecutter_python-1.12.5.dev0-py3-none-any.whl'
+        PEP_VERSION=$(echo $WHEEL_NAME | sed -E "s/cookiecutter_python-([^ ]+)-py3-none-any.whl/\1/")
+
+        echo "PEP_VERSION=${PEP_VERSION}" >> $GITHUB_OUTPUT
+
+    - run: 'echo "WHEEL_NAME: $WHEEL_NAME SIZE: $WHEEL_SIZE"'
+    - run: 'echo "PEP_VERSION: $PEP_VERSION"'
+
+    - name: Run Test Suite Against Wheel
+      run: tox -e wheel-test -s false
+      env:
+        PLATFORM: ${{ matrix.platform }}
+        BUILD_DEST: ${{ env.WHEELS_PIP_DIR }}
+        WHEEL: ${{ env.WHEEL_NAME }}
 
     ## Code Coverage ##
     - name: "Combine Coverage (dev, sdist, wheel) & make Reports"
@@ -198,20 +218,25 @@ jobs:
       shell: bash
       run: |
         mv ./.tox/coverage.xml ./coverage-${{ matrix.platform }}-${{ matrix.python-version }}.xml
+
     - name: "Upload Test Coverage as Artifacts"
       uses: actions/upload-artifact@v3
       with:
         name: all_coverage_raw
         path: coverage-${{ matrix.platform }}-${{ matrix.python-version }}.xml
         if-no-files-found: error
+
     - name: Check for compliance with Python Best Practices
       shell: bash
+      env:
+        PKG_VERSION: ${{ steps.extract_wheel_info.outputs.PEP_VERSION }}
+        WHEEL_PATH: ${{ env.WHEELS_PIP_DIR }}/${{ env.WHEEL_NAME }}
       run: |
         DIST_DIR=dist
-        echo "DIST_DIR=dist" >> $GITHUB_ENV
+        echo "DIST_DIR=${DIST_DIR}" >> $GITHUB_ENV
         mkdir ${DIST_DIR}
         mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}.tar.gz" "${DIST_DIR}"
-        mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}-py3-none-any.whl" "${DIST_DIR}"
+        mv "${{ env.WHEEL_PATH }}" "${DIST_DIR}"
         tox -e check -vv -s false
 
     - name: Upload Source & Wheel distributions as Artefacts
@@ -316,7 +341,7 @@ jobs:
     with:
       should_trigger: ${{ needs.check_which_git_branch_we_are_on.outputs.AUTOMATED_DEPLOY == 'true' }}
       distro_name: cookiecutter_python
-      distro_version: ${{ needs.test_suite.outputs.SEMVER_PIP_FORMAT }}
+      distro_version: ${{ needs.test_suite.outputs.PEP_VERSION }}
       pypi_env: '${{ needs.check_which_git_branch_we_are_on.outputs.ENVIRONMENT_NAME }}'
       artifacts_path: downloaded-artifacts
 
@@ -325,26 +350,16 @@ jobs:
     secrets:
       TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
 
-## DOCUMENTATION BUILD ##
+### DOCS BUILD/TEST - DOCUMENTATION SITE ###
   docs:
-    name: "Docs Build"
-    if: always() && contains('1 3', needs.set_github_outputs.outputs.PIPE_DOCS_POLICY)
-    runs-on: ubuntu-latest
-    env:
-      PYTHON_RUNTIME: "3.11"
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python ${{ env.PYTHON_RUNTIME }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.PYTHON_RUNTIME }}
-      - name: Install tox
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install tox==3.28
-
-      - name: Build Docs, inside a virtualenv
-        run: tox -e pin-docs,docs -vv -s false
+    name: Build Documentation
+    needs: set_github_outputs
+    # bafaa2c2a014758a4421fe9b5c02ba66dbfdbef6
+    uses: boromir674/automated-workflows/.github/workflows/policy_docs.yml@test
+    with:
+      run_policy: '${{ needs.set_github_outputs.outputs.PIPE_DOCS_POLICY }}'
+      python_version: ${{ needs.set_github_outputs.outputs.PIPE_DOCS_PY }}
+      command: "tox -e pin-docs,docs --sitepackages -vv -s false"
 
 ### STATIC CODE ANALYSIS & LINTING ###
   lint:
