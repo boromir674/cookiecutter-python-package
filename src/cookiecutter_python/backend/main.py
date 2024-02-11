@@ -17,6 +17,7 @@ WEB_SERVERS = ['pypi', 'readthedocs']
 def generate(
     # interactive=True,
     no_input=False,  # INTERACTIVE ON by Default
+    offline=False,
     extra_context=None,
     replay=False,
     overwrite=False,
@@ -49,10 +50,11 @@ def generate(
             web_servers=WEB_SERVERS,
             no_input=no_input,
             extra_context=extra_context,
+            offline=offline,
         )
     )
     print('Extra context: ', request.extra_context)
-    ## GENERATION ##
+    ## GENERATION from Template; delegate to Cookiecutter callable ##
     project_dir = generator(
         os.path.abspath(os.path.join(my_dir, '..')),  # template dir path
         checkout=checkout,

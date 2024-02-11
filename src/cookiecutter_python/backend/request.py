@@ -14,3 +14,4 @@ class Request:
     extra_context: dict
     check: Any = attr.ib(default=None)
     check_results: Union[None, Iterable[CheckWebServerResult]] = attr.ib(default=None)
+    offline: bool = False
