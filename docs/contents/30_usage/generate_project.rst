@@ -3,15 +3,42 @@
 
 You can run the following to see all the available parameters you can control:
 
-.. code-block:: shell
+.. INLINE TABS ###################
 
-  generate-python --help
+.. tab:: Pipx / Pip
+
+  .. code-block:: shell
+
+    generate-python --help
+
+
+.. tab:: Docker (linux shell)
+
+  .. Docker #######
+
+  .. code-block:: shell
+
+    docker run -it --rm boromir674/generate-python:master --help
 
 The most common way to generate a new Python Package Project is to run:
 
-.. code-block:: shell
+.. INLINE TABS ###################
 
-  generate-python
+.. tab:: Pipx / Pip
+
+  .. PIPX Installation #######
+
+  .. code-block:: shell
+
+    generate-python
+
+.. tab:: Docker (linux shell)
+
+  .. Docker #######
+
+  .. code-block:: shell
+
+    docker run -it --rm boromir674/generate-python:master
 
 This will prompt you to input some values and create a fresh new Project in the
 current directory!

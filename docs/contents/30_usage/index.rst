@@ -2,11 +2,11 @@
 Generate New Python Package Project
 ===================================
 
-This *python generator* was designed to be installed via *pip* and then invoked through
-the cli.
+Our ``Python Generator`` **Project** was designed to be installable via *pip* and then invoked through
+the ``generate-python`` entrypoint to the CLI.
 
-Installing the Generator
-------------------------
+Getting the CLI
+---------------
 
 .. include:: installation.rst
 
@@ -19,7 +19,7 @@ Using the CLI
 .. _Use Cases:
 
 Generated Python Project Use Cases
-==================================
+----------------------------------
 
 .. include:: use_cases.rst
 
