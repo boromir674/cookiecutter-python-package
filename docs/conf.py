@@ -55,6 +55,8 @@ extensions = [
     # alt instructions for installation, environment configuration, etc
     'sphinx_inline_tabs',  # pip install sphinx-inline-tabs ^2023.4.21
 
+    ## MERMAID directive ##
+    'sphinxcontrib.mermaid',  # pip install sphinxcontrib-mermaid
 ]
 
 # Add any paths that contain templates here, relative to this directory.
