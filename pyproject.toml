@@ -10,7 +10,7 @@ build-backend = "poetry.core.masonry.api"
 ## Also renders on pypi as 'subtitle'
 [tool.poetry]
 name = "cookiecutter_python"
-version = "1.13.0"
+version = "1.13.0-rc"
 description = "1-click Generator of Python Project, from Template with streamlined \"DevOps\" using a powerful CI/CD Pipeline."
 authors = ["Konstantinos Lampridis <k.lampridis@hotmail.com>"]
 maintainers = ["Konstantinos Lampridis <k.lampridis@hotmail.com>"]
