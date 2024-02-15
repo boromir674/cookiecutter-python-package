@@ -3,6 +3,10 @@ macOS
 Macos
 conda
 env
+tt
+boromir
+Aopen
+Amaster
 
 Quickstart
 Submodules
@@ -17,6 +21,11 @@ Iterable
 json
 len
 pytest
+pyproject
+tox
+sdist
+pypi
+cookiecutter
 
 # Software Engineering
 runnable
@@ -24,6 +33,33 @@ instantiation
 subclasses
 dev
 templating
+DevOps
+sdk
+entrypoint
+repo
+Sem
+Ver
+Changelog
+Templated
+cli
+https
+toml
+Distro
+
+param
+prerelease
+linter
+Lifecycle
+
+# Docker
+Dockerfile
+dockerhub
+
+# 3rd Party Services / Software
+Codecov
+Codacy
+Codeclimate
+
 
 # Open Source
 libre
@@ -44,13 +80,18 @@ runtime
 # 2nd, 3rd
 nd
 
-cookiecutter
-pypi
-sdist
 cpu
 
 # Github
 github
+gh
 
 # Open Source Software Licences
 affero
+
+# English Words
+Automations
+Scaffolded
+installable
+Prepend
+behaviour

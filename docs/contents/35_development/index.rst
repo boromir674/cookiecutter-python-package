@@ -13,3 +13,13 @@ GitOps Guides
    :maxdepth: 1
 
    guide_quick_docs_release
+   release_candidate
+
+
+Docker Build
+============
+
+.. toctree::
+   :maxdepth: 1
+
+   docker_build
