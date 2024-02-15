@@ -15,7 +15,11 @@ from collections import OrderedDict
 from copy import copy
 from os import path
 from pathlib import Path
-from git import Actor, Repo
+try:
+    from git import Actor, Repo
+except ImportError as error:
+    print(error)
+    print("Please do 'pip install gitpython' and/or install git binary on host (ie machine, docker)")
 from cookiecutter_python.backend.gen_docs_common import get_docs_gen_internal_config
 from cookiecutter_python._logging_config import FILE_TARGET_LOGS
 
@@ -268,12 +272,15 @@ def post_hook():
 
     # Git commit
     if request.initialize_git_repo:
-        initialize_git_repo(request.project_dir)
-        request.repo = Repo(request.project_dir)
-        if not is_git_repo_clean(request.project_dir):
-            git_commit(request)
-        else:
-            print('No changes to commit.')
+        try:
+            initialize_git_repo(request.project_dir)
+            request.repo = Repo(request.project_dir)
+            if not is_git_repo_clean(request.project_dir):
+                git_commit(request)
+            else:
+                print('No changes to commit.')
+        except Exception as error:
+            print('Exception: ' + str(error))
     return 0
 
 

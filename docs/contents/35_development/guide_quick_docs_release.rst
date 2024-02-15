@@ -35,9 +35,10 @@ Workflows References
 
 .. Workflow Links to Source Code
 .. * Handle quick release , by PR tb --> db
-* quick-docs.yaml_ : Listens to `quick-release` git tag, and merges tb --> db, after opening PR.
+
+* quick-docs.yaml_ : Listens to ``quick-release`` git tag, and merges tb --> db, after opening PR.
 
 
 .. URL links directives, macros
 
-.. _quick-docs.yaml: https://github.com/boromir674/cookiecutter-python-package/blob/docs/.github/workflows/quick-docs.yaml
+.. _quick-docs.yaml: https://github.com/boromir674/cookiecutter-python-package/blob/master/.github/workflows/quick-docs.yaml

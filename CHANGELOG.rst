@@ -2,6 +2,43 @@
 Changelog
 =========
 
+1.13.0 (2024-02-15)
+===================
+
+| Focused on revamping the Docker Image built with the ``generate-python`` CLI.
+| And documenting in the ``Documentation Site``, how to install via ``pipx``, ``docker``, or ``pip``.
+
+Changes
+^^^^^^^
+
+feature
+"""""""
+- avoid hard-fail when git binary is not installed, which causes gitpython ImportError
+- revamp Dockerfile, and reduce image size from 770MB to 229MB, with multi-stage build
+
+documentation
+"""""""""""""
+- include a Mermaid Graph with a DAG of the Docker Multi-Stage Build Process
+- fix API docs and revamp Developer's Corner Page
+- update screenshot with latest CI/CD Template Design
+- add words in white list of Spelling Docs Tests
+- fix sphinx warning
+- document installation via pipx, pip, and docker & and running via CLI or Container
+
+build
+"""""
+- track .dockerignore!
+- add 'sphinx-inline-tabs' ^2023.4.21, for python >=3.8,<3.13 in docs and docslive Extras
+
+ci
+""
+- make poetry export more future proof, by installing export plugin manually
+
+gitops
+""""""
+- fix pr-to-boarding Workflow
+
+
 1.12.5 (2024-02-11)
 ===================
 

@@ -30,7 +30,7 @@ copyright = '2022, Konstantinos Lampridis'
 author = 'Konstantinos Lampridis'
 
 # The full version, including alpha/beta/rc tags
-release = '1.12.5'
+release = '1.13.0'
 
 # -- General configuration ---------------------------------------------------
 
@@ -48,7 +48,15 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
-    'sphinxcontrib.spelling'
+    'sphinxcontrib.spelling',
+
+    ## INLINE TABS ##
+    # allows creating INLINE TABS for alternative content, which can facilitate
+    # alt instructions for installation, environment configuration, etc
+    'sphinx_inline_tabs',  # pip install sphinx-inline-tabs ^2023.4.21
+
+    ## MERMAID directive ##
+    'sphinxcontrib.mermaid',  # pip install sphinxcontrib-mermaid
 ]
 
 # Add any paths that contain templates here, relative to this directory.
