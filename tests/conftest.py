@@ -1040,7 +1040,7 @@ def assert_commit_author_is_expected_author(assert_initialized_git):
 
 @pytest.fixture
 def assert_initialized_git():
-    try:   
+    try:
         from git import Repo
     except ImportError as error:
         # happens if git binary is not installed on host!
