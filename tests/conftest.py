@@ -1040,7 +1040,13 @@ def assert_commit_author_is_expected_author(assert_initialized_git):
 
 @pytest.fixture
 def assert_initialized_git():
-    from git import Repo
+    try:   
+        from git import Repo
+    except ImportError as error:
+        # happens if git binary is not installed on host!
+        print("Error: ", error)
+        return lambda x: 'git binary not installed on host'
+
     from git.exc import InvalidGitRepositoryError
 
     def _assert_initialized_git(folder: str):
@@ -1077,6 +1083,8 @@ def assert_files_committed_if_flag_is_on(
         print("\n HERE")
         try:
             repo = assert_initialized_git(folder)
+            if repo == 'git binary not installed on host':
+                return
 
             head = repo.active_branch.commit
             assert head
