@@ -48,7 +48,13 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
-    'sphinxcontrib.spelling'
+    'sphinxcontrib.spelling',
+
+    ## INLINE TABS ##
+    # allows creating INLINE TABS for alternative content, which can facilitate
+    # alt instructions for installation, environment configuration, etc
+    'sphinx_inline_tabs',  # pip install sphinx-inline-tabs ^2023.4.21
+
 ]
 
 # Add any paths that contain templates here, relative to this directory.
