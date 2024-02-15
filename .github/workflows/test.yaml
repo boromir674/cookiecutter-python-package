@@ -164,6 +164,9 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - run: python -m pip install --upgrade pip && python -m pip install tox==3.28 tox-gh-actions
 
+    - name: Pin 'Static Type Checking' Dependencies
+      run: tox -vv -s false -e pin-deps -- -E typing
+
     - name: Do Type Checking
       run: tox -e type -vv -s false
 
