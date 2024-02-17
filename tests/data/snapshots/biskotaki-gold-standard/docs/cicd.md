@@ -11,6 +11,4 @@ Flow Chart, of Jobs Dependencies in the Pipeline.
 
 **config: ./.github/workflows/test.yaml**
 
-
-
-{% include 'dockerfile_mermaid.md' %}
+{% include 'cicd_mermaid.md' %}
