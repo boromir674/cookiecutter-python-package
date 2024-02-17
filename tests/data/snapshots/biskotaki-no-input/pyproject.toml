@@ -11,7 +11,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry]
 name = "biskotaki"
 version = "0.0.1"
-description = "Project generated from the https://github.com/boromir674/cookiecutter-python-package/tree/master/src/cookiecutter_python cookiecutter"
+description = "Project generated using https://github.com/boromir674/cookiecutter-python-package"
 authors = ["Konstantinos Lampridis <k.lampridis@hotmail.com>"]
 maintainers = ["Konstantinos Lampridis <k.lampridis@hotmail.com>"]
 license = "AGPL-3.0-only"

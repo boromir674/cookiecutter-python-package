@@ -72,6 +72,8 @@ jobs:
           tox -e 'edit,sdist,wheel'
           tox -e wheel-test
           tox -e coverage
+      
+      ## Verify all Tox Envs PASS, as intented, out of the box ##
 
       # Running Type Check, on src and Test code: Passes
       - name: 'Mypy: Static Type Checker -> PASS'
@@ -80,7 +82,6 @@ jobs:
           tox -e pin-deps -- -E typing
           tox -e type
 
-      ## Verify Development Scripts operate as intented out of the box
       - name: 'Ruff: Fast Python Linter -> PASS'
         run: |
           cd gen/biskotaki
