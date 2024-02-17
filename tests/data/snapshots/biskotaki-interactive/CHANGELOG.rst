@@ -2,7 +2,7 @@
 Changelog
 =========
 
-0.0.1 (2024-02-17)
+0.0.1 (2024-02-18)
 =======================================
 
 | This is the first ever release of the **biskotaki** Python Package.

@@ -1,6 +1,6 @@
 BISKOTAKI
 
-Project generated from the https://github.com/boromir674/cookiecutter-python-package/tree/master/src/cookiecutter_python cookiecutter
+Project generated using https://github.com/boromir674/cookiecutter-python-package
 
 .. start-badges
 
