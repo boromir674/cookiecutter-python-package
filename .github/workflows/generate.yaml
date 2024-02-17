@@ -8,6 +8,8 @@ on:
     branches:
       - 'master'
 
+env:
+  PY_VERSION: '3.11'
 
 jobs:
   generate:
@@ -17,10 +19,10 @@ jobs:
       SUPER_SECRET: ${{ secrets.BISKOTAKI_GH_TOKEN }}
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python 3.10
+      - name: Set up Python ${{ env.PY_VERSION }}
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "${{ env.PY_VERSION }}"
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -50,7 +52,7 @@ jobs:
         run: |
           pip install --user -e .
           echo "    version: \"${{ env.PKG_VERSION }}\"" >> .github/biskotaki.yaml
-          generate-python -o gen --config-file ./.github/biskotaki.yaml --no-input -f
+          generate-python -o gen --config-file ./.github/biskotaki.yaml --no-input -f --offline
 
       ## VALIDATE BISKOTAKI CI CONFIG file is in valid Yaml format ##
       - name: "Validate YAML format"
@@ -63,30 +65,42 @@ jobs:
 
       ## Run Test Suite against the generated project ##
       - name: Test distributions 'Source', 'Built' and 'edit' (dev env) mode installation
+        env:
+          TOXPYTHON: "python${{ env.PY_VERSION }}"
         run: |
           cd gen/biskotaki
-          tox -e "py310{-sdist, -wheel, -dev}"
+          tox -e 'edit,sdist,wheel'
+          tox -e wheel-test
           tox -e coverage
+
+      # Running Type Check, on src and Test code: Passes
+      - name: 'Mypy: Static Type Checker -> PASS'
+        run: |
+          cd gen/biskotaki
+          tox -e type
 
       ## Verify Development Scripts operate as intented out of the box
       - name: 'Ruff: Fast Python Linter -> PASS'
         run: |
           cd gen/biskotaki
           tox -e ruff
-
       # Running Lint Check, on src and Test code: Passes
-      # Running Type Check, on src and Test code: Passes
-      # Running the Build script (sdist and wheel): produces Distro Artifacts: Source (.tar.gz) and Wheel (.whl) files
-      # Running Quality Checks against Distro Metadata: Passes with 10/10 score
-
-      - name: Run Isort, Black, Mypy, Build, Pyroma and PyDeps commands
+      - name: 'Isort, Black: Code Formatter -> PASS'
         run: |
           cd gen/biskotaki
           tox -e lint
-          tox -e type
+      # Running the Build script (sdist and wheel): produces Distro Artifacts: Source (.tar.gz) and Wheel (.whl) files
+      - name: 'Build: sdist, wheel -> PASS'
+        run: |
+          cd gen/biskotaki
           tox -e build
+      # Running Quality Checks against Distro Metadata: Passes with 10/10 score
+      - name: 'Pyroma: Distro Quality -> PASS'
+        run: |
+          cd gen/biskotaki
           tox -e check
-          # tox -e graphs
+
+      # tox -e graphs
 
       ## PUSH to BISKOTAKI REPO ##
       - name: Push to dedicated branch in biskotaki repo
