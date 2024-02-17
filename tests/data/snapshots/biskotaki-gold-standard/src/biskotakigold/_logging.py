@@ -28,8 +28,8 @@ Usage:
 
 import logging
 
-# for 'biskotaki-gold-standard' app/code
-FILE_TARGET_LOGS = 'biskotakigold.log'
+# for 'biskotaki' app/code
+FILE_TARGET_LOGS = 'biskotaki.log'
 
 #### FILE LOGGING
 # set up logging to file for DEBUG Level and above

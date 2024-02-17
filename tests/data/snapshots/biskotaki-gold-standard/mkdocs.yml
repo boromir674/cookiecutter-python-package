@@ -22,8 +22,9 @@ theme:
     - navigation.footer
 
 plugins:
-  # Enable jinja inside markdown files # https://github.com/fralau/mkdocs_macros_plugin
-  - macros
+  # Enable jinja inside your markdown files
+  # https://github.com/fralau/mkdocs_macros_plugin
+  # - macros
   # Authors need installation
   # - git-authors
   - tags:
@@ -48,14 +49,15 @@ markdown_extensions:
 nav:
   - Home:
     - "Quick Start": index.md  
+
+    
+    
     - "CLI": cli.md
+    
+
   - Developer:
     - "Docker": build-process_DAG.md
     - "CICD": cicd.md
-    - "Developer Guide":
-      - "Index": dev_guides/index.md
-      - "Docker": dev_guides/docker.md
-
   - Code Reference: reference/
   - tags: tags.md
 
