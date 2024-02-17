@@ -77,6 +77,7 @@ jobs:
       - name: 'Mypy: Static Type Checker -> PASS'
         run: |
           cd gen/biskotaki
+          tox -e pin-deps -- -E typing
           tox -e type
 
       ## Verify Development Scripts operate as intented out of the box
