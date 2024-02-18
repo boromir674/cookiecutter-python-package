@@ -18,18 +18,17 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # HANDLER 2: Add 'boarding-auto' label to PR, if it targets 'boarding-auto' branch
-      # - name: "Label PR with 'boarding_auto' label"
-      #   # WHEN PR  Head  -->  boarding-auto
-      #   if: github.event_name == 'pull_request_target' && contains(github.event.pull_request.base.ref, 'boarding-auto')
-      #   run: gh pr edit ${{ github.event.number }} --add-label 'boarding-auto'
-      #   env:
-      #     GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      # HANDLER 2: Enable 'Auto Merge', if PR targets 'boarding-auto', after labeling
+      - name: Enable 'Auto Merge', if PR targets 'boarding-auto'
+        # WHEN PR  <Head>  -->  boarding-auto
+        if: contains(github.event.pull_request.base.ref, 'boarding-auto')
+        run: gh pr merge ${{ github.event.number }} --auto
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-      # HANDLER 3: Enable PR 'Auto Merge', if it changes come from 'boarding-auto' branch
+      # HANDLER 3: Enable PR 'Auto Merge', if changes come from 'boarding-auto' branch
       - name: "Merge PR, Signaling what Automated Tests to run"
-        # PR targeting 'boarding-auto' branch, needs to run CI Tests, given labels
-        # WHEN PR  boarding-auto  -->  Base
+        # WHEN PR  boarding-auto  -->  <Base>
         if:  startsWith(github.head_ref, 'boarding-auto')
         run: gh pr merge ${{ github.event.number }} --auto
         env:
