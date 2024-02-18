@@ -27,14 +27,29 @@ jobs:
           set-safe-directory: ''  # `git config --global --add safe.directory <path>`
           token: '${{ secrets.GH_TOKEN }}'
       
-      # Track the remote branches
-      - run: git branch --track "${{ env.BOARDING }}" "origin/${{ env.BOARDING }}" || echo "Branch '${{ env.BOARDING }}' already exists"
-      - run: git branch --track "${{ env.TRAIN }}" "origin/${{ env.TRAIN }}" || echo "Branch '${{ env.TRAIN }}' already exists"
+      # if train does not exist in remote then, we place it on top of master
+      - name: Create Train, on top of Main, if it does not exist
+        run: |
+          echo "TRAIN=${TRAIN}" >> $GITHUB_ENV
+          if [ -z "$(git branch --list ${{ env.TRAIN }})" ]; then
+            echo "Branch '${{ env.TRAIN }}' does not exist. Creating it .."
+            git checkout -b ${{ env.TRAIN }} ${{ env.MAIN_BR }}
+            git push origin ${{ env.TRAIN }}
+          fi
+
+      - name: Sanity Check that '${{ env.BOARDING }}' and '${{ env.TRAIN }}' branches exist
+        run: |
+          if [ -z "$(git branch --list ${BOARDING})" ]; then
+            echo "[ERROR] Branch '${BOARDING}' does not exist. Exiting .."
+            exit 1
+          fi
+          if [ -z "$(git branch --list ${TRAIN})" ]; then
+            echo "[ERROR] Branch '${TRAIN}' does not exist. Exiting .."
+            exit 1
+          fi
 
       ############## PR ##############
-      - name: 'Create PR   ${{ env.BOARDING }}  -->  ${{ env.TRAIN }}'
-        # --head is the branch where the changes were developed
-        # --base is the branch you want to merge the changes into
+      - name: "Create PR  Head: '${{ env.BOARDING }}''  -->  Base: '${{ env.TRAIN }}'"
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
@@ -67,7 +82,7 @@ jobs:
 
       ############## Merge ##############
       - name: 'Merge PR   ${{ env.BOARDING }}  -->  ${{ env.TRAIN }}'
-        run: gh pr merge "${{ env.BOARDING }}" --auto
+        run: gh pr merge "${{ env.BOARDING }}" --auto --merge
         # --delete-branch --squash
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
