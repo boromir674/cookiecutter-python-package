@@ -12,14 +12,19 @@ jobs:
     steps:
       - uses: actions/labeler@v5
 
+      - name: "Label PR with 'boarding-auto' label"
+        # WHEN PR  Head  -->  boarding-auto
+        if: github.event_name == 'pull_request_target' && contains(github.event.pull_request.base.ref, 'boarding-auto')
+        run: gh pr edit ${{ github.event.number }} --add-label 'boarding-auto'
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
       # PR targeting 'boarding-auto' branch, needs to run CI Tests, given labels
       ######## Merge ########
       - name: "Merge PR, Signaling what Automated Tests to run"
+        # WHEN PR  boarding-auto  -->  Base
         if:  startsWith(github.head_ref, 'boarding-auto')
         run: gh pr merge ${{ github.event.number }} --auto
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-      - name: "Label PR with 'boarding-auto' label"
-        if: github.event_name == 'pull_request_target' && contains(github.event.pull_request.base.ref, 'boarding-auto')
-        run: gh pr edit ${{ github.event.number }} --add-label 'boarding-auto'
