@@ -1,4 +1,4 @@
-# Welcome to the Documentation of `Biskotaki Gold Standard`!
+# Welcome to Biskotaki Gold Standard Documentation!
 
 Biskotaki Gold Standard is an open source TODO
 

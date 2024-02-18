@@ -8,7 +8,6 @@ the python module:
 This is an alternative to directly invoking the cli that uses python as the
 "entrypoint".
 """
-
 from __future__ import absolute_import
 
 from biskotakigold.cli import main

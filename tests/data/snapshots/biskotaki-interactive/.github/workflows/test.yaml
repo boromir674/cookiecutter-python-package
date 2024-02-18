@@ -27,7 +27,7 @@ on:
 
 env:
   ### STRESS TEST Job MATRIX ###
-  FULL_MATRIX_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.6\", \"3.7\", \"3.8\", \"3.9\", \"3.10\"]}"
+  FULL_MATRIX_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.7\", \"3.8\", \"3.9\", \"3.10\", \"3.11\"]}"
   # Python 3.7 has reached End of Life (EOL) on June 27th, 2023
   # Python 3.12 is in bugfix mode, same as 3.11 -> can start supporting 3.12 it
   UBUNTU_PY310_STRATEGY: "{\"platform\":[\"ubuntu-latest\"], \"python-version\":[\"3.10\"]}"
@@ -132,62 +132,81 @@ jobs:
     if: ${{ needs.set_github_outputs.outputs.TESTS_ENABLED == 'true' }}
     strategy:
       matrix: ${{fromJSON(needs.set_github_outputs.outputs.matrix)}}
+    env:
+      WHEELS_PIP_DIR: "wheels-pip"
     steps:
       - run: echo "Platform -> ${{ matrix.platform }} , Python -> ${{ matrix.python-version }}"
-      - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - run: python -m pip install --upgrade pip && python -m pip install tox==3.28 tox-gh-actions
 
+      - uses: actions/checkout@v4
+
+      - name: Pin 'Static Type Checking' Dependencies
+        run: tox -vv -s false -e pin-deps -- -E typing
+
       - name: Do Type Checking
         run: tox -e type -vv -s false
 
-      # Steps 'Run Unit Tests' and 'Check for compliance with Python Best Practices'
-      # require the PKG_VERSION environment variable at runtime
-
-      # We want to read the Version value from a file, that is part of the
-      # Python Distro (.tar.gz, or wheel)
-      - name: 'Define executable Parser, to read from same Source of Truth that Generator CLI utilizes, at runtime'
-        run: echo PARSER="./scripts/parse_version.py" >> $GITHUB_ENV
-
-      # Note: one Sem Ver is maintained in src/**/__init__.py file
-      # and the other in the pyproject.toml file
-      - name: 'Parse Sem Ver, same as `generate-python --version` value returned, at runtime'
-        run: echo VERSION_FROM_DISTRO_SOURCE_PY_FILE="$(${{ env.PARSER }})" >> $GITHUB_ENV
-
-      # PEP 440 requires that the version string be normalized to a canonical form.
-      # below should be enough to handle cases: '1.7.4', '1.7.4-rc', and '1.7.4-rc.1'
-      - name: 'Transform Version (ie 1.7.4-rc.1 -> 1.7.4rc1), to match the name of the wheel produced'
-        run: echo WHEEL_VERSION="$(echo $VERSION_FROM_DISTRO_SOURCE_PY_FILE | sed -E 's/([^.]*)\.([^.]*)\.([^-]*)-(rc)\.?(.*)/\1.\2.\3\4\5/')" >> $GITHUB_ENV
-
-      - name: "If Sem Ver ends with '-rc', append trailing 0 (ie *rc0)"
-        id: extract_sem_ver_last_two_chars
-        run: 'echo last_two="${${{ env.WHEEL_VERSION }}: -2}" >> $GITHUB_OUTPUT'
-
-      - name: "Sem Ver ends with 'rc' = ${{ steps.extract_sem_ver_last_two_chars.outputs.last_two == 'rc' }}"
-        if: ${{ steps.extract_sem_ver_last_two_chars.outputs.last_two == 'rc' }}
-        run: echo WHEEL_VERSION="${WHEEL_VERSION}0" >> $GITHUB_ENV
-
-      - name: 'Set Expected PEP 440 Version: ${{ env.WHEEL_VERSION }}'
-        id: set_expected_pep_440_version
-        run: echo "EXPECTED_PEP_440_VERSION=${{ env.WHEEL_VERSION }}" >> $GITHUB_OUTPUT
-      
-      ##### TEST SUITE / UNIT TESTS #####
-        # Before Test Suite, must derive expected PEP 440 Sem Ver
-      - name: Run Unit Tests
-        run: tox -vv -s false
+      ###### TEST SUITE RUN against Edit and Sdist ######
+      - name: Build and Test 'Edit' and 'Sdist' & Build Wheel(s)
+        run: |
+          set -o pipefail
+          tox -vv -s false | tee test_output.log
         env:
           PLATFORM: ${{ matrix.platform }}
-          PKG_VERSION: ${{ steps.set_expected_pep_440_version.outputs.EXPECTED_PEP_440_VERSION }}
+          BUILD_DEST: ${{ env.WHEELS_PIP_DIR }}
 
+      - name: List Wheel(s) created for Distro and its Requirements
+        run: ls -l ${{ env.WHEELS_PIP_DIR }}
+
+      ### PARSE WHEEL File NAME ###
+      - name: Extract Wheel Name and Size
+        id: extract_wheel_info
+        shell: bash
+        run: |
+          WHEEL_INFO=$(grep -E "Created wheel for" test_output.log | sed -E "s/.*filename=([^ ]+) size=([^ ]+) .*/\1 \2/")
+
+          # extract file name
+          WHEEL_NAME=$(echo $WHEEL_INFO | cut -d ' ' -f 1)
+          echo "WHEEL_NAME=$WHEEL_NAME" >> $GITHUB_ENV
+
+          # extract file size
+          WHEEL_SIZE=$(echo $WHEEL_INFO | cut -d ' ' -f 2)
+          echo "WHEEL_SIZE=$WHEEL_SIZE" >> $GITHUB_ENV
+
+          # extract '1.12.5.dev0' from 'biskotaki-1.12.5.dev0-py3-none-any.whl'
+          PEP_VERSION=$(echo $WHEEL_NAME | sed -E "s/biskotaki-([^ ]+)-py3-none-any.whl/\1/")
+
+          echo "PEP_VERSION=${PEP_VERSION}" >> $GITHUB_OUTPUT
+
+      - run: 'echo "WHEEL_NAME: $WHEEL_NAME SIZE: $WHEEL_SIZE"'
+      - run: 'echo "PEP_VERSION: $PEP_VERSION"'
+
+      # Crash Workflow if PEP_VERSION is not set
+      - if: ${{ steps.extract_wheel_info.outputs.PEP_VERSION == '' }}
+        run: exit 1
+
+      ###### TEST SUITE RUN against Wheel ######
+      - name: Run Test Suite Against Wheel
+        run: tox -e wheel-test -s false
+        env:
+          PLATFORM: ${{ matrix.platform }}
+          BUILD_DEST: ${{ env.WHEELS_PIP_DIR }}
+          WHEEL: ${{ env.WHEEL_NAME }}
+
+      ## Combine Coverage Data from Tests' Results ##
       - name: "Combine Coverage (dev, sdist, wheel) & make Reports"
         run: tox -e coverage --sitepackages -vv -s false
 
       - name: Rename Coverage Files
-        run: mv ./.tox/coverage.xml ./coverage-${{ matrix.platform }}-${{ matrix.python-version }}.xml
+        shell: bash
+        run: |
+          mv ./.tox/coverage.xml ./coverage-${{ matrix.platform }}-${{ matrix.python-version }}.xml
 
+      ## UPLOAD CI ARTIFACTS - Coverage Reports ##
       - name: "Upload Test Coverage as Artifacts"
         uses: actions/upload-artifact@v3
         with:
@@ -196,16 +215,19 @@ jobs:
           if-no-files-found: error
 
       - name: Check for compliance with Python Best Practices
+        shell: bash
         env:
-          PKG_VERSION: ${{ steps.set_expected_pep_440_version.outputs.EXPECTED_PEP_440_VERSION }}
+          PKG_VERSION: ${{ steps.extract_wheel_info.outputs.PEP_VERSION }}
+          WHEEL_PATH: ${{ env.WHEELS_PIP_DIR }}/${{ env.WHEEL_NAME }}
         run: |
           DIST_DIR=dist
-          echo "DIST_DIR=dist" >> $GITHUB_ENV
+          echo "DIST_DIR=${DIST_DIR}" >> $GITHUB_ENV
           mkdir ${DIST_DIR}
           mv ".tox/${DIST_DIR}/biskotaki-${PKG_VERSION}.tar.gz" "${DIST_DIR}"
-          mv ".tox/${DIST_DIR}/biskotaki-${PKG_VERSION}-py3-none-any.whl" "${DIST_DIR}"
+          mv "${{ env.WHEEL_PATH }}" "${DIST_DIR}"
           tox -e check -vv -s false
 
+      ## UPLOAD CI ARTIFACTS - Distro Build(s), 1 sdist and 1 or more wheels ##
       - name: Upload Source & Wheel distributions as Artefacts
         uses: actions/upload-artifact@v3
         with:
@@ -213,8 +235,7 @@ jobs:
           path: ${{ env.DIST_DIR }}
           if-no-files-found: error
     outputs:
-      EXPECTED_PEP_440_VERSION: ${{ steps.set_expected_pep_440_version.outputs.EXPECTED_PEP_440_VERSION }}
-
+      PEP_VERSION: ${{ steps.extract_wheel_info.outputs.PEP_VERSION }}
 
   codecov_coverage_host:
     runs-on: ubuntu-latest
@@ -302,7 +323,7 @@ jobs:
       name: ${{ needs.check_which_git_branch_we_are_on.outputs.ENVIRONMENT_NAME }}
     env:
       DIST_DIR: dist
-      PACKAGE_DIST_VERSION: ${{ needs.test_suite.outputs.EXPECTED_PEP_440_VERSION }}
+      PACKAGE_DIST_VERSION: ${{ needs.test_suite.outputs.PEP_VERSION }}
       TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
       TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
       PYPI_SERVER: ${{ vars.PYPI_SERVER }}
@@ -369,10 +390,11 @@ jobs:
   docs:
     name: Build Documentation
     needs: set_github_outputs
-    uses: ./.github/workflows/policy_docs.yml
+    uses: boromir674/automated-workflows/.github/workflows/policy_docs.yml@v1.3.0
     with:
       run_policy: ${{ needs.set_github_outputs.outputs.PIPE_DOCS_POLICY }}
       python_version: ${{ needs.set_github_outputs.outputs.PIPE_DOCS_PY }}
+      command: 'tox -s false -e pin-deps -- -E docs && tox -e docs --sitepackages -vv -s false'
 
 ### DRAW PYTHON DEPENDENCY GRAPHS ###
   code_visualization:

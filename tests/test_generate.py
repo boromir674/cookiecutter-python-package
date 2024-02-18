@@ -17,7 +17,7 @@ def assert_scaffolded_without_cli(module_file) -> t.Callable[[str], None]:
 @pytest.mark.parametrize(
     'config_file, expected_interpreters',
     [
-        ('.github/biskotaki.yaml', ['3.6', '3.7', '3.8', '3.9', '3.10']),
+        ('.github/biskotaki.yaml', ['3.7', '3.8', '3.9', '3.10', '3.11']),
         (None, ['3.6', '3.7', '3.8', '3.9', '3.10', '3.11']),
         (
             'tests/data/biskotaki-without-interpreters.yaml',

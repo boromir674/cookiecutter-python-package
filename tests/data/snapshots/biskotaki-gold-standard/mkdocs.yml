@@ -1,6 +1,6 @@
 site_name: 'Biskotaki Gold Standard'
 site_url: 'https://biskotaki-gold.readthedocs.io/'
-site_description: 'Biskotaki Gold Standard Project Documentation.'
+site_description: 'Biskotaki Gold Standard Documentation Pages.'
 site_author: 'Konstantinos Lampridis'
 
 repo_url: 'https://github.com/boromir674/biskotaki-gold-standard/'
@@ -22,7 +22,8 @@ theme:
     - navigation.footer
 
 plugins:
-  # Enable jinja inside markdown files # https://github.com/fralau/mkdocs_macros_plugin
+  # Enable jinja inside your markdown files
+  # https://github.com/fralau/mkdocs_macros_plugin
   - macros
   # Authors need installation
   # - git-authors
@@ -34,9 +35,13 @@ plugins:
   - mermaid2
   # Directives Provider for docstrings parsing
   - mkdocstrings
+  # gain the ability to tap-in to the build process
   - gen-files:
+      # scripts allowing to programmatically generate .md content
       scripts:
-        - scripts/gen_api_refs_pages.py 
+        # custom script to generate API references
+        - scripts/gen_api_refs_pages.py
+  # programmatically generate Nav Item: ie 'reference/' entry in Navigation
   - literate-nav:
       nav_file: SUMMARY.md
   - section-index
@@ -47,16 +52,11 @@ markdown_extensions:
   
 nav:
   - Home:
-    - "Quick Start": index.md  
-    - "CLI": cli.md
-  - Developer:
+    - "Quick Start": index.md
+  - API References: reference/
+  - Topics:
     - "Docker": build-process_DAG.md
-    - "CICD": cicd.md
-    - "Developer Guide":
-      - "Index": dev_guides/index.md
-      - "Docker": dev_guides/docker.md
-
-  - Code Reference: reference/
+    - "CI/CD": cicd.md
   - tags: tags.md
 
 

@@ -1,63 +1,38 @@
-# Developer Guides
-<!-- After Title add short sentence as Subtitle -->
-Welcome to our collection of practical, how-to guides for developers.
+# How-To Guides for Development
 
-<!-- After Subtitle add horizontal line Separator -->
-******
+This section includes practical, *how-to* guides, for a **developer** to achieve something.  
+Guides on how to **run tests** against your code, how to **publish to PyPI**, how to build
+a Docker Image and **publish it to Dockerhub**, how to do `Static Code Analysis`, etc.
 
-<!-- After Line add Introduction/Summary text -->
 
-Find practical, **how-to guides**, for a **developer** to *achieve* something.  
-Including how to `run tests`, how to `Upload to PyPI`, how to `publish it to Dockerhub`, how to do `Static Code Analysis`, etc.
+## How to prevent any Image from being published to Dockerhub
 
-<div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
+1. Open your `.github/workflows/test.yaml`, and look for the **Worfklow Variables**
+ 
+    **Worfklow Variables** are defined in the `env` *section*
 
-  <div style="flex: 0 0 48%; margin-bottom: 16px;">
-    <h2>🚀 Docker</h2>
-    <p>Build Docker images and Publish them</p>
-    <ul>
-        <li><a href="/dev_guides/docker">Docker in our CI/CD Pipeline</a></li>
-        <li>Docker on Local Development machine.. coming soon..</li>
-    </ul>
-  </div>
+2. Check the *value* of the `DOCKER_JOB_ON` **Worfklow Variable**
+    
+    [this is line is not rendered; markdown comment]: #
 
-  <div style="flex: 0 0 48%; margin-bottom: 16px;">
-    <h2>🚀 Automated Workflows and GitOps</h2>
-    <p>Run Workloads/Workflows on the CI, triggered from Git events</p>
-    <ul>
-        <li>Coming soon..</li>
-    </ul>
-  </div>
+    ![Docker OFF](../assets/docker_off.png)
 
-  <div style="flex: 0 0 48%; margin-bottom: 16px;">
-    <h2>📦 PyPI</h2>
-    <p>Build and Distribute/Package Python Code.</p>
-    <ul>
-        <li>PyPI in our CI/CD Pipeline: Coming soon..</li>
-        <li>PyPI interaction from (local) Development machine: coming soon..</li>
-    </ul>
-  </div>
+3. If *value* is **false**, then we are OK.
+   
+4. If not, set value* to **false**
 
-  <div style="flex: 0 0 48%; margin-bottom: 16px;">
-    <h2>📦 Testing: Running Test Suite</h2>
-    <p>Automatically, run Tests against your Code.</p>
-    <ul>
-        <li>Testing locally: Coming soon..</li>
-        <li>Testing on the CI: Coming soon..</li>
-    </ul>
-  </div>
+    ```shell
+    git add .github/workflows/test.yaml
+    git commit "ci: emphemerally prevent any Image Build and Dockerhub Publish"
+    ```
 
-  <div style="flex: 0 0 48%; margin-bottom: 16px;">
-    <h2>📦 Static Code Analysis</h2>
-    <p>Analyze Code, without executing it.</p>
-    <ul>
-        <li>Type Checking: Coming soon..</li>
-        <li>Linting Code: coming soon..</li>
-    </ul>
-  </div>
+Now, it is **guaranteed**, that **NO** Dockerhub Publish will happen,
+by any Pipeline subsequent `trigger`, aka `git events` (ie `git push`) fired.
 
-  <!-- Add similar blocks for other topics -->
+**Info**: the `DOCKER_JOB_ON` is a top-level Gate to all Docker-related in CI.
+Only, if `DOCKER_JOB_ON` is **true**, any image build and publish can be ever considered.
 
-</div>
+### References
 
-<!-- Add more HTML blocks for additional topics if needed -->
+- https://automated-workflows.readthedocs.io/en/main/guide_setup_cicd/
+- https://automated-workflows.readthedocs.io/en/main/ref_docker/

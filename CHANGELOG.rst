@@ -2,6 +2,35 @@
 Changelog
 =========
 
+1.14.0 (2024-02-18)
+===================
+
+Changes
+^^^^^^^
+
+feature
+"""""""
+- revamp Mkdocs build Process, and enhance Template Content of Docs Pages
+
+fix
+"""
+- provide correct env name for Code Visualization CI Job to reference
+- fix biskotaki generation with sphinx docs
+
+test
+""""
+- update tests to match new expectations, given biskotaki.yml updates
+- update Gold Standard Biskotatki Snapshot
+
+ci
+""
+- update Generate Workflow, according to changed tox
+
+chore
+"""""
+- remove python 3.6 and add python 3.11 from Biskotaki Ref Project
+
+
 1.13.0 (2024-02-15)
 ===================
 

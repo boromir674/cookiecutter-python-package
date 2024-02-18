@@ -11,9 +11,9 @@ default_context:
     email: k.lampridis@hotmail.com
     author_email: k.lampridis@hotmail.com
     github_username: boromir674
-    project_short_description: Project generated from the https://github.com/boromir674/cookiecutter-python-package/tree/master/src/cookiecutter_python cookiecutter
+    project_short_description: Project generated using https://github.com/boromir674/cookiecutter-python-package
     initialize_git_repo: no
-    interpreters: {"supported-interpreters": ["3.6", "3.7", "3.8", "3.9", "3.10"]}
+    interpreters: {"supported-interpreters": ["3.7", "3.8", "3.9", "3.10", "3.11"]}
     ## Documentation Config ##
     docs_builder: "sphinx"
     ## READ THE DOCS CI Config ##

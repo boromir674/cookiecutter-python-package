@@ -19,6 +19,7 @@ build:
       - python -m poetry export -o req-docs.txt -E docs
     post_install:
       - python -m pip install -e .
+      - python -m pip install pyyaml
     pre_build:
       - python ./scripts/visualize-ga-workflow.py > ./docs/cicd_mermaid.md
       - python ./scripts/visualize-dockerfile.py > ./docs/dockerfile_mermaid.md
