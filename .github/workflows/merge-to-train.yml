@@ -7,7 +7,8 @@ on:
     types: [closed]
     branches:  # ALLOWED Base Branches
       - boarding-auto
-
+# Listens to Event fired: When PR is Closed, and PR targets 'boarding-auto' branch
+# Case GITOPS: Trigger when Auto Merge PR 'User Branch' --> 'boarding-auto'
 jobs:
   merge_rt_in_release:
     if: github.event.pull_request.merged == true
@@ -16,7 +17,8 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       TRAIN: 'release-train'
       RELEASE_BR: 'release'
-      BOARDING: ${{ github.event.ref == 'refs/tags/auto-release' && 'boarding-auto' || 'boarding' }}
+      # BOARDING: ${{ github.event.pull_request.base.ref == 'boarding-auto' && 'boarding-auto' || 'boarding' }}
+      BOARDING: ${{ (github.event.pull_request.base.ref == 'boarding-auto' || github.event.ref == 'refs/tags/auto-release') && 'boarding-auto' || 'boarding' }}
       MAIN_BR: 'master'
     steps:
       - uses: actions/checkout@v4
