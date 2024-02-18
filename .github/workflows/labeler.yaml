@@ -20,6 +20,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-      # - name: "Label PR with 'boarding-auto' label"
-      #   if: github.event_name == 'pull_request_target' && contains(github.event.pull_request.base.ref, 'boarding-auto')
-      #   run: gh pr edit ${{ github.event.number }} --add-label 'boarding-auto'
+      - name: "Label PR with 'boarding-auto' label"
+        if: github.event_name == 'pull_request_target' && contains(github.event.pull_request.base.ref, 'boarding-auto')
+        run: gh pr edit ${{ github.event.number }} --add-label 'boarding-auto'
