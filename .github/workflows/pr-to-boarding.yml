@@ -40,8 +40,6 @@ jobs:
       - run: git checkout ${{ env.MAIN_BR }}
       - run: git branch --track "origin/${{ env.BOARDING_BR }}" || echo "Remote Branch '${{ env.BOARDING_BR }}' does not exist"
       - run: git checkout -b ${{ env.BOARDING_BR }} || git checkout ${{ env.BOARDING_BR }}
-      - run: git rebase ${{ env.MAIN_BR }}
-      - run: git push -u origin ${{ env.BOARDING_BR }}
 
       - run: git checkout ${{ steps.user_branch.outputs.USER_BRANCH }}
       - run: git rebase ${{ env.BOARDING_BR }}
