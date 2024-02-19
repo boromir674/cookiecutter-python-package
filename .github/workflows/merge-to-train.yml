@@ -6,7 +6,7 @@ on:
     # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#running-your-pull_request-workflow-when-a-pull-request-merges
     types: [closed]
     branches:  # ALLOWED Base Branches
-      - boarding-auto
+      # - boarding-auto
       ## IMPORTANT: below branches synergize with Protection Rules
       - test-distro
       - test-docs
@@ -15,7 +15,7 @@ on:
 # Listens to Event fired: When PR is Closed, and PR targets 'boarding-auto' branch
 # Case GITOPS: Trigger when Auto Merge PR 'User Branch' --> 'boarding-auto'
 jobs:
-  merge_rt_in_release:
+  merge_into_train:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     env:
@@ -40,8 +40,8 @@ jobs:
           echo "INCOMING_BR: $INCOMING_BR"
           echo INCOMING_BR=$INCOMING_BR >> $GITHUB_ENV
 
-      - name: Track Protected Branch '${{ env.INCOMING_BR }}' with local counterpart
-        run: git branch --track "${{ env.INCOMING_BR }}" "origin/${{ env.INCOMING_BR }}"
+      # - name: Track Protected Branch '${{ env.INCOMING_BR }}' with local counterpart
+      #   run: git branch --track "${{ env.INCOMING_BR }}" "origin/${{ env.INCOMING_BR }}"
 
       # create a Train branch on top of master unless its Upstream exists (just track it)
       - run: git branch --track "${{ env.TRAIN }}" "origin/${{ env.TRAIN }}" || (git checkout -b ${{ env.TRAIN }} ${{ env.MAIN_BR }} && git push origin ${{ env.TRAIN }})
