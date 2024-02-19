@@ -5,12 +5,14 @@ on:
 
 jobs:
   boarding_train:
-    if: github.event.label.name == 'boarding_auto'
+    # if: github.event.label.name == 'boarding_auto'
     runs-on: ubuntu-latest
     env:
       TRAIN: 'release-train'
       MAIN_BRANCH: 'master'
     steps:
+      - run: ${{ github.event.label.name }}
+      - run: exit 1
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0  # 0 indicates all history for all branches and tags.
