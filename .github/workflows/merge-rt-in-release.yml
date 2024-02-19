@@ -26,7 +26,8 @@ on:
 jobs:
   # RUN Job when 'boarding-auto --> 'release-train' PR is merged
   merge_rt_in_release:
-    if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'boarding-auto')
+    ## IMPORTANT: below head branches should be in sync with Protection Rules
+    if: github.event.pull_request.merged == true && contains(fromJSON('["test-distro", "test-docs", "test-distro-docs"]'), github.head_ref)
     # github.event.pull_request.auto_merge_enabled
 
     runs-on: ubuntu-latest
