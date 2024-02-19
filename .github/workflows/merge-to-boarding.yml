@@ -11,6 +11,7 @@ jobs:
     env:
       TRAIN: 'release-train'
       MAIN_BRANCH: 'master'
+      BOARDING_BR: 'boarding-auto'
     steps:
       - uses: actions/checkout@v4
         with:
