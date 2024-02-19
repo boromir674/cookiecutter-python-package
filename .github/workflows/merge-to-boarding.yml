@@ -88,6 +88,9 @@ jobs:
           echo
           echo "${MERGE_MSG}"
 
+          branch_name_buffer=$(echo $branch_name_buffer | sed 's/ / - /g')
+          echo "[DEBUG] branch_name_buffer: $branch_name_buffer"
+
           TARGET_BRANCH="test-${branch_name_buffer}"
           echo
           echo " ---> TARGET BRANCH <---"
