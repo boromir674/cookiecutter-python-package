@@ -13,6 +13,9 @@ jobs:
     steps:
       # HANDLER 1: Label PR, given file changes and Labeling Rules '.github/labeler.yml'
       - uses: actions/labeler@v5
+        with:
+          # Our PAT gives permission for label creation events to trigger listeners
+          repo-token: ${{ secrets.GH_TOKEN }}
 
       # checkout repo to Enable Handlers 2 and 3 to edit (write permission) PRs
       - name: Checkout Repository
