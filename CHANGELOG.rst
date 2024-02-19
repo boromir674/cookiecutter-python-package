@@ -2,6 +2,38 @@
 Changelog
 =========
 
+1.14.1-dev (2024-02-19)
+=======================
+
+Changes
+^^^^^^^
+
+documentation
+"""""""""""""
+- rename Docs Page 'Usage' Section to shorter name
+
+development
+"""""""""""
+- improve tox envs
+
+ci
+""
+- fix build command we pass to Called Docs Workflow
+
+release
+"""""""
+- bump version to 1.14.1-dev
+
+gitops
+""""""
+- derive merge commit message from PR Labels
+- if release-train exists, then track Upstream, else automatically create on top of master
+- replace PR to train and release, squash with merge 'method'
+- use --merge method for 'Auto Merge'
+- enable Auto Merge on PRs targeting 'boarding-auto'
+- allow 'customly' prepared 'boarding' Branch
+
+
 1.14.0 (2024-02-18)
 ===================
 
