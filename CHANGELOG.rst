@@ -10,6 +10,25 @@ Changes
 
 documentation
 """""""""""""
+- use same Theme in Local and RTD Build
+
+gitops
+""""""
+- listen to merges from Protected to RT
+- do not listen to merges to boarding
+- derive name of Protected Branch from Labels
+- allow discovering Protected Branch on remote
+- select Required Checks at Runtime/Dynamically, by examining changes'
+
+
+1.14.1-dev (2024-02-19)
+=======================
+
+Changes
+^^^^^^^
+
+documentation
+"""""""""""""
 - rename Docs Page 'Usage' Section to shorter name
 
 development
