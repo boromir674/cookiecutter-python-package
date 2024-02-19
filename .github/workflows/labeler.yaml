@@ -30,6 +30,6 @@ jobs:
       - name: "Merge PR, Signaling what Automated Tests to run"
         # WHEN PR  boarding-auto  -->  <Base>
         if:  startsWith(github.head_ref, 'boarding-auto')
-        run: gh pr merge ${{ github.event.number }} --auto
+        run: gh pr merge ${{ github.event.number }} --auto --merge
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
