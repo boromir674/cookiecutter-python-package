@@ -27,7 +27,7 @@ jobs:
       - name: Discover User's Branch Name
         id: user_branch
         run: |
-          name=$(git branch -a --contains "$(git rev-parse HEAD)" | sed -n '2p' | sed 's/.*remotes\///')
+          name=$(git branch -a --contains "$(git rev-parse HEAD)" | sed -n '2p' | sed 's/.*origin\///')
           echo "NAME:" $name
           echo USER_BRANCH=$name >> $GITHUB_OUTPUT
 
@@ -38,8 +38,12 @@ jobs:
       ### Put User Branch on Boarding Branch to Test before merging to Release Train
       # Create Upstream 'Boarding' Branch
       - run: git checkout ${{ env.MAIN_BR }}
-      - run: git checkout -b ${{ env.BOARDING_BR }}
-      - run: git push origin --delete ${{ env.BOARDING_BR }} || echo "Remote Branch    '${{ env.BOARDING_BR }}' does not exist"
+      - run: git branch --track "origin/${{ env.BOARDING_BR }}" || echo "Remote Branch '${{ env.BOARDING_BR }}' does not exist"
+      - run: git checkout -b ${{ env.BOARDING_BR }} || git checkout ${{ env.BOARDING_BR }}
+
+      - run: git checkout ${{ steps.user_branch.outputs.USER_BRANCH }}
+      - run: git rebase ${{ env.BOARDING_BR }}
+      - run: git push -u origin ${{ steps.user_branch.outputs.USER_BRANCH }}
 
       - run: git config --global user.email "k.lampridis@hotmail.com"
       - run: git config --global user.name "Konstantinos Lampridis"

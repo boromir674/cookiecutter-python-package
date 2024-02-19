@@ -56,6 +56,7 @@ env:
   # 2nd level override
   ALWAYS_DOCS: "false"
   DOCS_JOB_POLICY: '2'  # {2, 3}
+  PY_VERSION: "3.11"
 
   #### STATIC CODE ANALYSIS Job ####
   ALWAYS_LINT: "false"
@@ -116,6 +117,7 @@ jobs:
           echo "TESTS_ENABLED=$RUN_UNIT_TESTS" >> $GITHUB_OUTPUT
           echo "PUBLISH_ON_PYPI=$PUBLISH_ON_PYPI" >> $GITHUB_OUTPUT
           echo "PIPE_DOCS_POLICY=$PIPE_DOCS_POLICY" >> $GITHUB_OUTPUT
+          echo "PIPE_DOCS_PY=$PY_VERSION" >> $GITHUB_OUTPUT
       ## Docker - Pipeline Settings ##
       - id: derive_docker_policy
         run: echo "POL=${{ (env.DOCKER_JOB_ON != 'true' && '0') || (env.ALWAYS_BUILD_N_PUBLISH_DOCKER == 'true' && '1') || (env.DOCKER_JOB_POLICY == 'CDeployment' && '2') || (env.DOCKER_JOB_POLICY == 'CDelivery' && '3') }}" >> $GITHUB_OUTPUT
@@ -135,6 +137,7 @@ jobs:
       PUBLISH_ON_PYPI: ${{ steps.pass-env-to-output.outputs.PUBLISH_ON_PYPI }}
     ## DOCS - Pipeline Settings ##
       PIPE_DOCS_POLICY: ${{ steps.pass-env-to-output.outputs.PIPE_DOCS_POLICY }}
+      PIPE_DOCS_PY: ${{ steps.pass-env-to-output.outputs.PIPE_DOCS_PY }}
     ## Docker - Pipeline Settings ##
       PIPE_DOCKER_POLICY: ${{ steps.derive_docker_policy.outputs.POL }}
     ## Static Code Analysis - Pipeline Settings ##
@@ -362,7 +365,7 @@ jobs:
     with:
       run_policy: '${{ needs.set_github_outputs.outputs.PIPE_DOCS_POLICY }}'
       python_version: ${{ needs.set_github_outputs.outputs.PIPE_DOCS_PY }}
-      command: "tox -e pin-docs,docs --sitepackages -vv -s false"
+      command: "tox -e pin-deps -- -E docs && tox -e docs --sitepackages -vv -s false"
 
 ### STATIC CODE ANALYSIS & LINTING ###
   lint:

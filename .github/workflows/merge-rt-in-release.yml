@@ -95,4 +95,4 @@ jobs:
 
       ############## Merge ##############
       - name: 'Merge PR   ${{ env.TRAIN }}  -->  ${{ env.RELEASE_BR }}'
-        run: gh pr merge "${{ env.TRAIN }}" --auto --delete-branch --squash
+        run: gh pr merge "${{ env.TRAIN }}" --auto --delete-branch --merge

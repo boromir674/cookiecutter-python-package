@@ -3,6 +3,7 @@ on:
   pull_request:
     types: [labeled]
 
+
 jobs:
   boarding_train:
     if: github.event.label.name == 'boarding_auto'
@@ -23,28 +24,28 @@ jobs:
       - name: 'Check PR Target Branch'
         run: |
           if [ "${{ env.BASE_BR }}" != 'boarding-auto' ]; then
-            echo "[WARNING] PR is not targeted to 'boarding-auto' branch. Skipping Auto Merge, making sure Jogb is green"
+            echo "[WARNING] PR is not targeted to 'boarding-auto' branch. Skipping Auto Merge, making sure Job is green"
             exit 1
           fi
         shell: bash
       - if: ${{ failure() }}
         run: echo "Exiting gracefully"
 
-      - name: Find PR Labels
-        run: echo PR_LABELS="$(gh pr view ${{ github.event.pull_request.number }} --json labels --jq '.labels[].name')" >> $GITHUB_ENV
-
       - run: echo "TOPICAL_BR=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
 
       ## Derive Merge Message given PR labels
-      - name: 'Derive Merge Message, given PR labels'
+      - name: 'Derive Merge Message, from PR labels'
       # Recognized labels: ['business_logic', 'test', 'docs']
       # if 'docs' label -> Docs Tests
       # if 'business_logic' or 'test' label -> Cross-Platform Tests
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           DISTRO="Distro"
           DOCS="Docs"
           buffer_string=""
 
+          PR_LABELS=$(gh pr view ${{ github.event.pull_request.number }} --json labels --jq '.labels[].name')
           for label in ${PR_LABELS}; do
             if { [ "$label" == "business_logic" ] || [ "$label" == "test" ]; } && ! [[ $buffer_string =~ $DISTRO ]]; then
               buffer_string="${buffer_string} ${DISTRO}"
@@ -54,14 +55,28 @@ jobs:
           done
 
           buffer_string=$(echo $buffer_string | sed 's/ / AND /g')
-          MERGE_MSG="Auto Merging '${TOPICAL_BR}' carrying '${buffer_string}' Changes"
+
+          if [ -z "$buffer_string" ]; then
+            echo "[WARNING] No recognized labels found."
+            echo "[DEBUG] Labels of PR:"
+            echo "$PR_LABELS"
+            echo
+            echo [INFO] Using fallback default commit message
+            MERGE_MSG="Auto Merging '${TOPICAL_BR}'"
+          else
+            MERGE_MSG="Auto Merging '${TOPICAL_BR}' carrying '${buffer_string}' Changes"
+          fi
+          echo
+          echo " ---> COMMIT MSG <---"
+          echo
+          echo "${MERGE_MSG}"
           echo "MERGE_MSG=${MERGE_MSG}" >> $GITHUB_OUTPUT
         id: merge_msg
       ############## Auto Merge ##############
       - run: echo "PR_ID=${{ github.event.pull_request.number }}" >> $GITHUB_ENV
 
       - name: 'Auto Merge PR   ${{ env.TOPICAL_BR }}  -->  ${{ env.BASE_BR }}'
-        run: "gh pr merge \"${{ env.PR_ID }}\" --auto --text \"${{ env.BOARDING_MSG }}\""
+        run: "gh pr merge \"${{ env.PR_ID }}\" --auto --merge --subject \"${{ env.BOARDING_MSG }}\""
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           BOARDING_MSG: ${{ steps.merge_msg.outputs.MERGE_MSG }}
