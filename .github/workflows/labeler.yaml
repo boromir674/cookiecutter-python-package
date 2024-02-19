@@ -19,12 +19,12 @@ jobs:
         uses: actions/checkout@v4
 
       # HANDLER 2: Enable 'Auto Merge', if PR targets 'boarding-auto', after labeling
-      - name: Enable 'Auto Merge', if PR targets 'boarding-auto'
-        # WHEN PR  <Head>  -->  boarding-auto
-        if: contains(github.event.pull_request.base.ref, 'boarding-auto')
-        run: gh pr merge ${{ github.event.number }} --auto --merge
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      # - name: Enable 'Auto Merge', if PR targets 'boarding-auto'
+      #   # WHEN PR  <Head>  -->  boarding-auto
+      #   if: contains(github.event.pull_request.base.ref, 'boarding-auto')
+      #   run: gh pr merge ${{ github.event.number }} --auto --merge
+      #   env:
+      #     GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
       # HANDLER 3: Enable PR 'Auto Merge', if changes come from 'boarding-auto' branch
       - name: "Merge PR, Signaling what Automated Tests to run"
