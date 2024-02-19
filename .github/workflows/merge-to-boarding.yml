@@ -32,7 +32,13 @@ jobs:
         run: echo "Exiting gracefully"
 
       - name: Find PR Labels
-        run: echo PR_LABELS="$(gh pr view ${{ github.event.pull_request.number }} --json labels --jq '.labels[].name')" >> $GITHUB_ENV
+        run: |
+          gh pr view ${{ github.event.pull_request.number }} --json labels --jq '.labels[].name'
+          VALUE=$(gh pr view ${{ github.event.pull_request.number }} --json labels --jq '.labels[].name')
+          echo
+          echo "VALUE: $VALUE"
+          echo
+          echo PR_LABELS="${VALUE}" >> $GITHUB_ENV
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
