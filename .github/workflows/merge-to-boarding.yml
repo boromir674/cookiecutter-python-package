@@ -33,6 +33,8 @@ jobs:
 
       - name: Find PR Labels
         run: echo PR_LABELS="$(gh pr view ${{ github.event.pull_request.number }} --json labels --jq '.labels[].name')" >> $GITHUB_ENV
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
       - run: echo "TOPICAL_BR=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
 
@@ -62,7 +64,7 @@ jobs:
       - run: echo "PR_ID=${{ github.event.pull_request.number }}" >> $GITHUB_ENV
 
       - name: 'Auto Merge PR   ${{ env.TOPICAL_BR }}  -->  ${{ env.BASE_BR }}'
-        run: "gh pr merge \"${{ env.PR_ID }}\" --auto --text \"${{ env.BOARDING_MSG }}\""
+        run: "gh pr merge \"${{ env.PR_ID }}\" --auto --merge --subject \"${{ env.BOARDING_MSG }}\""
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           BOARDING_MSG: ${{ steps.merge_msg.outputs.MERGE_MSG }}
