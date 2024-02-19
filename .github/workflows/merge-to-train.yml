@@ -26,17 +26,32 @@ jobs:
           fetch-depth: 0  # 0 indicates all history for all branches and tags.
           set-safe-directory: ''  # `git config --global --add safe.directory <path>`
           token: '${{ secrets.GH_TOKEN }}'
-      
-      # if train does not exist in remote then, we place it on top of master
-      - name: Create Train, on top of Main, if it does not exist
-        run: |
-          echo "TRAIN=${TRAIN}" >> $GITHUB_ENV
-          if [ -z "$(git branch --list ${{ env.TRAIN }})" ]; then
-            echo "Branch '${{ env.TRAIN }}' does not exist. Creating it .."
-            git checkout -b ${{ env.TRAIN }} ${{ env.MAIN_BR }}
-            git push origin ${{ env.TRAIN }}
-          fi
 
+      - name: "Ensure Upstream '${{ env.MAIN_BR }}' is tracked (has local counterpart)"
+        run: git branch --track "${{ env.MAIN_BR }}" "origin/${{ env.MAIN_BR }}" || echo "[WARNING] Branch '${{ env.MAIN_BR }}' already exists locally"
+      
+      - name: "Ensure Upstream '${{ env.BOARDING }}' is tracked (has local counterpart)"
+        run: git branch --track "${{ env.BOARDING }}" "origin/${{ env.BOARDING }}" || echo "[WARNING] Branch '${{ env.BOARDING }}' already exists locally"
+
+      # either create a Train branch on top of master unless its Upstream exists (just track it)
+      - run: git branch --track "${{ env.TRAIN }}" "origin/${{ env.TRAIN }}" || true
+
+      - name: "Search for '${{ env.TRAIN }}' in local Branches"
+        run: |
+          LOCAL_TRAIN=$(git branch --list ${{ env.TRAIN }})
+          echo "[DEBUG] LOCAL_TRAIN:"
+          echo "${LOCAL_TRAIN}"
+          echo "LOCAL_TRAIN=${LOCAL_TRAIN}" >> $GITHUB_ENV
+
+      - run: echo "TRAIN_EXISTS=${{ env.LOCAL_TRAIN == '' && 'false' || 'true' }}" >> $GITHUB_ENV
+
+      - if: ${{ env.TRAIN_EXISTS == 'false' }}
+        run: |
+          echo "[INFO] Branch '${{ env.TRAIN }}' does not exist. Creating it .."
+          git checkout -b ${{ env.TRAIN }} ${{ env.MAIN_BR }}
+          git push origin ${{ env.TRAIN }}
+
+      ############## PR ##############
       - name: Sanity Check that '${{ env.BOARDING }}' and '${{ env.TRAIN }}' branches exist
         run: |
           if [ -z "$(git branch --list ${BOARDING})" ]; then
@@ -48,7 +63,6 @@ jobs:
             exit 1
           fi
 
-      ############## PR ##############
       - name: "Create PR  Head: '${{ env.BOARDING }}''  -->  Base: '${{ env.TRAIN }}'"
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
