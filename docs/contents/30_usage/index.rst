@@ -1,6 +1,6 @@
-===================================
-Generate New Python Package Project
-===================================
+=======================
+Generate Python Project
+=======================
 
 Our ``Python Generator`` **Project** was designed to be installable via *pip* and then invoked through
 the ``generate-python`` entrypoint to the CLI.
