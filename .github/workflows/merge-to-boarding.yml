@@ -122,6 +122,7 @@ jobs:
       - name: 'Enable Auto Merge'
       ## The CI Tests derived from commit message, must match the `Required Checks`
         env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           # DETERMINES what Job Matrix our CI/CD Pipeline, will run
           BOARDING_MSG: ${{ steps.merge_msg.outputs.MERGE_MSG }}
         run: "gh pr merge \"${{ env.BOARDING_BR }}\" --auto --delete-branch --merge --subject \"${{ env.BOARDING_MSG }}\""
