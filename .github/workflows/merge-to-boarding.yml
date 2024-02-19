@@ -100,7 +100,7 @@ jobs:
       # DETERMINES what will the Required Checks be, while PP is on `Auto Merge`
       - run: echo TARGET_BRANCH="${{ steps.merge_msg.outputs.TARGET_BRANCH }}" >> $GITHUB_ENV
 
-      - run: git checkout -b ${{ env.TARGET_BRANCH }}
+      - run: git branch --track ${{ env.TARGET_BRANCH }} "origin/${{ env.TARGET_BRANCH }}" || git checkout -b ${{ env.TARGET_BRANCH }}
 
       ### Open PR 'boarding-auto'  -->   Branch with `Required Checks`; github Protection Rules
       - name: 'Open PR ${{ env.BOARDING_BR }}  -->  ${{ env.TARGET_BRANCH }}'
@@ -115,7 +115,6 @@ jobs:
             "
 
       ## Auto Merge PR 'boarding-auto'  -->   Branch with `Required Checks` ##
-
       - name: 'Enable Auto Merge'
       ## The CI Tests derived from commit message, must match the `Required Checks`
         env:

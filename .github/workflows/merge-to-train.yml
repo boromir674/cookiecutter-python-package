@@ -23,7 +23,7 @@ jobs:
       TRAIN: 'release-train'
       RELEASE_BR: 'release'
       # BOARDING: ${{ github.event.pull_request.base.ref == 'boarding-auto' && 'boarding-auto' || 'boarding' }}
-      BOARDING: ${{ (github.event.pull_request.base.ref == 'boarding-auto' || github.event.ref == 'refs/tags/auto-release') && 'boarding-auto' || 'boarding' }}
+      # BOARDING: ${{ (github.event.pull_request.base.ref == 'boarding-auto' || github.event.ref == 'refs/tags/auto-release') && 'boarding-auto' || 'boarding' }}
       MAIN_BR: 'master'
     steps:
       - uses: actions/checkout@v4
@@ -42,9 +42,6 @@ jobs:
 
       - name: Track Protected Branch '${{ env.INCOMING_BR }}' with local counterpart
         run: git branch --track "${{ env.INCOMING_BR }}" "origin/${{ env.INCOMING_BR }}"
-
-      - name: "Ensure Upstream '${{ env.BOARDING }}' is tracked (has local counterpart)"
-        run: git branch --track "${{ env.BOARDING }}" "origin/${{ env.BOARDING }}" || echo "[WARNING] Branch '${{ env.BOARDING }}' already exists locally"
 
       # create a Train branch on top of master unless its Upstream exists (just track it)
       - run: git branch --track "${{ env.TRAIN }}" "origin/${{ env.TRAIN }}" || (git checkout -b ${{ env.TRAIN }} ${{ env.MAIN_BR }} && git push origin ${{ env.TRAIN }})
