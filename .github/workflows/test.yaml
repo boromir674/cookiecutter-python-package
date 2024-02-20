@@ -97,7 +97,7 @@ jobs:
             echo "matrix=$TEST_STRATEGY" >> $GITHUB_OUTPUT 
 
           # interpret Boarding Message: if head_commit.message matches BOARDING_MSG regex
-          elif [[ "${{ github.event.head_commit.message }}" =~ "${{ env.BOARDING_MSG }}" ]]; then
+          elif [[ "${{ github.event.head_commit.message }}" =~ ${BOARDING_MSG} ]]; then
 
             affected_components="${BASH_REMATCH[1]}"
             echo "--> Detected Affected Components: $affected_components <--"
