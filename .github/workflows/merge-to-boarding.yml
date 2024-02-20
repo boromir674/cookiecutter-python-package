@@ -111,7 +111,7 @@ jobs:
       # DETERMINES what will the Required Checks be, while PR is on `Auto Merge`
       - run: echo TARGET_BRANCH="${{ steps.merge_msg.outputs.TARGET_BRANCH }}" >> $GITHUB_ENV
 
-      - name: Ensure ${{' env.TARGET_BRANCH }}' Branch is on Remote origin
+      - name: Ensure '${{ env.TARGET_BRANCH }}' Branch is on Remote origin
         run: git branch --track ${{ env.TARGET_BRANCH }} "origin/${{ env.TARGET_BRANCH }}" || git checkout -b ${{ env.TARGET_BRANCH }} "origin/${{ env.MAIN_BRANCH }}" && git push origin ${{ env.TARGET_BRANCH }}
 
       ### Open PR 'boarding-auto'  -->   Branch with `Required Checks`; github Protection Rules
