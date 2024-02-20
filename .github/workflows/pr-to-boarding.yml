@@ -16,4 +16,4 @@ jobs:
       boarding_branch: ${{ vars.BOARDING_BRANCH || 'boarding-auto' }}
       main_branch: ${{ vars.MAIN_BRANCH || 'master' }}
     secrets:
-      github_token: ${{ secrets.GH_TOKEN }}
+      github_pat: ${{ secrets.GH_TOKEN }}
