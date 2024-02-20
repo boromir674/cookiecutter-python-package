@@ -42,13 +42,11 @@ jobs:
 
       ## Derive Merge Message given PR labels
       - run: echo "PR_ID=${{ github.event.pull_request.number }}" >> $GITHUB_ENV
-      - name: Find Labels of PR online
-        run: echo PR_LABELS="$(gh pr view ${{ env.PR_ID }} --json labels --jq '.labels[].name')" >> $GITHUB_ENV
+
+      - name: 'Derive intermediate Protected Branch, and CI config matching Required Checks'
+      # Integrates with Github Branch Protection Rules
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-
-      - name: Identifying Required Checks, before inquiring merge into Release Train
-      # - name: 'Derive intermediate Protected Branch, and CI config matching Required Checks'
       # Recognized labels: ['business_logic', 'test', 'docs']
       # if 'docs' label -> Docs Tests
       # if 'business_logic' or 'test' label -> Cross-Platform Tests
@@ -59,7 +57,8 @@ jobs:
 
           branch_name_buffer=""
 
-          # Integrates with Github Branch Protection Rules
+          PR_LABELS="$(gh pr view ${{ env.PR_ID }} --json labels --jq '.labels[].name')"
+
           echo
           echo "[INFO] Checking Labels: [${PR_LABELS}]"
           echo
