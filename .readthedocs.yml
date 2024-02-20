@@ -14,7 +14,7 @@ build:
   # ALL JOBS implied: https://docs.readthedocs.io/en/stable/builds.html
   jobs:
     pre_install:
-      - python -m pip install 'tox<4'
+      - python -m pip install tox==3.27.1
       - tox -e pin-deps -- -E docs
     # Pre Install must generate a req-docs.txt file
     post_install:
