@@ -101,10 +101,10 @@ jobs:
           echo TARGET_BRANCH=${TARGET_BRANCH} >> $GITHUB_OUTPUT
         id: merge_msg
 
-      # DETERMINES what will the Required Checks be, while PP is on `Auto Merge`
+      # DETERMINES what will the Required Checks be, while PR is on `Auto Merge`
       - run: echo TARGET_BRANCH="${{ steps.merge_msg.outputs.TARGET_BRANCH }}" >> $GITHUB_ENV
 
-      - run: git branch --track ${{ env.TARGET_BRANCH }} "origin/${{ env.TARGET_BRANCH }}" || git checkout -b ${{ env.TARGET_BRANCH }}
+      - run: git branch --track ${{ env.TARGET_BRANCH }} "origin/${{ env.TARGET_BRANCH }}" || git checkout -b ${{ env.TARGET_BRANCH }} ${{ env.MAIN_BRANCH }} && git push origin ${{ env.TARGET_BRANCH }}
 
       ### Open PR 'boarding-auto'  -->   Branch with `Required Checks`; github Protection Rules
       - name: 'Open PR ${{ env.BOARDING_BR }}  -->  ${{ env.TARGET_BRANCH }}'
