@@ -44,5 +44,5 @@ formats:
 # See https://docs.readthedocs.io/en/stable/guides/reproducible-builds.html
 python:
    install:
-    # Pre Install must generate a req-docs.txt file
-    - requirements: req-docs.txt
+    # Pre Install must generate a reqs.txt
+    - requirements: reqs.txt
