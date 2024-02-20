@@ -1,7 +1,10 @@
 name: Merge into Boarding
+
 on:
   pull_request:
     types: [labeled]
+    branches:
+      - boarding-auto
 
 
 jobs:
@@ -34,21 +37,16 @@ jobs:
 
       - run: echo "TOPICAL_BR=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
 
-      - run: echo "PR_ID=${{ github.event.pull_request.number }}" >> $GITHUB_ENV
-
-      ######## Auto Merge PR 'User/Topic Branch'  -->  'boarding-auto' ########
-      - name: 'Auto Merge PR   ${{ env.TOPICAL_BR }}  -->  ${{ env.BASE_BR }}'
-        # run: "gh pr merge \"${{ env.PR_ID }}\" --auto --merge --subject \"${{ env.BOARDING_MSG }}\""
-        run: "gh pr merge \"${{ env.PR_ID }}\" --auto --merge"
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-
+      - run: git status
+      - run: git branch -avv
 
       ## Derive Merge Message given PR labels
-      - name: Identifying Required Checks, before inquiring merge into Release Train
+      - run: echo "PR_ID=${{ github.event.pull_request.number }}" >> $GITHUB_ENV
+
+      - name: 'Derive intermediate Protected Branch, and CI config matching Required Checks'
+      # Integrates with Github Branch Protection Rules
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-      # - name: 'Derive intermediate Protected Branch, and CI config matching Required Checks'
       # Recognized labels: ['business_logic', 'test', 'docs']
       # if 'docs' label -> Docs Tests
       # if 'business_logic' or 'test' label -> Cross-Platform Tests
@@ -59,9 +57,11 @@ jobs:
 
           branch_name_buffer=""
 
-          # Integrates with Github Branch Protection Rules
+          PR_LABELS="$(gh pr view ${{ env.PR_ID }} --json labels --jq '.labels[].name')"
 
-          PR_LABELS=$(gh pr view ${{ env.PR_ID }} --json labels --jq '.labels[].name')
+          echo
+          echo "[INFO] Checking Labels: [${PR_LABELS}]"
+          echo
           for label in ${PR_LABELS}; do
             if { [ "$label" == "business_logic" ] || [ "$label" == "test" ]; } && ! [[ $buffer_string =~ $DISTRO ]]; then
               buffer_string="${buffer_string} ${DISTRO}"
@@ -101,10 +101,17 @@ jobs:
           echo TARGET_BRANCH=${TARGET_BRANCH} >> $GITHUB_OUTPUT
         id: merge_msg
 
-      # DETERMINES what will the Required Checks be, while PP is on `Auto Merge`
+      ## MERGE PR 'User/Topic Branch'  -->  'boarding-auto', with Custom Commit Message
+      - name: 'Merge PR   ${{ env.TOPICAL_BR }}  -->  ${{ env.BASE_BR }}'
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          BOARDING_MSG: ${{ steps.merge_msg.outputs.MERGE_MSG }}
+        run: "gh pr merge \"${{ env.PR_ID }}\" --merge --subject \"${{ env.BOARDING_MSG }}\""
+
+      # DETERMINES what will the Required Checks be, while PR is on `Auto Merge`
       - run: echo TARGET_BRANCH="${{ steps.merge_msg.outputs.TARGET_BRANCH }}" >> $GITHUB_ENV
 
-      - run: git branch --track ${{ env.TARGET_BRANCH }} "origin/${{ env.TARGET_BRANCH }}" || git checkout -b ${{ env.TARGET_BRANCH }}
+      - run: git branch --track ${{ env.TARGET_BRANCH }} "origin/${{ env.TARGET_BRANCH }}" || git checkout -b ${{ env.TARGET_BRANCH }} ${{ env.MAIN_BRANCH }} && git push origin ${{ env.TARGET_BRANCH }}
 
       ### Open PR 'boarding-auto'  -->   Branch with `Required Checks`; github Protection Rules
       - name: 'Open PR ${{ env.BOARDING_BR }}  -->  ${{ env.TARGET_BRANCH }}'
@@ -125,4 +132,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           # DETERMINES what Job Matrix our CI/CD Pipeline, will run
           BOARDING_MSG: ${{ steps.merge_msg.outputs.MERGE_MSG }}
-        run: "gh pr merge \"${{ env.BOARDING_BR }}\" --auto --delete-branch --merge --subject \"${{ env.BOARDING_MSG }}\""
+        run: "gh pr merge \"${{ env.BOARDING_BR }}\" --auto --delete-branch --merge"

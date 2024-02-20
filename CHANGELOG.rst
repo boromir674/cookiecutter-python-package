@@ -2,6 +2,36 @@
 Changelog
 =========
 
+1.14.1 (2024-02-20)
+===================
+
+Changes
+^^^^^^^
+
+fix
+"""
+- use proper python reference in Code Visualize CI Job
+
+refactor
+""""""""
+- remove relic Docs Reusable Workflow, since we "import" a remote one
+
+ci
+""
+- pass regex without double-quotes, to bash =~ operator
+- use Reusable Workflow, with ability to override Inputs from Github Vars
+
+gitops
+""""""
+- use custom commit before opening PR to Protected Branch
+- do gh merge, sintead of git merge
+- allow ash to deal with gh and jq for label fetching
+- provide PR ID for Label Fetching and fix wrong git ref name
+- add console log info to help debug
+- merge into Boarding with commit msg, for dynamic config of CI/CD
+- properly track/checkout the selected Protected Branch
+
+
 1.14.1-dev1 (2024-02-19)
 ========================
 

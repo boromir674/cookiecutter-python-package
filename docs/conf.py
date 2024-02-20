@@ -30,7 +30,7 @@ copyright = '2022, Konstantinos Lampridis'
 author = 'Konstantinos Lampridis'
 
 # The full version, including alpha/beta/rc tags
-release = '1.14.1-dev1'
+release = '1.14.1'
 
 # -- General configuration ---------------------------------------------------
 
