@@ -1,7 +1,10 @@
 name: Merge into Boarding
+
 on:
   pull_request:
     types: [labeled]
+    branches:
+      - boarding-auto
 
 
 jobs:
@@ -33,15 +36,6 @@ jobs:
         run: echo "Exiting gracefully"
 
       - run: echo "TOPICAL_BR=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
-
-      - run: echo "PR_ID=${{ github.event.pull_request.number }}" >> $GITHUB_ENV
-
-      ######## Auto Merge PR 'User/Topic Branch'  -->  'boarding-auto' ########
-      - name: 'Auto Merge PR   ${{ env.TOPICAL_BR }}  -->  ${{ env.BASE_BR }}'
-        # run: "gh pr merge \"${{ env.PR_ID }}\" --auto --merge --subject \"${{ env.BOARDING_MSG }}\""
-        run: "gh pr merge \"${{ env.PR_ID }}\" --auto --merge"
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
 
       ## Derive Merge Message given PR labels
@@ -100,6 +94,20 @@ jobs:
           echo "MERGE_MSG=${MERGE_MSG}" >> $GITHUB_OUTPUT
           echo TARGET_BRANCH=${TARGET_BRANCH} >> $GITHUB_OUTPUT
         id: merge_msg
+
+      ######## Auto Merge PR 'User/Topic Branch'  -->  'boarding-auto' ########
+      # - run: echo "PR_ID=${{ github.event.pull_request.number }}" >> $GITHUB_ENV
+      # - name: 'Auto Merge PR   ${{ env.TOPICAL_BR }}  -->  ${{ env.BASE_BR }}'
+
+      - name: 'Merge PR   ${{ env.TOPICAL_BR }}  -->  ${{ env.BASE_BR }}'
+        # run: "gh pr merge \"${{ env.PR_ID }}\" --auto --merge --subject \"${{ env.BOARDING_MSG }}\""
+        run: |
+          git branch --track ${{ env.BASE_BR }} "origin/${{ env.BASE_BR }}"
+          git checkout ${{ env.BASE_BR }}
+          git merge "origin${{ env.TOPICAL_BR }}" --no-ff --no-edit -m "${{ steps.merge_msg.outputs.MERGE_MSG }}"
+          git push origin ${{ env.BASE_BR }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
       # DETERMINES what will the Required Checks be, while PR is on `Auto Merge`
       - run: echo TARGET_BRANCH="${{ steps.merge_msg.outputs.TARGET_BRANCH }}" >> $GITHUB_ENV
