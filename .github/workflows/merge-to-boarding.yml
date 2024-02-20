@@ -37,11 +37,16 @@ jobs:
 
       - run: echo "TOPICAL_BR=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
 
+      - run: git status
+      - run: git branch -avv
 
       ## Derive Merge Message given PR labels
-      - name: Identifying Required Checks, before inquiring merge into Release Train
+      - name: Find Labels of PR online
+        run: echo PR_LABELS="$(gh pr view ${{ env.PR_ID }} --json labels --jq '.labels[].name')" >> $GITHUB_ENV
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: Identifying Required Checks, before inquiring merge into Release Train
       # - name: 'Derive intermediate Protected Branch, and CI config matching Required Checks'
       # Recognized labels: ['business_logic', 'test', 'docs']
       # if 'docs' label -> Docs Tests
@@ -54,8 +59,9 @@ jobs:
           branch_name_buffer=""
 
           # Integrates with Github Branch Protection Rules
-
-          PR_LABELS=$(gh pr view ${{ env.PR_ID }} --json labels --jq '.labels[].name')
+          echo
+          echo "[INFO] Checking Labels: [${PR_LABELS}]"
+          echo
           for label in ${PR_LABELS}; do
             if { [ "$label" == "business_logic" ] || [ "$label" == "test" ]; } && ! [[ $buffer_string =~ $DISTRO ]]; then
               buffer_string="${buffer_string} ${DISTRO}"
