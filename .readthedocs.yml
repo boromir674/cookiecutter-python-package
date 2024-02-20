@@ -14,11 +14,18 @@ build:
   # ALL JOBS implied: https://docs.readthedocs.io/en/stable/builds.html
   jobs:
     pre_install:
-      - python -m pip install poetry
-      - python -m poetry export -o req-docs.txt -E docs
-    # `pip install -r req-docs.txt` in between pre_install and post_install
+      - python -m pip install 'tox<4'
+      - tox -e pin-deps -- -E docs
+    # Pre Install must generate a req-docs.txt file
     post_install:
-      - python -m pip install -e .
+      - python -m pip install -e .[docs]
+
+    pre_build:
+      - tox -e pydeps
+      - cp -r pydeps/* docs/contents/35_development/arch
+      - ./scripts/visualize-ga-workflow.py .github/workflows/test.yaml --rst > ./docs/contents/35_development/ci_cd_pipeline_mermaid.rst
+      - ./scripts/visualize-dockerfile.py --rst > docs/contents/35_development/docker_build_mermaid.rst
+
 
 # SPHINX BUILD documentation in the docs/ directory
 sphinx:
@@ -37,4 +44,5 @@ formats:
 # See https://docs.readthedocs.io/en/stable/guides/reproducible-builds.html
 python:
    install:
-   - requirements: req-docs.txt
+    # Pre Install must generate a req-docs.txt file
+    - requirements: req-docs.txt
