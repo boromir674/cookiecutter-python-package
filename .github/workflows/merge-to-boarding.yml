@@ -41,6 +41,7 @@ jobs:
       - run: git branch -avv
 
       ## Derive Merge Message given PR labels
+      - run: echo "PR_ID=${{ github.event.pull_request.number }}" >> $GITHUB_ENV
       - name: Find Labels of PR online
         run: echo PR_LABELS="$(gh pr view ${{ env.PR_ID }} --json labels --jq '.labels[].name')" >> $GITHUB_ENV
         env:
@@ -110,7 +111,7 @@ jobs:
         run: |
           git branch --track ${{ env.BASE_BR }} "origin/${{ env.BASE_BR }}"
           git checkout ${{ env.BASE_BR }}
-          git merge "origin${{ env.TOPICAL_BR }}" --no-ff --no-edit -m "${{ steps.merge_msg.outputs.MERGE_MSG }}"
+          git merge "origin/${{ env.TOPICAL_BR }}" --no-ff --no-edit -m "${{ steps.merge_msg.outputs.MERGE_MSG }}"
           git push origin ${{ env.BASE_BR }}
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
