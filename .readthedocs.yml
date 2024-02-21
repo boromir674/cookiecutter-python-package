@@ -10,6 +10,8 @@ build:
   os: ubuntu-22.04
   tools:
     python: "3.10"
+  apt_packages:
+    - graphviz
 
   # ALL JOBS implied: https://docs.readthedocs.io/en/stable/builds.html
   jobs:
@@ -19,9 +21,7 @@ build:
     # Pre Install must generate a req-docs.txt file
     post_install:
       - python -m pip install -e .[docs]
-
     pre_build:
-      - apt-get install -y --no-install-recommends graphviz
       - tox -e pydeps
       - cp -r pydeps/* docs/contents/35_development/arch
       - ./scripts/visualize-ga-workflow.py .github/workflows/test.yaml --rst > ./docs/contents/35_development/ci_cd_pipeline_mermaid.rst
