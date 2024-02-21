@@ -21,7 +21,7 @@ build:
     # Pre Install must generate a req-docs.txt file
     post_install:
       - python -m pip install -e .[docs]
-      - python -m pip install yaml
+      - python -m pip install pyyaml
     pre_build:
       - tox -e pydeps
       - cp -r pydeps/* docs/contents/35_development/arch
