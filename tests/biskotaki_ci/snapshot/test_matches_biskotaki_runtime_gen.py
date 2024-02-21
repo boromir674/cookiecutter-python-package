@@ -55,6 +55,14 @@ def test_snapshot_matches_runtime(snapshot, biskotaki_ci_project, test_root):
         [x for x in runtime_relative_paths_set if '__pycache__' not in x.parts]
     )
 
+    # EXCLUDE artifacts, and cache potentially produced if running linters
+    snap_relative_paths_set = set(
+        [x for x in snap_relative_paths_set if '.ruff_cached' not in x.parts]
+    )
+    runtime_relative_paths_set = set(
+        [x for x in runtime_relative_paths_set if '.ruff_cached' not in x.parts]
+    )
+
     # EXCLUDE from test .pytest_cache/ folders too
     snap_relative_paths_set = set(
         [x for x in snap_relative_paths_set if '.pytest_cache' not in x.parts]
