@@ -16,23 +16,3 @@ jobs:
         with:
           # Our PAT gives permission for label creation events to trigger listeners
           repo-token: ${{ secrets.GH_TOKEN }}
-
-      # checkout repo to Enable Handlers 2 and 3 to edit (write permission) PRs
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      # HANDLER 2: Enable 'Auto Merge', if PR targets 'boarding-auto', after labeling
-      # - name: Enable 'Auto Merge', if PR targets 'boarding-auto'
-      #   # WHEN PR  <Head>  -->  boarding-auto
-      #   if: contains(github.event.pull_request.base.ref, 'boarding-auto')
-      #   run: gh pr merge ${{ github.event.number }} --auto --merge
-      #   env:
-      #     GH_TOKEN: ${{ secrets.GH_TOKEN }}
-
-      # HANDLER 3: Enable PR 'Auto Merge', if changes come from 'boarding-auto' branch
-      - name: "Merge PR, Signaling what Automated Tests to run"
-        # WHEN PR  boarding-auto  -->  <Base>
-        if:  startsWith(github.head_ref, 'boarding-auto')
-        run: gh pr merge ${{ github.event.number }} --auto --merge
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
