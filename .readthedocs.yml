@@ -21,7 +21,6 @@ build:
       - python -m pip install -e .[docs]
 
     pre_build:
-      - apt-get update -y
       - apt-get install -y --no-install-recommends graphviz
       - tox -e pydeps
       - cp -r pydeps/* docs/contents/35_development/arch
