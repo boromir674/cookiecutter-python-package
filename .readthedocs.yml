@@ -24,7 +24,12 @@ build:
     pre_build:
       - tox -e pydeps
       - cp -r pydeps/* docs/contents/35_development/arch
+      - ls -l docs/contents/35_development/arch
+
+      - chmod +x ./scripts/visualize-ga-workflow.py
       - ./scripts/visualize-ga-workflow.py .github/workflows/test.yaml --rst > ./docs/contents/35_development/ci_cd_pipeline_mermaid.rst
+
+      - chmod +x ./scripts/visualize-dockerfile.py
       - ./scripts/visualize-dockerfile.py --rst > docs/contents/35_development/docker_build_mermaid.rst
 
 
