@@ -27,13 +27,19 @@ jobs:
       ### stop workflow if env.BASE_BR != 'boarding-auto' or else do auto merge
       - name: 'Check PR Target Branch'
         run: |
-          if [ "${{ env.BASE_BR }}" != 'boarding-auto' ]; then
-            echo "[WARNING] PR is not targeted to 'boarding-auto' branch. Skipping Auto Merge, making sure Job is green"
+          if [ "${{ env.BASE_BR }}" != "${{ env.BOARDING_BR }} ]; then
+            echo "[WARNING] PR is not targeted to 'boarding-auto' branch."
+            echo "## GitOps - PR not targeting '${{ env.BOARDING_BR }}' Branch">> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "PR Target Branch: **${{ env.BASE_BR }}**  " >> $GITHUB_STEP_SUMMARY
+            echo "GitOps **Expected** Target Branch: **${{ env.BOARDING_BR }}**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "This Workflow is designed to run in a completely automated way." >> $GITHUB_STEP_SUMMARY
+            echo "At the moment it is designed to run **only on PRs targeting '${{ env.BOARDING_BR }}'** Branch." >> $GITHUB_STEP_SUMMARY
+            echo "In other cases it exits with **error.**" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
         shell: bash
-      - if: ${{ failure() }}
-        run: echo "Exiting gracefully"
 
       - run: echo "TOPICAL_BR=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
 
@@ -42,6 +48,21 @@ jobs:
 
       ## Derive Merge Message given PR labels
       - run: echo "PR_ID=${{ github.event.pull_request.number }}" >> $GITHUB_ENV
+
+      ### Dynamic configuration of CI Jobs, based on PR Labels
+      ### Dynamic selection of follow-up (GitOps) PR Target Branch, based on PR Labels
+
+      ### The configured CI Jobs should result trigger Checks that is a
+      ### super set of the follow-up PR's Required Checks
+
+      ## Requirements/Pre-requisites:
+      ## - admin must setup a Protected Branch per Set of Required Checks
+      ## - The Required Checks need to be maintained to be in sync with the CI Jobs that the Workflow can realize (spawn)
+
+      ## EG Protected Branches: 'test-distro', 'test-docs', 'test-distro-docs'
+
+      ## Todo: use https://github.com/marketplace/actions/alls-green to infer Required Checks from CI configuration
+      ## this will eclipse the need to maintain the Required Checks on github repo settings
 
       - name: 'Derive intermediate Protected Branch, and CI config matching Required Checks'
       # Integrates with Github Branch Protection Rules
@@ -59,6 +80,7 @@ jobs:
 
           PR_LABELS="$(gh pr view ${{ env.PR_ID }} --json labels --jq '.labels[].name')"
 
+          RECOGNIZED_CHANGES=false
           echo
           echo "[INFO] Checking Labels: [${PR_LABELS}]"
           echo
@@ -66,37 +88,70 @@ jobs:
             if { [ "$label" == "business_logic" ] || [ "$label" == "test" ]; } && ! [[ $buffer_string =~ $DISTRO ]]; then
               buffer_string="${buffer_string} ${DISTRO}"
               branch_name_buffer="distro ${branch_name_buffer}"
+              RECOGNIZED_CHANGES=true
             elif [ "$label" == "docs" ] && ! [[ $buffer_string =~ $DOCS ]]; then
               buffer_string="${buffer_string} ${DOCS}"
               branch_name_buffer="${branch_name_buffer} docs"
+              RECOGNIZED_CHANGES=true
             fi
           done
 
-          buffer_string=$(echo $buffer_string | sed 's/ / AND /g')
+          echo "# Dynamic CI Jobs and Required Checks" >> $GITHUB_STEP_SUMMARY
 
-          if [ -z "$buffer_string" ]; then
-            echo "[WARNING] No recognized labels found."
-            echo "[DEBUG] Labels of PR:"
-            echo "$PR_LABELS"
-            echo
-            echo [INFO] Using fallback default commit message
-            MERGE_MSG="Auto Merging '${TOPICAL_BR}'"
+          if [ "$RECOGNIZED_CHANGES" == false ]; then
+            echo "[WARNING] No recognized labels found, from supported ['business_logic', 'test', 'docs']"
+            echo "[INFO] For GitOps to work, we need to recognize the changes in the PR, so that we automatically derive the CI/CD Pipeline to run."
+            echo "[DEBUG] Check the Labeler Workflow, if it missed a Label, due to File Rules not matching."
+
+            echo "## Did not find Recognized Label" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Labels of **PR:**" >> $GITHUB_STEP_SUMMARY
+            echo "$PR_LABELS" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Using fallback** message which should enable **Maximum CI Jobs**" >> $GITHUB_STEP_SUMMARY
+            echo "This should trigger a set of Jobs that result in a superset of the **follow-up PR's Required Checks**" >> $GITHUB_STEP_SUMMARY
+
+            echo "The PR/Merge into a **Protected Branch** being the **next** step in **GitOps.**" >> $GITHUB_STEP_SUMMARY
+            echo "**Using fallback** Target Branch, which should define the **Maximum Required Checks**" >> $GITHUB_STEP_SUMMARY
+
+            ##### FALLBACK CI Jobs Configuration and Required Checks selection #####
+            ########################################################################
+            MERGE_MSG="Auto Merging '${TOPICAL_BR}' carrying '${DISTRO} AND ${DOCS}' Changes"
+            TARGET_BRANCH="test-distro-docs"
+            ########################################################################
+
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Fallback Commit Message: ${MERGE_MSG}" >> $GITHUB_STEP_SUMMARY
+            echo "Fallback Target Branch: ${TARGET_BRANCH}" >> $GITHUB_STEP_SUMMARY
+
+            echo "Optimization/Improvement - Next Steps:" >> $GITHUB_STEP_SUMMARY
+            echo "- If we are expecting our Labeler to consistently be able to classify file changes of that sort, then we need to update the Labeler Workflow." >> $GITHUB_STEP_SUMMARY
           else
+            buffer_string=$(echo $buffer_string | sed 's/ / AND /g')
+            branch_name_buffer=$(echo $branch_name_buffer | sed 's/ /-/g')
+            echo "[DEBUG] branch_name_buffer: $branch_name_buffer"
+
+            ####### DYNAMIC Jobs Configuration and Required Checks selection #######
+            ########################################################################
             MERGE_MSG="Auto Merging '${TOPICAL_BR}' carrying '${buffer_string}' Changes"
+            TARGET_BRANCH="test-${branch_name_buffer}"
+            ########################################################################
+
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Commit Message:** ${MERGE_MSG}" >> $GITHUB_STEP_SUMMARY
+            echo "**Target Branch:** ${TARGET_BRANCH}" >> $GITHUB_STEP_SUMMARY
+
           fi
+
           echo
           echo " ---> COMMIT MSG <---"
           echo
           echo "${MERGE_MSG}"
-
-          branch_name_buffer=$(echo $branch_name_buffer | sed 's/ /-/g')
-          echo "[DEBUG] branch_name_buffer: $branch_name_buffer"
-
-          TARGET_BRANCH="test-${branch_name_buffer}"
           echo
           echo " ---> TARGET BRANCH <---"
           echo
           echo "$TARGET_BRANCH"
+
           echo "MERGE_MSG=${MERGE_MSG}" >> $GITHUB_OUTPUT
           echo TARGET_BRANCH=${TARGET_BRANCH} >> $GITHUB_OUTPUT
         id: merge_msg
