@@ -70,7 +70,7 @@ def extract_job_dependencies(config: ParsedYaml) -> t.Dict[str, JobsNeedsValue]:
 
 
 # Generate Mermaid markdown from job dependencies
-def generate_mermaid_markdown(job_dependencies: t.Dict[str, t.List[str]]) -> str:
+def generate_mermaid(job_dependencies: t.Dict[str, t.List[str]]) -> str:
     mermaid_code = 'graph LR;\n'
     for job_name, needs in job_dependencies.items():
         for need in needs:
@@ -78,21 +78,29 @@ def generate_mermaid_markdown(job_dependencies: t.Dict[str, t.List[str]]) -> str
     return mermaid_code
 
 
-def markdown_mermaid_from_yaml(filename: t.Union[str, Path]) -> str:
+def mermaid_from_yaml(filename: t.Union[str, Path], format: str = 'md') -> str:
     config: ParsedYaml = parse_actions_config(filename)
     if config is None:
         print(f"[ERROR] Could not parse YAML file: {filename}")
         sys.exit(1)
     job_dependencies: t.Dict[str, JobsNeedsValue] = extract_job_dependencies(config)
-    mermaid_code: str = generate_mermaid_markdown(job_dependencies)
+    mermaid_code: str = generate_mermaid(job_dependencies)
 
-    markdown: str = (
-        # "## CI/CD Pipeline\n\n"
-        # f"**CI Config File: {filename}**\n\n"
-        f"```mermaid\n{mermaid_code}```\n"
-    )
+    TAB = 3 * ' '
 
-    return markdown
+    ## Embed Mermaid to MARKDOWN ##
+    if format == 'md':
+        embeded_mermaid: str = (
+            # "## CI/CD Pipeline\n\n"
+            # f"**CI Config File: {filename}**\n\n"
+            f"```mermaid\n{mermaid_code}```\n"
+        )
+    ## Embed Mermaid to RST ##
+    elif format == 'rst':
+        embeded_mermaid: str = (
+            ".. mermaid::\n\n" + '\n'.join([TAB + x for x in mermaid_code.split('\n')])
+        )
+    return embeded_mermaid
 
 
 #### MAIN ####
@@ -106,8 +114,9 @@ def main():
     else:
         ci_config = Path(args.input)
 
-    md: str = markdown_mermaid_from_yaml(
+    md: str = mermaid_from_yaml(
         ci_config,
+        format='rst' if args.rst else 'md'
     )
 
     if args.output:
@@ -121,8 +130,6 @@ def main():
 
 
 # CLI
-
-
 def arg_parse():
     parser = argparse.ArgumentParser(
         description="Command-line tool to handle input and output options."
@@ -132,6 +139,9 @@ def arg_parse():
         nargs="?",
         default="default-path",
         help="Input file path (default: 'default-path')",
+    )
+    parser.add_argument(
+        '--rst', help='Whether to generate RST content. Default MD', action='store_true', default=False,
     )
     parser.add_argument("-o", "--output", help="Output file path")
 
