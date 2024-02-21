@@ -2,6 +2,33 @@
 Changelog
 =========
 
+1.15.0 (2024-02-21)
+===================
+
+Changes
+^^^^^^^
+
+feature
+"""""""
+- provide script to generate RST mermaid from Dockerfile and GA Workflow
+
+documentation
+"""""""""""""
+- generate and embed Pydeps SVG Graphs, into RST, at RTD Build time
+
+ci
+""
+- update Python from 3.9 to 3.10 in Cross-Platofrom Job Matrix
+
+release
+"""""""
+- bump version to 1.15.0
+
+gitops
+""""""
+- do maximal set of checks before RT, as fallback, when dynamic minimum set derivation fails
+
+
 1.14.1 (2024-02-20)
 ===================
 
