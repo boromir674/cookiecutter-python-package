@@ -21,8 +21,8 @@ build:
       - python -m pip install -e .[docs]
 
     pre_build:
-      - sudo apt-get update -y
-      - sudo apt-get install -y --no-install-recommends graphviz
+      - apt-get update -y
+      - apt-get install -y --no-install-recommends graphviz
       - tox -e pydeps
       - cp -r pydeps/* docs/contents/35_development/arch
       - ./scripts/visualize-ga-workflow.py .github/workflows/test.yaml --rst > ./docs/contents/35_development/ci_cd_pipeline_mermaid.rst
