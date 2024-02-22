@@ -114,7 +114,8 @@ jobs:
           else
             echo "matrix=$UBUNTU_PY310_STRATEGY" >> $GITHUB_OUTPUT
           fi
-          echo "TESTS_ENABLED=$RUN_UNIT_TESTS" >> $GITHUB_OUTPUT
+          ## we skip ci, on pushes to 'release' branch ##
+          echo "TESTS_ENABLED=${{ env.RUN_UNIT_TESTS == 'true' && github.ref_name != 'release' }}" >> $GITHUB_OUTPUT
           echo "PUBLISH_ON_PYPI=$PUBLISH_ON_PYPI" >> $GITHUB_OUTPUT
           echo "PIPE_DOCS_POLICY=$PIPE_DOCS_POLICY" >> $GITHUB_OUTPUT
           echo "PIPE_DOCS_PY=$PY_VERSION" >> $GITHUB_OUTPUT
@@ -160,7 +161,7 @@ jobs:
       PEP_VERSION: ${{ steps.extract_wheel_info.outputs.PEP_VERSION }}
     steps:
     - run: echo "Platform -> ${{ matrix.platform }} , Python -> ${{ matrix.python-version }}"
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
@@ -173,14 +174,29 @@ jobs:
     - name: Do Type Checking
       run: tox -e type -vv -s false
 
+    ### Check if Requested RC Pipeline ###
+    - name: "Check if 'v*-rc' Tag, to run Test Suite"
+      if: ${{ startsWith(github.event.ref, 'refs/tags/v') && contains(github.event.ref, '-rc') }}
+      shell: bash
+      run: |
+        # Extract PROD Sem Ver
+        SEMVER="$(grep -E -o '^version\s*=\s*\".*\"' pyproject.toml | cut -d'"' -f2)"
+
+        # Derive RC Sem Ver
+        RC_SEMVER="${SEMVER}-rc"
+
+        ## Set Source Sem Ver to Release Candidate Sem Ver ##
+        # if needed: chmod +x ./scripts/distro-sem-ver-bump.sh
+        sh ./scripts/distro-sem-ver-bump.sh "${RC_SEMVER}"
+
     ###### TEST SUITE RUN ######
-    - name: Run Unit Tests
+    - name: Run Unit Tests on Edit, and Sdist; and build Wheels
       run: tox -vv -s false | tee test_output.log
       env:
         PLATFORM: ${{ matrix.platform }}
         BUILD_DEST: ${{ env.WHEELS_PIP_DIR }}
 
-    - name: Show produced Wheel(s)
+    - name: Show produced Wheel(s) for Distro and its Requirements
       run: ls -l ${{ env.WHEELS_PIP_DIR }}
 
     # parse test_output.log and match string, like:
@@ -201,7 +217,7 @@ jobs:
         WHEEL_SIZE=$(echo $WHEEL_INFO | cut -d ' ' -f 2)
         echo "WHEEL_SIZE=$WHEEL_SIZE" >> $GITHUB_ENV
 
-        # extract '1.12.5.dev0' from 'cookiecutter_python-1.12.5.dev0-py3-none-any.whl'
+        # extract, ie '1.12.5dev0' from 'cookiecutter_python-1.15.0rc0-py3-none-any.whl'
         PEP_VERSION=$(echo $WHEEL_NAME | sed -E "s/cookiecutter_python-([^ ]+)-py3-none-any.whl/\1/")
 
         echo "PEP_VERSION=${PEP_VERSION}" >> $GITHUB_OUTPUT
@@ -303,7 +319,7 @@ jobs:
       MAIN_BR: 'master'
     steps:
       # Fetch 'master' and 'release' branches
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - run: git branch --track "${{ env.RELEASE_BR }}" "origin/${{ env.RELEASE_BR }}"

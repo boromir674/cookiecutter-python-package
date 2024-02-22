@@ -56,26 +56,26 @@ jobs:
       - run: 'echo RC_VER="${{ steps.sem_ver.outputs.SEMVER }}-rc" >> $GITHUB_OUTPUT'
         id: rc_sem_ver
 
-      # Update Source Sem Ver to Release Candidate Sem Ver
-      - name: Mark Sem Ver in source as '-rc', Release Candidate
-        shell: bash
-        run: sh ./scripts/distro-sem-ver-bump.sh "${{ steps.rc_sem_ver.outputs.RC_VER }}"
+      # # Update Source Sem Ver to Release Candidate Sem Ver
+      # - name: Mark Sem Ver in source as '-rc', Release Candidate
+      #   shell: bash
+      #   run: sh ./scripts/distro-sem-ver-bump.sh "${{ steps.rc_sem_ver.outputs.RC_VER }}"
 
-      - run: git status
+      # - run: git status
 
-      - name: Set text of commit message (aka subject), to use for RC (-rc) Sem Ver update
-        id: rc_msg
-        run: "echo RC_MSG=\"chore(rc): mark source code Sem Ver as '-rc', Release Candidate\" >> $GITHUB_OUTPUT"
+      # - name: Set text of commit message (aka subject), to use for RC (-rc) Sem Ver update
+      #   id: rc_msg
+      #   run: "echo RC_MSG=\"chore(rc): mark source code Sem Ver as '-rc', Release Candidate\" >> $GITHUB_OUTPUT"
 
-      # ENABLE GIT COMMITS
-      - name: Enable Git Commits, by setting git user.name and user.email
-        run: |
-          git config --global user.name "Konstantinos Lampridis"
-          git config --global user.email "k.lampridis@hotmail.com"
+      # # ENABLE GIT COMMITS
+      # - name: Enable Git Commits, by setting git user.name and user.email
+      #   run: |
+      #     git config --global user.name "Konstantinos Lampridis"
+      #     git config --global user.email "k.lampridis@hotmail.com"
 
-      # COMMIT RC Sem Ver
-      - name: "Commit Source Sem Ver, as Release Candidate"
-        run: git commit -am "${{ steps.rc_msg.outputs.RC_MSG }}"
+      # # COMMIT RC Sem Ver
+      # - name: "Commit Source Sem Ver, as Release Candidate"
+      #   run: git commit -am "${{ steps.rc_msg.outputs.RC_MSG }}"
 
       ## Trigger (gitops) Release Candidate 'Stress Tests' ##
       - name: Push '${{ env.RELEASE }}' Branch, to sync RC Sem Ver in Remote
