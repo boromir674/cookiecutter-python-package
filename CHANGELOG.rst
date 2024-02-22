@@ -2,6 +2,21 @@
 Changelog
 =========
 
+1.15.2-dev (2024-02-22)
+=======================
+
+Changes
+^^^^^^^
+
+documentation
+"""""""""""""
+- do minor tweaks in the style of README
+
+gitops
+""""""
+- do RC Release via CI/CD, without commiting Source Sem Ver
+
+
 1.15.1 (2024-02-22)
 ===================
 
