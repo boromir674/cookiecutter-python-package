@@ -177,6 +177,7 @@ jobs:
     ### Check if Requested RC Pipeline ###
     - name: "Check if 'v*-rc' Tag, to run Test Suite"
       if: ${{ startsWith(github.event.ref, 'refs/tags/v') && contains(github.event.ref, '-rc') }}
+      shell: bash
       run: |
         # Extract PROD Sem Ver
         SEMVER="$(grep -E -o '^version\s*=\s*\".*\"' pyproject.toml | cut -d'"' -f2)"
@@ -185,6 +186,7 @@ jobs:
         RC_SEMVER="${SEMVER}-rc"
 
         ## Set Source Sem Ver to Release Candidate Sem Ver ##
+        # if needed: chmod +x ./scripts/distro-sem-ver-bump.sh
         sh ./scripts/distro-sem-ver-bump.sh "${RC_SEMVER}"
 
     ###### TEST SUITE RUN ######
