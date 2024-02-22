@@ -185,10 +185,10 @@ jobs:
         RC_SEMVER="${SEMVER}-rc"
 
         ## Set Source Sem Ver to Release Candidate Sem Ver ##
-        sh ./scripts/distro-sem-ver-bump.sh "${RC_VER}"
+        sh ./scripts/distro-sem-ver-bump.sh "${RC_SEMVER}"
 
     ###### TEST SUITE RUN ######
-    - name: Run Unit Tests
+    - name: Run Unit Tests on Edit, and Sdist; and build Wheels
       run: tox -vv -s false | tee test_output.log
       env:
         PLATFORM: ${{ matrix.platform }}
