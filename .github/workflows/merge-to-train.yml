@@ -11,6 +11,8 @@ on:
       - test-distro
       - test-docs
       - test-distro-docs
+      ## Branch picked when files chnaged are unclassified
+      - direct-onboarding
 
 # Listens to Event fired: When PR is Closed, and PR targets 'boarding-auto' branch
 # Case GITOPS: Trigger when Auto Merge PR 'User Branch' --> 'boarding-auto'
