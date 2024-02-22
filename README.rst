@@ -2,13 +2,12 @@
 Python Package Generator
 ========================
 
-
 | |build| |coverage| |docs| |maintainability| |codacy| |tech-debt|
 | |release_version| |wheel| |supported_versions| |commits_since_specific_tag_on_master| |commits_since_latest_github_release|
 | |pypi_stats| |ossf| |ruff| |black| |gh-lic|
 
 |
-| **Generate** Python Project and enjoy **streamlined "DevOps"** using a powerful **CI/CD Pipeline.**
+| **Generate** Python Project and enjoy **streamlined DevOps** using a powerful **CI/CD Pipeline.**
 |
 | **Documentation** available at https://python-package-generator.readthedocs.io/.
 
@@ -18,15 +17,16 @@ What's included?
 
 * **Generator** of **Python Project** (see `Quickstart`_), with **CLI** for **Linux**, **MacOS**, and **Windows**
 * **Option** to Generate Python Package designed as `module`, `module+cli`, or `pytest-plugin`!
-* Scaffold over **24 files**, from `Template`_, to have a `ready-to-develop` **Project equiped** with:
+* Scaffold over **24 files**, from `Template`_, to have a `ready-to-develop` **Project equipped** with:
 
   * Fully-featured **CI/CD Pipeline**, running on `Github Actions`_, defined in `.github/`
-  * **Continuous Delivery** to *PyPI* (ie `pypi.org`_, `test.pypi.org`_) and *Dockerhub*
-  * **Continuous Integration**, with **Test Suite** running `pytest`_ , located in `tests` dir
-  * **Continuous Documentation**, building with `mkdocs` or `sphinx`, and hosting on `readthedocs`, located in `docs` dir
+  * **Continuous Delivery** to *PyPI* (i.e. `pypi.org`_, `test.pypi.org`_) and *Dockerhub*
+  * **Continuous Integration**, with **Test Suite** running `pytest`_, located in the `tests` dir
+  * **Continuous Documentation**, building with `mkdocs` or `sphinx`, and hosting on `readthedocs`, located in the `docs` dir
   * **Static Type Checking**, using `mypy`_
   * **Lint** *Check* and `Apply` commands, using the fast `Ruff`_ linter, along with standard `isort`_, and `black`_
   * **Build Command**, using the `build`_ python package
+
 
 
 What to expect?
@@ -75,9 +75,9 @@ To **install** the latest ``Generator`` in your environment, run:
 
     pip install cookiecutter-python
 
-The ``generate-python`` CLI should become available in your environment.
+The ``generate-python`` (executable) CLI should now be available in your environment.
 
-Next, create a file, let's call it ``gen-config.yml``, with the following content:
+Next, **create** a file, let's call it ``gen-config.yml``, with the following content:
 
 .. code-block:: yaml
 
@@ -275,9 +275,9 @@ Free/Libre and Open Source Software (FLOSS)
 
 .. Github Releases & Tags
 
-.. |commits_since_specific_tag_on_master| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/v1.15.1/master?color=blue&logo=github
+.. |commits_since_specific_tag_on_master| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/v1.15.2-dev/master?color=blue&logo=github
     :alt: GitHub commits since tagged version (branch)
-    :target: https://github.com/boromir674/cookiecutter-python-package/compare/v1.15.1..master
+    :target: https://github.com/boromir674/cookiecutter-python-package/compare/v1.15.2-dev..master
 
 .. |commits_since_latest_github_release| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/latest?color=blue&logo=semver&sort=semver
     :alt: GitHub commits since latest release (by SemVer)

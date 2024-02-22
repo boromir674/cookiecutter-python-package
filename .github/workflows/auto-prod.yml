@@ -48,34 +48,28 @@ jobs:
 
       - run: git checkout "${{ env.RELEASE }}"
 
-      # Derive PROD Sem Ver
+      # Parse SOURCE Sem Ver
       - run: echo SEMVER=$(grep -E -o '^version\s*=\s*\".*\"' pyproject.toml | cut -d'"' -f2) >> $GITHUB_OUTPUT
         id: sem_ver
 
-      # Derive RC Sem Ver Tag
-      - run: 'echo RC_VER="${{ steps.sem_ver.outputs.SEMVER }}-rc" >> $GITHUB_OUTPUT'
-        id: rc_sem_ver
+      # Find if it is a PROD (Public API) or DEV (ie internal changes, only docs, etc)
+      - name: "Check if it is a PROD or DEV Release"
+        id: prod_or_dev
+        run: |
+          if [[ "${{ steps.sem_ver.outputs.SEMVER }}" == *dev* ]]; then
+            echo "PROD_OR_DEV=DEV" >> $GITHUB_OUTPUT
+          else
+            echo "PROD_OR_DEV=PROD" >> $GITHUB_OUTPUT
+          fi
 
-      # # Update Source Sem Ver to Release Candidate Sem Ver
-      # - name: Mark Sem Ver in source as '-rc', Release Candidate
-      #   shell: bash
-      #   run: sh ./scripts/distro-sem-ver-bump.sh "${{ steps.rc_sem_ver.outputs.RC_VER }}"
+      # Derive Git Tag that will trigger 'Release Candidate - CI Pipeline'
+      - name: 'Create Git Tag, by appending -rc to PROD Sem Ver'
+        if: ${{ steps.prod_or_dev.outputs.PROD_OR_DEV == 'PROD' }}
+        run: 'echo RC_TAG="v${{ steps.sem_ver.outputs.SEMVER }}-rc" >> $GITHUB_ENV'
 
-      # - run: git status
-
-      # - name: Set text of commit message (aka subject), to use for RC (-rc) Sem Ver update
-      #   id: rc_msg
-      #   run: "echo RC_MSG=\"chore(rc): mark source code Sem Ver as '-rc', Release Candidate\" >> $GITHUB_OUTPUT"
-
-      # # ENABLE GIT COMMITS
-      # - name: Enable Git Commits, by setting git user.name and user.email
-      #   run: |
-      #     git config --global user.name "Konstantinos Lampridis"
-      #     git config --global user.email "k.lampridis@hotmail.com"
-
-      # # COMMIT RC Sem Ver
-      # - name: "Commit Source Sem Ver, as Release Candidate"
-      #   run: git commit -am "${{ steps.rc_msg.outputs.RC_MSG }}"
+      - name: 'Create Git Tag, using DEV Sem Ver'
+        if: ${{ steps.prod_or_dev.outputs.PROD_OR_DEV == 'DEV' }}
+        run: 'echo RC_TAG="v${{ steps.sem_ver.outputs.SEMVER }}" >> $GITHUB_ENV'
 
       ## Trigger (gitops) Release Candidate 'Stress Tests' ##
       - name: Push '${{ env.RELEASE }}' Branch, to sync RC Sem Ver in Remote
@@ -83,7 +77,7 @@ jobs:
 
       - name: "Trigger Release Candidate - Stress Tests"
         env: 
-          rc_tag: 'v${{ steps.rc_sem_ver.outputs.RC_VER }}'
+          rc_tag: '${{ steps.rc_sem_ver.outputs.RC_TAG }}'
         run: |
           echo "[STEP]: Tag Local: ${rc_tag}"
           git tag -d "$rc_tag" || echo "Ensured Local Tag $rc_tag does not exist"
@@ -99,7 +93,7 @@ jobs:
           echo
 
       ## Update Source Sem Ver to Prod Release Sem Ver
-      
+
       # # COMMIT Revert operation, for Production Sem Ver
       # - name: "Revert to Production Sem Ver, from Release Candidate, '-rc"
       #   run: |
@@ -135,6 +129,20 @@ jobs:
             If the above conditions are not met, this PR will be manually merged into the '${{ env.MAIN_BR }}' branch, by a developer.
             "
 
+      # Derive Commit subject for PR Merge, based on PROD or DEV
+      - name: 'Create Commit Message: [NEW] Py Pkg Gen v${{ steps.sem_ver.outputs.SEMVER }} Release'
+        if: ${{ steps.prod_or_dev.outputs.PROD_OR_DEV == 'PROD' }}
+        run: 'echo CM_MSG="[NEW] Py Pkg Gen v${{ steps.sem_ver.outputs.SEMVER }} Release" >> $GITHUB_ENV'
+
+      - name: 'Create Commit Message: [DEV] Py Pkg Gen v${{ steps.sem_ver.outputs.SEMVER }} Release'
+        if: ${{ steps.prod_or_dev.outputs.PROD_OR_DEV == 'DEV' }}
+        run: 'echo CM_MSG="[DEV] Py Pkg Gen v${{ steps.sem_ver.outputs.SEMVER }} Release" >> $GITHUB_ENV'
+
+      # LABEL PR for Auto Deploy if PROD
+      - name: "Label PR for Auto Deploy"
+        if: ${{ steps.prod_or_dev.outputs.PROD_OR_DEV == 'PROD' }}
+        run: gh pr label "${{ env.RELEASE }}" --label "auto-deploy"
+
       ### Merge PR, when CI Pass + Human Review OK ###
-      # - name: "Merge PR   'head': ${{ env.RELEASE }}  -->  'base': ${{ env.MAIN_BR }}"
-      #   run: gh pr merge "${{ env.RELEASE }}" --auto --delete-branch --squash
+      - name: "Merge PR   'head': ${{ env.RELEASE }}  -->  'base': ${{ env.MAIN_BR }}"
+        run: gh pr merge "${{ env.RELEASE }}" --auto --merge --subject "${{ env.CM_MSG }}"
