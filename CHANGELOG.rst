@@ -2,6 +2,34 @@
 Changelog
 =========
 
+1.15.1 (2024-02-22)
+===================
+
+Changes
+^^^^^^^
+
+refactor
+""""""""
+- make sure generated code passes Linters and Formatters
+
+ci
+""
+- skip Build n Test, on pushes to 'release' branch
+
+chore
+"""""
+- include scripts dir in Lint checking
+
+tests
+"""""
+- update biskotaki-interactive Snapshot, used in Regression Testing
+
+gitops
+""""""
+- when neither Distro nor Docs changed then reduce Checks before Train
+- add more mutually exclusive PR Labeling Rules
+
+
 1.15.0 (2024-02-21)
 ===================
 
