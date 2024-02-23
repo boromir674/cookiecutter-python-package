@@ -17,9 +17,16 @@ build:
   jobs:
     pre_install:
       - python -m pip install tox==3.27.1
-      - tox -e pin-deps -- -E docs
-    # Pre Install must generate a req-docs.txt file
+    #   - python -m pip install poetry
+    #   - tox -e pin-deps -- -E docs
+    # Pre Install must generate a req-docs.txt file, if 'python:' section is used
     post_install:
+      # introducing myst-parser for parsing .md files, required a bump
+      # of sphinx to 6.x, somehow `poetry lock` was ok, but poetry export not!
+      # due to this we do not have 100% reproducible builds here, but we should be fine.
+
+      # when we retire python 2.6, 3.7 stuff, this can go back to `poery export` :)
+
       - python -m pip install -e .[docs]
       - python -m pip install pyyaml
     pre_build:
@@ -49,7 +56,7 @@ formats:
 # Optional but recommended, declare the Python requirements required
 # to build your documentation
 # See https://docs.readthedocs.io/en/stable/guides/reproducible-builds.html
-python:
-   install:
-    # Pre Install must generate a reqs.txt
-    - requirements: reqs.txt
+# python:
+#    install:
+#     # Pre Install must generate a reqs.txt
+#     - requirements: reqs.txt
