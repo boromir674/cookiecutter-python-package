@@ -19,7 +19,7 @@
 Running on **Linux shell.**
 
 ```shell
-function git-tag { git tag -d "$1"; git tag "$1" && git tag push origin -d "$1"; git push origin "$1"; }
+function git-tag { git tag -d "$1" || true; git tag "$1" && (git push origin -d "$1" || true); git push origin "$1"; }
 function parse-version { grep -E -o '^version\s*=\s*\".*\"' pyproject.toml \| cut -d'"' -f2; }
 ```
 
