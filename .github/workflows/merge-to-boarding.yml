@@ -59,14 +59,18 @@ jobs:
           buffer_string=""
           branch_name_buffer=""
           recognized_changes=false
+          detected_need_for_distro_tests=false
 
           # Check if PR labels are in the list of recognized labels
           for label in $PR_LABELS; do
             case $label in
               business_logic|template_logic|test|stubs)
-                buffer_string="Distro${buffer_string:+ AND $buffer_string}"
-                branch_name_buffer="distro-${branch_name_buffer}"
-                recognized_changes=true
+                if [ "$detected_need_for_distro_tests" = false ]; then
+                  buffer_string="Distro${buffer_string:+ AND $buffer_string}"
+                  branch_name_buffer="distro-${branch_name_buffer}"
+                  recognized_changes=true
+                  detected_need_for_distro_tests=true
+                fi
                 ;;
               docs)
                 buffer_string="${buffer_string:+$buffer_string AND }Docs"
