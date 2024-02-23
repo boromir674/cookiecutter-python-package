@@ -15,7 +15,8 @@ build:
 
   # ALL JOBS implied: https://docs.readthedocs.io/en/stable/builds.html
   jobs:
-    # pre_install:
+    pre_install:
+      - python -m pip install tox==3.27.1
     #   - python -m pip install poetry
     #   - tox -e pin-deps -- -E docs
     # Pre Install must generate a req-docs.txt file, if 'python:' section is used
