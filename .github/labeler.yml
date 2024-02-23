@@ -49,8 +49,13 @@ test:
     - changed-files:
       - any-glob-to-any-file: 
         - 'tests/*'
-        - '!tests/data/**/*'
         - 'tests/**/*'
+
+  # exclude any changes within the 'tests/data/' dir
+  - all:
+    - changed-files:
+      - all-globs-to-all-files:
+        - '!tests/data/*'
         - '!tests/data/**/*'
 
 test_data:

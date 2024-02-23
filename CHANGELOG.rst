@@ -2,6 +2,22 @@
 Changelog
 =========
 
+1.15.4-dev (2024-02-23)
+=======================
+
+Changes
+^^^^^^^
+
+documentation
+"""""""""""""
+- fix instructions
+
+gitops
+""""""
+- fix PR Labeling Rules to distinguish Test Data from Test Code
+- fix triggering of merge to Master Workflow, with pat
+
+
 1.15.3-dev (2024-02-23)
 =======================
 
