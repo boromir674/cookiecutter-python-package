@@ -381,7 +381,8 @@ jobs:
     with:
       run_policy: '${{ needs.set_github_outputs.outputs.PIPE_DOCS_POLICY }}'
       python_version: ${{ needs.set_github_outputs.outputs.PIPE_DOCS_PY }}
-      command: "tox -e pin-deps -- -E docs && tox -e docs --sitepackages -vv -s false"
+      command: "tox -e docs --sitepackages -vv -s false"
+      # command: "tox -e pin-deps -- -E docs && tox -e docs --sitepackages -vv -s false"
 
 ### STATIC CODE ANALYSIS & LINTING ###
   lint:
