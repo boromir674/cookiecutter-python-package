@@ -90,17 +90,6 @@ jobs:
           echo "## TRIGGERED RELEASE CANDIDATE - TESTS ##"
           echo
 
-      ## Update Source Sem Ver to Prod Release Sem Ver
-
-      # # COMMIT Revert operation, for Production Sem Ver
-      # - name: "Revert to Production Sem Ver, from Release Candidate, '-rc"
-      #   run: |
-      #     git revert "$(git rev-parse HEAD)" --no-commit
-      #     git commit -m "revert: ${{ steps.rc_msg.outputs.RC_MSG }}\n\nThis reverts commit ${COMMIT_SHA}."
-
-      # # Push Release Branch
-      # - run: git push
-
       ### Open PR ###
       - name: "Open PR   'head': ${{ env.RELEASE }}  -->  'base': ${{ env.MAIN_BR }}"
         run: |
@@ -144,3 +133,5 @@ jobs:
       ### Merge PR, when CI Pass + Human Review OK ###
       - name: "Merge PR   'head': ${{ env.RELEASE }}  -->  'base': ${{ env.MAIN_BR }}"
         run: gh pr merge "${{ env.RELEASE }}" --auto --merge --subject "${{ env.CM_MSG }}"
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}

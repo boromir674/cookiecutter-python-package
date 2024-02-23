@@ -23,6 +23,11 @@ business_logic:
       - any-glob-to-any-file: 
         - 'src/cookiecutter_python/*'
         - 'src/cookiecutter_python/**/*'
+  # exclude any changes within the 'src/cookiecutter_python/{{ cookiecutter.pkg_name }}' dir
+  - all:
+    - changed-files:
+      - all-globs-to-all-files:
+        - '!src/cookiecutter_python/{{ cookiecutter.pkg_name }}/*'
         - '!src/cookiecutter_python/{{ cookiecutter.pkg_name }}/**/*'
 
 template_logic:
