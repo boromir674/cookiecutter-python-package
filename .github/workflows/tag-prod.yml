@@ -1,0 +1,56 @@
+
+# Automatically, Publish a Production Tag
+
+# RUNS on PR  'release' --> 'main/master' MERGED
+# implies closed, and excludes 'close without merge'
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      # access with ${{ github.event.pull_request.base.ref }}
+      - main
+      - master
+
+
+jobs:
+  tag_prod:
+    runs-on: ubuntu-latest
+    # if merged code AND HEAD branch "was" 'release' AND PR has label 'auto-deploy'
+    if: github.event.pull_request.merged == true &&
+      github.event.pull_request.head.ref == 'release' &&
+      contains(github.event.pull_request.labels.*.name, 'auto-deploy')
+    steps:
+      - name: "Checkout Code"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 0 indicates all history for all branches and tags.
+          set-safe-directory: ''  # `git config --global --add safe.directory <path>`
+          token: '${{ secrets.GH_TOKEN }}'
+      # by checkout we should probably be at master (by default)
+      - name: Ensure we are on 'master' branch
+        run: git checkout master
+
+      # Parse SOURCE Sem Ver
+      - run: echo SEMVER=$(grep -E -o '^version\s*=\s*\".*\"' pyproject.toml | cut -d'"' -f2) >> $GITHUB_ENV
+
+      # Exit if SOURCE Sem Ver is empty
+      - name: "Exit if SOURCE Sem Ver is empty"
+        run: |
+          if [ -z "${{ env.SEMVER }}" ]; then
+            echo "SEMVER is empty. Exiting .."
+            echo "SEMVER is empty: '${{ env.SEMVER }}'" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+      # Derive Prod Git Tag
+      - name: 'Derive Git Tag: v${{ env.SEMVER }}'
+        run: echo "PROD_TAG=v${{ env.SEMVER }}" >> $GITHUB_ENV
+
+      # Trigger CI/CD for 'Production Release'
+      - name: "Push '${{ env.PROD_TAG }}' to trigger CI/CD for 'Production Release'"
+        run: |
+          git tag "${{ env.PROD_TAG }}" -m "Production Release ${{ env.PROD_TAG }}"
+          git push origin "${{ env.PROD_TAG }}"
+
+          echo "Tagged and Pushed '${{ env.PROD_TAG }}' to trigger CI/CD for 'Production Release'" >> $GITHUB_STEP_SUMMARY

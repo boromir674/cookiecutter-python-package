@@ -2,6 +2,76 @@
 Changelog
 =========
 
+1.15.2-dev (2024-02-22)
+=======================
+
+Changes
+^^^^^^^
+
+documentation
+"""""""""""""
+- do minor tweaks in the style of README
+
+gitops
+""""""
+- do RC Release via CI/CD, without commiting Source Sem Ver
+
+
+1.15.1 (2024-02-22)
+===================
+
+Changes
+^^^^^^^
+
+refactor
+""""""""
+- make sure generated code passes Linters and Formatters
+
+ci
+""
+- skip Build n Test, on pushes to 'release' branch
+
+chore
+"""""
+- include scripts dir in Lint checking
+
+tests
+"""""
+- update biskotaki-interactive Snapshot, used in Regression Testing
+
+gitops
+""""""
+- when neither Distro nor Docs changed then reduce Checks before Train
+- add more mutually exclusive PR Labeling Rules
+
+
+1.15.0 (2024-02-21)
+===================
+
+Changes
+^^^^^^^
+
+feature
+"""""""
+- provide script to generate RST mermaid from Dockerfile and GA Workflow
+
+documentation
+"""""""""""""
+- generate and embed Pydeps SVG Graphs, into RST, at RTD Build time
+
+ci
+""
+- update Python from 3.9 to 3.10 in Cross-Platofrom Job Matrix
+
+release
+"""""""
+- bump version to 1.15.0
+
+gitops
+""""""
+- do maximal set of checks before RT, as fallback, when dynamic minimum set derivation fails
+
+
 1.14.1 (2024-02-20)
 ===================
 

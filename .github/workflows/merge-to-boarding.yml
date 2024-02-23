@@ -15,6 +15,7 @@ jobs:
       TRAIN: 'release-train'
       MAIN_BRANCH: 'master'
       BOARDING_BR: 'boarding-auto'
+      DIRECT_ONBOARDING_BR: direct-onboarding
     steps:
       - uses: actions/checkout@v4
         with:
@@ -46,92 +47,64 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           TOPICAL_BR: ${{ github.event.pull_request.head.ref }}
 
-        # Recognized labels: ['business_logic', 'test', 'docs']
+        # Recognized labels:
         # if 'docs' label -> Docs Tests
-        # if 'business_logic' or 'test' label -> Cross-Platform Tests
+        # if 'business_logic|template_logic|test|stubs' label -> Cross-Platform Tests
         run: |
-          DISTRO="Distro"
-          DOCS="Docs"
+          # Fetch PR labels
+          PR_LABELS=$(gh pr view ${{ github.event.pull_request.number }} --json labels --jq '.labels[].name')
+          echo "PR Labels: $PR_LABELS"
+
+          # Variables to track changes
           buffer_string=""
-
           branch_name_buffer=""
+          recognized_changes=false
+          detected_need_for_distro_tests=false
 
-          PR_LABELS="$(gh pr view ${{ env.PR_ID }} --json labels --jq '.labels[].name')"
-
-          RECOGNIZED_CHANGES=false
-          echo
-          echo "[INFO] Checking Labels: [${PR_LABELS}]"
-          echo
-          for label in ${PR_LABELS}; do
-            if { [ "$label" == "business_logic" ] || [ "$label" == "test" ]; } && ! [[ $buffer_string =~ $DISTRO ]]; then
-              buffer_string="${buffer_string} ${DISTRO}"
-              branch_name_buffer="distro ${branch_name_buffer}"
-              RECOGNIZED_CHANGES=true
-            elif [ "$label" == "docs" ] && ! [[ $buffer_string =~ $DOCS ]]; then
-              buffer_string="${buffer_string} ${DOCS}"
-              branch_name_buffer="${branch_name_buffer} docs"
-              RECOGNIZED_CHANGES=true
-            fi
+          # Check if PR labels are in the list of recognized labels
+          for label in $PR_LABELS; do
+            case $label in
+              business_logic|template_logic|test|stubs)
+                if [ "$detected_need_for_distro_tests" = false ]; then
+                  buffer_string="Distro${buffer_string:+ AND $buffer_string}"
+                  branch_name_buffer="distro-${branch_name_buffer}"
+                  recognized_changes=true
+                  detected_need_for_distro_tests=true
+                fi
+                ;;
+              docs)
+                buffer_string="${buffer_string:+$buffer_string AND }Docs"
+                branch_name_buffer="${branch_name_buffer}docs-"
+                recognized_changes=true
+                ;;
+              *)
+                # Append other recognized labels here, following the same pattern as 'docs'
+                ;;
+            esac
           done
 
-          echo "# Dynamic CI Jobs and Required Checks" >> $GITHUB_STEP_SUMMARY
+          # Finalize branch name buffer by trimming trailing hyphen
+          branch_name_buffer=${branch_name_buffer%-}
 
-          if [ "$RECOGNIZED_CHANGES" == false ]; then
-            echo "[WARNING] No recognized labels found, from supported ['business_logic', 'test', 'docs']"
-            echo "[INFO] For GitOps to work, we need to recognize the changes in the PR, so that we automatically derive the CI/CD Pipeline to run."
-            echo "[DEBUG] Check the Labeler Workflow, if it missed a Label, due to File Rules not matching."
-
+          # Handling based on recognized changes: empty buffer -> no changes classified
+          if [ -z "$buffer_string" ]; then
+            # Fallback logic
             echo "## Did not find Recognized Label" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "Labels of **PR:**" >> $GITHUB_STEP_SUMMARY
-            echo "$PR_LABELS" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "**Using fallback** message which should enable **Maximum CI Jobs**" >> $GITHUB_STEP_SUMMARY
-            echo "This should trigger a set of Jobs that result in a superset of the **follow-up PR's Required Checks**" >> $GITHUB_STEP_SUMMARY
-
-            echo "The PR/Merge into a **Protected Branch** being the **next** step in **GitOps.**" >> $GITHUB_STEP_SUMMARY
-            echo "**Using fallback** Target Branch, which should define the **Maximum Required Checks**" >> $GITHUB_STEP_SUMMARY
-
-            ##### FALLBACK CI Jobs Configuration and Required Checks selection #####
-            ########################################################################
-            MERGE_MSG="Auto Merging '${TOPICAL_BR}' carrying '${DISTRO} AND ${DOCS}' Changes"
-            TARGET_BRANCH="test-distro-docs"
-            ########################################################################
-
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "Fallback Commit Message: ${MERGE_MSG}" >> $GITHUB_STEP_SUMMARY
-            echo "Fallback Target Branch: ${TARGET_BRANCH}" >> $GITHUB_STEP_SUMMARY
-
-            echo "Optimization/Improvement - Next Steps:" >> $GITHUB_STEP_SUMMARY
-            echo "- If we are expecting our Labeler to consistently be able to classify file changes of that sort, then we need to update the Labeler Workflow." >> $GITHUB_STEP_SUMMARY
+            echo "Fallback to \"few\" CI Jobs and Target Branch with \"few to none\" Required Checks." >> $GITHUB_STEP_SUMMARY
+            TARGET_BRANCH="${DIRECT_ONBOARDING_BR}"
+            MERGE_MSG="Merge '${TOPICAL_BR}' into ${TARGET_BRANCH} with minimal checks."
           else
-            buffer_string=$(echo $buffer_string | sed 's/ / AND /g')
-            branch_name_buffer=$(echo $branch_name_buffer | sed 's/ /-/g')
-            echo "[DEBUG] branch_name_buffer: $branch_name_buffer"
-
-            ####### DYNAMIC Jobs Configuration and Required Checks selection #######
-            ########################################################################
-            MERGE_MSG="Auto Merging '${TOPICAL_BR}' carrying '${buffer_string}' Changes"
+            # Dynamic logic based on recognized labels
+            MERGE_MSG="Auto Merging '${TOPICAL_BR}' carrying '${buffer_string}' Changes."
             TARGET_BRANCH="test-${branch_name_buffer}"
-            ########################################################################
-
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "**Commit Message:** ${MERGE_MSG}" >> $GITHUB_STEP_SUMMARY
-            echo "**Target Branch:** ${TARGET_BRANCH}" >> $GITHUB_STEP_SUMMARY
-
+            echo "## Recognized Changes from Labels: ${buffer_string}" >> $GITHUB_STEP_SUMMARY
           fi
 
-          echo
-          echo " ---> COMMIT MSG <---"
-          echo
-          echo "${MERGE_MSG}"
-          echo
-          echo " ---> TARGET BRANCH <---"
-          echo
-          echo "$TARGET_BRANCH"
-
+          # Summary and output
+          echo "Commit Message: ${MERGE_MSG}" >> $GITHUB_STEP_SUMMARY
+          echo "Target Branch: ${TARGET_BRANCH}" >> $GITHUB_STEP_SUMMARY
           echo "MERGE_MSG=${MERGE_MSG}" >> $GITHUB_OUTPUT
-          echo TARGET_BRANCH=${TARGET_BRANCH} >> $GITHUB_OUTPUT
+          echo "TARGET_BRANCH=${TARGET_BRANCH}" >> $GITHUB_OUTPUT
         id: merge_msg
 
       ## MERGE PR 'User/Topic Branch'  -->  'boarding-auto', with Custom Commit Message

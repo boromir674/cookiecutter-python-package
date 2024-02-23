@@ -97,8 +97,8 @@ def mermaid_from_yaml(filename: t.Union[str, Path], format: str = 'md') -> str:
         )
     ## Embed Mermaid to RST ##
     elif format == 'rst':
-        embeded_mermaid: str = (
-            ".. mermaid::\n\n" + '\n'.join([TAB + x for x in mermaid_code.split('\n')])
+        embeded_mermaid: str = ".. mermaid::\n\n" + '\n'.join(
+            [TAB + x for x in mermaid_code.split('\n')]
         )
     return embeded_mermaid
 
@@ -114,10 +114,7 @@ def main():
     else:
         ci_config = Path(args.input)
 
-    md: str = mermaid_from_yaml(
-        ci_config,
-        format='rst' if args.rst else 'md'
-    )
+    md: str = mermaid_from_yaml(ci_config, format='rst' if args.rst else 'md')
 
     if args.output:
         # Handle the case of writing to an output file
@@ -141,7 +138,10 @@ def arg_parse():
         help="Input file path (default: 'default-path')",
     )
     parser.add_argument(
-        '--rst', help='Whether to generate RST content. Default MD', action='store_true', default=False,
+        '--rst',
+        help='Whether to generate RST content. Default MD',
+        action='store_true',
+        default=False,
     )
     parser.add_argument("-o", "--output", help="Output file path")
 
