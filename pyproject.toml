@@ -159,6 +159,7 @@ docs = [
     "sphinxcontrib-spelling",
     "sphinx-inline-tabs",
     "sphinxcontrib-mermaid",
+    "myst-parser",
 ]
 docslive = [
     "sphinx",
@@ -168,6 +169,7 @@ docslive = [
     "sphinx-autobuild",
     "sphinx-inline-tabs",
     "sphinxcontrib-mermaid",
+    "myst-parser",
 ]
 typing = [
     "mypy",

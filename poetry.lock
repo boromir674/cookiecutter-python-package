@@ -1577,12 +1577,12 @@ docs = ["jaraco.packaging (>=8.2)", "rst.linker (>=1.9)", "sphinx"]
 testing = ["func-timeout", "jaraco.itertools", "pytest (>=4.6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=1.0.1)", "pytest-flake8", "pytest-mypy"]
 
 [extras]
-docs = ["sphinx", "sphinx-autodoc-typehints", "sphinx-inline-tabs", "sphinx-rtd-theme", "sphinxcontrib-mermaid", "sphinxcontrib-spelling"]
-docslive = ["sphinx", "sphinx-autobuild", "sphinx-autodoc-typehints", "sphinx-inline-tabs", "sphinx-rtd-theme", "sphinxcontrib-mermaid", "sphinxcontrib-spelling"]
+docs = ["myst-parser", "sphinx", "sphinx-autodoc-typehints", "sphinx-inline-tabs", "sphinx-rtd-theme", "sphinxcontrib-mermaid", "sphinxcontrib-spelling"]
+docslive = ["myst-parser", "sphinx", "sphinx-autobuild", "sphinx-autodoc-typehints", "sphinx-inline-tabs", "sphinx-rtd-theme", "sphinxcontrib-mermaid", "sphinxcontrib-spelling"]
 test = ["pytest", "pytest-click", "pytest-cov", "pytest-explicit", "pytest-object-getter", "pytest-requests-futures", "pytest-run-subprocess", "pytest-xdist", "pyyaml"]
 typing = ["mypy", "pytest", "pytest-click", "types-pyyaml", "types-requests"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = ">3.6,<3.13"
-content-hash = "8ff6501cb507a566ba63c999c50555b3225471366c89de5cce380254e1ef18a0"
+content-hash = "45e053dee86c6237a0bd9c9235c2ea36f332336125b9005d0f16b29cc7bb21b0"
