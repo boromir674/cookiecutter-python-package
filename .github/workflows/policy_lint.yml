@@ -187,14 +187,14 @@ jobs:
           # config-file: ./.github/codeql/codeql-config.yml  # or ${{ vars.VAR_CONTENT }} !
           config: |
             paths-ignore:
-              - src/cookiecutter_python/\{\{ cookiecutter.pkg_name \}\}/
+              - src/cookiecutter_python/{{ cookiecutter.pkg_name }}/
 
             # disable-default-queries: true
             # queries:
             #   - uses: security-extended
 
       - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ env._SARIF_FILE }}
 
