@@ -2,6 +2,17 @@
 Changelog
 =========
 
+1.15.4-dev1 (2024-02-24)
+========================
+
+Changes
+^^^^^^^
+
+ci
+""
+- enable Dependabot Version Updates, on a daily basis scan
+
+
 1.15.4-dev (2024-02-23)
 =======================
 
