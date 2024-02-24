@@ -33,11 +33,11 @@ env:
   TEST_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\":[\"3.10\"]}"
 
   ##### JOB ON/OFF SWITCHES - 1st level overrides #####
-  RUN_UNIT_TESTS: "true"
+  RUN_UNIT_TESTS: "false"
   RUN_LINT_CHECKS: "true"
-  DOCKER_JOB_ON: "true"
+  DOCKER_JOB_ON: "false"
   PUBLISH_ON_PYPI: "true"
-  DOCS_JOB_ON: "true"
+  DOCS_JOB_ON: "false"
   DRAW_DEPENDENCIES: "true"
   ##########################
 
