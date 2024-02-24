@@ -242,6 +242,7 @@ version_variable = "src/cookiecutter_python/__init__.py:__version__"
 # BANDIT
 
 [tool.bandit]
+exclude_dirs = ["tests/data", "path/to/file"]
 tests = []
 skips = [
     "B101",
