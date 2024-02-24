@@ -164,7 +164,7 @@ jobs:
 
       ## Run BANDIT to identify CWEs ##
       - name: 'Bandit: Security Analysis'
-        run: tox -e bandit -vv -s false -- -q -f sarif -o "${{ env._SARIF_FILE }}"
+        run: tox -e bandit -vv -s false -- -q -f sarif -o "${{ env._SARIF_FILE }}" || 'true'
 
       - name: Upload artifact
         uses: actions/upload-artifact@main
@@ -206,25 +206,25 @@ jobs:
           echo "LOW: $LOW" >> $GITUB_STEP_SUMMARY
 
       #### JOB STATUS ####
-      - name: "If we found more than ${{ fromJson(inputs.bandit).h }} HIGH Severity CWE's, Fail!"
-        if: ${{ fromJson(inputs.bandit).h < steps.parse_bandit_results.outputs.HIGH }}
+      - name: "If we found more than ${{ ${{ fromJson(inputs.bandit) }}.h }} HIGH Severity CWE's, Fail!"
+        if: ${{ ${{ fromJson(inputs.bandit) }}.h < steps.parse_bandit_results.outputs.HIGH }}
         run: |
           echo "Bandit Failed! | Found more HIGH Severity CWE's in code than allowed/acceptable amount."
-          echo "[ERROR] **HIGH**: ${{ steps.parse_bandit_results.outputs.HIGH }} > ${{ fromJson(inputs.bandit).h }}" >> $GITUB_STEP_SUMMARY
+          echo "[ERROR] **HIGH**: ${{ steps.parse_bandit_results.outputs.HIGH }} > ${{ ${{ fromJson(inputs.bandit) }}.h }}" >> $GITUB_STEP_SUMMARY
           exit 1
 
-      - name: "If we found more than ${{ fromJson(inputs.bandit).m }} MEDIUM Severity CWE's, Fail!"
-        if: ${{ fromJson(inputs.bandit).m < steps.parse_bandit_results.outputs.MEDIUM }}
+      - name: "If we found more than ${{ ${{ fromJson(inputs.bandit) }}.m }} MEDIUM Severity CWE's, Fail!"
+        if: ${{ ${{ fromJson(inputs.bandit) }}.m < steps.parse_bandit_results.outputs.MEDIUM }}
         run: |
           echo "Bandit Failed! | Found more MEDIUM Severity CWE's in code than allowed/acceptable amount."
-          echo "[ERROR] **MEDIUM**: ${{ steps.parse_bandit_results.outputs.MEDIUM }} > ${{ fromJson(inputs.bandit).m }}" >> $GITUB_STEP_SUMMARY
+          echo "[ERROR] **MEDIUM**: ${{ steps.parse_bandit_results.outputs.MEDIUM }} > ${{ ${{ fromJson(inputs.bandit) }}.m }}" >> $GITUB_STEP_SUMMARY
           exit 1
 
-      - name: "If we found more than ${{ fromJson(inputs.bandit).l }} LOW Severity CWE's, Fail!"
-        if: ${{ fromJson(inputs.bandit).l < steps.parse_bandit_results.outputs.LOW }}
+      - name: "If we found more than ${{ ${{ fromJson(inputs.bandit) }}.l }} LOW Severity CWE's, Fail!"
+        if: ${{ ${{ fromJson(inputs.bandit) }}.l < steps.parse_bandit_results.outputs.LOW }}
         run: |
           echo "Bandit Failed! | Found more LOW Severity CWE's in code than allowed/acceptable amount."
-          echo "[ERROR] **LOW**: ${{ steps.parse_bandit_results.outputs.LOW }} > ${{ fromJson(inputs.bandit).l }}" >> $GITUB_STEP_SUMMARY
+          echo "[ERROR] **LOW**: ${{ steps.parse_bandit_results.outputs.LOW }} > ${{ ${{ fromJson(inputs.bandit) }}.l }}" >> $GITUB_STEP_SUMMARY
           exit 1
 
       - run: echo "**Bandit Passed!**" >> $GITUB_STEP_SUMMARY
