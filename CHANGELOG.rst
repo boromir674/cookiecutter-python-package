@@ -2,6 +2,21 @@
 Changelog
 =========
 
+1.15.4-dev4 (2024-02-24)
+========================
+
+Changes
+^^^^^^^
+
+ci
+""
+- configure codeql to ignore template cookiecutter dir
+- design automated acceptance check
+- prevent tox from failing when running Bandit
+- add Job for Bandit Scan and Continuous Security Reporting
+- setup Continuous Bandit Scanning and Reporting
+
+
 1.15.4-dev1 (2024-02-24)
 ========================
 
