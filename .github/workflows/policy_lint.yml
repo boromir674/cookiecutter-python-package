@@ -187,7 +187,7 @@ jobs:
           # config-file: ./.github/codeql/codeql-config.yml  # or ${{ vars.VAR_CONTENT }} !
           config: |
             paths-ignore:
-              - src/cookiecutter_python/{{ cookiecutter.pkg_name }}/
+              - src/cookiecutter_python/{{ cookiecutter.project_slug }}/
 
             # disable-default-queries: true
             # queries:
