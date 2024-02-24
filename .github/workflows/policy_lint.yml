@@ -147,8 +147,8 @@ jobs:
   bandit:
     name: "Bandit: Security Analysis"
     runs-on: ubuntu-latest
-    needs: decide_run_lint
-    if: always() && needs.decide_run_lint.outputs.RUN_SQA == 'true'
+    needs: lint_policy
+    if: always() && needs.lint_policy.outputs.RUN_SQA == 'true'
     env:
       _SARIF_FILE: results-sarif.json
     steps:
