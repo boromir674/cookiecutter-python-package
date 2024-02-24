@@ -2,6 +2,75 @@
 Changelog
 =========
 
+1.15.4-dev4 (2024-02-24)
+========================
+
+Changes
+^^^^^^^
+
+ci
+""
+- configure codeql to ignore template cookiecutter dir
+- design automated acceptance check
+- prevent tox from failing when running Bandit
+- add Job for Bandit Scan and Continuous Security Reporting
+- setup Continuous Bandit Scanning and Reporting
+
+
+1.15.4-dev1 (2024-02-24)
+========================
+
+Changes
+^^^^^^^
+
+ci
+""
+- enable Dependabot Version Updates, on a daily basis scan
+
+
+1.15.4-dev (2024-02-23)
+=======================
+
+Changes
+^^^^^^^
+
+documentation
+"""""""""""""
+- fix instructions
+
+gitops
+""""""
+- fix PR Labeling Rules to distinguish Test Data from Test Code
+- fix triggering of merge to Master Workflow, with pat
+
+
+1.15.3-dev (2024-02-23)
+=======================
+
+Changes
+^^^^^^^
+
+documentation
+"""""""""""""
+- add 'Publish My Branch' Git Ops Guide
+
+build
+"""""
+- build docs with Sphinx 6.2 (from 4.x), to render Markdown, with extension 'myst-parser'
+
+ci
+""
+- fix both CI and RTD Docs Builds
+
+gitops
+""""""
+- fix logic when deriving Protected Branch name
+
+tox
+"""
+- pip install -e .[docslive], instead of poetry export first
+
+
 1.15.2-dev (2024-02-22)
 =======================
 
