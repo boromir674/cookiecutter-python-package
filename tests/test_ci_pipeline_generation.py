@@ -46,8 +46,12 @@ def test_file_is_valid_yaml(config_file, user_config, mock_check, tmpdir):
     def sanitize_load(s):
         for w in "on".split():
             reg = re.compile(r'^(on):', re.MULTILINE)
-            s = reg.sub(r'\1<TEST>:', s)
-        return yaml.load(s, yaml.FullLoader)
+            s: str = reg.sub(r'\1<TEST>:', s)
+        # >> Issue: [B506:yaml_load] Use of unsafe yaml load. Allows instantiation of arbitrary objects. Consider yaml.safe_load().
+        # Severity: Medium   Confidence: High
+        # CWE: CWE-20 (https://cwe.mitre.org/data/definitions/20.html)
+        # More Info: https://bandit.readthedocs.io/en/1.7.7/plugins/b506_yaml_load.html
+        return yaml.safe_load(s)
 
     ci_config = sanitize_load(generate_ci_pipeline_config.read_text())
 

@@ -23,7 +23,13 @@ def parse_context(config_file: str):
     env = Environment(
         loader=FileSystemLoader(str(my_dir / '..')),
         extensions=['jinja2_time.TimeExtension'],  # shipped with cookiecutter 1.7
+        # Issue: [B701:jinja2_autoescape_false] By default, jinja2 sets autoescape to False. Consider using autoescape=True or use the select_autoescape function to mitigate XSS vulnerabilities.
+        # Severity: High   Confidence: High
+        # CWE: CWE-94 (https://cwe.mitre.org/data/definitions/94.html)
+        # More Info: https://bandit.readthedocs.io/en/1.7.7/plugins/b701_jinja2_autoescape_false.html
+        autoescape=True,
     )
+
     template = env.get_template('cookiecutter.json')
     rendered = template.render({'cookiecutter': {}})
 

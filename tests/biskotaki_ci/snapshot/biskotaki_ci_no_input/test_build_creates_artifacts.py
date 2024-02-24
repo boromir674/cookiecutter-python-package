@@ -20,7 +20,20 @@ def test_running_build_creates_source_and_wheel_distros(
         [sys.executable, '-m', 'tox', '-r', '-vv', '-e', 'build'],
         cwd=snapshot_dir,
         check=False,  # prevent raising exception, so we can do clean up
+        shell=False,  # prevent execution of untrusted input
     )
+    # shell = False causes know CWE with LOW Severity
+    # >> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+    #    Severity: Low   Confidence: High
+    #    CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+    #    More Info: https://bandit.readthedocs.io/en/1.7.7/plugins/b603_subprocess_without_shell_equals_true.html
+
+    # but if we mitigate it by setting shell=True, then we get another CWE with HIGH Severity!
+    # >> Issue: [B602:subprocess_popen_with_shell_equals_true] subprocess call with shell=True identified, security issue.
+    #    Severity: High   Confidence: High
+    #    CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+    #    More Info: https://bandit.readthedocs.io/en/1.7.7/plugins/b602_subprocess_popen_with_shell_equals_true.html
+
     # CLEAN UP: Remove .tox/build folder, created by tox
     import shutil
 
