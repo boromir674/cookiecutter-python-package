@@ -128,7 +128,7 @@ jobs:
       # LABEL PR for Auto Deploy if PROD
       - name: "Label PR for Auto Deploy"
         if: ${{ steps.prod_or_dev.outputs.PROD_OR_DEV == 'PROD' }}
-        run: gh pr label "${{ env.RELEASE }}" --label "auto-deploy"
+        run: gh pr edit "${{ env.RELEASE }}" --label "auto-deploy"
 
       ### Merge PR, when CI Pass + Human Review OK ###
       - name: "Merge PR   'head': ${{ env.RELEASE }}  -->  'base': ${{ env.MAIN_BR }}"
