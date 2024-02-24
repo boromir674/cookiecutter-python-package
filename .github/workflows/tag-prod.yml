@@ -27,6 +27,7 @@ jobs:
           fetch-depth: 0  # 0 indicates all history for all branches and tags.
           set-safe-directory: ''  # `git config --global --add safe.directory <path>`
           token: '${{ secrets.GH_TOKEN }}'
+
       # by checkout we should probably be at master (by default)
       - name: Ensure we are on 'master' branch
         run: git checkout master

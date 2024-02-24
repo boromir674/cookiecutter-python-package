@@ -20,7 +20,7 @@ Running on **Linux shell.**
 
 ```shell
 function git-tag { git tag -d "$1" || true; git tag "$1" && (git push origin -d "$1" || true); git push origin "$1"; }
-function parse-version { grep -E -o '^version\s*=\s*\".*\"' pyproject.toml \| cut -d'"' -f2; }
+function parse-version { grep -E -o '^version\s*=\s*\".*\"' pyproject.toml | cut -d'"' -f2; }
 ```
 
 From your **`User Br`** Branch:
@@ -62,6 +62,5 @@ gh release create "$tt"
 Clean Git with:
 
 ```shell
-git checkout release && git rebase master && git push && git push origin --delete release-train
-for bra in test-distro test-docs test-distro-docs boarding-auto; do git push origin -d "$bra"; done
+git checkout release && git rebase master && git push
 ```

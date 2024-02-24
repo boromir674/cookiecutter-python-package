@@ -76,32 +76,19 @@ jobs:
         run: git push
 
       - name: "Trigger Release Candidate - Stress Tests"
-        env: 
-          rc_tag: '${{ steps.rc_sem_ver.outputs.RC_TAG }}'
         run: |
-          echo "[STEP]: Tag Local: ${rc_tag}"
-          git tag -d "$rc_tag" || echo "Ensured Local Tag $rc_tag does not exist"
-          git tag "$rc_tag"
+          echo "[STEP]: Tag Local: ${RC_TAG}"
+          git tag -d "$RC_TAG" || echo "Ensured Local Tag $RC_TAG does not exist"
+          git tag "$RC_TAG"
           echo
-          echo "[STEP]: Tag Remote: ${rc_tag}"
-          git push --delete origin "$rc_tag" || echo "Ensured Remote Tag $rc_tag does not exist"
-          git push origin "$rc_tag"
+          echo "[STEP]: Tag Remote: ${RC_TAG}"
+          git push --delete origin "$RC_TAG" || echo "Ensured Remote Tag $RC_TAG does not exist"
+          git push origin "$RC_TAG"
           echo
-          echo " -> Pushed tag $rc_tag"
+          echo " -> Pushed tag $RC_TAG"
           echo
           echo "## TRIGGERED RELEASE CANDIDATE - TESTS ##"
           echo
-
-      ## Update Source Sem Ver to Prod Release Sem Ver
-
-      # # COMMIT Revert operation, for Production Sem Ver
-      # - name: "Revert to Production Sem Ver, from Release Candidate, '-rc"
-      #   run: |
-      #     git revert "$(git rev-parse HEAD)" --no-commit
-      #     git commit -m "revert: ${{ steps.rc_msg.outputs.RC_MSG }}\n\nThis reverts commit ${COMMIT_SHA}."
-
-      # # Push Release Branch
-      # - run: git push
 
       ### Open PR ###
       - name: "Open PR   'head': ${{ env.RELEASE }}  -->  'base': ${{ env.MAIN_BR }}"
@@ -146,3 +133,5 @@ jobs:
       ### Merge PR, when CI Pass + Human Review OK ###
       - name: "Merge PR   'head': ${{ env.RELEASE }}  -->  'base': ${{ env.MAIN_BR }}"
         run: gh pr merge "${{ env.RELEASE }}" --auto --merge --subject "${{ env.CM_MSG }}"
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
