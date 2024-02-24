@@ -214,12 +214,12 @@ jobs:
           echo "LOW: $LOW" >> $GITHUB_STEP_SUMMARY
 
       - name: Destructure Input Acceptance Thresholds
+        env:
+          SEVERITY_THRESHOLDS: ${{ fromJson(inputs.bandit) }}
         run: |
-          DATA='${{ fromJson(inputs.bandit) }}'
-
-          MAX_HIGH=$(echo $DATA | jq '.h')
-          MAX_MEDIUM=$(echo $DATA | jq '.m')
-          MAX_LOW=$(echo $DATA | jq '.l')
+          MAX_HIGH=$(echo $SEVERITY_THRESHOLDS | jq '.h')
+          MAX_MEDIUM=$(echo $SEVERITY_THRESHOLDS | jq '.m')
+          MAX_LOW=$(echo $SEVERITY_THRESHOLDS | jq '.l')
 
           echo "## User Acceptable - Thresholds" >> $GITHUB_STEP_SUMMARY
           echo "HIGH: $MAX_HIGH" >> $GITHUB_STEP_SUMMARY
