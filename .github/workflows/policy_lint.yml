@@ -208,10 +208,10 @@ jobs:
 
       - name: Write to Job Step Summary
         run: |
-          echo "## Bandit - Results" >> $GITUB_STEP_SUMMARY
-          echo "HIGH: $HIGH" >> $GITUB_STEP_SUMMARY
-          echo "MEDIUM: $MEDIUM" >> $GITUB_STEP_SUMMARY
-          echo "LOW: $LOW" >> $GITUB_STEP_SUMMARY
+          echo "## Bandit - Results" >> $GITHUB_STEP_SUMMARY
+          echo "HIGH: $HIGH" >> $GITHUB_STEP_SUMMARY
+          echo "MEDIUM: $MEDIUM" >> $GITHUB_STEP_SUMMARY
+          echo "LOW: $LOW" >> $GITHUB_STEP_SUMMARY
 
       - name: Destructure Input Acceptance Thresholds
         run: |
@@ -221,10 +221,10 @@ jobs:
           MAX_MEDIUM=$(echo $DATA | jq '.m')
           MAX_LOW=$(echo $DATA | jq '.l')
 
-          echo "## User Acceptable - Thresholds" >> $GITUB_STEP_SUMMARY
-          echo "HIGH: $MAX_HIGH" >> $GITUB_STEP_SUMMARY
-          echo "MEDIUM: $MAX_MEDIUM" >> $GITUB_STEP_SUMMARY
-          echo "LOW: $MAX_LOW" >> $GITUB_STEP_SUMMARY
+          echo "## User Acceptable - Thresholds" >> $GITHUB_STEP_SUMMARY
+          echo "HIGH: $MAX_HIGH" >> $GITHUB_STEP_SUMMARY
+          echo "MEDIUM: $MAX_MEDIUM" >> $GITHUB_STEP_SUMMARY
+          echo "LOW: $MAX_LOW" >> $GITHUB_STEP_SUMMARY
 
           echo MAX_HIGH=$MAX_HIGH >> $GITHUB_ENV
           echo MAX_MEDIUM=$MAX_MEDIUM >> $GITHUB_ENV
@@ -235,24 +235,24 @@ jobs:
         if: ${{ env.MAX_HIGH < env.HIGH }}
         run: |
           echo "Bandit Failed! | Found more HIGH Severity CWE's in code than allowed/acceptable amount."
-          echo "[ERROR] **HIGH**: $HIGH > $MAX_HIGH" >> $GITUB_STEP_SUMMARY
+          echo "[ERROR] **HIGH**: $HIGH > $MAX_HIGH" >> $GITHUB_STEP_SUMMARY
           exit 1
 
       - name: "If we found more than ${{ env.MAX_MEDIUM }} MEDIUM Severity CWE's, Fail!"
         if: ${{ env.MAX_MEDIUM < env.MEDIUM }}
         run: |
           echo "Bandit Failed! | Found more MEDIUM Severity CWE's in code than allowed/acceptable amount."
-          echo "[ERROR] **MEDIUM**: $MEDIUM > $MAX_MEDIUM" >> $GITUB_STEP_SUMMARY
+          echo "[ERROR] **MEDIUM**: $MEDIUM > $MAX_MEDIUM" >> $GITHUB_STEP_SUMMARY
           exit 1
 
       - name: "If we found more than ${{ env.MAX_LOW }} LOW Severity CWE's, Fail!"
         if: ${{ env.MAX_LOW < env.LOW }}
         run: |
           echo "Bandit Failed! | Found more LOW Severity CWE's in code than allowed/acceptable amount."
-          echo "[ERROR] **LOW**: $LOW > $MAX_LOW" >> $GITUB_STEP_SUMMARY
+          echo "[ERROR] **LOW**: $LOW > $MAX_LOW" >> $GITHUB_STEP_SUMMARY
           exit 1
 
-      - run: echo "**Bandit Passed!**" >> $GITUB_STEP_SUMMARY
+      - run: echo "**Bandit Passed!**" >> $GITHUB_STEP_SUMMARY
 
   legacy_pylint:
     runs-on: ubuntu-latest
