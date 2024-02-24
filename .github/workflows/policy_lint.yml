@@ -49,6 +49,15 @@ on:
         required: false
         type: string
         default: '8.0'  # out of 10
+      ## Parametrize Bandit Acceptance Criteria
+      bandit:
+        required: false
+        type: string
+        description: 'Bandit Acceptance '
+        # ie { "l": 10 } -> allowes at most 10 low, 0 m, and 0 h
+        # ie { "l": 10, "m": 3 } -> allowes at most 10 low, 3 m, and 0 h
+        # Default is 6 allowed low, 0 m, and 0 h
+        default: '{"l": 6, "m": 0, "h": 0}'
 
 jobs:
   # Decide whether to run Lint Job, given incoming Signal
@@ -179,7 +188,6 @@ jobs:
           sarif_file: ${{ env._SARIF_FILE }}
 
       - name: 'Parse Bandit Results, and prepare comparing LOW, MEDIUM, and HIGH'
-        id: parse_bandit_results
         run: |
           # Parse Totals Object
           TOTALS=$(jq '.runs[0].properties.metrics._totals' results-sarif.json)
@@ -205,26 +213,43 @@ jobs:
           echo "MEDIUM: $MEDIUM" >> $GITUB_STEP_SUMMARY
           echo "LOW: $LOW" >> $GITUB_STEP_SUMMARY
 
+      - name: Destructure Input Acceptance Thresholds
+        run: |
+          DATA='${{ fromJson(inputs.bandit) }}'
+
+          MAX_HIGH=$(echo $DATA | jq '.h')
+          MAX_MEDIUM=$(echo $DATA | jq '.m')
+          MAX_LOW=$(echo $DATA | jq '.l')
+
+          echo "## User Acceptable - Thresholds" >> $GITUB_STEP_SUMMARY
+          echo "HIGH: $MAX_HIGH" >> $GITUB_STEP_SUMMARY
+          echo "MEDIUM: $MAX_MEDIUM" >> $GITUB_STEP_SUMMARY
+          echo "LOW: $MAX_LOW" >> $GITUB_STEP_SUMMARY
+
+          echo MAX_HIGH=$MAX_HIGH >> $GITHUB_ENV
+          echo MAX_MEDIUM=$MAX_MEDIUM >> $GITHUB_ENV
+          echo MAX_LOW=$MAX_LOW >> $GITHUB_ENV
+
       #### JOB STATUS ####
-      - name: "If we found more than ${{ ${{ fromJson(inputs.bandit) }}.h }} HIGH Severity CWE's, Fail!"
-        if: ${{ ${{ fromJson(inputs.bandit) }}.h < steps.parse_bandit_results.outputs.HIGH }}
+      - name: "If we found more than ${{ env.MAX_HIGH }} HIGH Severity CWE's, Fail!"
+        if: ${{ env.MAX_HIGH < env.HIGH }}
         run: |
           echo "Bandit Failed! | Found more HIGH Severity CWE's in code than allowed/acceptable amount."
-          echo "[ERROR] **HIGH**: ${{ steps.parse_bandit_results.outputs.HIGH }} > ${{ ${{ fromJson(inputs.bandit) }}.h }}" >> $GITUB_STEP_SUMMARY
+          echo "[ERROR] **HIGH**: $HIGH > $MAX_HIGH" >> $GITUB_STEP_SUMMARY
           exit 1
 
-      - name: "If we found more than ${{ ${{ fromJson(inputs.bandit) }}.m }} MEDIUM Severity CWE's, Fail!"
-        if: ${{ ${{ fromJson(inputs.bandit) }}.m < steps.parse_bandit_results.outputs.MEDIUM }}
+      - name: "If we found more than ${{ env.MAX_MEDIUM }} MEDIUM Severity CWE's, Fail!"
+        if: ${{ env.MAX_MEDIUM < env.MEDIUM }}
         run: |
           echo "Bandit Failed! | Found more MEDIUM Severity CWE's in code than allowed/acceptable amount."
-          echo "[ERROR] **MEDIUM**: ${{ steps.parse_bandit_results.outputs.MEDIUM }} > ${{ ${{ fromJson(inputs.bandit) }}.m }}" >> $GITUB_STEP_SUMMARY
+          echo "[ERROR] **MEDIUM**: $MEDIUM > $MAX_MEDIUM" >> $GITUB_STEP_SUMMARY
           exit 1
 
-      - name: "If we found more than ${{ ${{ fromJson(inputs.bandit) }}.l }} LOW Severity CWE's, Fail!"
-        if: ${{ ${{ fromJson(inputs.bandit) }}.l < steps.parse_bandit_results.outputs.LOW }}
+      - name: "If we found more than ${{ env.MAX_LOW }} LOW Severity CWE's, Fail!"
+        if: ${{ env.MAX_LOW < env.LOW }}
         run: |
           echo "Bandit Failed! | Found more LOW Severity CWE's in code than allowed/acceptable amount."
-          echo "[ERROR] **LOW**: ${{ steps.parse_bandit_results.outputs.LOW }} > ${{ ${{ fromJson(inputs.bandit) }}.l }}" >> $GITUB_STEP_SUMMARY
+          echo "[ERROR] **LOW**: $LOW > $MAX_LOW" >> $GITUB_STEP_SUMMARY
           exit 1
 
       - run: echo "**Bandit Passed!**" >> $GITUB_STEP_SUMMARY
