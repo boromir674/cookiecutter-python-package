@@ -76,5 +76,10 @@ gh release create "$tt"
 Clean Git with:
 
 ```shell
-git checkout release && git rebase master && git push
+git checkout release && git rebase master
+# Delete Git Ops Tags
+git push origin -d board-request
+git push origin -d auto-prod
+# Delete Git Ops branches
+git push origin -d board-request
 ```
