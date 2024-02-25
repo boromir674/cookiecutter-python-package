@@ -2,6 +2,39 @@
 Changelog
 =========
 
+2.0.0 (2024-02-25)
+==================
+
+**Backwords Compatible Major Release**, unless you are still using legacy Python 3.6!
+
+*No* Breaking changes, in CLI or Python API in this release.
+
+| This Major Release simply drops support for legacy Python 3.6.
+| We kept supporting of it for too long anyways, compared to its lifespan.
+
+We update our Pytest **test** dependency constraint to ^7.2.0, which caused
+`poetry export` to break, even though `poetry lock` worked.
+
+Thus, we resorted in updating the `python` constraint to `>=3.7`
+
+Changes
+^^^^^^^
+
+build
+"""""
+- drop support for Python 3.6
+- update pytest constraint to ^7.2.0
+
+release
+"""""""
+- bump version to 2.0.0
+
+gitops
+""""""
+- add missing workflow for PR to master
+- fix listener of 'Merge RT in Release' Workflow
+
+
 1.15.4 (2024-02-24)
 ===================
 
