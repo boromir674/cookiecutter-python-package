@@ -1,0 +1,56 @@
+############################
+## Open PR to Main/Master ##
+############################
+
+name: Open PR to Master
+
+# WHEN a PR 'release-train' --> 'release' is merged
+# THEN Open PR: 'release' --> 'master'
+
+on:
+  pull_request:
+    types: [closed]
+    branches:  # ALLOWED Base Branches
+      - release
+
+jobs:
+  open_pr_to_master:
+    if: github.event.pull_request.merged == true && contains(fromJSON('["release-train"]'), github.head_ref)
+    runs-on: ubuntu-latest
+    env:
+      RELEASE: 'release'
+      MAIN_BR: 'master'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 0 indicates all history for all branches and tags.
+          set-safe-directory: ''  # `git config --global --add safe.directory <path>`
+          token: '${{ secrets.GH_TOKEN }}'
+
+      ##### Open PR: Release  -->  Main/Master #####
+      - name: "Open PR  'head': ${{ env.RELEASE }} --> 'base': ${{ env.MAIN_BR }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create --head "${{ env.RELEASE }}" --base "${{ env.MAIN_BR }}" \
+            --title "Release Version '${{ steps.sem_ver.outputs.SEMVER }}' into '${{ env.MAIN_BR }}' Branch" \
+            --body "## :rocket: Release '${{ steps.sem_ver.outputs.SEMVER }}' into '${{ env.MAIN_BR }}' Branch :rocket:
+            
+            This PR marks a pivotal moment in our deployment cycle, signaling that all changes on the **Release** branch are deemed ready for production. It represents the collective decision of our developers that the changes bundled in the Release are suitable to be released together.
+
+            ### What's Happening in This PR?
+
+            - We are merging the '${{ env.RELEASE }}' branch into the '${{ env.MAIN_BR }}' branch.
+            - This action is a critical step, transitioning us from the release phase to the production phase.
+
+            ### :white_check_mark: Automatic Merging Upon CI Checks :white_check_mark:
+            
+            This PR will be automatically merged into the '${{ env.MAIN_BR }}' branch, if the following conditions are met:
+
+            - All CI Checks pass
+            - Code Review is approved by at least one developer
+
+            ### :warning: Manual Merging Upon CI Checks and Code Review :warning:
+
+            If the above conditions are not met, this PR will be manually merged into the '${{ env.MAIN_BR }}' branch, by a developer.
+            "
