@@ -2,6 +2,17 @@
 Changelog
 =========
 
+1.15.4 (2024-02-24)
+===================
+
+Changes
+^^^^^^^
+
+build
+"""""
+- require gitpython >= 3.1.30 due to CVE reported by Dependabot
+
+
 1.15.4-dev4 (2024-02-24)
 ========================
 

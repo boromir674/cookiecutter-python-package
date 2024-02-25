@@ -2,18 +2,12 @@
 ## Merge Train in Release ##
 ############################
 
-# Triggered when PR from 'auto-release' merges into 'release-train'
-
-# 1. PR: release-train --> release
-# 2. Test
-# 3. Merge
-
-# Tested to Trigger when a developer merges PR from github UI
-# to test if triggers on programmatic merge: `gh pr merge boarding-auto --auto --delete-branch --squash`
-
 name: Merge RT in Release
-# Release Train (RT) has All changes needed for Release
-# We Test RT, and do auto merge if CI Checks Pass
+
+# WHEN a PR --> 'release-train' is merged, from branches 'test-distro', 'test-docs', or 'test-distro-docs'
+# THEN
+#   1. Open PR: 'release-train' --> 'release'
+#   2. Enable PR "Auto Merge"
 
 on:
   pull_request:
@@ -24,37 +18,29 @@ on:
       - release-train
 
 jobs:
-  # RUN Job when 'boarding-auto --> 'release-train' PR is merged
+  # RUN Job when 'sth' --> 'release-train' PR is merged
   merge_rt_in_release:
     ## IMPORTANT: below head branches should be in sync with Protection Rules
     if: github.event.pull_request.merged == true && contains(fromJSON('["test-distro", "test-docs", "test-distro-docs"]'), github.head_ref)
-    # github.event.pull_request.auto_merge_enabled
 
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       TRAIN: 'release-train'
       RELEASE_BR: 'release'
-      MAIN_BR: 'master'
     steps:
-      - run: 'echo "[DEBUG] github.event.pull_request.auto_merge_enabled --> ${{ github.event.pull_request.auto_merge_enabled }}"'
-      - run: 'echo "github.event.pull_request --> ${{ github.event.pull_request }}"'
-      - run: "echo \"[DEBUG] github.event.pull_request.merged: '${{ github.event.pull_request.merged == true }}', should be 'true'\""
-      - run: "echo \"[DEBUG] github.head_ref: '${{ startsWith(github.head_ref, 'boarding-auto') }}', should be 'true'\""
-      - run: "echo \"[DEBUG] HEAD: '${{ github.head_ref }}', should be 'boarding-auto'\""
-      - run: "echo \"[DEBUG] BASE: '${{ github.base_ref }}', should be 'release-train'\""
-
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0  # 0 indicates all history for all branches and tags.
           set-safe-directory: ''  # `git config --global --add safe.directory <path>`
           token: '${{ secrets.GH_TOKEN }}'
       
-      # Track the remote branches
-      - run: git branch --track "${{ env.TRAIN }}" "origin/${{ env.TRAIN }}" || echo "Branch '${{ env.TRAIN }}' already exists"
-      - run: git branch --track "${{ env.RELEASE_BR }}" "origin/${{ env.RELEASE_BR }}" || echo "Branch '${{ env.RELEASE_BR }}' already exists"
+      - name: Ensure Release Branch exists, before PR
+        run: |
+          git branch --track "${{ env.RELEASE_BR }}" "origin/${{ env.RELEASE_BR }}" || echo "Branch '${{ env.RELEASE_BR }}' does NOT exist in remote Origin"
+          git checkout ${{ env.RELEASE_BR }} || (git checkout -b ${{ env.RELEASE_BR }} && git push origin -u ${{ env.RELEASE_BR }})
 
-      ############## PR ##############
+      ####### PR: Train --> Release #######
       - name: "Create PR  'head': ${{ env.TRAIN }}  -->  'base': ${{ env.RELEASE_BR }}"
         run: |
           gh pr create --head "${{ env.TRAIN }}" --base "${{ env.RELEASE_BR }}" \
@@ -93,7 +79,6 @@ jobs:
             - Once merged, our changes are set for the final stage of release preparation.
             - The team should be prepared to monitor and address any issues in the subsequent phase of merging into the Main/Master branch.
             "
-
-      ############## Merge ##############
+      ##### Auto Merge: Train --> Release #####
       - name: 'Merge PR   ${{ env.TRAIN }}  -->  ${{ env.RELEASE_BR }}'
         run: gh pr merge "${{ env.TRAIN }}" --auto --delete-branch --merge

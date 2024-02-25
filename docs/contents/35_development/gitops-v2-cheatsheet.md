@@ -30,15 +30,29 @@ git push
 git-tag board-request
 ```
 
-**Wait until** Release branch is ready and **Sync:**
+**Wait** for **PR** *opened* **'release' --> 'master'**
+- https://github.com/boromir674/cookiecutter-python-package/pulls?q=is%3Apr+is%3Aopen+base%3Amaster
 
 ```shell
 git fetch && (git checkout release || git branch --track release origin/release) && git pull origin release
 ```
-**Open PR** to `master`
-```shell
-./scripts/auto-release.sh
-```
+**`Sem Ver` + `Changelog`** updates on **release** branch
+
+- [OPT1]\: For **Public API** Releases
+
+    ```shell
+    ./scripts/auto-release.sh
+    ```
+
+- [OPT2]\: For **Internal** Releases
+
+    1. Do **Sem Ver** source updates and commits (1 or more files)
+    2. Do **Changelog** update and commit (1 file)
+    3. Run
+        ```shell
+        git push origin release
+        git-tag auto-prod
+        ```
 
 1. **Code Review PR on Github**
 
