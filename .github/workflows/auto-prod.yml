@@ -46,8 +46,6 @@ jobs:
         name: "Exit if '${{ github.ref }}' NOT on '${{ env.RELEASE }}' branch"
         run: echo "Tag '${{ github.ref }}' on '${{ env.RELEASE }}' = ${{ steps.tag_on_release.outputs.retval }}" && exit 1
 
-      - run: git checkout "${{ env.RELEASE }}"
-
       # Parse SOURCE Sem Ver
       - run: echo SEMVER=$(grep -E -o '^version\s*=\s*\".*\"' pyproject.toml | cut -d'"' -f2) >> $GITHUB_OUTPUT
         id: sem_ver
@@ -71,10 +69,6 @@ jobs:
         if: ${{ steps.prod_or_dev.outputs.PROD_OR_DEV == 'DEV' }}
         run: 'echo RC_TAG="v${{ steps.sem_ver.outputs.SEMVER }}" >> $GITHUB_ENV'
 
-      ## Trigger (gitops) Release Candidate 'Stress Tests' ##
-      - name: Push '${{ env.RELEASE }}' Branch, to sync RC Sem Ver in Remote
-        run: git push
-
       - name: "Trigger Release Candidate - Stress Tests"
         run: |
           echo "[STEP]: Tag Local: ${RC_TAG}"
@@ -90,32 +84,6 @@ jobs:
           echo "## TRIGGERED RELEASE CANDIDATE - TESTS ##"
           echo
 
-      ### Open PR ###
-      - name: "Open PR   'head': ${{ env.RELEASE }}  -->  'base': ${{ env.MAIN_BR }}"
-        run: |
-          gh pr create --head "${{ env.RELEASE }}" --base "${{ env.MAIN_BR }}" \
-            --title "Release Version '${{ steps.sem_ver.outputs.SEMVER }}' into '${{ env.MAIN_BR }}' Branch" \
-            --body "## :rocket: Release '${{ steps.sem_ver.outputs.SEMVER }}' into '${{ env.MAIN_BR }}' Branch :rocket:
-            
-            This PR marks a pivotal moment in our deployment cycle, signaling that all changes on the **Release** branch are deemed ready for production. It represents the collective decision of our developers that the changes bundled in the Release are suitable to be released together.
-
-            ### What's Happening in This PR?
-
-            - We are merging the '${{ env.RELEASE }}' branch into the '${{ env.MAIN_BR }}' branch.
-            - This action is a critical step, transitioning us from the release phase to the production phase.
-
-            ### :white_check_mark: Automatic Merging Upon CI Checks :white_check_mark:
-            
-            This PR will be automatically merged into the '${{ env.MAIN_BR }}' branch, if the following conditions are met:
-
-            - All CI Checks pass
-            - Code Review is approved by at least one developer
-
-            ### :warning: Manual Merging Upon CI Checks and Code Review :warning:
-
-            If the above conditions are not met, this PR will be manually merged into the '${{ env.MAIN_BR }}' branch, by a developer.
-            "
-
       # Derive Commit subject for PR Merge, based on PROD or DEV
       - name: 'Create Commit Message: [NEW] Py Pkg Gen v${{ steps.sem_ver.outputs.SEMVER }} Release'
         if: ${{ steps.prod_or_dev.outputs.PROD_OR_DEV == 'PROD' }}
@@ -128,10 +96,10 @@ jobs:
       # LABEL PR for Auto Deploy if PROD
       - name: "Label PR for Auto Deploy"
         if: ${{ steps.prod_or_dev.outputs.PROD_OR_DEV == 'PROD' }}
-        run: gh pr edit "${{ env.RELEASE }}" --label "auto-deploy"
+        run: gh pr edit "${{ env.RELEASE }}" --add-label "auto-deploy"
 
       ### Merge PR, when CI Pass + Human Review OK ###
       - name: "Merge PR   'head': ${{ env.RELEASE }}  -->  'base': ${{ env.MAIN_BR }}"
-        run: gh pr merge "${{ env.RELEASE }}" --auto --merge --subject "${{ env.CM_MSG }}"
+        run: gh pr merge "${{ env.RELEASE }}" --auto --delete-branch --merge --subject "${{ env.CM_MSG }}"
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
