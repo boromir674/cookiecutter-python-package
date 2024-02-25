@@ -2,6 +2,31 @@
 Changelog
 =========
 
+2.0.1 (2024-02-25)
+==================
+
+Fix CWE https://github.com/boromir674/cookiecutter-python-package/security/dependabot/7
+
+Changes
+^^^^^^^
+
+documentation
+"""""""""""""
+- update git ops cheat sheet
+
+build
+"""""
+- required tornado >=6.3.3 to patch CWE, for docslive Extras
+
+ci
+""
+- fix logic in determining Distro or Docs changes
+
+release
+"""""""
+- bump version to 2.0.1
+
+
 2.0.0 (2024-02-25)
 ==================
 
