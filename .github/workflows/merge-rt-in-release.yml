@@ -4,7 +4,12 @@
 
 name: Merge RT in Release
 
-# WHEN a PR --> 'release-train' is merged, from branches 'test-distro', 'test-docs', or 'test-distro-docs'
+# WHEN a PR --> 'release-train' is merged, from branches
+#  - test-distro
+#  - test-docs
+#  - test-distro-docs
+#  - direct-onboarding
+
 # THEN
 #   1. Open PR: 'release-train' --> 'release'
 #   2. Enable PR "Auto Merge"
@@ -21,7 +26,7 @@ jobs:
   # RUN Job when 'sth' --> 'release-train' PR is merged
   merge_rt_in_release:
     ## IMPORTANT: below head branches should be in sync with Protection Rules
-    if: github.event.pull_request.merged == true && contains(fromJSON('["test-distro", "test-docs", "test-distro-docs"]'), github.head_ref)
+    if: github.event.pull_request.merged == true && contains(fromJSON('["test-distro", "test-docs", "test-distro-docs", "direct-onboarding"]'), github.head_ref)
 
     runs-on: ubuntu-latest
     env:
