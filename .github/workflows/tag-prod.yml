@@ -49,6 +49,9 @@ jobs:
         run: echo "PROD_TAG=v${{ env.SEMVER }}" >> $GITHUB_ENV
 
       # Trigger CI/CD for 'Production Release'
+      - run: git config --global user.name "Konstantinos Lampridis"
+      - run: git config --global user.email "boromir674@hotmail.com"
+
       - name: "Push '${{ env.PROD_TAG }}' to trigger CI/CD for 'Production Release'"
         run: |
           git tag "${{ env.PROD_TAG }}" -m "Production Release ${{ env.PROD_TAG }}"
