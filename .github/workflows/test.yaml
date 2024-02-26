@@ -104,14 +104,14 @@ jobs:
 
             if [[ "$affected_components" =~ "Distro" ]]; then
               echo "matrix=$TEST_STRATEGY" >> $GITHUB_OUTPUT
-            fi
-            if [[ "$affected_components" =~ "Docs" ]]; then
+            elif [[ "$affected_components" =~ "Docs" ]]; then
               # set policy to 1 to trigger Docs Build (higher level override might be in place)
               PIPE_DOCS_POLICY="${{ (env.DOCS_JOB_ON != 'true' && '0') || (env.ALWAYS_DOCS == 'true' && '1') || '1' }}"
+              echo "matrix=$UBUNTU_PY310_STRATEGY" >> $GITHUB_OUTPUT
             fi
 
-          # Fall back to the default strategy
           else
+            # Fall back to the default strategy
             echo "matrix=$UBUNTU_PY310_STRATEGY" >> $GITHUB_OUTPUT
           fi
           ## we skip ci, on pushes to 'release' branch ##
@@ -272,7 +272,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: test_suite
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Get Codecov binary
       run: |
         curl -Os https://uploader.codecov.io/latest/linux/codecov

@@ -10,7 +10,7 @@ build-backend = "poetry.core.masonry.api"
 ## Also renders on pypi as 'subtitle'
 [tool.poetry]
 name = "cookiecutter_python"
-version = "2.0.0"
+version = "2.0.1"
 description = "1-click Generator of Python Project, from Template with streamlined \"DevOps\" using a powerful CI/CD Pipeline."
 authors = ["Konstantinos Lampridis <k.lampridis@hotmail.com>"]
 maintainers = ["Konstantinos Lampridis <k.lampridis@hotmail.com>"]
@@ -131,6 +131,7 @@ sphinx-autodoc-typehints = { version = ">= 1.10", optional = true }
 sphinx-rtd-theme = { version = "== 0.5.0", optional = true }
 sphinxcontrib-spelling = { version = "~= 7.3.3", optional = true }
 sphinx-autobuild = { version = "^2021.3.14", optional = true }
+tornado = { version = "^6.3.3", optional = true, python = ">=3.8,<3.13" }
 sphinx-inline-tabs = { version = "^2023.4.21", optional = true, python = ">=3.8,<3.13" }
 sphinxcontrib-mermaid = { version = "^0.9.2", optional = true, python = ">=3.7,<3.13" }
 myst-parser = { version = "^2.0.0", optional = true, python = ">=3.8,<3.13" }
@@ -167,6 +168,7 @@ docslive = [
     "sphinx-rtd-theme",
     "sphinxcontrib-spelling",
     "sphinx-autobuild",
+    "tornado",
     "sphinx-inline-tabs",
     "sphinxcontrib-mermaid",
     "myst-parser",
