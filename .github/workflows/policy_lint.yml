@@ -188,6 +188,9 @@ jobs:
           config: |
             paths-ignore:
               - 'src/cookiecutter_python/{{ cookiecutter.project_slug }}/'
+              - 'src/cookiecutter_python/{{ cookiecutter.project_slug }}/**'
+              - 'src/cookiecutter_python/{{ cookiecutter.project_slug }}/**/*'
+              - 'src/cookiecutter_python/{{ cookiecutter.project_slug }}/*'
               - 'src/cookiecutter_python/{{ cookiecutter.project_slug }}/tests/test_cli.py'
 
             # disable-default-queries: true
