@@ -73,13 +73,28 @@ gh release create "$tt"
 ```
 **--> !! DONE !! <--**
 
-Clean Git with:
+Clean Origin Git with:
 
 ```shell
-git checkout release && git rebase master
-# Delete Git Ops Tags
+# Delete Git Ops TAGS
 git push origin -d board-request
 git push origin -d auto-prod
-# Delete Git Ops branches
-git push origin -d board-request
+
+# Delete Git Ops BRANCHES
+git push origin -d boarding-auto
+
+git push origin -d test-docs
+git push origin -d test-distro
+git push origin -d test-distro-docs
+git push origin -d direct-onboarding
+
+git push origin -d release-train
+
 ```
+
+Clean Local with:
+```shell
+git tag -d board-request
+git tag -d auto-prod
+```
+git checkout release && git rebase master

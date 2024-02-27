@@ -31,6 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      MAIN_BR: 'master'
       TRAIN: 'release-train'
       RELEASE_BR: 'release'
     steps:
@@ -43,7 +44,7 @@ jobs:
       - name: Ensure Release Branch exists, before PR
         run: |
           git branch --track "${{ env.RELEASE_BR }}" "origin/${{ env.RELEASE_BR }}" || echo "Branch '${{ env.RELEASE_BR }}' does NOT exist in remote Origin"
-          git checkout ${{ env.RELEASE_BR }} || (git checkout -b ${{ env.RELEASE_BR }} && git push origin -u ${{ env.RELEASE_BR }})
+          git checkout ${{ env.RELEASE_BR }} || (git checkout ${{ env.MAIN_BR }} && git checkout -b ${{ env.RELEASE_BR }} && git push origin -u ${{ env.RELEASE_BR }})
 
       ####### PR: Train --> Release #######
       - name: "Create PR  'head': ${{ env.TRAIN }}  -->  'base': ${{ env.RELEASE_BR }}"
@@ -87,3 +88,5 @@ jobs:
       ##### Auto Merge: Train --> Release #####
       - name: 'Merge PR   ${{ env.TRAIN }}  -->  ${{ env.RELEASE_BR }}'
         run: gh pr merge "${{ env.TRAIN }}" --auto --delete-branch --merge
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}  # allow event to trigger "listener" Workflows

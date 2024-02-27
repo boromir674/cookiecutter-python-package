@@ -2,6 +2,32 @@
 Changelog
 =========
 
+2.0.2-dev (2024-02-27)
+======================
+
+Changes
+^^^^^^^
+
+documentation
+"""""""""""""
+- improve clean-up instructions in Git Ops Cheatsheet Page
+
+ci
+""
+- add glob patterns to exclude Template Project contents from CodeQL
+
+release
+"""""""
+- bump version to 2.0.2-dev
+
+gitops
+""""""
+- support automatic Source Sem Ver update for '-rc' and '-dev' sem ver metadata
+- allow workflows to trigger on event 'merge to Release'
+- add user name and email before tagging prod tag on Main/Master
+- ensure release branch is on master, in 'RT in Release' Workflow
+
+
 2.0.1 (2024-02-25)
 ==================
 
