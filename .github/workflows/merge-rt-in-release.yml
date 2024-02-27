@@ -88,3 +88,5 @@ jobs:
       ##### Auto Merge: Train --> Release #####
       - name: 'Merge PR   ${{ env.TRAIN }}  -->  ${{ env.RELEASE_BR }}'
         run: gh pr merge "${{ env.TRAIN }}" --auto --delete-branch --merge
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}  # allow event to trigger "listener" Workflows
