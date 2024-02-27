@@ -2,6 +2,17 @@
 Changelog
 =========
 
+2.0.2 (2024-02-27)
+==================
+
+Changes
+^^^^^^^
+
+refactor
+""""""""
+- do 'accidental Logs - Deletion' as part of main and not of post_file_removal, in post hook
+
+
 2.0.2-dev (2024-02-27)
 ======================
 
