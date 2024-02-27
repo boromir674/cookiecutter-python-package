@@ -1,22 +1,28 @@
 #!/usr/bin/env sh
 
 VERSION="${1}"
-GITHUB_ORG="${2:-boromir674}"
-REPO="${3:-cookiecutter-python}"
+# GITHUB_ORG="${2:-boromir674}"
+# REPO="${3:-cookiecutter-python}"
 
 
 # CONSTANTS
+# Sem Ver Major Minor Patch + Pre-release metadata
+regex="[0-9]+\.[0-9]+\.[0-9]+(?:\-[a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*)?"
+
 VERSION_VAR='__version__'
+
 
 # DISTRO Sem Ver
 
 ## Python Poetry BUILD - Bound - Sem Ver
 PYPROJECT='pyproject.toml'
-sed -i.bak -E "s/(version = ['\"])[0-9]+\.[0-9]+\.[0-9]+(['\"])/\\1${VERSION}\\2/" "${PYPROJECT}" && rm "${PYPROJECT}.bak"
+# sed -i.bak -E "s/(version = ['\"])[0-9]+\.[0-9]+\.[0-9]+(['\"])/\\1${VERSION}\\2/" "${PYPROJECT}" && rm "${PYPROJECT}.bak"
+sed -i.bak -E "s/(version = ['\"])${regex}(['\"])/\\1${VERSION}\\2/" "${PYPROJECT}" && rm "${PYPROJECT}.bak"
 
 ## Project Specific - Bound - Sem Ver
 INIT_FILE='src/cookiecutter_python/__init__.py'
-sed -i.bak -E "s/(${VERSION_VAR} = ['\"])[0-9]+\.[0-9]+\.[0-9]+(['\"])/\\1${VERSION}\\2/" "${INIT_FILE}" && rm "${INIT_FILE}.bak"
+# sed -i.bak -E "s/(${VERSION_VAR} = ['\"])[0-9]+\.[0-9]+\.[0-9]+(['\"])/\\1${VERSION}\\2/" "${INIT_FILE}" && rm "${INIT_FILE}.bak"
+sed -i.bak -E "s/(${VERSION_VAR} = ['\"])${regex}(['\"])/\\1${VERSION}\\2/" "${INIT_FILE}" && rm "${INIT_FILE}.bak"
 
 ## Other Builds
 
