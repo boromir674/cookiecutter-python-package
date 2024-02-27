@@ -135,17 +135,25 @@ def post_file_removal(request):
             for file in files:
                 os.remove(os.path.join(request.project_dir, file))
 
-    ## Remove Generator Log file, found inside the Generated Project ##
-    # this happens, based on our _logging.py configuration, which probably causes
-    # the cookiecutter code to inherit this Logger. Then probably, cookiecutter
-    # changes the CWD at runtime when it renders the Templates, and thus a log
-    # file is created inside the Generated Project Folder.
+
+def _take_care_of_logs(logs_file: Path):
+    """Remove accidental App Log file, if found inside the Generated Project.
+
+    Ensures that only the Template Files are part of the Generated Projects by
+    removing any log file that might have been created during the Generation
+    process.
+
+    The application (generator) logs are configured at runtime in _logging.py
+    which could cause the cookiecutter's code to inherit our root Logger.
     
+    Then probably, cookiecutter changes the CWD at runtime when it renders the
+    Templates, and thus a log file is created inside the Generated Project
+    Folder, too.
+
     # Note: at Generator runtime, the user should still expect Captured Logs to
     # be written a File in their Shell's PWD, as designed and intented.
-
+    """
     # remove the log file, if it exists and it is empty
-    logs_file: Path = Path(request.project_dir) / FILE_TARGET_LOGS
     if logs_file.exists():
         # unintentional behaviour, is still happening
         if logs_file.stat().st_size == 0:  # at least expect empty log file
@@ -258,6 +266,9 @@ def post_hook():
     #  - different Project Type
     #  - related to different documentation builder tool"""
     post_file_removal(request)
+    # remove "unintentional logs" file, if it exists and it is empty
+    _take_care_of_logs(Path(request.project_dir) / FILE_TARGET_LOGS)
+
     # move/rename docs-builder-specific docs folder to 'docs/'
     try:
         # ie for mkdocs: `mv docs-mkdocs docs`, ie for sphinx: `mv docs-sphinx docs`
