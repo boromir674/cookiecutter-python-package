@@ -76,6 +76,10 @@ def template_test_case(request, distro_loc: Path,
     user_config_yaml: Path = MY_DIR / '..' / '.github' / 'biskotaki.yaml' if request.param[1] == 'BISKOTAKI_CONFIG' else request.param[1]
     # Prepare Expected Context, produced at runtime by cookiecutter (under the hood)
     expected_context = request.param[2]
+    # Cookiecutter 2.x
+    # expected_context['_cookiecutter']['_repo_dir'] = str(cookiecutter_template)
+    # expected_context['_cookiecutter']['_checkout'] = False
+
     # manual JSON encoding of 'interpreters', when prod Template + Biskotaki Config
     from cookiecutter_python.backend.load_config import get_interpreters_from_yaml
 
@@ -95,7 +99,7 @@ def template_test_case(request, distro_loc: Path,
         assert isinstance(interpreters, dict)
         assert isinstance(interpreters['supported-interpreters'], list)
         assert len(interpreters['supported-interpreters']) > 0
-        
+
         # MOCK NETWORK ACCESS
         FOUND_ON_PYPI = False
         FOUND_ON_READTHEDOCS = False
@@ -104,7 +108,7 @@ def template_test_case(request, distro_loc: Path,
         mock_check.config = user_config[user_config_yaml]
         mock_check('pypi', FOUND_ON_PYPI)
         mock_check('readthedocs', FOUND_ON_READTHEDOCS)
-        
+
         from cookiecutter_python.backend.main import generate as callback
     else:
         from cookiecutter.main import cookiecutter
@@ -196,16 +200,27 @@ def test_cookiecutter_generates_context_with_expected_values(
 
     # SANITY
     # Cookiecutter 1.x
+    # import yaml
     import poyo
     assert expected_default_context_passed == OrderedDict(
         [(k, v) for k, v in poyo.parse_string(config_yaml.read_text())['default_context'].items()]
     )
     # Cookiecutter 2.x
-    # assert expected_default_context_passed == yaml.safe_load(config_yaml.read_text())['default_context']
+    # assert expected_default_context_passed == OrderedDict(
+    #     [(k, v) for k, v in yaml.safe_load(config_yaml.read_text())['default_context'].items()]
+    # )
 
     # in cookiecutter CONTEXT is an OrderedDict with:
     # - 'cookiecutter': OrderedDict of Template Variables public and private + _template key
-
+    # assert prod_result == {}
+    for k, v in prod_result.items():
+        assert k in {'cookiecutter'}
+        assert isinstance(v, OrderedDict)
+        for k2, v2 in v.items():
+            # assert k2 in {'project_dir_name', 'some_setting', '_template'}
+            # assert isinstance(v2, str) or isinstance(v2, list)
+            assert v2 == template_test_case['expected_context']['cookiecutter'].get(k2, str(gen_proj_dir)), f"Error at key {k2} with value {v2} in {k}! Expected {template_test_case['expected_context']['cookiecutter'].get(k2, str(gen_proj_dir))}!"
+    
     assert prod_result == template_test_case['expected_context']
     assert generate_context_mock.return_value == template_test_case['expected_context']
     # SANITY that Choice Variable was Overriden and that _template get inserted too
