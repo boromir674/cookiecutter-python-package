@@ -6,6 +6,9 @@ from collections import OrderedDict
 import datetime
 
 MY_DIR = Path(__file__).parent
+CK = 'cookiecutter'  # COOKIECUTTER_KEY
+RELEASE_DATE = datetime.datetime.now().strftime('%Y-%m-%d')
+
 
 @pytest.fixture(params=[(
     # TEST CASE 1 - Simple Template with Cookiecutter Choice Variable included
@@ -15,11 +18,17 @@ MY_DIR = Path(__file__).parent
     MY_DIR / 'data' / 'rendering' / 'user_config.yml',
     # THEN expected Context that cookiecutter will generate under the hood is
     OrderedDict([
+        # 1st Item mapped in Jinja context with dedicated key
         ('cookiecutter', OrderedDict([
             ('project_dir_name', 'unit-test-new-project'),
             ('some_setting', 'another_option'),
             # ('_template', str(cookie)),
         ])),
+        # 2nd Item mapped in Jinja context with dedicated key
+        ('_cookiecutter', {
+            'project_dir_name': 'unit-test-new-project',
+            'some_setting': ['another_option', 'some_option'],  # NOTE Difference to 1st Item
+        }),
     ]),
 ),
     (
@@ -28,6 +37,7 @@ MY_DIR = Path(__file__).parent
     'BISKOTAKI_CONFIG',
     # EXPECTED CONTEXT
     OrderedDict([
+        # 1st Item mapped in Jinja context with dedicated key
         ('cookiecutter', OrderedDict([
             ('project_name', 'Biskotaki'),
             ('project_type', 'module'),
@@ -47,9 +57,6 @@ MY_DIR = Path(__file__).parent
             ("year", str(datetime.datetime.now().year)),
             ("version", "0.0.1"),
             ("initialize_git_repo", "no"),
-            ("docs_builder", "sphinx"),
-            ("rtd_python_version", "3.10"),
-            # since the below is expected to be put in the extra context before calling cookiecutter, it gets below the rest of Variables
             ("interpreters", {
                 "supported-interpreters": [
                     "3.6",
@@ -60,25 +67,154 @@ MY_DIR = Path(__file__).parent
                     "3.11"
                 ]
             }),
+            ("docs_builder", "sphinx"),
+            ("rtd_python_version", "3.10"),
+            # since the below is expected to be put in the extra context before calling cookiecutter, it gets below the rest of Variables
             # ('_template', str(cookie)),
         ])),
+        # 2nd Item mapped in Jinja context with dedicated key _cookiecutter
+        ('_cookiecutter', {
+            'project_name': 'Biskotaki',
+            'project_type': ['module', 'module+cli', 'pytest-plugin'],  # NOTE Difference to 1st Item
+            "project_slug": "biskotaki",
+            "pkg_name": "biskotaki",
+            "repo_name": "biskotaki",
+            "readthedocs_project_slug": "biskotaki",
+            "docker_image": "biskotaki",
+            "full_name": "Konstantinos Lampridis",
+            "author": "Konstantinos Lampridis",
+            "author_email": 'k.lampridis@hotmail.com',
+            "github_username": 'boromir674',
+            # "project_short_description": "Project generated using https://github.com/boromir674/cookiecutter-python-package",
+            "project_short_description": "{{ cookiecutter.project_short_description }}",
+            "pypi_subtitle": "Project generated using https://github.com/boromir674/cookiecutter-python-package",
+            # current date in format '2024-03-04'
+            # "release_date": datetime.datetime.now().strftime('%Y-%m-%d'),
+            "release_date": "{% now 'utc', '%Y-%m-%d' %}",
+            "year": "{% now 'utc', '%Y' %}",
+            "version": "0.0.1",
+            "initialize_git_repo": ['no', 'yes'],  # NOTE Difference to 1st Item
+            "interpreters": {
+                "supported-interpreters": [
+                    "3.7",
+                    "3.8",
+                    "3.9",
+                    "3.10",
+                    "3.11"
+                ]
+            },
+            "docs_builder": ['sphinx', 'mkdocs'],  # NOTE Difference to 1st Item
+            "rtd_python_version": ["3.10", "3.8", "3.9", "3.11", "3.12"],
+        }),
+    ]),
+),
+    (
+    # TEST CASE 3 - Production Template + Gold Standard User Config
+    'PROD_TEMPLATE',
+    'GOLD_STANDARD_CONFIG',
+    # EXPECTED CONTEXT
+    OrderedDict([
+        # 1st Item mapped in Jinja context with dedicated key
+        (CK, OrderedDict([
+            ('project_name', 'Biskotaki Gold Standard'),
+            ('project_type', 'module+cli'),
+            ("project_slug", "biskotaki-gold-standard"),
+            ("pkg_name", "biskotakigold"),
+            ("repo_name", "biskotaki-gold"),
+            ("readthedocs_project_slug", "biskotaki-gold"),
+            ("docker_image", "bgs"),
+            ("full_name", "Konstantinos Lampridis"),
+            ("author", "Konstantinos Lampridis"),
+            ("author_email", 'k.lampridis@hotmail.com'),
+            ("github_username", 'boromir674'),
+            ("project_short_description", "Project generated from https://github.com/boromir674/cookiecutter-python-package/"),
+            ("pypi_subtitle", "Project generated from https://github.com/boromir674/cookiecutter-python-package/"),
+            ("release_date", RELEASE_DATE),
+            ("year", str(datetime.datetime.now().year)),
+            ("version", "0.0.1"),
+            ("initialize_git_repo", "no"),
+            ("interpreters", {
+                "supported-interpreters": [
+                    "3.8",
+                    "3.9",
+                    "3.10",
+                    "3.11"
+                ]
+            }),
+            ("docs_builder", "mkdocs"),
+            ("rtd_python_version", "3.10"),
+        ])),
+        # 2nd Item mapped in Jinja context with dedicated key _cookiecutter
+        ('_cookiecutter', {
+            'project_name': 'Biskotaki Gold Standard',
+            'project_type': ['module+cli', 'module', 'pytest-plugin'],  # NOTE Difference to 1st Item
+            "project_slug": "biskotaki-gold-standard",
+            "pkg_name": "biskotakigold",
+            "repo_name": "biskotaki-gold",
+            "readthedocs_project_slug": "biskotaki-gold",
+            "docker_image": "bgs",
+            "full_name": "Konstantinos Lampridis",
+            "author": "Konstantinos Lampridis",
+            "author_email": 'k.lampridis@hotmail.com',
+            "github_username": 'boromir674',
+            # "project_short_description": "Project generated using https://github.com/boromir674/cookiecutter-python-package",
+            "project_short_description": "{{ cookiecutter.project_short_description }}",
+            "pypi_subtitle": "Project generated using https://github.com/boromir674/cookiecutter-python-package",
+            # current date in format '2024-03-04'
+            # "release_date": datetime.datetime.now().strftime('%Y-%m-%d'),
+            # "release_date": RELEASE_DATE,
+            "release_date": "{% now 'utc', '%Y-%m-%d' %}",
+            "year": "{% now 'utc', '%Y' %}",
+            # "year": str(datetime.datetime.now().year),
+            "version": "0.0.1",
+            "initialize_git_repo": ['no', 'yes'],  # NOTE Difference to 1st Item
+            "interpreters": {
+                "supported-interpreters": [
+                    "3.8",
+                    "3.9",
+                    "3.10",
+                    "3.11"
+                ]
+            },
+            "docs_builder": ['mkdocs', 'sphinx'],  # NOTE Difference to 1st Item
+            "rtd_python_version": ["3.10", "3.8", "3.9", "3.11", "3.12"],
+        }),
     ]),
 ),
 ], ids=(
     'simple_template',  # TEST CASE 1
     'prod_template',  # TEST CASE 2
+    'gold_standard',  # TEST CASE 3
 ))
 def template_test_case(request, distro_loc: Path,
     mock_check, user_config,  # for mocking future http requests to pypi.org and readthedocs.org
 ):
     # handles cookiecutters dedicated for testing and the one included in the distribution
     cookiecutter_template: Path = distro_loc if request.param[0] == 'PROD_TEMPLATE' else request.param[0]
-    user_config_yaml: Path = MY_DIR / '..' / '.github' / 'biskotaki.yaml' if request.param[1] == 'BISKOTAKI_CONFIG' else request.param[1]
+    # Set User Config YAML
+    if request.param[1] == 'BISKOTAKI_CONFIG':
+        user_config_yaml: Path = MY_DIR / '..' / '.github' / 'biskotaki.yaml'
+    elif request.param[1] == 'GOLD_STANDARD_CONFIG':
+        user_config_yaml: Path = MY_DIR / 'data' / 'gold-standard.yml'
+    elif request.param[1] == 'PYTEST_PLUGIN_CONFIG':
+        user_config_yaml: Path = MY_DIR / 'data' / 'pytest-fixture.yaml'
+    else:
+        user_config_yaml: Path = request.param[1]
+
     # Prepare Expected Context, produced at runtime by cookiecutter (under the hood)
     expected_context = request.param[2]
-    # Cookiecutter 2.x
-    # expected_context['_cookiecutter']['_repo_dir'] = str(cookiecutter_template)
-    # expected_context['_cookiecutter']['_checkout'] = False
+
+    # include template dir or url in the context dict
+    expected_context[CK]['_template'] = str(cookiecutter_template)
+
+    # include output+dir in the context dict
+    # context[CK]['_output_dir'] = os.path.abspath(output_dir)
+
+    # include repo dir or url in the context dict
+    expected_context[CK]['_repo_dir'] = str(cookiecutter_template)
+
+    # include checkout details in the context dict
+    expected_context[CK]['_checkout'] = False
 
     # manual JSON encoding of 'interpreters', when prod Template + Biskotaki Config
     from cookiecutter_python.backend.load_config import get_interpreters_from_yaml
@@ -86,6 +222,7 @@ def template_test_case(request, distro_loc: Path,
     interpreters: t.Mapping[str, t.Sequence[str]] = get_interpreters_from_yaml(
         user_config_yaml
     )
+
     print('\n---\n', interpreters)
     if interpreters:
         assert isinstance(interpreters, dict)
@@ -129,22 +266,31 @@ def test_cookiecutter_generates_context_with_expected_values(
     # mocker,
     # get_object,
 ):
-
     # GIVEN a simple Cookiecutter Template: cookiecutter.json + {{ cookiecutter.project_name }}
-    # cookie: Path = MY_DIR / 'data' / 'rendering' / 'only_list_template'
     cookie: Path = template_test_case['cookie']
     # GIVEN a User Config YAML, which overrides a default Choice Variable
-    # config_yaml: Path = MY_DIR / 'data' / 'rendering' / 'user_config.yml'
     config_yaml: Path = template_test_case['user_config']
-
-    # import yaml
-    # assert yaml.safe_load(config_yaml.read_text())['default_context']['some_setting'] == 'another_option'
-    # import json
-    # assert json.loads((cookie / 'cookiecutter.json').read_text())['some_setting'] == ['some_option', 'another_option']
 
     # GIVEN target Gen Project dir has no files inside
     gen_proj_dir: Path = tmp_path
     assert gen_proj_dir.exists() and len(list(gen_proj_dir.iterdir())) == 0
+
+    # UPDATE EXPECTATION (todo move outside of this Test Case, into Data block)
+    # template_test_case['expected_context'][CK]['_output_dir'] = str(gen_proj_dir.absolute())
+    # build new Ordered Dict since _output_dir needs to be between _template and _repo_dir
+    def gen():
+        # generator keys an inject _output_dir
+        for k, v in template_test_case['expected_context'][CK].items():
+            # if key is not _template, yield it
+            if k != '_template':
+                yield k, v
+            # if key is _template, yield it and then yield _output_dir
+            else:
+                yield k, v
+                yield '_output_dir', str(gen_proj_dir.absolute())
+           
+    patched_CK_context = OrderedDict([(k, v) for k, v in gen()])
+    template_test_case['expected_context'][CK] = patched_CK_context
 
     # GIVEN a way to "track" the input passed at runtime to cookiecutter's generate_context function
 
@@ -165,13 +311,6 @@ def test_cookiecutter_generates_context_with_expected_values(
         default_context=expected_default_context_passed,
         extra_context=expected_extra_context_passed,
     )
-    # assert prod_result == OrderedDict([
-    #     ('cookiecutter', OrderedDict([
-    #         ('project_dir_name', 'unit-test-new-project'),
-    #         # OPTIONS SWAP POSITIONS first !! and then picked auto or after interactive promt!
-    #         ('some_setting', ['another_option', 'some_option']),
-    #     ])),
-    # ])
 
     # assert prod_result == template_test_case['expected_context']
 
@@ -187,10 +326,11 @@ def test_cookiecutter_generates_context_with_expected_values(
         checkout=False,
         replay=False,
     )
-    # AND we check the runtime input passed to cookiecutter's generate_context function
+    # SANITY check that Context Generated once
     assert generate_context_mock.call_count == 1
     generate_context_mock.assert_called_once()
 
+    # AND we check the runtime input passed to cookiecutter's generate_context function
     # THEN the generate_context was called with expected runtime values  
     generate_context_mock.assert_called_with(
         context_file=expected_context_file_passed,
@@ -199,35 +339,76 @@ def test_cookiecutter_generates_context_with_expected_values(
     )
 
     # SANITY
-    # Cookiecutter 1.x
-    # import yaml
-    import poyo
+    import yaml
     assert expected_default_context_passed == OrderedDict(
-        [(k, v) for k, v in poyo.parse_string(config_yaml.read_text())['default_context'].items()]
+        [(k, v) for k, v in yaml.safe_load(config_yaml.read_text())['default_context'].items()]
     )
-    # Cookiecutter 2.x
-    # assert expected_default_context_passed == OrderedDict(
-    #     [(k, v) for k, v in yaml.safe_load(config_yaml.read_text())['default_context'].items()]
-    # )
 
-    # in cookiecutter CONTEXT is an OrderedDict with:
-    # - 'cookiecutter': OrderedDict of Template Variables public and private + _template key
-    # assert prod_result == {}
+    assert set(prod_result.keys()) == {CK, '_cookiecutter'}
+    assert isinstance(prod_result[CK], OrderedDict)
+    assert isinstance(prod_result['_cookiecutter'], dict)
+    # SANITY
     for k, v in prod_result.items():
-        assert k in {'cookiecutter'}
-        assert isinstance(v, OrderedDict)
         for k2, v2 in v.items():
-            # assert k2 in {'project_dir_name', 'some_setting', '_template'}
-            # assert isinstance(v2, str) or isinstance(v2, list)
-            assert v2 == template_test_case['expected_context']['cookiecutter'].get(k2, str(gen_proj_dir)), f"Error at key {k2} with value {v2} in {k}! Expected {template_test_case['expected_context']['cookiecutter'].get(k2, str(gen_proj_dir))}!"
+            assert (
+                v2 == template_test_case['expected_context']['cookiecutter'].get(k2, str(gen_proj_dir)),
+                f"Error at key {k2} with value {v2} in {k}! Expected "
+                f"{template_test_case['expected_context']['cookiecutter'].get(k2, str(gen_proj_dir))}!"
+            )
+    # SANITY
+    assert len(prod_result[CK]) == len(template_test_case['expected_context'][CK])
+    for p1, p2 in zip(prod_result[CK].items(), template_test_case['expected_context'][CK].items()):
+        assert p1[0] == p2[0], "All PROD Keys: [\n"  + '\n'.join(prod_result[CK].keys()) + '\n]\n\nAll TEST Keys: [\n' + '\n'.join(template_test_case['expected_context'][CK].keys()) +"\n]"
+        assert p1[1] == p2[1], f"Error at key '{p1[0]}' with value '{p1[1]}'! Expected '{p2[1]}'! Corresponding value in '_cookiecutter': '{prod_result['_cookiecutter'].get(p1[0])}'!"
+
+    assert prod_result[CK] == template_test_case['expected_context'][CK]
+
+    # SANITY
+    l1 = len(prod_result['_cookiecutter'])
+    l2 = len(template_test_case['expected_context']['_cookiecutter'])
+
+    assert len(prod_result['_cookiecutter']) == len(template_test_case['expected_context']['_cookiecutter'])
+    for p1, p2 in zip(prod_result['_cookiecutter'].items(), template_test_case['expected_context']['_cookiecutter'].items()):
+        assert p1[0] == p2[0]
+        if p1[0] in {'project_short_description', 'pypi_subtitle'}:
+            continue
+        assert p1[1] == p2[1], f"Error at key {p1[0]} with value {p1[1]}! Expected {p2[1]}!"
+
+
+
+
+
+
+    # # SANITY
+    # # Cookiecutter 1.x
+    # # import yaml
+    # import poyo
+    # assert expected_default_context_passed == OrderedDict(
+    #     [(k, v) for k, v in poyo.parse_string(config_yaml.read_text())['default_context'].items()]
+    # )
+    # # Cookiecutter 2.x
+    # # assert expected_default_context_passed == OrderedDict(
+    # #     [(k, v) for k, v in yaml.safe_load(config_yaml.read_text())['default_context'].items()]
+    # # )
+
+    # # in cookiecutter CONTEXT is an OrderedDict with:
+    # # - 'cookiecutter': OrderedDict of Template Variables public and private + _template key
+    # # assert prod_result == {}
+    # for k, v in prod_result.items():
+    #     assert k in {'cookiecutter'}
+    #     assert isinstance(v, OrderedDict)
+    #     for k2, v2 in v.items():
+    #         # assert k2 in {'project_dir_name', 'some_setting', '_template'}
+    #         # assert isinstance(v2, str) or isinstance(v2, list)
+    #         assert v2 == template_test_case['expected_context']['cookiecutter'].get(k2, str(gen_proj_dir)), f"Error at key {k2} with value {v2} in {k}! Expected {template_test_case['expected_context']['cookiecutter'].get(k2, str(gen_proj_dir))}!"
     
-    assert prod_result == template_test_case['expected_context']
-    assert generate_context_mock.return_value == template_test_case['expected_context']
-    # SANITY that Choice Variable was Overriden and that _template get inserted too
-    # assert prod_result == OrderedDict([
-    #     ('cookiecutter', OrderedDict([
-    #         ('project_dir_name', 'unit-test-new-project'),
-    #         ('some_setting', 'another_option'),
-    #         ('_template', str(cookie)),
-    #     ])),
-    # ])
+    # assert prod_result == template_test_case['expected_context']
+    # assert generate_context_mock.return_value == template_test_case['expected_context']
+    # # SANITY that Choice Variable was Overriden and that _template get inserted too
+    # # assert prod_result == OrderedDict([
+    # #     ('cookiecutter', OrderedDict([
+    # #         ('project_dir_name', 'unit-test-new-project'),
+    # #         ('some_setting', 'another_option'),
+    # #         ('_template', str(cookie)),
+    # #     ])),
+    # # ])
