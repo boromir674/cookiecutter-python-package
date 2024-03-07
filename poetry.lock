@@ -1623,10 +1623,10 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [extras]
 docs = ["myst-parser", "sphinx", "sphinx-autodoc-typehints", "sphinx-inline-tabs", "sphinx-rtd-theme", "sphinxcontrib-mermaid", "sphinxcontrib-spelling"]
 docslive = ["myst-parser", "sphinx", "sphinx-autobuild", "sphinx-autodoc-typehints", "sphinx-inline-tabs", "sphinx-rtd-theme", "sphinxcontrib-mermaid", "sphinxcontrib-spelling", "tornado"]
-test = ["pytest", "pytest-click", "pytest-cov", "pytest-explicit", "pytest-object-getter", "pytest-requests-futures", "pytest-run-subprocess", "pytest-xdist", "pyyaml"]
+test = ["pytest", "pytest-click", "pytest-cov", "pytest-explicit", "pytest-object-getter", "pytest-requests-futures", "pytest-run-subprocess", "pytest-xdist"]
 typing = ["mypy", "pytest", "pytest-click", "types-pyyaml", "types-requests"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.7,<3.13"
-content-hash = "ed11d95efb33f62601c576acd6a0aaa5ca446bb9807d009554c01237e13ff959"
+content-hash = "bec2755dd3b2b032599f25999aaeed89b40c163fe6802732b6b7e7f2cb07100f"
