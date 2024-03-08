@@ -58,7 +58,6 @@ def test_calling_cookiecutter_on_prod_template_with_mkdocs_builder(
         # project_dir = generate(
         config_file=str(config_yaml),
         default_config=False,
-
         extra_context=None,
         output_dir=str(gen_proj_dir),
         no_input=True,  # non interactive

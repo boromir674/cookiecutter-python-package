@@ -311,12 +311,14 @@ def template_test_case(
         mock_check('readthedocs', FOUND_ON_READTHEDOCS)
 
         from cookiecutter_python.backend.main import generate as generate_callback
+
         callback = generate_callback
     else:
         from cookiecutter.main import cookiecutter
 
         def _generate_callback(**kwargs):
             return cookiecutter(str(cookiecutter_template), **kwargs)
+
         callback = _generate_callback
 
     return {
