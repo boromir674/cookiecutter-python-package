@@ -1,9 +1,10 @@
-import pytest
+import datetime
 import typing as t
+from collections import OrderedDict
 from pathlib import Path
 from unittest.mock import patch
-from collections import OrderedDict
-import datetime
+
+import pytest
 
 MY_DIR = Path(__file__).parent
 CK = 'cookiecutter'  # COOKIECUTTER_KEY

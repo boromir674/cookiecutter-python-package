@@ -1,7 +1,6 @@
 from pathlib import Path
 from unittest.mock import patch
 
-
 my_dir = Path(__file__).parent
 
 
@@ -26,7 +25,6 @@ def test_calling_cookiecutter_on_prod_template_with_mkdocs_builder(
     import yaml
 
     # assert yaml.safe_load(config_yaml.read_text())['default_context']['docs_builder'] == 'mkdocs'
-
     # GIVEN target Gen Project dir has no files inside
     gen_proj_dir: Path = tmp_path
     assert gen_proj_dir.exists() and len(list(gen_proj_dir.iterdir())) == 0
@@ -111,7 +109,6 @@ def test_calling_cookiecutter_on_simple_template_with_choice_var(
     import yaml
 
     # assert yaml.safe_load(config_yaml.read_text())['default_context']['docs_builder'] == 'mkdocs'
-
     # GIVEN target Gen Project dir has no files inside
     gen_proj_dir: Path = tmp_path
     assert gen_proj_dir.exists() and len(list(gen_proj_dir.iterdir())) == 0
