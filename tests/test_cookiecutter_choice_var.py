@@ -22,7 +22,6 @@ def test_calling_cookiecutter_on_prod_template_with_mkdocs_builder(
     config_yaml: Path = my_dir / 'data' / 'pytest-fixture.yaml'
     assert config_yaml.exists()
     assert config_yaml.is_file()
-    import yaml
 
     # assert yaml.safe_load(config_yaml.read_text())['default_context']['docs_builder'] == 'mkdocs'
     # GIVEN target Gen Project dir has no files inside
@@ -51,7 +50,6 @@ def test_calling_cookiecutter_on_prod_template_with_mkdocs_builder(
     # assert prod_result['cookiecutter']['docs_builder'] == ['sphinx', 'mkdocs']
 
     # WHEN we call cookiecutter with the config file
-    from cookiecutter_python.backend.main import generate
 
     generate_context_mock.return_value = prod_result
 
@@ -106,7 +104,6 @@ def test_calling_cookiecutter_on_simple_template_with_choice_var(
     config_yaml: Path = my_dir / 'data' / 'rendering' / 'user_config.yml'
     assert config_yaml.exists()
     assert config_yaml.is_file()
-    import yaml
 
     # assert yaml.safe_load(config_yaml.read_text())['default_context']['docs_builder'] == 'mkdocs'
     # GIVEN target Gen Project dir has no files inside
