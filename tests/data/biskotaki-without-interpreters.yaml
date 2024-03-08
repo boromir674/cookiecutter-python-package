@@ -10,7 +10,7 @@ default_context:
     author_email: k.lampridis@hotmail.com
     github_username: boromir674
     project_short_description: Project entirely generated using https://github.com/boromir674/cookiecutter-python-package/
-    initialize_git_repo: no
+    initialize_git_repo: 'no'
     ## READ THE DOCS CI ##
     docs_builder: sphinx
     rtd_python_version: "3.10"
