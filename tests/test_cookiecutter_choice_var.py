@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 my_dir = Path(__file__).parent
 
+
 @patch('cookiecutter.main.generate_context')
 def test_calling_cookiecutter_on_prod_template_with_mkdocs_builder(
     generate_context_mock,
@@ -23,6 +24,7 @@ def test_calling_cookiecutter_on_prod_template_with_mkdocs_builder(
     assert config_yaml.exists()
     assert config_yaml.is_file()
     import yaml
+
     # assert yaml.safe_load(config_yaml.read_text())['default_context']['docs_builder'] == 'mkdocs'
 
     # GIVEN target Gen Project dir has no files inside
@@ -32,6 +34,7 @@ def test_calling_cookiecutter_on_prod_template_with_mkdocs_builder(
     # GIVEN a way to "track" the input passed at runtime to cookiecutter's generate_context function
     expected_context_file_passed = str(distro_loc / 'cookiecutter.json')
     from cookiecutter.config import get_config
+
     user_config_dict = get_config(config_yaml)
     expected_default_context_passed = user_config_dict['default_context']
     # assert expected_default_context_passed['docs_builder'] == 'mkdocs'
@@ -41,6 +44,7 @@ def test_calling_cookiecutter_on_prod_template_with_mkdocs_builder(
 
     # Track the Jinja Context for SANITY Check
     from cookiecutter.generate import generate_context
+
     prod_result = generate_context(
         context_file=expected_context_file_passed,
         default_context=expected_default_context_passed,
@@ -50,15 +54,15 @@ def test_calling_cookiecutter_on_prod_template_with_mkdocs_builder(
 
     # WHEN we call cookiecutter with the config file
     from cookiecutter_python.backend.main import generate
+
     generate_context_mock.return_value = prod_result
 
     project_dir = _cookiecutter(
         cookiecutter,  # template dir path
-    # project_dir = generate(
+        # project_dir = generate(
         config_file=str(config_yaml),
         # default_config=False,
         output_dir=gen_proj_dir,
-
         no_input=True,  # non interactive
         checkout=False,
         replay=False,
@@ -105,6 +109,7 @@ def test_calling_cookiecutter_on_simple_template_with_choice_var(
     assert config_yaml.exists()
     assert config_yaml.is_file()
     import yaml
+
     # assert yaml.safe_load(config_yaml.read_text())['default_context']['docs_builder'] == 'mkdocs'
 
     # GIVEN target Gen Project dir has no files inside
@@ -118,7 +123,6 @@ def test_calling_cookiecutter_on_simple_template_with_choice_var(
         default_config=False,
         output_dir=gen_proj_dir,
         extra_context=None,
-
         no_input=True,  # non interactive
         checkout=False,
         replay=False,
