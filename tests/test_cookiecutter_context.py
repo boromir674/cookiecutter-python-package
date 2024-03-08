@@ -8,7 +8,8 @@ import pytest
 
 MY_DIR = Path(__file__).parent
 CK = 'cookiecutter'  # COOKIECUTTER_KEY
-RELEASE_DATE = datetime.datetime.now().strftime('%Y-%m-%d')
+# offest by 2 hours to match Jinja 'now' expression: {% now 'utc', '%Y-%m-%d' %}
+RELEASE_DATE = (datetime.datetime.now() - datetime.timedelta(hours=2)).strftime('%Y-%m-%d')
 
 
 @pytest.fixture(
@@ -79,7 +80,7 @@ RELEASE_DATE = datetime.datetime.now().strftime('%Y-%m-%d')
                                     "Project generated using https://github.com/boromir674/cookiecutter-python-package",
                                 ),
                                 # current date in format '2024-03-04'
-                                ("release_date", datetime.datetime.now().strftime('%Y-%m-%d')),
+                                ("release_date", RELEASE_DATE),
                                 ("year", str(datetime.datetime.now().year)),
                                 ("version", "0.0.1"),
                                 ("initialize_git_repo", "no"),
@@ -313,7 +314,8 @@ def template_test_case(
     else:
         from cookiecutter.main import cookiecutter
 
-        callback = lambda **kwargs: cookiecutter(str(cookiecutter_template), **kwargs)
+        def callback(**kwargs):
+            return cookiecutter(str(cookiecutter_template), **kwargs)
     return {
         'cookie': cookiecutter_template,
         'user_config': user_config_yaml,
@@ -386,7 +388,7 @@ def test_cookiecutter_generates_context_with_expected_values(
 
     # WHEN the cookiecutter callable is called on the Tempalte and with the User Config YAML
     generate_context_mock.return_value = prod_result
-    project_dir = template_test_case['cookiecutter_callback'](
+    template_test_case['cookiecutter_callback'](
         # str(cookie),  # template dir path
         config_file=str(config_yaml),
         default_config=False,
@@ -408,27 +410,19 @@ def test_cookiecutter_generates_context_with_expected_values(
         extra_context=expected_extra_context_passed,
     )
 
-    # SANITY
     import yaml
 
+    # SANITY check User Config YAML data passed as Dict to 'default_context' kwarg of generate_context
     assert expected_default_context_passed == OrderedDict(
         [(k, v) for k, v in yaml.safe_load(config_yaml.read_text())['default_context'].items()]
     )
-
+    # AND Cookiecutter inserts 2 keys into Jinja Context: 'cookiecutter' and '_cookiecutter'
     assert set(prod_result.keys()) == {CK, '_cookiecutter'}
+    # AND the Template Variables in 'cookiecutter' key is an OrderedDict
     assert isinstance(prod_result[CK], OrderedDict)
+    # AND the back-up/copy of raw data is place under '_cookiecutter' key as Dict
     assert isinstance(prod_result['_cookiecutter'], dict)
-    # SANITY
-    for k, v in prod_result.items():
-        for k2, v2 in v.items():
-            assert (
-                v2
-                == template_test_case['expected_context']['cookiecutter'].get(
-                    k2, str(gen_proj_dir)
-                ),
-                f"Error at key {k2} with value {v2} in {k}! Expected "
-                f"{template_test_case['expected_context']['cookiecutter'].get(k2, str(gen_proj_dir))}!",
-            )
+
     # SANITY
     assert len(prod_result[CK]) == len(template_test_case['expected_context'][CK])
     for p1, p2 in zip(
@@ -443,13 +437,12 @@ def test_cookiecutter_generates_context_with_expected_values(
         )
         assert (
             p1[1] == p2[1]
-        ), f"Error at key '{p1[0]}' with value '{p1[1]}'! Expected '{p2[1]}'! Corresponding value in '_cookiecutter': '{prod_result['_cookiecutter'].get(p1[0])}'!"
-
+        ), f"Context Missmatch at '{CK}' -> '{p1[0]}': Runtime: '{p1[1]}', Expected: '{p2[1]}'"
     assert prod_result[CK] == template_test_case['expected_context'][CK]
 
     # SANITY
-    l1 = len(prod_result['_cookiecutter'])
-    l2 = len(template_test_case['expected_context']['_cookiecutter'])
+    len(prod_result['_cookiecutter'])
+    len(template_test_case['expected_context']['_cookiecutter'])
 
     assert len(prod_result['_cookiecutter']) == len(
         template_test_case['expected_context']['_cookiecutter']
@@ -462,37 +455,3 @@ def test_cookiecutter_generates_context_with_expected_values(
         if p1[0] in {'project_short_description', 'pypi_subtitle'}:
             continue
         assert p1[1] == p2[1], f"Error at key {p1[0]} with value {p1[1]}! Expected {p2[1]}!"
-
-    # # SANITY
-    # # Cookiecutter 1.x
-    # # import yaml
-    # import poyo
-    # assert expected_default_context_passed == OrderedDict(
-    #     [(k, v) for k, v in poyo.parse_string(config_yaml.read_text())['default_context'].items()]
-    # )
-    # # Cookiecutter 2.x
-    # # assert expected_default_context_passed == OrderedDict(
-    # #     [(k, v) for k, v in yaml.safe_load(config_yaml.read_text())['default_context'].items()]
-    # # )
-
-    # # in cookiecutter CONTEXT is an OrderedDict with:
-    # # - 'cookiecutter': OrderedDict of Template Variables public and private + _template key
-    # # assert prod_result == {}
-    # for k, v in prod_result.items():
-    #     assert k in {'cookiecutter'}
-    #     assert isinstance(v, OrderedDict)
-    #     for k2, v2 in v.items():
-    #         # assert k2 in {'project_dir_name', 'some_setting', '_template'}
-    #         # assert isinstance(v2, str) or isinstance(v2, list)
-    #         assert v2 == template_test_case['expected_context']['cookiecutter'].get(k2, str(gen_proj_dir)), f"Error at key {k2} with value {v2} in {k}! Expected {template_test_case['expected_context']['cookiecutter'].get(k2, str(gen_proj_dir))}!"
-
-    # assert prod_result == template_test_case['expected_context']
-    # assert generate_context_mock.return_value == template_test_case['expected_context']
-    # # SANITY that Choice Variable was Overriden and that _template get inserted too
-    # # assert prod_result == OrderedDict([
-    # #     ('cookiecutter', OrderedDict([
-    # #         ('project_dir_name', 'unit-test-new-project'),
-    # #         ('some_setting', 'another_option'),
-    # #         ('_template', str(cookie)),
-    # #     ])),
-    # # ])
