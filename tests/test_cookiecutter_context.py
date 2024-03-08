@@ -79,7 +79,6 @@ RELEASE_DATE = (datetime.datetime.now() - datetime.timedelta(hours=2)).strftime(
                                     "pypi_subtitle",
                                     "Project generated using https://github.com/boromir674/cookiecutter-python-package",
                                 ),
-                                # current date in format '2024-03-04'
                                 ("release_date", RELEASE_DATE),
                                 ("year", str(datetime.datetime.now().year)),
                                 ("version", "0.0.1"),
@@ -255,15 +254,16 @@ def template_test_case(
     cookiecutter_template: Path = (
         distro_loc if request.param[0] == 'PROD_TEMPLATE' else request.param[0]
     )
+    user_config_yaml: Path
     # Set User Config YAML
     if request.param[1] == 'BISKOTAKI_CONFIG':
-        user_config_yaml: Path = MY_DIR / '..' / '.github' / 'biskotaki.yaml'
+        user_config_yaml = MY_DIR / '..' / '.github' / 'biskotaki.yaml'
     elif request.param[1] == 'GOLD_STANDARD_CONFIG':
-        user_config_yaml: Path = MY_DIR / 'data' / 'gold-standard.yml'
+        user_config_yaml = MY_DIR / 'data' / 'gold-standard.yml'
     elif request.param[1] == 'PYTEST_PLUGIN_CONFIG':
-        user_config_yaml: Path = MY_DIR / 'data' / 'pytest-fixture.yaml'
+        user_config_yaml = MY_DIR / 'data' / 'pytest-fixture.yaml'
     else:
-        user_config_yaml: Path = request.param[1]
+        user_config_yaml = request.param[1]
 
     # Prepare Expected Context, produced at runtime by cookiecutter (under the hood)
     expected_context = request.param[2]
@@ -283,9 +283,7 @@ def template_test_case(
     # manual JSON encoding of 'interpreters', when prod Template + Biskotaki Config
     from cookiecutter_python.backend.load_config import get_interpreters_from_yaml
 
-    interpreters: t.Mapping[str, t.Sequence[str]] = get_interpreters_from_yaml(
-        user_config_yaml
-    )
+    interpreters = get_interpreters_from_yaml(str(user_config_yaml))
 
     print('\n---\n', interpreters)
     if interpreters:
@@ -293,6 +291,8 @@ def template_test_case(
         assert isinstance(interpreters['supported-interpreters'], list)
         assert len(interpreters['supported-interpreters']) > 0
         expected_context['cookiecutter']['interpreters'] = interpreters
+
+    callback: t.Callable
 
     # Add the '_template' key to the expected context, like cookiecutter does
     expected_context['cookiecutter']['_template'] = str(cookiecutter_template)
@@ -310,12 +310,15 @@ def template_test_case(
         mock_check('pypi', FOUND_ON_PYPI)
         mock_check('readthedocs', FOUND_ON_READTHEDOCS)
 
-        from cookiecutter_python.backend.main import generate as callback
+        from cookiecutter_python.backend.main import generate as generate_callback
+        callback = generate_callback
     else:
         from cookiecutter.main import cookiecutter
 
-        def callback(**kwargs):
+        def _generate_callback(**kwargs):
             return cookiecutter(str(cookiecutter_template), **kwargs)
+        callback = _generate_callback
+
     return {
         'cookie': cookiecutter_template,
         'user_config': user_config_yaml,
@@ -388,6 +391,7 @@ def test_cookiecutter_generates_context_with_expected_values(
 
     # WHEN the cookiecutter callable is called on the Tempalte and with the User Config YAML
     generate_context_mock.return_value = prod_result
+
     template_test_case['cookiecutter_callback'](
         # str(cookie),  # template dir path
         config_file=str(config_yaml),
@@ -438,12 +442,10 @@ def test_cookiecutter_generates_context_with_expected_values(
         assert (
             p1[1] == p2[1]
         ), f"Context Missmatch at '{CK}' -> '{p1[0]}': Runtime: '{p1[1]}', Expected: '{p2[1]}'"
+
     assert prod_result[CK] == template_test_case['expected_context'][CK]
 
     # SANITY
-    len(prod_result['_cookiecutter'])
-    len(template_test_case['expected_context']['_cookiecutter'])
-
     assert len(prod_result['_cookiecutter']) == len(
         template_test_case['expected_context']['_cookiecutter']
     )

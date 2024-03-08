@@ -57,14 +57,17 @@ def test_calling_cookiecutter_on_prod_template_with_mkdocs_builder(
         cookiecutter,  # template dir path
         # project_dir = generate(
         config_file=str(config_yaml),
-        # default_config=False,
-        output_dir=gen_proj_dir,
+        default_config=False,
+
+        extra_context=None,
+        output_dir=str(gen_proj_dir),
         no_input=True,  # non interactive
-        checkout=False,
+        checkout=None,
         replay=False,
-        # offline=True,
-        # overwrite_if_exists=False,
-        # skip_if_file_exists=False,
+        overwrite_if_exists=False,
+        skip_if_file_exists=False,
+        password=None,
+        directory=None,
     )
 
     gen_proj: Path = Path(project_dir)
@@ -115,22 +118,22 @@ def test_calling_cookiecutter_on_simple_template_with_choice_var(
         str(cookie),  # template dir path
         config_file=str(config_yaml),
         default_config=False,
-        output_dir=gen_proj_dir,
+        output_dir=str(gen_proj_dir),
         extra_context=None,
         no_input=True,  # non interactive
-        checkout=False,
+        checkout=None,
         replay=False,
         overwrite_if_exists=False,
         skip_if_file_exists=False,
+        password=None,
+        directory=None,
     )
 
     gen_proj: Path = Path(project_dir)
 
-    # THEN the Project (folder) is called 'another_project'
+    # THEN the Project (folder) is called as expected
     assert gen_proj.name == 'unit-test-new-project'
 
-    # AND inside a a.txt file with content 'ELA\nanother_option\n'
     assert (gen_proj / 'a.txt').exists()
-    # assert (gen_proj / 'a.txt').read_text() == 'ELA\nMKDOCS SELECTED\n'
+    # THEN the Choice Value from User Config YAML overrides the default
     assert (gen_proj / 'a.txt').read_text() == 'ELA\nanother_option\n'
-    # assert 0
