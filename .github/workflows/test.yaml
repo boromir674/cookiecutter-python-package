@@ -191,6 +191,7 @@ jobs:
 
     ###### TEST SUITE RUN ######
     - name: Run Unit Tests on Edit, and Sdist; and build Wheels
+      shell: bash
       run: |
         set -o pipefail
         tox -vv -s false | tee test_output.log
