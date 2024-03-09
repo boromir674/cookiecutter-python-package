@@ -274,6 +274,7 @@ def template_test_case(
     # Solve issue of CI Windows, with a hack
     import os
     import sys
+
     testing_against_sdist: bool = 'PY_SDIST' in os.environ
     if sys.platform == 'win32' and testing_against_sdist:
         # now we allow only the 'expected_cookiecutter_parent_dir' to deviate by 1 letter !!!
