@@ -46,9 +46,13 @@ reason = "We do not support yet, the 'check-pypi' feature, if --config-file is N
 @pytest.mark.parametrize(
     'config_file, default_config',
     [
+        # Test Case 1: BISKOTAKI User Config
         ('.github/biskotaki.yaml', False),
+        # Test Case 2: No User Config + enable ~/.cookiecutterrc
         (None, True),
+        # Test Case 3: biskotaki-without-interpreters.yaml
         ('without-interpreters', False),
+        # Test Case 4: pytest-fixture.yaml
         ('tests/data/pytest-fixture.yaml', False),
     ],
     ids=['biskotaki', 'None', 'without-interpreters', 'pytest-fixture'],
