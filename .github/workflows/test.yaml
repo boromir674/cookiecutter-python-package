@@ -175,7 +175,7 @@ jobs:
       run: tox -e type -vv -s false
 
     ### Check if Requested RC Pipeline ###
-    - name: "Check if 'v*-rc' Tag, to run Test Suite"
+    - name: "Update Source Sem Ver with Release Candidate *-rc' suffix"
       if: ${{ startsWith(github.event.ref, 'refs/tags/v') && contains(github.event.ref, '-rc') }}
       shell: bash
       run: |
@@ -191,7 +191,10 @@ jobs:
 
     ###### TEST SUITE RUN ######
     - name: Run Unit Tests on Edit, and Sdist; and build Wheels
-      run: tox -vv -s false | tee test_output.log
+      shell: bash
+      run: |
+        set -o pipefail
+        tox -vv -s false | tee test_output.log
       env:
         PLATFORM: ${{ matrix.platform }}
         BUILD_DEST: ${{ env.WHEELS_PIP_DIR }}
