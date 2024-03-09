@@ -4,7 +4,7 @@ import logging
 import typing as t
 from json import JSONDecodeError
 
-import poyo
+import yaml
 
 GivenInterpreters = t.Mapping[str, t.Sequence[str]]
 
@@ -15,8 +15,9 @@ def load_yaml(config_file) -> t.MutableMapping:
     # TODO use a proxy to load yaml
     with io.open(config_file, encoding='utf-8') as file_handle:
         try:
-            yaml_dict = poyo.parse_string(file_handle.read())
-        except poyo.exceptions.PoyoException as error:
+            yaml_dict = yaml.safe_load(file_handle)
+        # except poyo.exceptions.PoyoException as error:
+        except yaml.YAMLError as error:
             raise InvalidYamlFormatError(
                 'Unable to parse YAML file {}. Error: {}' ''.format(config_file, error)
             ) from error
@@ -44,21 +45,35 @@ def get_interpreters_from_yaml(config_file: str) -> t.Optional[GivenInterpreters
         )
     context = data['default_context']
 
-    try:
-        return json.loads(context['interpreters'])
-    except (KeyError, JSONDecodeError) as error:
+    interpreters = context.get('interpreters')
+    if interpreters is None:
+        # User Config YAML does not contain 'interpreters' key, can happen if user
+        # has not yet set the interpreters in their config file
+        return None
+    if isinstance(interpreters, str):
         logger.warning(
-            "User's yaml config 'interpreters' value Error: %s",
-            json.dumps(
-                {
-                    'error': str(error),
-                    'message': "Expected json-parsable value for the 'interpreters' key",
-                },
-                sort_keys=True,
-                indent=4,
-            ),
+            "User's YAML is notw expected to contain a dictionary for the 'interpreters' key"
         )
-    return None
+        try:
+            return json.loads(context['interpreters'])
+        except JSONDecodeError as error:
+            # string is not JSON parsable
+            logger.warning(
+                "User's yaml config 'interpreters' value Error: %s",
+                json.dumps(
+                    {
+                        'error': str(error),
+                        'message': "Expected json-parsable value for the 'interpreters' key",
+                        'explanation': 'Make sure the value is a valid JSON string',
+                    },
+                    sort_keys=True,
+                    indent=4,
+                ),
+            )
+            return None
+    if isinstance(interpreters, dict):
+        return interpreters
+    raise UserYamlDesignError('Interpreters value is not a string or a dictionary')
 
 
 class UserYamlDesignError(Exception):
