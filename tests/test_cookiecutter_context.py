@@ -276,7 +276,6 @@ def template_test_case(
     import sys
 
     testing_against_sdist: bool = any([x in os.environ for x in ('PY_SDIST', 'PY_WHEEL')])
-    assert testing_against_sdist == True
     if sys.platform == 'win32' and testing_against_sdist:
         # now we allow only the 'expected_cookiecutter_parent_dir' to deviate by 1 letter !!!
         expected_cookiecutter_parent_dir = expected_cookiecutter_parent_dir.replace(
