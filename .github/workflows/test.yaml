@@ -232,7 +232,7 @@ jobs:
       run: tox -e ${{ env.TOX_ENV_WHEEL_TEST }} -s false
       env:
         PLATFORM: ${{ matrix.platform }}
-        TOX_ENV_WHEEL_TEST: ${{ matrix.platform == 'windows-latest' && 'wheel-test-windows' || 'wheel-test'}}
+        TOX_ENV_WHEEL_TEST: ${{ (matrix.platform == 'windows-latest' && matrix.python-version != '3.7') && 'wheel-test-windows' || 'wheel-test'}}
         BUILD_DEST: ${{ env.WHEELS_PIP_DIR }}
         WHEEL: ${{ env.WHEEL_NAME }}
 
