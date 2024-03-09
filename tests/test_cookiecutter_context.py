@@ -351,7 +351,7 @@ def test_cookiecutter_generates_context_with_expected_values(
     # mocker,
     # get_object,
 ):
-    # GIVEN a simple Cookiecutter Template: cookiecutter.json + {{ cookiecutter.project_name }}
+    # GIVEN a Cookiecutter Template: Dir with cookiecutter.json + {{ cookiecutter.project_name }}/
     cookie: Path = template_test_case['cookie']
     # GIVEN a User Config YAML, which overrides a default Choice Variable
     config_yaml: Path = template_test_case['user_config']
@@ -381,7 +381,9 @@ def test_cookiecutter_generates_context_with_expected_values(
 
     # Define parameter values expected to be passed at runtime to cookiecutter's generate_context function
     # expected to be passed as kwargs
-    expected_context_file_passed = str(cookie / 'cookiecutter.json')
+    # str(cookie / 'cookiecutter.json')
+    expected_context_file_passed = template_test_case['expected_context']['cookiecutter']['_template']
+
     from cookiecutter.config import get_config
 
     user_config_dict = get_config(config_yaml)
@@ -398,7 +400,7 @@ def test_cookiecutter_generates_context_with_expected_values(
     from cookiecutter.generate import generate_context
 
     prod_result = generate_context(
-        context_file=expected_context_file_passed,
+        context_file=str(cookie / 'cookiecutter.json'),
         default_context=expected_default_context_passed,
         extra_context=expected_extra_context_passed,
     )
@@ -426,7 +428,7 @@ def test_cookiecutter_generates_context_with_expected_values(
     # THEN the generate_context was called with expected runtime values
 
     generate_context_mock.assert_called_with(
-        context_file=expected_context_file_passed,
+        context_file=str(Path(expected_context_file_passed) / 'cookiecutter.json'),
         default_context=expected_default_context_passed,
         extra_context=expected_extra_context_passed,
     )
