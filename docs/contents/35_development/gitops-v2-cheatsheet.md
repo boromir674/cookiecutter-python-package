@@ -96,5 +96,5 @@ Clean Local with:
 ```shell
 git tag -d board-request
 git tag -d auto-prod
-```
 git checkout release && git rebase master
+```
