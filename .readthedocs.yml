@@ -28,7 +28,10 @@ build:
       # when we retire python 2.6, 3.7 stuff, this can go back to `poery export` :)
 
       - python -m pip install -e .[docs]
-      - python -m pip install pyyaml
+      # 8/3/2024: latest 'myst-parser' PyPI release 2.0.0
+      - python -m pip install "myst-parser>=2.0.0,<2.1.0"
+      # 8/3/2024: latest 'markdown-it-py' PyPI release 3.0.0
+      - python -m pip install "markdown-it-py>=3.0.0,<3.1.0"
     pre_build:
       - tox -e pydeps
       - cp -r pydeps/* docs/contents/35_development/arch
