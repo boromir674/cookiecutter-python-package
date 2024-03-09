@@ -26,10 +26,10 @@ on:
 
 env:
   ### STRESS TEST Job MATRIX ###
-  FULL_MATRIX_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.7\", \"3.8\", \"3.9\", \"3.10\", \"3.11\"]}"
+  FULL_MATRIX_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.7\", \"3.8\", \"3.9\", \"3.10\", \"3.12\"]}"
   # Python 3.7 has reached End of Life (EOL) on June 27th, 2023
   # Python 3.12 is in bugfix mode, same as 3.11 -> can start supporting 3.12 it
-  UBUNTU_PY310_STRATEGY: "{\"platform\": [\"ubuntu-latest\"], \"python-version\": [\"3.10\"]}"
+  UBUNTU_PY310_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.12\"]}"
   TEST_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\":[\"3.10\"]}"
 
   ##### JOB ON/OFF SWITCHES - 1st level overrides #####
@@ -104,10 +104,12 @@ jobs:
 
             if [[ "$affected_components" =~ "Distro" ]]; then
               echo "matrix=$TEST_STRATEGY" >> $GITHUB_OUTPUT
-            elif [[ "$affected_components" =~ "Docs" ]]; then
+            else
+              echo "matrix=$UBUNTU_PY310_STRATEGY" >> $GITHUB_OUTPUT
+            fi
+            if [[ "$affected_components" =~ "Docs" ]]; then
               # set policy to 1 to trigger Docs Build (higher level override might be in place)
               PIPE_DOCS_POLICY="${{ (env.DOCS_JOB_ON != 'true' && '0') || (env.ALWAYS_DOCS == 'true' && '1') || '1' }}"
-              echo "matrix=$UBUNTU_PY310_STRATEGY" >> $GITHUB_OUTPUT
             fi
 
           else
