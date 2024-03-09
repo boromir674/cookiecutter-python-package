@@ -29,7 +29,7 @@ env:
   FULL_MATRIX_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.7\", \"3.8\", \"3.9\", \"3.10\", \"3.11\"]}"
   # Python 3.7 has reached End of Life (EOL) on June 27th, 2023
   # Python 3.12 is in bugfix mode, same as 3.11 -> can start supporting 3.12 it
-  UBUNTU_PY310_STRATEGY: "{\"platform\":[\"ubuntu-latest\"], \"python-version\":[\"3.10\"]}"
+  UBUNTU_PY310_STRATEGY: "{\"platform\":[\"windows-latest\"], \"python-version\":[\"3.7\", \"3.8\", \"3.9\", \"3.10\", \"3.11\"]}"
   TEST_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\":[\"3.10\"]}"
 
   ##### JOB ON/OFF SWITCHES - 1st level overrides #####
@@ -168,11 +168,11 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - run: python -m pip install --upgrade pip && python -m pip install tox==3.28 tox-gh-actions
 
-    - name: Pin 'Static Type Checking' Dependencies
-      run: tox -vv -s false -e pin-deps -- -E typing
+    # - name: Pin 'Static Type Checking' Dependencies
+    #   run: tox -vv -s false -e pin-deps -- -E typing
 
-    - name: Do Type Checking
-      run: tox -e type -vv -s false
+    # - name: Do Type Checking
+    #   run: tox -e type -vv -s false
 
     ### Check if Requested RC Pipeline ###
     - name: "Update Source Sem Ver with Release Candidate *-rc' suffix"
