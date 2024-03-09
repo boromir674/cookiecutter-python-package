@@ -191,7 +191,9 @@ jobs:
 
     ###### TEST SUITE RUN ######
     - name: Run Unit Tests on Edit, and Sdist; and build Wheels
-      run: tox -vv -s false | tee test_output.log
+      run: |
+        set -o pipefail
+        tox -vv -s false | tee test_output.log
       env:
         PLATFORM: ${{ matrix.platform }}
         BUILD_DEST: ${{ env.WHEELS_PIP_DIR }}
