@@ -9,7 +9,8 @@ import pytest
 MY_DIR = Path(__file__).parent
 CK = 'cookiecutter'  # COOKIECUTTER_KEY
 # offest by 2 hours to match Jinja 'now' expression: {% now 'utc', '%Y-%m-%d' %}
-RELEASE_DATE = (datetime.datetime.now() - datetime.timedelta(hours=2)).strftime('%Y-%m-%d')
+# RELEASE_DATE = (datetime.datetime.now() - datetime.timedelta(hours=2)).strftime('%Y-%m-%d')
+RELEASE_DATE = datetime.datetime.now().strftime('%Y-%m-%d')
 
 
 @pytest.fixture(
