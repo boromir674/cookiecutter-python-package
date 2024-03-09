@@ -12,7 +12,7 @@ default_context:
     author_email: k.lampridis@hotmail.com
     github_username: boromir674
     project_short_description: Project generated from https://github.com/boromir674/cookiecutter-python-package/
-    initialize_git_repo: no
+    initialize_git_repo: 'no'
 
     # Python 3.7 has reached End of Life (EOL) on June 27th, 2023
     # Python 3.12 is in bugfix mode, same as 3.11 -> can start supporting 3.12 it
