@@ -2,6 +2,49 @@
 Changelog
 =========
 
+2.1.0 (2024-03-09)
+==================
+
+| This Release **bumps** the internal `Cookiecutter` version from '1.7.x' to **'2.x'**.
+| We become up-to-date with latest `cookiecutter` version, from `pypi` and avoids vendor lock-in.
+
+Changes
+^^^^^^^
+
+fix
+"""
+- add stubs for cookiecutter.generate and remove poyo stubs
+
+test
+""""
+- add test data for verifying internal Context Cokiecutter builds and passes to Jinja
+- require quoted 'yes' / 'no' in User YAML
+- sanity check calling cookiecutter on prod Template with pytest-fixture user yaml
+- verify cookiecutter sets context with overriden Choice Variables from User Config
+
+documentation
+"""""""""""""
+- use quotes for specifying pip version ranges in RTD
+- install couple of Docs dependencies with pip, during RTD Docs Build
+
+refactor
+""""""""
+- type check according to mypy errors
+- eliminate all warning during Tests, by quoting 'yes'/'no' in User Config YAML
+- use pyyaml instead of poyo for reading User YAML
+
+build
+"""""
+- bump Cokiecutter from 1.7 to 2.x
+
+ci
+""
+- do Wheel Tests, by passing PY_WHEEL env var in Test Suite
+- dedicate tox env to send signal in Test Suite for special Sdist handling on Windows
+- handle error on Sdist Tests
+- run 1st round of Tests with shell: bash
+
+
 2.0.2 (2024-02-27)
 ==================
 
