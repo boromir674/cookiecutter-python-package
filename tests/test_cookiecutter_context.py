@@ -269,14 +269,25 @@ def template_test_case(
     # Prepare Expected Context, produced at runtime by cookiecutter (under the hood)
     expected_context = request.param[2]
 
+    expected_cookiecutter_parent_dir: str = str(cookiecutter_template)
+
+    # Solve issue of CI Windows, with a hack
+    import os
+    import sys
+
+    testing_against_sdist: bool = 'PY_SDIST' in os.environ
+    if sys.platform == 'win32' and testing_against_sdist:
+        # now we allow only the 'expected_cookiecutter_parent_dir' to deviate by 1 letter !!!
+        expected_cookiecutter_parent_dir = expected_cookiecutter_parent_dir.replace('lib', 'Lib')
+
     # include template dir or url in the context dict
-    expected_context[CK]['_template'] = str(cookiecutter_template)
+    expected_context[CK]['_template'] = expected_cookiecutter_parent_dir
 
     # include output+dir in the context dict
     # context[CK]['_output_dir'] = os.path.abspath(output_dir)
 
     # include repo dir or url in the context dict
-    expected_context[CK]['_repo_dir'] = str(cookiecutter_template)
+    expected_context[CK]['_repo_dir'] = expected_cookiecutter_parent_dir
 
     # include checkout details in the context dict
     expected_context[CK]['_checkout'] = False
@@ -296,7 +307,7 @@ def template_test_case(
     callback: t.Callable
 
     # Add the '_template' key to the expected context, like cookiecutter does
-    expected_context['cookiecutter']['_template'] = str(cookiecutter_template)
+    expected_context['cookiecutter']['_template'] = expected_cookiecutter_parent_dir
     if request.param[0] == 'PROD_TEMPLATE':
         assert isinstance(interpreters, dict)
         assert isinstance(interpreters['supported-interpreters'], list)
@@ -412,32 +423,11 @@ def test_cookiecutter_generates_context_with_expected_values(
     # AND we check the runtime input passed to cookiecutter's generate_context function
     # THEN the generate_context was called with expected runtime values
 
-    # Solve issue of CI Windows, with a hack
-    import os
-    import sys
-
-    running_on_ci: bool = 'CI' in os.environ
-    if running_on_ci and sys.platform == 'win32':
-        # now we allow only the 'expected_context_file_passed' to deviate by 1 letter !!!
-        # roughly: expected_context_file_passed.replace('lib', 'Lib')
-        try:
-            generate_context_mock.assert_called_with(
-                context_file=expected_context_file_passed,
-                default_context=expected_default_context_passed,
-                extra_context=expected_extra_context_passed,
-            )
-        except AssertionError:
-            generate_context_mock.assert_called_with(
-                context_file=expected_context_file_passed.replace('lib', 'Lib'),
-                default_context=expected_default_context_passed,
-                extra_context=expected_extra_context_passed,
-            )
-    else:
-        generate_context_mock.assert_called_with(
-            context_file=expected_context_file_passed,
-            default_context=expected_default_context_passed,
-            extra_context=expected_extra_context_passed,
-        )
+    generate_context_mock.assert_called_with(
+        context_file=expected_context_file_passed,
+        default_context=expected_default_context_passed,
+        extra_context=expected_extra_context_passed,
+    )
 
     import yaml
 
