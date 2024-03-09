@@ -415,6 +415,7 @@ def test_cookiecutter_generates_context_with_expected_values(
     # Solve issue of CI Windows, with a hack
     import os
     import sys
+
     running_on_ci: bool = 'CI' in os.environ
     if running_on_ci and sys.platform == 'win32':
         # now we allow only the 'expected_context_file_passed' to deviate by 1 letter !!!
