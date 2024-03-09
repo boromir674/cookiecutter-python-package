@@ -382,7 +382,9 @@ def test_cookiecutter_generates_context_with_expected_values(
     # Define parameter values expected to be passed at runtime to cookiecutter's generate_context function
     # expected to be passed as kwargs
     # str(cookie / 'cookiecutter.json')
-    expected_context_file_passed = template_test_case['expected_context']['cookiecutter']['_template']
+    expected_context_file_passed = template_test_case['expected_context']['cookiecutter'][
+        '_template'
+    ]
 
     from cookiecutter.config import get_config
 
