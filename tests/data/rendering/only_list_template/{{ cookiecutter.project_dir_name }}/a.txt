@@ -1,0 +1,4 @@
+ELA{% if cookiecutter.some_setting == "some_option" %}
+some_option{% else %}
+another_option
+{% endif %}
