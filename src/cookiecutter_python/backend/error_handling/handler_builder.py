@@ -1,4 +1,3 @@
-import json
 
 import click
 from software_patterns import SubclassRegistry
