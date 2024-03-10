@@ -425,4 +425,5 @@ jobs:
       tag: ${{ github.ref_name }}
       draft: ${{ needs.check_which_git_branch_we_are_on.outputs.ENVIRONMENT_NAME == 'TEST_DEPLOYMENT' }}
       # using the default token provided by GH: ${{ github.token }}, yilds unverified Releases
+    secrets:
       gh_token: ${{ github.token }}
