@@ -1,4 +1,5 @@
 """Generate the code reference pages."""
+
 import typing as t
 from pathlib import Path
 
@@ -86,7 +87,6 @@ This page provides documentation for our command line tools.
     # <repo_url>/blob/master/docs/src/artificial_artwork/nst_math.py
 
     # mkdocs_gen_files.set_edit_path(full_doc_path, path)
-
 
 
 # At the end, create a magic, literate navigation file called SUMMARY.md in the
