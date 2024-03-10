@@ -45,7 +45,7 @@ def test_snapshot_matches_runtime(snapshot, biskotaki_ci_project, test_root):
 
     # current CI runs tox -e dev, sdist, and wheel meaning it is certain __pycache__ will be created
     # remove all __pycache__ folders and everything nested under them
-    
+
     # for example it is very common for a cpython interpreter to create __pycache__ folders
 
     # for all relative paths, if 'part' __pycache__ is in the path, remove it
