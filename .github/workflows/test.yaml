@@ -425,5 +425,5 @@ jobs:
       tag: ${{ github.ref_name }}
       draft: ${{ needs.check_which_git_branch_we_are_on.outputs.ENVIRONMENT_NAME == 'TEST_DEPLOYMENT' }}
     secrets:
-      # passing the GH_TOKEN, will render in GH as ie: 'boromir674 released this yesterday', instead of 'github-actions released this yesterday'
+      # passing the GH_TOKEN PAT, to render in GH as ie: 'boromir674 released this yesterday', instead of 'github-actions released this yesterday'
       gh_token: ${{ secrets.GH_TOKEN }}
