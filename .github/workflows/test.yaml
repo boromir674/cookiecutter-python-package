@@ -316,7 +316,7 @@ jobs:
   check_which_git_branch_we_are_on:
     runs-on: ubuntu-latest
     needs: set_github_outputs
-    if: ${{ startsWith(github.event.ref, 'refs/tags/v') && needs.set_github_outputs.outputs.PUBLISH_ON_PYPI == 'true' }}
+    if: ${{ startsWith(github.event.ref, 'refs/tags/v') }}
     # Signals only if all below are True:
     #  - PyPI Job Switch is ON
     #  - Workflow Event is a 'v*' Tag (e.g. v1.0.0, v-test)
@@ -367,7 +367,7 @@ jobs:
     needs: [test_suite, check_which_git_branch_we_are_on]
     uses: boromir674/automated-workflows/.github/workflows/pypi_env.yml@8e97f596067fcbbaa0a6927ec1ee47dce4ab5f1a
     with:
-      should_trigger: ${{ needs.check_which_git_branch_we_are_on.outputs.AUTOMATED_DEPLOY == 'true' }}
+      should_trigger: ${{ needs.set_github_outputs.outputs.PUBLISH_ON_PYPI == 'true' && needs.check_which_git_branch_we_are_on.outputs.AUTOMATED_DEPLOY == 'true' }}
       distro_name: cookiecutter_python
       distro_version: ${{ needs.test_suite.outputs.PEP_VERSION }}
       pypi_env: '${{ needs.check_which_git_branch_we_are_on.outputs.ENVIRONMENT_NAME }}'
