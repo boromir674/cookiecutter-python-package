@@ -45,11 +45,15 @@ def test_snapshot_matches_runtime(snapshot, biskotaki_ci_project, test_root):
 
     # current CI runs tox -e dev, sdist, and wheel meaning it is certain __pycache__ will be created
     # remove all __pycache__ folders and everything nested under them
-    # this is a tiny bit of a hack, but it is the simplest way to fix the problem
+    
+    # for example it is very common for a cpython interpreter to create __pycache__ folders
 
     # for all relative paths, if 'part' __pycache__ is in the path, remove it
     snap_relative_paths_set = set(
         [x for x in snap_relative_paths_set if '__pycache__' not in x.parts]
+    )
+    runtime_relative_paths_set = set(
+        [x for x in runtime_relative_paths_set if '__pycache__' not in x.parts]
     )
 
     # EXCLUDE artifacts, and cache potentially produced if running linters
@@ -61,9 +65,9 @@ def test_snapshot_matches_runtime(snapshot, biskotaki_ci_project, test_root):
     snap_relative_paths_set = set(
         [x for x in snap_relative_paths_set if '.pytest_cache' not in x.parts]
     )
-
-    # EXCLUDE from test dist/ top-level folder
-    snap_relative_paths_set = set([x for x in snap_relative_paths_set if x.parts[0] != 'dist'])
+    runtime_relative_paths_set = set(
+        [x for x in runtime_relative_paths_set if '.pytest_cache' not in x.parts]
+    )
 
     # WHEN we compare the 2 sets of relative Paths
 
