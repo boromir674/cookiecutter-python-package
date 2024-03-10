@@ -1,4 +1,3 @@
-
 import click
 from software_patterns import SubclassRegistry
 
