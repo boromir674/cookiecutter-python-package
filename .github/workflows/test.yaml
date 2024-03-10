@@ -422,5 +422,5 @@ jobs:
     uses: boromir674/automated-workflows/.github/workflows/gh-release.yml@test
     name: 'GH Release'
     with:
-      tag: ${{ github.ref }}
+      tag: ${{ github.ref_name }}
       draft: ${{ needs.check_which_git_branch_we_are_on.outputs.ENVIRONMENT_NAME == 'TEST_DEPLOYMENT' }}
