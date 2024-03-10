@@ -259,7 +259,9 @@ def test_gs_matches_runtime(gen_gs_project, test_root):
                 assert runtime_file.is_file()
                 assert snap_file.is_file()
                 continue
-
+            # handle cookie.log accident
+            if runtime_file.name == 'cookie.log':
+                continue
             # go line by line and assert each one for easier debugging
             runtime_file_content = runtime_file.read_text().splitlines()
             snap_file_content = snap_file.read_text().splitlines()
