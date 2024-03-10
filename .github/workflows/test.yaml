@@ -417,7 +417,7 @@ jobs:
 
 ### Make a Github Release ###
   gh_release:
-    needs: [test_suite, check_which_git_branch_we_are_on]
+    needs: [check_which_git_branch_we_are_on]
     if: ${{ needs.check_which_git_branch_we_are_on.outputs.AUTOMATED_DEPLOY == 'true' }}
     uses: boromir674/automated-workflows/.github/workflows/gh-release.yml@test
     name: 'GH Release'
