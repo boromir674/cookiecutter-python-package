@@ -242,7 +242,14 @@ def test_gs_matches_runtime(gen_gs_project, test_root):
     )
 
     def file_gen() -> t.Iterator[t.Tuple[Path, Path]]:
-        for runtime_file, relative_path in ((rf, rel_path) for rf, rel_path in [(runtime_gs / x, x) for x in sorted(runtime_relative_paths_set - {Path('CHANGELOG.rst')})] if rf.is_file()):
+        for runtime_file, relative_path in (
+            (rf, rel_path)
+            for rf, rel_path in [
+                (runtime_gs / x, x)
+                for x in sorted(runtime_relative_paths_set - {Path('CHANGELOG.rst')})
+            ]
+            if rf.is_file()
+        ):
             yield runtime_file, snapshot_dir / relative_path
 
     debug = True

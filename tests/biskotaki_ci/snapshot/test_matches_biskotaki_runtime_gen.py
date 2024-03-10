@@ -56,17 +56,14 @@ def test_snapshot_matches_runtime(snapshot, biskotaki_ci_project, test_root):
     snap_relative_paths_set = set(
         [x for x in snap_relative_paths_set if '.ruff_cache' not in x.parts]
     )
-    
+
     # EXCLUDE from test .pytest_cache/ folders too
     snap_relative_paths_set = set(
         [x for x in snap_relative_paths_set if '.pytest_cache' not in x.parts]
     )
 
     # EXCLUDE from test dist/ top-level folder
-    snap_relative_paths_set = set(
-        [x for x in snap_relative_paths_set if x.parts[0] != 'dist']
-    )
-
+    snap_relative_paths_set = set([x for x in snap_relative_paths_set if x.parts[0] != 'dist'])
 
     # WHEN we compare the 2 sets of relative Paths
 

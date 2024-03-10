@@ -4,12 +4,15 @@ import pytest
 
 
 @pytest.mark.integration
-@pytest.mark.parametrize('snapshot_name', [
-    # LINT Biskotaki, with sphinx
-    'biskotaki-no-input',
-    # LINT Biskotaki Gold Standard, with mkdocs
-    'biskotaki-gold-standard',
-])
+@pytest.mark.parametrize(
+    'snapshot_name',
+    [
+        # LINT Biskotaki, with sphinx
+        'biskotaki-no-input',
+        # LINT Biskotaki Gold Standard, with mkdocs
+        'biskotaki-gold-standard',
+    ],
+)
 def test_running_lint_passes(snapshot_name, test_root):
     import subprocess
     from pathlib import Path
@@ -18,7 +21,7 @@ def test_running_lint_passes(snapshot_name, test_root):
     # Load Snapshot
     snapshot_dir: Path = test_root / 'data' / 'snapshots' / snapshot_name
     assert snapshot_dir.exists()
-    assert snapshot_dir.is_dir()   
+    assert snapshot_dir.is_dir()
 
     # Programmatically run Lint, with the entrypoint we suggest, for a Dev to run
     res = subprocess.run(  # tox -e lint
@@ -40,12 +43,15 @@ def test_running_lint_passes(snapshot_name, test_root):
 
 
 @pytest.mark.integration
-@pytest.mark.parametrize('snapshot_name', [
-    # Test Case 1: RUFF Biskotaki, with sphinx
-    'biskotaki-no-input',
-    # Test Case 2: RUFF Biskotaki Gold Standard, with mkdocs
-    'biskotaki-gold-standard',
-])
+@pytest.mark.parametrize(
+    'snapshot_name',
+    [
+        # Test Case 1: RUFF Biskotaki, with sphinx
+        'biskotaki-no-input',
+        # Test Case 2: RUFF Biskotaki Gold Standard, with mkdocs
+        'biskotaki-gold-standard',
+    ],
+)
 def test_running_ruff_passes(snapshot_name, test_root):
     import subprocess
     from pathlib import Path
@@ -53,7 +59,7 @@ def test_running_ruff_passes(snapshot_name, test_root):
     # Load Snapshot
     snapshot_dir: Path = test_root / 'data' / 'snapshots' / snapshot_name
     assert snapshot_dir.exists()
-    assert snapshot_dir.is_dir()   
+    assert snapshot_dir.is_dir()
 
     # Programmatically run Lint, with the entrypoint we suggest, for a Dev to run
     res = subprocess.run(  # tox -e ruff
