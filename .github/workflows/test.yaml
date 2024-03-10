@@ -364,7 +364,6 @@ jobs:
   ## JOB: PYPI UPLOAD ##
   pypi_publish:
     needs: [test_suite, check_which_git_branch_we_are_on]
-    if: always()
     uses: boromir674/automated-workflows/.github/workflows/pypi_env.yml@8e97f596067fcbbaa0a6927ec1ee47dce4ab5f1a
     with:
       should_trigger: ${{ needs.check_which_git_branch_we_are_on.outputs.AUTOMATED_DEPLOY == 'true' }}
@@ -413,3 +412,14 @@ jobs:
       source_code_targets: 'src'
       python_version: '3.10'
       artifacts_dir: 'dependency-graphs'
+
+
+### Make a Github Release ###
+  gh_release:
+    needs: [test_suite, check_which_git_branch_we_are_on]
+    if: ${{ needs.check_which_git_branch_we_are_on.outputs.AUTOMATED_DEPLOY == 'true' }}
+    uses: boromir674/automated-workflows/.github/workflows/gh-release.yml@test
+    name: 'GH Release'
+    with:
+      tag: ${{ github.ref }}
+      draft: ${{ needs.check_which_git_branch_we_are_on.outputs.ENVIRONMENT_NAME == 'TEST_DEPLOYMENT' }}
