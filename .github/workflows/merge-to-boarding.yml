@@ -1,9 +1,9 @@
 name: Merge into Boarding
 
 on:
-  pull_request:
+  pull_request:  # PR:  <Head Branch>  -->  <Base Branch>
     types: [labeled]
-    branches:
+    branches:   # Base Branches (aka Target)
       - boarding-auto
 
 
@@ -12,9 +12,7 @@ jobs:
     if: github.event.label.name == 'boarding_auto'
     runs-on: ubuntu-latest
     env:
-      TRAIN: 'release-train'
-      MAIN_BRANCH: 'master'
-      BOARDING_BR: 'boarding-auto'
+      MAIN_BRANCH: ${{ vars.MAIN_BRANCH || 'master' }}
       DIRECT_ONBOARDING_BR: direct-onboarding
     steps:
       - uses: actions/checkout@v4
@@ -107,36 +105,39 @@ jobs:
           echo "TARGET_BRANCH=${TARGET_BRANCH}" >> $GITHUB_OUTPUT
         id: merge_msg
 
+      - run: echo "_USER_BR=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
+      - run: echo "_BOARDING_BR=${{ github.event.pull_request.base.ref }}" >> $GITHUB_ENV
+
       ## MERGE PR 'User/Topic Branch'  -->  'boarding-auto', with Custom Commit Message
-      - name: 'Merge PR   ${{ github.event.pull_request.head.ref }}  -->  ${{ github.event.pull_request.base.ref }}'
+      - name: 'Merge PR   ${{ env._USER_BR }}  -->  ${{ env._BOARDING_BR }}'
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           BOARDING_MSG: ${{ steps.merge_msg.outputs.MERGE_MSG }}
         run: "gh pr merge \"${{ env.PR_ID }}\" --merge --subject \"${{ env.BOARDING_MSG }}\""
 
       # DETERMINES what will the Required Checks be, while PR is on `Auto Merge`
-      - run: echo TARGET_BRANCH="${{ steps.merge_msg.outputs.TARGET_BRANCH }}" >> $GITHUB_ENV
+      - run: echo TARGET_BRANCH="${{ steps.merge_msg.outputs.TARGET_BRANCH }}-${{ env._USER_BR }}" >> $GITHUB_ENV
 
       - name: Ensure '${{ env.TARGET_BRANCH }}' Branch is on Remote origin
         run: git branch --track ${{ env.TARGET_BRANCH }} "origin/${{ env.TARGET_BRANCH }}" || git checkout -b ${{ env.TARGET_BRANCH }} "origin/${{ env.MAIN_BRANCH }}" && git push origin ${{ env.TARGET_BRANCH }}
 
       ### Open PR 'boarding-auto'  -->   Branch with `Required Checks`; github Protection Rules
-      - name: 'Open PR ${{ env.BOARDING_BR }}  -->  ${{ env.TARGET_BRANCH }}'
+      - name: 'Open PR ${{ env._BOARDING_BR }}  -->  ${{ env.TARGET_BRANCH }}'
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          gh pr create --head "${{ env.BOARDING_BR }}" --base "${{ env.TARGET_BRANCH }}" \
+          gh pr create --head "${{ env._BOARDING_BR }}" --base "${{ env.TARGET_BRANCH }}" \
             --title "Identifying and running Required Checks, before being accepted into Release Train" \
             --body "Merging into ${{ env.TARGET_BRANCH }}, to run Required Checks before being accepted into the Release Train.
-            
+
             The Required Checks are defined in the Protection Rules of '${{ env.TARGET_BRANCH }}' branch.
             "
 
-      ## Auto Merge PR 'boarding-auto'  -->   Branch with `Required Checks` ##
+      ## Auto Merge PR 'boarding-auto'  -->  env.TARGET_BRANCH  Branch with `Required Checks` ##
       - name: 'Enable Auto Merge'
       ## The CI Tests derived from commit message, must match the `Required Checks`
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           # DETERMINES what Job Matrix our CI/CD Pipeline, will run
           BOARDING_MSG: ${{ steps.merge_msg.outputs.MERGE_MSG }}
-        run: "gh pr merge \"${{ env.BOARDING_BR }}\" --auto --delete-branch --merge"
+        run: "gh pr merge \"${{ env._BOARDING_BR }}\" --auto --delete-branch --merge"
