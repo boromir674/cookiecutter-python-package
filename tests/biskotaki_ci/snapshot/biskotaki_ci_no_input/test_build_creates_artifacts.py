@@ -75,6 +75,13 @@ def test_running_build_creates_source_and_wheel_distros(
         [sys.executable, '-m', 'tox', '-r', '-vv', '-e', 'check'],
         cwd=snapshot_dir,
         check=False,  # prevent raising exception, so we can do clean up
+        # pass the PKG_VERSION env var with value '0.0.1'
+        env={
+            # required by Check environment
+            'PKG_VERSION': '0.0.1',
+            # required due to programmatic execution, in this case
+            'PATH': str(Path(sys.executable).parent),
+        },
     )
 
     # CLEAN UP: Remove .tox/check folder, created by tox

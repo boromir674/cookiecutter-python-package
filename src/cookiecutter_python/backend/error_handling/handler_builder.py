@@ -1,5 +1,3 @@
-import json
-
 import click
 from software_patterns import SubclassRegistry
 
@@ -17,8 +15,8 @@ class NonCriticalHandlerBuilder:
 @HandlerBuilder.register_as_subclass('critical')
 class CriticalHandlerBuilder:
     def __call__(self, error):
-        click.echo('{}'.format(error.message))
-        click.echo('Error message: {}'.format(error.error.message))
+        click.echo('{}'.format(str(error)))
+        click.echo('Error message: {}'.format(str(error)))
 
-        context_str = json.dumps(error.context, indent=4, sort_keys=True)
-        click.echo('Context: {}'.format(context_str))
+        # Message that program is exiting due to error
+        click.echo('Exiting due to error')

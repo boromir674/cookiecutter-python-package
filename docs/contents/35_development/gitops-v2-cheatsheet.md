@@ -89,12 +89,11 @@ git push origin -d test-distro-docs
 git push origin -d direct-onboarding
 
 git push origin -d release-train
-
+git push origin -d release
 ```
 
 Clean Local with:
 ```shell
 git tag -d board-request
 git tag -d auto-prod
-git checkout release && git rebase master
 ```

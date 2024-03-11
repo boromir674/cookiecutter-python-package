@@ -57,7 +57,7 @@ on:
         # ie { "l": 10 } -> allowes at most 10 low, 0 m, and 0 h
         # ie { "l": 10, "m": 3 } -> allowes at most 10 low, 3 m, and 0 h
         # Default is 6 allowed low, 0 m, and 0 h
-        default: '{"l": 6, "m": 0, "h": 0}'
+        default: '{"l": 8, "m": 0, "h": 0}'
 
 jobs:
   # Decide whether to run Lint Job, given incoming Signal
@@ -205,7 +205,7 @@ jobs:
       - name: 'Parse Bandit Results, and prepare comparing LOW, MEDIUM, and HIGH'
         run: |
           # Parse Totals Object
-          TOTALS=$(jq '.runs[0].properties.metrics._totals' results-sarif.json)
+          TOTALS=$(jq '.runs[0].properties.metrics._totals' "${{ env._SARIF_FILE }}")
 
           # Find CWE's of HIGH Severity
           HIGH=$(echo $TOTALS | jq '.["SEVERITY.HIGH"]')

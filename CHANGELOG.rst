@@ -2,6 +2,30 @@
 Changelog
 =========
 
+2.2.1 (2024-03-11)
+==================
+
+Changes
+^^^^^^^
+
+fix
+"""
+- adjust mkdocs configured template to follow the Gold Standard Snaphost
+
+test
+""""
+- fix building wheel and sdist from gen proj
+
+ci
+""
+- pass PAT 'GH_TOKEN' in GH Release Workflow
+- pass git tag name, ie v2.2.1-rc in GH Release Workflow
+- allow checking for -rc tag regardless of top-level PYPI overide switch
+- add GH Release Job in 'CI/CD Pipeline' Workflow
+- allow a couple of more subprocess low severity cwe reported by bandit
+- generate and push Python Gold Standard to py-gold branch of biskotaki repo
+
+
 2.2.0 (2024-03-10)
 ==================
 

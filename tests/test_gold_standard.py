@@ -1,3 +1,4 @@
+import typing as t
 from pathlib import Path
 
 import pytest
@@ -132,6 +133,14 @@ def test_gs_matches_runtime(gen_gs_project, test_root):
         [x for x in runtime_relative_paths_set if '__pycache__' not in x.parts]
     )
 
+    # for all relative paths, if .ruff_cache/ is in the path, remove it
+    snap_relative_paths_set = set(
+        [x for x in snap_relative_paths_set if '.ruff_cache' not in x.parts]
+    )
+    runtime_relative_paths_set = set(
+        [x for x in runtime_relative_paths_set if '.ruff_cache' not in x.parts]
+    )
+
     # Sanity Check that tests/test_cli.py is part of the comparison below
     assert Path('tests/test_cli.py') in snap_relative_paths_set, (
         f"tests/test_cli.py is missing from Snapshot: {snapshot_dir}\n"
@@ -232,34 +241,46 @@ def test_gs_matches_runtime(gen_gs_project, test_root):
         "-------------------\n"
     )
 
-    automated_files = snap_relative_paths_set - {Path('CHANGELOG.rst')}
+    def file_gen() -> t.Iterator[t.Tuple[Path, Path]]:
+        for runtime_file, relative_path in (
+            (rf, rel_path)
+            for rf, rel_path in [
+                (runtime_gs / x, x)
+                for x in sorted(runtime_relative_paths_set - {Path('CHANGELOG.rst')})
+            ]
+            if rf.is_file()
+        ):
+            yield runtime_file, snapshot_dir / relative_path
 
     debug = True
     if debug:
-        for relative_path in sorted([x for x in automated_files if x.is_file()]):
-            runtime_file = runtime_gs / relative_path
-            snap_file = snapshot_dir / relative_path
-
+        for runtime_file, snap_file in ((x, y) for x, y in file_gen()):
+            if runtime_file.suffix == '.png':
+                assert runtime_file.is_file()
+                assert snap_file.is_file()
+                continue
+            # handle file with runtime logs
+            if runtime_file.name == 'cookie-py.log':
+                continue
             # go line by line and assert each one for easier debugging
-            snap_file_content = snap_file.read_text().splitlines()
             runtime_file_content = runtime_file.read_text().splitlines()
+            snap_file_content = snap_file.read_text().splitlines()
+
             for line_index, line_pair in enumerate(
                 zip(runtime_file_content, snap_file_content)
             ):
                 assert line_pair[0] == line_pair[1], (
-                    f"File: {relative_path} has different content at Runtime than in Snapshot\n"
+                    f"File: {runtime_file.relative_to(runtime_gs)} has different content at Runtime than in Snapshot\n"
                     f"Line Index: {line_index}\n"
-                    "Line Runtime: {line_pair[0]}\n"
-                    "Line Snapshot: {line_pair[1]}\n"
+                    f"Line Runtime: {line_pair[0]}\n"
+                    f"Line Snapshot: {line_pair[1]}\n"
                 )
             assert len(runtime_file_content) == len(snap_file_content)
     else:
-        for relative_path in sorted([x for x in automated_files if x.is_file()]):
-            runtime_file = runtime_gs / relative_path
-            snap_file = snapshot_dir / relative_path
+        for runtime_file, snap_file in ((x, y) for x, y in file_gen()):
 
             assert runtime_file.read_text() == snap_file.read_text(), (
-                f"File: {relative_path} has different content at Runtime than in Snapshot\n"
+                f"File: {runtime_file.relative_to(runtime_gs)} has different content at Runtime than in Snapshot\n"
                 "-------------------\n"
                 f"Runtime: {runtime_file}\n"
                 "-------------------\n"

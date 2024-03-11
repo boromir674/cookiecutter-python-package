@@ -119,3 +119,28 @@ jobs:
           destination-repository-username: 'boromir674'
           target-branch: ${{ env.branch }}
           commit-message: 'apply Template from https://github.com/boromir674/cookiecutter-python-package'
+
+      ## GENERATE Python Gold Standard FROM TEMPLATE into gen/ ##
+      # ROOT : gen/biskotaki/pyproject.toml
+      - name: Generate Python Gold Standard Biskotaki from Template
+        env:
+          USER_CONFIG: tests/data/gold-standard.yml
+        run: |
+          echo "    version: \"${{ env.PKG_VERSION }}\"" >> ${{ env.USER_CONFIG }}
+          generate-python -o gen-gold --config-file "${{ env.USER_CONFIG }}" --no-input -f --offline
+
+      ## PUSH the Python Gold Standard to BISKOTAKI REPO ##
+      - name: Push to dedicated branch in biskotaki repo
+        # Pin to v1.7.2 -> 07c4d7b3def0a8ebe788a8f2c843a4e1de4f6900
+        uses: cpina/github-action-push-to-another-repository@07c4d7b3def0a8ebe788a8f2c843a4e1de4f6900
+        env:
+          SSH_DEPLOY_KEY: ${{ secrets.SSH_GITHUB_KEY }}
+        with:
+          source-directory: 'gen-gold/biskotaki-gold-standard'
+          destination-github-username: 'boromir674'
+          destination-repository-name: 'biskotaki'
+          user-email: k.lampridis@hotmail.com
+          user-name: 'Konstantinos'
+          destination-repository-username: 'boromir674'
+          target-branch: py-gold
+          commit-message: 'apply Template from https://github.com/boromir674/cookiecutter-python-package'
