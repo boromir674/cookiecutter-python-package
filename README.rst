@@ -111,7 +111,7 @@ To leverage all out-of-the-box development operations (ie scripts), install `tox
 
 .. code-block:: shell
 
-    python3 -m pip install --user 'tox<4'
+    python3 -m pip install --user 'tox==3.27.1'
 
 To verify tox available in your environment, run: ``tox --version``
 
