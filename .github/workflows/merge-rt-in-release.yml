@@ -21,12 +21,15 @@ on:
     types: [closed]
     branches:  # ALLOWED Base Branches
       - release-train
+  push:
+    tags:
+      - start-train
 
 jobs:
   # RUN Job when 'sth' --> 'release-train' PR is merged
   merge_rt_in_release:
     ## IMPORTANT: below head branches should be in sync with Protection Rules
-    if: github.event.pull_request.merged == true && contains(fromJSON('["test-distro", "test-docs", "test-distro-docs", "direct-onboarding"]'), github.head_ref)
+    if: (github.event.pull_request.merged == true && contains(fromJSON('["test-distro", "test-docs", "test-distro-docs", "direct-onboarding"]'), github.head_ref)) || (github.event_name == 'push' && github.ref == 'refs/tags/start-train')
 
     runs-on: ubuntu-latest
     env:
@@ -41,10 +44,10 @@ jobs:
           set-safe-directory: ''  # `git config --global --add safe.directory <path>`
           token: '${{ secrets.GH_TOKEN }}'
       
-      - name: Ensure Release Branch exists, before PR
+      - name: Ensure Release Branch exists and is rebased on Main Branch, before PR
         run: |
-          git branch --track "${{ env.RELEASE_BR }}" "origin/${{ env.RELEASE_BR }}" || echo "Branch '${{ env.RELEASE_BR }}' does NOT exist in remote Origin"
-          git checkout ${{ env.RELEASE_BR }} || (git checkout ${{ env.MAIN_BR }} && git checkout -b ${{ env.RELEASE_BR }} && git push origin -u ${{ env.RELEASE_BR }})
+          (git branch --track "${{ env.RELEASE_BR }}" "origin/${{ env.RELEASE_BR }}" && git rebase ${{ env.MAIN_BR }} && git push) || echo "Branch '${{ env.RELEASE_BR }}' does NOT exist in remote Origin"
+          git checkout ${{ env.RELEASE_BR }} || (git checkout -b ${{ env.RELEASE_BR }} ${{ env.MAIN_BR }} && git push origin -u ${{ env.RELEASE_BR }})
 
       ####### PR: Train --> Release #######
       - name: "Create PR  'head': ${{ env.TRAIN }}  -->  'base': ${{ env.RELEASE_BR }}"
