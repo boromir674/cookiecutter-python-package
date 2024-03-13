@@ -15,7 +15,7 @@ jobs:
     uses: boromir674/automated-workflows/.github/workflows/go-pr-to-boarding.yml@test
     with:
       # pass tag to PR from <user_branch>  -->  <github.ref>-<user_branch>
-      board_tag: "${{ github.ref }}"
+      board_tag: "${{ github.ref_name }}"
       main_branch: ${{ vars.MAIN_BRANCH || 'main' }}
     secrets:
       github_pat: ${{ secrets.GH_TOKEN }}

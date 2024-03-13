@@ -176,6 +176,7 @@ def test_gs_matches_runtime(gen_gs_project, test_root):
     if not running_on_ci:
         # just exclude pre-emptively '.vscode/' folder, and '.vscode/settings.json' file
         # also exclude .tox/ folder, and .tox/ folder contents
+        # also exlude reqs.txt, in case developer ran command `tox -e pin-deps`
         snap_relative_paths_set = set(
             [
                 x
@@ -187,6 +188,8 @@ def test_gs_matches_runtime(gen_gs_project, test_root):
                 and '.tox' not in x.parts
                 # EXCLUDE .pytest_cache/ folder
                 if x.parts[0] != '.pytest_cache'
+                # EXCLUDE reqs.txt file
+                and x.name != 'reqs.txt'
             ]
         )
 
