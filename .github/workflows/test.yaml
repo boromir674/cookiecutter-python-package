@@ -1,16 +1,17 @@
 name: CI/CD Pipeline
 # Continuous Integration / Continuous Delivery
 
-# Triggers on all branches and tags starting with v
+# Triggers on all Branches and v* Tags
 
-### Full Job Matrix for Stress Testing on: ###
+### Stress-Testing, with Multi-Factor Job Matrix, on: ###
 # - tags v*
 # - the 'stress-test' branch (GITHUB_REF_NAME == 'stress-test')
 
 
-### PyPI publish on: ###
+### Production PyPI Publish, pypi.org, on: ###
 # - v* tags on 'master' branch only
 
+### Staging/Test PyPI Publish, test.pypi.org, on: ###
 ## Test PyPI publish on: ##
 # - v*-rc 'pre-release' tags on 'release' branch
 
@@ -32,7 +33,7 @@ env:
   UBUNTU_PY310_STRATEGY: "{\"platform\": [\"ubuntu-latest\"], \"python-version\": [\"3.10\"]}"
   TEST_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\":[\"3.10\"]}"
 
-  ##### JOB ON/OFF SWITCHES - 1st level overrides #####
+  ##### JOB ON/OFF SWITCHES - Top/1st level overrides #####
   RUN_UNIT_TESTS: "true"
   RUN_LINT_CHECKS: "true"
   DOCKER_JOB_ON: "true"
@@ -297,6 +298,7 @@ jobs:
         done
 
 ## DOCKER BUILD and PUBLISH ON DOCKERHUB ##
+# Ref Page: https://automated-workflows.readthedocs.io/en/main/ref_docker/
   docker_build:
     needs: [set_github_outputs, test_suite]
     uses: boromir674/automated-workflows/.github/workflows/docker.yml@v1.1.0
@@ -354,7 +356,6 @@ jobs:
     outputs:
       ENVIRONMENT_NAME: ${{ steps.set_environment_name.outputs.ENVIRONMENT_NAME }}
       AUTOMATED_DEPLOY: ${{ steps.set_environment_name.outputs.AUTOMATED_DEPLOY }}
-      TAG_ON_MASTER: ${{ steps.main_contains_tag.outputs.retval }}
 
   ## JOB: PYPI UPLOAD ##
   pypi_publish:
@@ -372,18 +373,6 @@ jobs:
     secrets:
       TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
 
-### DOCS BUILD/TEST - DOCUMENTATION SITE ###
-  docs:
-    name: Build Documentation
-    needs: set_github_outputs
-    # bafaa2c2a014758a4421fe9b5c02ba66dbfdbef6
-    uses: boromir674/automated-workflows/.github/workflows/policy_docs.yml@test
-    with:
-      run_policy: '${{ needs.set_github_outputs.outputs.PIPE_DOCS_POLICY }}'
-      python_version: ${{ needs.set_github_outputs.outputs.PIPE_DOCS_PY }}
-      command: "tox -e docs --sitepackages -vv -s false"
-      # command: "tox -e pin-deps -- -E docs && tox -e docs --sitepackages -vv -s false"
-
 ### STATIC CODE ANALYSIS & LINTING ###
   lint:
     name: Static Code Analysis
@@ -396,18 +385,29 @@ jobs:
       python_version: ${{ needs.set_github_outputs.outputs.PIPE_SQA_PY }}
       pylint_threshold: ${{ needs.set_github_outputs.outputs.PIPE_SQA_PYLINT_PASS_SCORE }}
 
+### DOCS BUILD/TEST - DOCUMENTATION SITE ###
+  docs:
+    name: Build Documentation
+    needs: set_github_outputs
+    # bafaa2c2a014758a4421fe9b5c02ba66dbfdbef6
+    uses: boromir674/automated-workflows/.github/workflows/policy_docs.yml@test
+    with:
+      run_policy: '${{ needs.set_github_outputs.outputs.PIPE_DOCS_POLICY }}'
+      python_version: ${{ needs.set_github_outputs.outputs.PIPE_DOCS_PY }}
+      command: "tox -e docs --sitepackages -vv -s false"
+      # command: "tox -e pin-deps -- -E docs && tox -e docs --sitepackages -vv -s false"
+
 ### DRAW PYTHON DEPENDENCY GRAPHS ###
   code_visualization:
     needs: set_github_outputs
     name: Code Visualization of Python Imports as Graphs, in .svg
-    uses: boromir674/automated-workflows/.github/workflows/python_imports.yml@test
+    uses: boromir674/automated-workflows/.github/workflows/python_imports.yml@v1.3.0
     with:
       run_policy: '${{ needs.set_github_outputs.outputs.PIPE_CODE_VIZ_POLICY }}'
       branches: 'main, master, dev'
       source_code_targets: 'src'
       python_version: '3.10'
       artifacts_dir: 'dependency-graphs'
-
 
 ### Make a Github Release ###
   gh_release:

@@ -3,12 +3,16 @@ on:
 - pull_request_target
 
 jobs:
-  triage:
+  label_PR:
     permissions:
       contents: read
       pull-requests: write
     runs-on: ubuntu-latest
+    # This Job behaves as a Listener to PR events, and each step is a Handler
     steps:
-    - uses: actions/labeler@v4
-      with:
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
+      # HANDLER 1: Label PR, given file changes and Labeling Rules '.github/labeler.yml'
+      - uses: actions/labeler@v5
+        with:
+          # if you want your labels to trigger other Workflows, pass-in a PAT
+          # with permission for label creation events to trigger listeners
+          repo-token: ${{ secrets.GITHUB_TOKEN }}

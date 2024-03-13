@@ -2,6 +2,36 @@
 Changelog
 =========
 
+2.3.0 (2024-03-13)
+==================
+
+Changes
+^^^^^^^
+
+feature
+"""""""
+- cover most source code areas, when PR labeling: src, tests, ci, data, config
+- add Job that makes a Github Release on v* tags on Main Branch
+
+fix
+"""
+- expect interpreters to be loaded as dict by cookiecutter in intereactive mode
+
+test
+""""
+- update Gold Standard Snapshot
+- update biskotaki-interactive Snapshot, used in Regression Testing
+- update biskotaki-no-input Snapshot, used in Regression Testing
+
+ci
+""
+- clean code
+
+gitops
+""""""
+- pass git tag to Workflow for PR in to a boarding branch
+
+
 2.2.1-dev1 (2024-03-13)
 =======================
 
