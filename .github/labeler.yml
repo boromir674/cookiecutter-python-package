@@ -136,6 +136,7 @@ release:
 # [GITOPS]: This should act as a signal, ie for a Listener Workflow to Merge the PR
 boarding_auto:
   - base-branch: ['^boarding-auto', 'boarding-auto']
+  - base-branch: ['^board-n-release', 'board-n-release']
 
 
 # Add 'feature' label to any PR where the head branch name starts with

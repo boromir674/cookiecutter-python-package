@@ -32,12 +32,16 @@ GitOps Guides
 
    <!-- TODO: style such as that at least 2 blocks can be allowed next to each other, when (responsive) space allows -->
    <!-- NEW -->
-      <div style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: space-around;">
-         <div style="border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); width: 300px; padding: 20px; margin: 10px;">
-               <h3 style="color: #0056b3;"><a style="color: #0056b3;" href="gitops-v2.html">Publish my Branch</a></h3>
-               <p>Build, Stress Test, and Release in 4 Steps. <a style="color: #0056b3;" href="gitops-v2-cheatsheet.html">Cheat Sheet</a></p>
-         </div>
-    </div>
+   <div style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: space-around;">
+      <div style="border: 2px solid #333; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); width: 300px; padding: 20px; margin: 10px;">
+            <h3><a href="gitops-v2.html">Publish my Branch</a></h3>
+            <p>Build, Stress Test, and Release in 4 Steps.</p><p><a href="gitops-v2-cheatsheet.html">Cheat Sheet</a></p>
+      </div>
+      <div style="border: 2px solid #333; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); width: 300px; padding: 20px; margin: 10px;">
+            <h3><a href="gitops-multi-topics-cheatsheet.html">Board Train and Release - Cheatsheet</a></h3>
+            <p>Build, Stress Test, and Release in 4 Steps.</p>
+      </div>
+   </div>
 
 
 .. Auto Publish

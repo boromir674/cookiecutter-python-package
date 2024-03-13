@@ -1,5 +1,5 @@
 
-# Publish My Branch - Cheatsheet
+# Board Train and Release - Cheatsheet
 
 **Requires:**
 - GITHUB **Auto Merge** is ON, for Repo
@@ -23,11 +23,18 @@ function git-tag { git tag -d "$1" || true; git tag "$1" && (git push origin -d 
 function parse-version { grep -E -o '^version\s*=\s*\".*\"' pyproject.toml | cut -d'"' -f2; }
 ```
 
-From your **`User Br`** Branch:
+REPEAT for all `Topical Branches`, branching off of **`master`:**
 
 ```shell
-git push
-git-tag board-n-release
+git-tag board-request
+```
+
+EVERY topic branch should now be in **`origin/release-train`.**
+
+```shell
+git fetch
+git checkout origin/release-train
+git-tag start-train
 ```
 
 **Wait** for **PR** *opened* **'release' --> 'master'**
