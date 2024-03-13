@@ -1,20 +1,134 @@
 # Pull Request Labeling Rules based on changed files
+# https://github.com/actions/labeler
 
+
+####### LABELS based on FILE CHANGES #######
+
+# Here, we declare Rules for Labeling PR based on the file changes
+
+# Each Label is added, when their Rule(s) are True
+# - 'any' block is True, if any of the conditions are True
+# - 'all' block is True, if all of the conditions are True
+
+# Typically a Label, only features one of 'any' or 'all' block
+
+# Each label declares Rules that are mutually exclusive, in boolean logic.
+# Thus, the set of matching file paths are non-overlapping, across the labels.
+
+
+### SRC ###
+# Add 'business_logic' label to any change within the 'src/cookiecutter_python' dir
+business_logic:
+  - any:
+    - changed-files:
+      - any-glob-to-any-file:
+        - 'src/biskotaki/*'
+        - 'src/biskotaki/*'
+
+stubs:
+  - any:
+    - changed-files:
+      - any-glob-to-any-file: ['src/stubs/*', 'src/stubs/**/*']
+
+### TESTS ###
+## Add 'test' label to any change within the 'tests' dir #
+test:
+  - any:
+    - changed-files:
+      - any-glob-to-any-file:
+        - 'tests/*'
+        - 'tests/**/*'
+
+  # exclude any changes within the 'tests/data/' dir
+  - all:
+    - changed-files:
+      - all-globs-to-all-files:
+        - '!tests/data/*'
+        - '!tests/data/**/*'
+
+test_data:
+  - any:
+    - changed-files:
+      - any-glob-to-any-file: ['tests/data/*', 'tests/data/**/*']
+
+### DOCS ###
+# Any change within the 'docs' dir, or the '.readthedocs.yml' file
+docs:
+  - any:
+    - changed-files:
+      - any-glob-to-any-file:
+        - 'docs/*'
+        - 'docs/**/*'
+        - '.readthedocs.yml'
+        - 'README.rst'
+        - 'README.md'
+
+### SCRIPTS ###
+scripts:
+  - any:
+    - changed-files:
+      - any-glob-to-any-file:
+        - 'scripts/**'
+
+### CI ###
 # Add 'ci' label to any change within the '.github' dir
 ci:
-- any: ['.github/*', '.github/**/*']
+  - any:
+    - changed-files:
+      - any-glob-to-any-file: ['.github/*', '.github/**/*']
+
+### DOCKER ###
+docker:
+  - any:
+    - changed-files:
+      - any-glob-to-any-file:
+        - 'Dockerfile'
+        - 'docker-compose.yml'
+        - 'docker-compose.*.yml'
+        - '.dockerignore'
+
+### POETRY ###
+poetry:
+  - any:
+    - changed-files:
+      - any-glob-to-any-file:
+        - 'pyproject.toml'
+        - 'poetry.lock'
+
+### TOX ###
+tox:
+  - any:
+    - changed-files:
+      - any-glob-to-any-file:
+        - 'tox.ini'
+
+config:
+  - any:
+    - changed-files:
+      - any-glob-to-any-file:
+        - '.bettercodehub.yml'
+        - '.coveragerc'
+        - '.gitignore'
+        - '.prospector.yml'
+        - '.pylintrc'
 
 
-# Add 'business_logic' label to any change within the 'src/biskotaki' dir
-business_logic:
-- any: ['src/biskotaki/*', 'src/biskotaki/**/*']
+####### LABELS based on BRANCH NAME #######
+
+## Pull Request Labeling Rules based Base Branch
+
+# Add 'release' label to any PR that is opened against the `main` branch
+release:
+  - base-branch: 'main'
+
+# Add 'boarding_auto' label to any PR that is opened against the `boarding-auto` branch
+# [GITOPS]: This should act as a signal, ie for a Listener Workflow to Merge the PR
+boarding_auto:
+  - base-branch: ['^boarding-auto', 'boarding-auto']
+  - base-branch: ['^board-n-release', 'board-n-release']
 
 
-# Add 'docs' label to any change within the 'docs' dir
-docs:
-- any: ['docs/*', 'docs/**/*']
-
-
-# Add 'test' label to any change within the 'tests' dir
-test:
-- any: ['tests/*', 'tests/**/*']
+# Add 'feature' label to any PR where the head branch name starts with
+# `feature` or has a `feature` section in the name
+feature:
+  - head-branch: ['^feature', 'feature']
