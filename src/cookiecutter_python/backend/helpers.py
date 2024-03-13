@@ -55,7 +55,9 @@ def parse_context(config_file: str):
         user_context = data['default_context']
         _interpreters: t.Mapping[str, t.List[str]] = user_context.get('interpreters', '{}')
         if isinstance(_interpreters, str):
-            logger.warning("Interpreters expected to be loaded in a python dict already. Got a string instead.")
+            logger.warning(
+                "Interpreters expected to be loaded in a python dict already. Got a string instead."
+            )
             logger.info("Converting interpreters %s to a python dict", _interpreters)
             _interpreters = json.loads(_interpreters)
         c = _interpreters
