@@ -49,7 +49,7 @@ Link: https://github.com/boromir674/biskotaki/actions/runs/4157571651
    a. **Job Matrix**, spanning different `platform`'s and `python version`'s
 
       1. Platforms: `ubuntu-latest`, `macos-latest`
-      2. Python Interpreters: `3.6`, `3.7`, `3.8`, `3.9`, `3.10`
+      2. Python Interpreters: `3.7`, `3.8`, `3.9`, `3.10`, `3.11`, `3.12`
    b. **Parallel Job** execution, generated from the `matrix`, that runs the `Test Suite`
    c. **Artifact** store of **Source** and **Wheel** Distributions, factoring Platform and Python Version
 
@@ -88,7 +88,7 @@ Next, **create** a file, let's call it ``gen-config.yml``, with the following co
         email: john.doe@something.org
         github_username: john-doe
         project_short_description: 'Demo Generated Project Description'
-        initialize_git_repo: no
+        initialize_git_repo: 'no'
         interpreters: {"supported-interpreters": ["3.8", "3.9", "3.10", "3.11"]}
 
 
@@ -111,7 +111,7 @@ To leverage all out-of-the-box development operations (ie scripts), install `tox
 
 .. code-block:: shell
 
-    python3 -m pip install --user 'tox<4'
+    python3 -m pip install --user 'tox==3.27.1'
 
 To verify tox available in your environment, run: ``tox --version``
 
