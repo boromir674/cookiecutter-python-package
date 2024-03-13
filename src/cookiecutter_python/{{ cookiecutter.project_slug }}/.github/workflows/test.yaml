@@ -33,7 +33,7 @@ env:
   UBUNTU_PY310_STRATEGY: "{\"platform\":[\"ubuntu-latest\"], \"python-version\":[\"3.10\"]}"
   TEST_STRATEGY: "{\"platform\":[\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\":[\"3.9\"]}"
 
-  ##### JOB ON/OFF SWITCHES #####
+  ##### JOB ON/OFF SWITCHES - Top/1st level overrides #####
   RUN_UNIT_TESTS: "true"
   RUN_LINT_CHECKS: "true"
   DOCKER_JOB_ON: "true"
@@ -317,6 +317,7 @@ jobs:
     outputs:
       ENVIRONMENT_NAME: ${{ "{{" }} steps.set_environment_name.outputs.ENVIRONMENT_NAME {{ "}}" }}
       AUTOMATED_DEPLOY: ${{ "{{" }} steps.set_environment_name.outputs.AUTOMATED_DEPLOY {{ "}}" }}
+
   ## JOB: PYPI UPLOAD ##
   pypi_publish:
     needs: [set_github_outputs, test_suite, check_which_git_branch_we_are_on]
@@ -332,6 +333,7 @@ jobs:
       allow_existing: true
     secrets:
       TWINE_PASSWORD: ${{ "{{" }} secrets.TWINE_PASSWORD }}
+
 ### STATIC CODE ANALYSIS & LINTING ###
   lint:
     name: Static Code Analysis
@@ -350,7 +352,7 @@ jobs:
     needs: set_github_outputs
     uses: boromir674/automated-workflows/.github/workflows/policy_docs.yml@v1.3.0
     with:
-      run_policy: ${{ "{{" }} needs.set_github_outputs.outputs.PIPE_DOCS_POLICY {{ "}}" }}
+      run_policy: '${{ "{{" }} needs.set_github_outputs.outputs.PIPE_DOCS_POLICY {{ "}}" }}'
       python_version: ${{ "{{" }} needs.set_github_outputs.outputs.PIPE_DOCS_PY {{ "}}" }}
       command: 'tox -s false -e pin-deps -- -E docs && tox -e docs --sitepackages -vv -s false'
 
