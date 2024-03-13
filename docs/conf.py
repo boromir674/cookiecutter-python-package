@@ -30,7 +30,7 @@ copyright = '2022, Konstantinos Lampridis'
 author = 'Konstantinos Lampridis'
 
 # The full version, including alpha/beta/rc tags
-release = '2.2.1'
+release = '2.2.1-dev1'
 
 # -- General configuration ---------------------------------------------------
 
@@ -88,7 +88,9 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
 # if not on_rtd:  # only set the theme if we're building docs locally
-#     html_theme = 'sphinx_rtd_theme'
+# html_theme = 'sphinx_rtd_theme'
+# html_theme = 'sphinx_material'
+# html_theme = 'sphinx_book_theme'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

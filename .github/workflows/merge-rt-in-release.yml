@@ -10,20 +10,26 @@ name: Merge RT in Release
 #  - test-distro-docs
 #  - direct-onboarding
 
+# OR
+
+# WHEN a tag 'start-train' is pushed t branch 'release-train'
+
 # THEN
 #   1. Open PR: 'release-train' --> 'release'
 #   2. Enable PR "Auto Merge"
 
 on:
+  push:
+    tags:
+      - start-train
   pull_request:
     # When a pull request merges, the pull request is automatically closed.
     # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#running-your-pull_request-workflow-when-a-pull-request-merges
     types: [closed]
     branches:  # ALLOWED Base Branches
       - release-train
-  push:
-    tags:
-      - start-train
+env:
+  TRAIN: 'release-train'   # MUST match value from above: on.pull_request.branches.0
 
 jobs:
   # RUN Job when 'sth' --> 'release-train' PR is merged
@@ -35,7 +41,6 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       MAIN_BR: 'master'
-      TRAIN: 'release-train'
       RELEASE_BR: 'release'
     steps:
       - uses: actions/checkout@v4
@@ -48,6 +53,21 @@ jobs:
         run: |
           (git branch --track "${{ env.RELEASE_BR }}" "origin/${{ env.RELEASE_BR }}" && git rebase ${{ env.MAIN_BR }} && git push) || echo "Branch '${{ env.RELEASE_BR }}' does NOT exist in remote Origin"
           git checkout ${{ env.RELEASE_BR }} || (git checkout -b ${{ env.RELEASE_BR }} ${{ env.MAIN_BR }} && git push origin -u ${{ env.RELEASE_BR }})
+
+      # if triggered by pushed tag then make sure tag was pushed to release-train
+      - name: "Find whether '${{ github.ref }}' tag is on '${{ env.TRAIN }}' branch"
+        if: github.event_name == 'push'
+        uses: rickstaa/action-contains-tag@v1
+        id: tag_on_release_train
+        with:
+          reference: ${{ env.TRAIN }}
+          tag: "${{ github.ref }}"
+
+      - name: Abort if pushed tag in NOT on '${{ env.TRAIN }}' branch
+        if: github.event_name == 'push' && steps.tag_on_release_train.outputs.retval != 'true'
+        run: |
+            echo "[ERROR] Tag '${{ github.ref }}' was pushed, but not on '${{ env.TRAIN }}' branch. Aborting Workflow.."
+            exit 1
 
       ####### PR: Train --> Release #######
       - name: "Create PR  'head': ${{ env.TRAIN }}  -->  'base': ${{ env.RELEASE_BR }}"

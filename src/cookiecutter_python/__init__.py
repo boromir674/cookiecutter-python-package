@@ -1,3 +1,3 @@
-__version__ = '2.2.1'
+__version__ = '2.2.1-dev1'
 
 from . import _logging  # noqa

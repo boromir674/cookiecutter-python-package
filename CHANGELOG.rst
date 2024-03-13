@@ -2,6 +2,27 @@
 Changelog
 =========
 
+2.2.1-dev1 (2024-03-13)
+=======================
+
+Changes
+^^^^^^^
+
+documentation
+"""""""""""""
+- update README to emphasize that our CI frontend is based on tox 3.x
+- fix example User Config YAML, in README quickstart section
+
+gitops
+""""""
+- allow on-demand merging of RT into Release
+- add GitOps Process supporting boarding multiple Topic Branches in RT, before Releasing
+
+build
+"""""
+- do poetry update
+
+
 2.2.1 (2024-03-11)
 ==================
 
