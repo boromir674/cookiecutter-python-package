@@ -24,9 +24,9 @@ def version_msg():
 
 @click.command(context_settings=dict(help_option_names=[u'-h', u'--help']))
 @click.version_option(__version__, u'-V', u'--version', message=version_msg())
-@click.option('-v', '--verbose', is_flag=True, help='Print debug information', default=False)
+# @click.option('-v', '--verbose', is_flag=True, help='Print debug information', default=False)
 def main(
-    verbose,
+    # verbose,
 ):
     """TODO Write this content that gets renders when invoking with --help flag!
 
@@ -39,7 +39,7 @@ def main(
     """
     try:
         pass
-    except Exception as error:
+    except Exception as error:  # pylint: disable=broad-except
         click.echo(error)
         sys.exit(1)
 
