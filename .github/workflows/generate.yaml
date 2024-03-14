@@ -46,11 +46,14 @@ jobs:
           cd cloned/biskotaki
           echo "PKG_VERSION=$(python scripts/parse_version.py)" >> $GITHUB_ENV
 
+      # INSTALL `generate-python` CLI
+      - name: Install `generate-python` CLI
+        run: pip install --user -e .
+
       # ## GENERATE FROM TEMPLATE into gen/ ##
       # # ROOT : gen/biskotaki/pyproject.toml
       # - name: Generate Biskotaki from Template
       #   run: |
-      #     pip install --user -e .
       #     echo "    version: \"${{ env.PKG_VERSION }}\"" >> .github/biskotaki.yaml
       #     generate-python -o gen --config-file ./.github/biskotaki.yaml --no-input -f --offline
 
