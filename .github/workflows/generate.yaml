@@ -139,7 +139,10 @@ jobs:
 
       # Generate poetry.lock to include in the Pushed Files
       - name: Generate Poetry.lock
-        run: poetry lock
+        run: |
+          pip install pipx
+          pipx install poetry
+          poetry lock
         working-directory: gen-gold/biskotaki-gold-standard
 
       # Docs Checks: Run Build Docs command, and verify it succeeds
