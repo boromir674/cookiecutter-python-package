@@ -103,7 +103,7 @@ jobs:
       #   run: tox -e check
 
       # # Docs Checks: Run Build Docs command, and verify it succeeds
-      # - name: 'Build Docs: Sphinx -> PASS'
+      # - name: 'Sphinx: Build Docs Web Site (html/css/js) -> PASS'
       #   working-directory: gen/biskotaki
       #   run: |
       #     tox -e pin-deps -- -E docs  # poetry export
@@ -148,14 +148,19 @@ jobs:
           poetry lock
         working-directory: gen-gold/biskotaki-gold-standard
 
-      # Docs Checks: Run Build Docs command, and verify it succeeds
-      - name: 'Build Docs: Sphinx -> PASS'
+      ## MKDOCS Checks: Run Build Docs command, and verify it succeeds ##
+      - name: 'Mkdocs: Build Docs Web Site (html/css/js) -> PASS'
         working-directory: gen-gold/biskotaki-gold-standard
         run: |
           tox -e pin-deps -- -E docs  # poetry export
           tox -e docs
 
-      - name: Remove requirements file generated with 'poetry export' for Docs
+      # exlude 'site' dir from pushing to biskotaki repo
+      - name: Exclude 'site' folder, built with Mkdocs, from 'git push'
+        run: rm -rf gen-gold/biskotaki-gold-standard/site
+
+      # exlude 'reqs.txt' file, generated with 'poetry export' for Docs
+      - name: Exclude 'reqs.txt' file, generated with 'poetry export' for Docs
         # See tox.ini -> testenv.setenv.DEFAULT_REQS_FILE
         run: rm -f gen-gold/biskotaki-gold-standard/reqs.txt
 
