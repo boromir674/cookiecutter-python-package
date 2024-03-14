@@ -39,7 +39,7 @@ def main(
     """
     try:
         pass
-    except Exception as error:
+    except Exception as error:  # pylint: disable=broad-except
         click.echo(error)
         sys.exit(1)
 
