@@ -2,6 +2,33 @@
 Changelog
 =========
 
+2.4.0 (2024-03-14)
+==================
+
+Changes
+^^^^^^^
+
+feature
+"""""""
+- make Gold Standard Python Project pass Pylint Job on CI
+- comment out the 'verbose' cli flag to make pylint score over 8.2 on fresh project
+
+ci
+""
+- prevent Mkdocs 'site' folder from being pushed to Biskotaki repo, after 'tox -e docs'
+- install 'generate-python' CLI in dedicated step
+- install pipx and poetry (using pipx)
+- run poetry lock and add poetry.lock file in py-gold branch of biskotaki repo
+
+release
+"""""""
+- bump version to 2.4.0
+
+gitops
+""""""
+- handle case where the origin/release branch is not found
+
+
 2.3.0 (2024-03-13)
 ==================
 

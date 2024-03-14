@@ -48,7 +48,10 @@ jobs:
           fetch-depth: 0  # 0 indicates all history for all branches and tags.
           set-safe-directory: ''  # `git config --global --add safe.directory <path>`
           token: '${{ secrets.GH_TOKEN }}'
-      
+      # track remote master, since this Workflow triggers on push tag or pull request activity
+      - name: Track Remote Master
+        run: git branch --track "${{ env.MAIN_BR }}" "origin/${{ env.MAIN_BR }}"
+
       - name: Ensure Release Branch exists and is rebased on Main Branch, before PR
         run: |
           (git branch --track "${{ env.RELEASE_BR }}" "origin/${{ env.RELEASE_BR }}" && git rebase ${{ env.MAIN_BR }} && git push) || echo "Branch '${{ env.RELEASE_BR }}' does NOT exist in remote Origin"
