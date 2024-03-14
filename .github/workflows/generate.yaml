@@ -67,8 +67,8 @@ jobs:
       - name: Test distributions 'Source', 'Built' and 'edit' (dev env) mode installation
         env:
           TOXPYTHON: "python${{ env.PY_VERSION }}"
+        working-directory: gen/biskotaki
         run: |
-          cd gen/biskotaki
           tox -e 'edit,sdist,wheel'
           tox -e wheel-test
           tox -e coverage
@@ -77,30 +77,38 @@ jobs:
 
       # Running Type Check, on src and Test code: Passes
       - name: 'Mypy: Static Type Checker -> PASS'
+        working-directory: gen/biskotaki
         run: |
-          cd gen/biskotaki
           tox -e pin-deps -- -E typing
           tox -e type
 
       - name: 'Ruff: Fast Python Linter -> PASS'
-        run: |
-          cd gen/biskotaki
-          tox -e ruff
+        working-directory: gen/biskotaki
+        run: tox -e ruff
+
       # Running Lint Check, on src and Test code: Passes
       - name: 'Isort, Black: Code Formatter -> PASS'
-        run: |
-          cd gen/biskotaki
-          tox -e lint
+        working-directory: gen/biskotaki
+        run: tox -e lint
       # Running the Build script (sdist and wheel): produces Distro Artifacts: Source (.tar.gz) and Wheel (.whl) files
       - name: 'Build: sdist, wheel -> PASS'
-        run: |
-          cd gen/biskotaki
-          tox -e build
+        working-directory: gen/biskotaki
+        run: tox -e build
       # Running Quality Checks against Distro Metadata: Passes with 10/10 score
       - name: 'Pyroma: Distro Quality -> PASS'
+        working-directory: gen/biskotaki
+        run: tox -e check
+
+      # Docs Checks: Run Build Docs command, and verify it succeeds
+      - name: 'Build Docs: Sphinx -> PASS'
+        working-directory: gen/biskotaki
         run: |
-          cd gen/biskotaki
-          tox -e check
+          tox -e pin-deps -- -E docs  # poetry export
+          tox -e docs
+
+      - name: Remove requirements file generated with 'poetry export' for Docs
+        # See tox.ini -> testenv.setenv.DEFAULT_REQS_FILE
+        run: rm -f gen/biskotaki/reqs.txt
 
       # tox -e graphs
 
@@ -120,14 +128,30 @@ jobs:
           target-branch: ${{ env.branch }}
           commit-message: 'apply Template from https://github.com/boromir674/cookiecutter-python-package'
 
-      ## GENERATE Python Gold Standard FROM TEMPLATE into gen/ ##
-      # ROOT : gen/biskotaki/pyproject.toml
+      ## GENERATE Python GOLD STANDARD from TEMPLATE into gen/ ##
+      # ROOT : gen-gold/biskotaki-gold-standard/pyproject.toml
       - name: Generate Python Gold Standard Biskotaki from Template
         env:
           USER_CONFIG: tests/data/gold-standard.yml
         run: |
           echo "    version: \"${{ env.PKG_VERSION }}\"" >> ${{ env.USER_CONFIG }}
           generate-python -o gen-gold --config-file "${{ env.USER_CONFIG }}" --no-input -f --offline
+
+      # Generate poetry.lock to include in the Pushed Files
+      - name: Generate Poetry.lock
+        run: poetry lock
+        working-directory: gen-gold/biskotaki-gold-standard
+
+      # Docs Checks: Run Build Docs command, and verify it succeeds
+      - name: 'Build Docs: Sphinx -> PASS'
+        working-directory: gen-gold/biskotaki-gold-standard
+        run: |
+          tox -e pin-deps -- -E docs  # poetry export
+          tox -e docs
+
+      - name: Remove requirements file generated with 'poetry export' for Docs
+        # See tox.ini -> testenv.setenv.DEFAULT_REQS_FILE
+        run: rm -f gen-gold/biskotaki-gold-standard/reqs.txt
 
       ## PUSH the Python Gold Standard to BISKOTAKI REPO ##
       - name: Push to dedicated branch in biskotaki repo
