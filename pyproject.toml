@@ -217,6 +217,7 @@ testpaths = [
 explicit-only = [
     "integration",
     "network_bound",
+    "slow",
 ]
 
 
