@@ -3,7 +3,7 @@ import sys
 import pytest
 
 
-@pytest.mark.integration
+@pytest.mark.slow
 @pytest.mark.parametrize(
     'snapshot_name',
     [
@@ -14,6 +14,7 @@ import pytest
     ],
 )
 def test_running_lint_passes(snapshot_name, test_root):
+    """Verify Snapshot Project passes `tox -e lint` out of the box."""
     import subprocess
     from pathlib import Path
 
@@ -42,7 +43,7 @@ def test_running_lint_passes(snapshot_name, test_root):
     assert res.returncode == 0
 
 
-@pytest.mark.integration
+@pytest.mark.slow
 @pytest.mark.parametrize(
     'snapshot_name',
     [
@@ -53,6 +54,7 @@ def test_running_lint_passes(snapshot_name, test_root):
     ],
 )
 def test_running_ruff_passes(snapshot_name, test_root):
+    """Verify Snapshot Project passes `tox -e ruff` out of the box."""
     import subprocess
     from pathlib import Path
 

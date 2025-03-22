@@ -3,10 +3,11 @@ import sys
 import pytest
 
 
-@pytest.mark.integration
+@pytest.mark.slow
 def test_running_build_creates_source_and_wheel_distros(
     test_root,
 ):
+    """Build wheel of biskotaki-no-input Snapshot Project and run tox -e check."""
     import subprocess
     from pathlib import Path
 
