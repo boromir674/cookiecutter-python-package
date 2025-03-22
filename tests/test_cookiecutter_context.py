@@ -185,10 +185,10 @@ RELEASE_DATE = datetime.datetime.now().strftime('%Y-%m-%d')
                                 ("initialize_git_repo", "no"),
                                 (
                                     "interpreters",
-                                    {"supported-interpreters": ["3.8", "3.9", "3.10", "3.11"]},
+                                    {"supported-interpreters": ["3.10", "3.11", "3.12"]},
                                 ),
                                 ("docs_builder", "mkdocs"),
-                                ("rtd_python_version", "3.10"),
+                                ("rtd_python_version", "3.11"),
                             ]
                         ),
                     ),
@@ -225,14 +225,12 @@ RELEASE_DATE = datetime.datetime.now().strftime('%Y-%m-%d')
                                 'no',
                                 'yes',
                             ],  # NOTE Difference to 1st Item
-                            "interpreters": {
-                                "supported-interpreters": ["3.8", "3.9", "3.10", "3.11"]
-                            },
+                            "interpreters": {"supported-interpreters": ["3.10", "3.11", "3.12"]},
                             "docs_builder": [
                                 'mkdocs',
                                 'sphinx',
                             ],  # NOTE Difference to 1st Item
-                            "rtd_python_version": ["3.10", "3.8", "3.9", "3.11", "3.12"],
+                            "rtd_python_version": ["3.11", "3.8", "3.9", "3.10", "3.12"],
                         },
                     ),
                 ]
