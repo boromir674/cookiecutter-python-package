@@ -293,7 +293,13 @@ def get_post_gen_main(get_object):
     ),
     ids=['add-cli', 'do-not-add-cli'],
 )
-def test_main(add_cli, get_post_gen_main, create_request_from_emulated_project, assert_initialized_git, tmpdir):
+def test_main(
+    add_cli,
+    get_post_gen_main,
+    create_request_from_emulated_project,
+    assert_initialized_git,
+    tmpdir,
+):
     """Verify post_gen_project behaviour, with emulated generated project."""
     from pathlib import Path
 
@@ -329,7 +335,9 @@ def test_main(add_cli, get_post_gen_main, create_request_from_emulated_project, 
 
 
 # REQUIRES well maintained emulated generated project (fixtures)
-def test_post_file_removal_deletes_empty_logfile_if_found(get_post_gen_main, create_request_from_emulated_project, tmp_path):
+def test_post_file_removal_deletes_empty_logfile_if_found(
+    get_post_gen_main, create_request_from_emulated_project, tmp_path
+):
 
     # GIVEN a temporary directory, to store the emulated generated project
     project_dir: Path = tmp_path
@@ -360,7 +368,9 @@ def test_post_file_removal_deletes_empty_logfile_if_found(get_post_gen_main, cre
 
 
 # REQUIRES well maintained emulated generated project (fixtures)
-def test_post_file_removal_keeps_logfile_if_found_non_empty(get_post_gen_main, create_request_from_emulated_project, tmp_path):
+def test_post_file_removal_keeps_logfile_if_found_non_empty(
+    get_post_gen_main, create_request_from_emulated_project, tmp_path
+):
 
     # GIVEN a temporary directory, to store the emulated generated project
     project_dir: Path = tmp_path
@@ -390,7 +400,9 @@ def test_post_file_removal_keeps_logfile_if_found_non_empty(get_post_gen_main, c
     assert (project_dir / FILE_TARGET_LOGS).stat().st_size > 0
 
 
-def test_stable_cicd_was_selected_and_worked(tmpdir, create_request_from_emulated_project, get_post_gen_main):
+def test_stable_cicd_was_selected_and_worked(
+    tmpdir, create_request_from_emulated_project, get_post_gen_main
+):
     from pathlib import Path
 
     # GIVEN a temporary directory, for the emulated generated project
@@ -418,7 +430,9 @@ def test_stable_cicd_was_selected_and_worked(tmpdir, create_request_from_emulate
     assert not (Path(tmp_target_gen_dir) / '.github/workflows/signal-deploy.yml').exists()
 
 
-def test_experimental_cicd_was_selected_and_worked(tmpdir, create_request_from_emulated_project, get_post_gen_main):
+def test_experimental_cicd_was_selected_and_worked(
+    tmpdir, create_request_from_emulated_project, get_post_gen_main
+):
     from pathlib import Path
 
     # GIVEN a temporary directory, for the emulated generated project
