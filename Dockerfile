@@ -12,11 +12,14 @@ COPY poetry.lock pyproject.toml ./
 # Configure installation location, for 'install.python-poetry.org' script
 ENV POETRY_HOME=/opt/poetry
 
-# Install Poetry & export pinned Prod (install only) dependencies, into pip format
+# Install Poetry
 RUN python -c 'from urllib.request import urlopen; print(urlopen("https://install.python-poetry.org").read().decode())' | python
+# Install plugin for 'poetry export' command
+RUN "$POETRY_HOME/bin/poetry" self add poetry-plugin-export
 
 FROM builder AS prod_builder
 
+#  & export pinned Prod (install only) dependencies, into pip format
 RUN "$POETRY_HOME/bin/poetry" export -f requirements.txt > requirements.txt
 
 FROM builder AS test_builder
