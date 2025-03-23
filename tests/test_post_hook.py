@@ -109,7 +109,6 @@ def get_post_gen_main(get_object, request_factory):
             'module+cli': CLI_ONLY,
             'pytest-plugin': PYTEST_PLUGIN_ONLY,
         }
-        import os
 
         from cookiecutter_python.hooks.post_gen_project import CICD_DELETE
 
@@ -120,11 +119,11 @@ def get_post_gen_main(get_object, request_factory):
                 for file_path_parts_tuple in proj_unique_files_from_request(
                     emulated_post_gen_request
                 ):
-                    assert type(file_path_parts_tuple) == tuple
+                    assert type(file_path_parts_tuple) is tuple
                     yield file_path_parts_tuple
             for cicd_version_unique_files in CICD_DELETE.values():
-                assert type(cicd_version_unique_files) == list
-                assert all([type(x) == tuple for x in cicd_version_unique_files])
+                assert type(cicd_version_unique_files) is list
+                assert all([type(x) is tuple for x in cicd_version_unique_files])
                 for path_components_tuple in cicd_version_unique_files:
                     yield path_components_tuple
 

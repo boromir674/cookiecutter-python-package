@@ -1045,7 +1045,7 @@ def get_expected_generated_files(
         res = []
         for x in expected_gen_files:
             parts = x.parts
-            assert type(parts) == tuple, f"Sanity check fail: {parts}"
+            assert type(parts) is tuple, f"Sanity check fail: {parts}"
             assert len(parts) > 0, f"Sanity check fail: {parts}"
             b = SEP.join(parts)
             b = b.replace(r'{{ cookiecutter.pkg_name }}', pkg_name).replace(
