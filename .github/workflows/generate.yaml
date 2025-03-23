@@ -67,7 +67,7 @@ jobs:
           # use whichever exists, else exit with error
           GEN_CI_CONFIG=$([ -f $new_design ] && echo $new_design || echo $old_design)
 
-          if file not exists explicitly exit with error
+          # if file not exists explicitly exit with error
           if [ ! -f "$GEN_CI_CONFIG" ]; then
             echo "ERROR: $GEN_CI_CONFIG does not exist"
             exit 1
