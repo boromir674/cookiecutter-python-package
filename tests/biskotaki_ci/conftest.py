@@ -11,7 +11,12 @@ def biskotaki_ci_project(
     test_root,
     tmp_path,
 ) -> Path:
-    """Fixture that generates a project from .github/biskotaki.yaml"""
+    """Generated Project from '.github/biskotaki.yaml' config-file.
+    
+    Use this Fixture to utilize a Project produced by the Generatpr at
+    test-time (once), using the same '.github/biskotaki.yaml' config-file,
+    used for publishing (via CI) the Biskotaki (generated) Project.
+    """
     import sys
 
     from cookiecutter_python.backend.main import generate
@@ -31,7 +36,7 @@ def biskotaki_ci_project(
     mock_check('pypi', True)
     mock_check('readthedocs', True)
 
-    # Generate Biskota from CI Config Yaml
+    ######## GENERATE Biskotaki from CI Config Yaml ########
     project_dir: str = generate(
         no_input=True,
         output_dir=tmp_path,  # Path or string to a folder path

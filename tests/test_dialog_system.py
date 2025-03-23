@@ -30,13 +30,14 @@ def test_dialog_prompts_for_all_cookiecutter_variables(get_object, distro_loc):
         assert {x['name'] for x in questionary_data} == (
             set(_cookie_vars) - {'interpreters'}
         ).union(set(['supported-interpreters'])), (
-            f"Missing: {_cookie_vars - runtime_content.keys()}.\n"
+            f"Missing: from {_cookie_vars}.\n"
             "Dialog Prompts must be kept in sync with Cookiecutter Variables!\n\n"
             "If missing variables from Dialog Prompts, this means that cookiecutter.json\n"
             "got added new Variables, and the Dialogs need to be updated, to stay in sync.\n\n"
             "Make sure Variables in src/cookiecutter_python/cookiecutter.json all have a"
             "corresponding element (name), found in the dialog list passed in the prompt"
-            "of src/cookiecutter_python/handle/dialogs/lib/project_name.py.\n\n"
+            "of src/cookiecutter_python/handle/dialogs/lib/project_name.py and in"
+            "the src/cookiecutter_python/backend/helpers.py client code.\n\n"
         )
         return {'supported-interpreters': []}
 
