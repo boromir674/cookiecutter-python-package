@@ -208,7 +208,7 @@ jobs:
 
       ## UPLOAD CI ARTIFACTS - Coverage Reports ##
       - name: "Upload Test Coverage as Artifacts"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: all_coverage_raw
           path: coverage-${{ "{{" }} matrix.platform {{ "}}" }}-${{ "{{" }} matrix.python-version {{ "}}" }}.xml
@@ -229,7 +229,7 @@ jobs:
 
       ## UPLOAD CI ARTIFACTS - Distro Build(s), 1 sdist and 1 or more wheels ##
       - name: Upload Source & Wheel distributions as Artefacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dist-${{ "{{" }} matrix.platform {{ "}}" }}-${{ "{{" }} matrix.python-version {{ "}}" }}
           path: ${{ "{{" }} env.DIST_DIR {{ "}}" }}
