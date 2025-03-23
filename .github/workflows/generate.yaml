@@ -118,7 +118,9 @@ jobs:
       - name: 'Sphinx: Build Docs Web Site (html/css/js) -> PASS'
         working-directory: gen/biskotaki
         run: |
+          echo "[INFO] Exporting to pip-installable Requirements for Docs"
           tox -e pin-deps -- -E docs  # poetry export
+          echo "[INFO] Building Docs"
           tox -e docs
 
       - name: Remove requirements file generated with 'poetry export' for Docs
@@ -164,7 +166,9 @@ jobs:
       - name: 'Mkdocs: Build Docs Web Site (html/css/js) -> PASS'
         working-directory: gen-gold/biskotaki-gold-standard
         run: |
+          echo "[INFO] Exporting to pip-installable Requirements for Docs"
           tox -e pin-deps -- -E docs  # poetry export
+          echo "[INFO] Building Docs"
           tox -e docs
 
       # exlude 'site' dir from pushing to biskotaki repo
