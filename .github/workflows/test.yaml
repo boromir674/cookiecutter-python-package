@@ -249,7 +249,7 @@ jobs:
         mv ./.tox/coverage.xml ./coverage-${{ matrix.platform }}-${{ matrix.python-version }}.xml
 
     - name: "Upload Test Coverage as Artifacts"
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: all_coverage_raw
         path: coverage-${{ matrix.platform }}-${{ matrix.python-version }}.xml
@@ -269,7 +269,7 @@ jobs:
         tox -e check -vv -s false
 
     - name: Upload Source & Wheel distributions as Artefacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: dist-${{ matrix.platform }}-${{ matrix.python-version }}
         path: ${{ env.DIST_DIR }}
