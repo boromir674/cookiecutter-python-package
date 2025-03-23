@@ -305,7 +305,7 @@ jobs:
 # Ref Page: https://automated-workflows.readthedocs.io/en/main/ref_docker/
   docker_build:
     needs: [set_github_outputs, test_suite]
-    uses: boromir674/automated-workflows/.github/workflows/docker.yml@v1.13.1
+    uses: boromir674/automated-workflows/.github/workflows/docker.yml@v1.14.0
     if: always()
     with:
       acceptance_policy: ${{ needs.set_github_outputs.outputs.PIPE_DOCKER_POLICY }}
@@ -364,7 +364,7 @@ jobs:
   ## JOB: PYPI UPLOAD ##
   pypi_publish:
     needs: [set_github_outputs, test_suite, check_which_git_branch_we_are_on]
-    uses: boromir674/automated-workflows/.github/workflows/pypi_env.yml@v1.13.1
+    uses: boromir674/automated-workflows/.github/workflows/pypi_env.yml@v1.14.0
     with:
       should_trigger: ${{ needs.set_github_outputs.outputs.PUBLISH_ON_PYPI == 'true' && needs.check_which_git_branch_we_are_on.outputs.AUTOMATED_DEPLOY == 'true' }}
       distro_name: cookiecutter_python
@@ -394,7 +394,7 @@ jobs:
     name: Build Documentation
     needs: set_github_outputs
     # bafaa2c2a014758a4421fe9b5c02ba66dbfdbef6
-    uses: boromir674/automated-workflows/.github/workflows/policy_docs.yml@v1.13.1
+    uses: boromir674/automated-workflows/.github/workflows/policy_docs.yml@v1.14.0
     with:
       run_policy: '${{ needs.set_github_outputs.outputs.PIPE_DOCS_POLICY }}'
       python_version: ${{ needs.set_github_outputs.outputs.PIPE_DOCS_PY }}
@@ -405,7 +405,7 @@ jobs:
   code_visualization:
     needs: set_github_outputs
     name: Code Visualization of Python Imports as Graphs, in .svg
-    uses: boromir674/automated-workflows/.github/workflows/python_imports.yml@v1.13.1
+    uses: boromir674/automated-workflows/.github/workflows/python_imports.yml@v1.14.0
     with:
       run_policy: '${{ needs.set_github_outputs.outputs.PIPE_CODE_VIZ_POLICY }}'
       branches: 'main, master, dev'
@@ -417,7 +417,7 @@ jobs:
   gh_release:
     needs: [test_suite, check_which_git_branch_we_are_on]
     if: ${{ needs.check_which_git_branch_we_are_on.outputs.AUTOMATED_DEPLOY == 'true' }}
-    uses: boromir674/automated-workflows/.github/workflows/gh-release.yml@v1.13.1
+    uses: boromir674/automated-workflows/.github/workflows/gh-release.yml@v1.14.0
     name: 'GH Release'
     with:
       tag: ${{ github.ref_name }}
