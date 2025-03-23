@@ -9,6 +9,7 @@ import pytest
     ],
 )
 def test_snapshot_matches_runtime(snapshot, biskotaki_ci_project, test_root):
+    """Verify Snapshots against '.github/biskotaki.yaml' Gen Project."""
     ## GIVEN a Snapshot we maintain, reflecting the Gold Standard of Biskotaki
     from pathlib import Path
 

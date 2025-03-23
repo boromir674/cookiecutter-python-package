@@ -8,8 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 def parse_context(config_file: str):
-    # initialize data
-    user_context = {}
+    """Render Context on demand, using cookiecutter.json and optional config file."""
     from pathlib import Path
 
     my_dir = Path(__file__).parent.absolute()
@@ -45,8 +44,8 @@ def parse_context(config_file: str):
 
         data = get_user_config(config_file, default_config=False)
         # data = load_yaml(config_file)
-        user_context = data['default_context']
-        _interpreters: t.Mapping[str, t.List[str]] = user_context.get('interpreters', '{}')
+        user_default_context = data['default_context']
+        _interpreters: t.Mapping[str, t.List[str]] = user_default_context.get('interpreters', '{}')
         if isinstance(_interpreters, str):
             logger.warning(
                 "Interpreters expected to be loaded in a python dict already. Got a string instead."
@@ -55,11 +54,13 @@ def parse_context(config_file: str):
             _interpreters = json.loads(_interpreters)
         user_interpreters = _interpreters
     else:
+        user_default_context = {}
         user_interpreters = cook_json['interpreters']
 
     context_defaults = dict(cook_json,
-                            **{k: v[0] for k, v in choices.items()},
-                            **user_context,)
+                            **{k: v for k, v in user_default_context.items()},
+                            **{k: v[0] for k, v in choices.items() if k not in user_default_context},
+                        )
 
     from cookiecutter_python.handle.interactive_cli_pipeline import (
         InteractiveDialogsPipeline,
