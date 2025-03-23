@@ -21,3 +21,4 @@ default_context:
     docs_builder: "mkdocs"
     ## READ THE DOCS CI Config ##
     rtd_python_version: "3.11"
+    cicd: 'experimental'

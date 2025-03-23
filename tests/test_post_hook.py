@@ -43,7 +43,11 @@ def emulated_generated_project(
 
         mkdir(path.join(project_dir, 'scripts'))
         # Path(path.join(project_dir, 'scripts', 'gen_api_refs_pages.py')).touch()
-
+        
+        # Create .github/workflows directory
+        mkdir(path.join(project_dir, '.github'))
+        mkdir(path.join(project_dir, '.github', 'workflows'))
+        
         # Generate, for given name and project_dir
         emulated_post_gen_request = request_factory.post(
             project_dir=project_dir,
@@ -80,6 +84,8 @@ def emulated_generated_project(
             'module+cli': CLI_ONLY,
             'pytest-plugin': PYTEST_PLUGIN_ONLY,
         }
+        from cookiecutter_python.hooks.post_gen_project import CICD_DELETE
+        import os
 
         def generate_all_extra_files(
             project_types: ProjectUniqueFilesMap,
@@ -88,7 +94,20 @@ def emulated_generated_project(
                 for file_path_parts_tuple in proj_unique_files_from_request(
                     emulated_post_gen_request
                 ):
+                    assert type(file_path_parts_tuple) == tuple
                     yield file_path_parts_tuple
+            assert type(CICD_DELETE) == dict
+            for cicd_version_unique_files in CICD_DELETE.values():
+                assert type(cicd_version_unique_files) == list
+                assert all([type(x) == tuple for x in cicd_version_unique_files])
+                for path_components_tuple in cicd_version_unique_files:
+                    assert type(path_components_tuple) == tuple
+                    yield path_components_tuple
+            #     for path_components_tuple in cicd_version_unique_files:
+            #         for i in path_components_tuple:
+            #             yield i
+                        # p: Path = emulated_post_gen_request
+                    # yield path_components_tuple
 
         ## All files expected to be considered, for Post Removal ##
         extra_files_declared: t.List[UniqueFile] = list(
@@ -103,7 +122,9 @@ def emulated_generated_project(
         # to be equal to the length of the list
         expected_unique_files = len(create_emulated)
         # Sanity check that no-one inputs the same file twice
-        assert len(extra_files_declared) == expected_unique_files
+        print('\n' + '\n'.join(sorted([str(x) for x in extra_files_declared])) + '\n')
+        print('\n' + '\n'.join(sorted([str(x) for x in create_emulated])) + '\n')
+        assert len(extra_files_declared) == expected_unique_files, f"{extra_files_declared} != {expected_unique_files}"
 
         ## Docs Builder Type Dependend Files ##
         from cookiecutter_python.hooks.post_gen_project import (
@@ -183,6 +204,8 @@ def get_post_gen_main(get_object, emulated_generated_project):
                     with open(absolute_proj_dir.joinpath(*file_path), 'w') as _file:
                         _file.write('print("Hello World!")\n')
 
+            # SANITY CHECK that request has cicd str value, otherwise the test cannot continue
+            assert isinstance(emulated_request.cicd, str), f"Mocked Reqeust is missing cicd str value: {emulated_request.cicd}"
             return emulated_request
 
         # Get a main method, with a mocked get_request
@@ -231,14 +254,10 @@ def get_post_gen_main(get_object, emulated_generated_project):
 
 
 # REQUIRES well maintained emulated generated project (fixtures)
-@pytest.mark.parametrize(
-    'add_cli',
-    (
-        True,
-        False,
-    ),
-    ids=['add-cli', 'do-not-add-cli'],
-)
+@pytest.mark.parametrize('add_cli', (
+    True,
+    False,
+), ids=['add-cli', 'do-not-add-cli'])
 def test_main(add_cli, get_post_gen_main, assert_initialized_git, tmpdir):
     """Verify post_gen_project behaviour, with emulated generated project."""
     from pathlib import Path

@@ -223,6 +223,7 @@ def hook_request_new(distro_loc):
             interpreters (t.Optional[t.Dict]): [description]
             project_type (t.Optional[str]): [description]
             module_name (t.Optional[str]): [description]
+            cicd (t.Optional[str]): [description]
         """
 
         project_dir: t.Optional[str]
@@ -232,6 +233,7 @@ def hook_request_new(distro_loc):
 
         # Templated Vars (cookiecutter) use in Context for Jinja Rendering
         vars: t.Optional[t.Dict] = attr.ib(
+            # IMPORTANT: emulates jinja context vars (ie from list of choices to 1st choice)
             default=OrderedDict(td_cookiecutter_json_data, **engine_state['cookiecutter'])
         )
         initialize_git_repo: t.Optional[bool] = attr.ib(default=True)
@@ -264,8 +266,10 @@ def hook_request_new(distro_loc):
                 'python_runtime': '3.10',
             }
         )
+        cicd: t.Optional[str] = attr.ib(default='stable')
 
         def __attrs_post_init__(self):
+            """IMPORTANT: emulate jinja context vars (ie from list of choices to 1st choice)"""
             self.vars['project_type'] = self.project_type
 
     class BaseHookRequest(metaclass=SubclassRegistry):
@@ -645,6 +649,8 @@ def user_config(distro_loc: Path) -> ConfigInterfaceGeneric[ConfigProtocol]:
                 data['docs_builder'] = data['docs_builder'][0]  # choice variable
                 # RTD CI Python Version #
                 data['rtd_python_version'] = data['rtd_python_version'][0]  # choice variable
+                # CICD Pipeline Design old/new , stable/experimental
+                data['cicd'] = data['cicd'][0]  # choice variable
                 return data
 
             return _load_json
@@ -806,20 +812,28 @@ def get_expected_generated_files(
 
         ## DERIVE the EXPECTED files to be removed, varying across 'Project Type'
         # we leverage the same production logic
-        ii = [
-            x
-            for x in proj_type_2_files_to_remove[expected_project_type](
-                type(
-                    'PostGenRequestLike',
-                    (),
-                    {
-                        'module_name': pkg_name,
-                    },
-                )
+        ii = [x
+              for x in proj_type_2_files_to_remove[expected_project_type](
+                type('PostGenRequestLike', (), {'module_name': pkg_name})
             )
         ]
         SEP = '/'
         files_to_remove: t.Set[str] = {SEP.join(i) for i in ii}
+
+        # Augment the expected files for removal based on CI/CD option
+        from cookiecutter_python.hooks.post_gen_project import CICD_DELETE
+        files_to_remove.update([os.path.join(*parts) for parts in CICD_DELETE[config.data.get('cicd', 'stable')]])
+
+#         CICD_DELETE = {
+#     'stable': [
+#         ('.github', 'workflows', 'cicd.yml'),
+#         ('.github', 'workflows', 'codecov-upload.yml'),
+#         ('.github', 'workflows', 'signal-deploy.yml'),
+#     ],
+#     'experimental': [
+#         ('.github', 'workflows', 'test.yaml'),
+#     ],
+# }     
 
         ## DERIVE expected files inside 'docs' gen dir
         from cookiecutter_python.backend import get_docs_gen_internal_config
@@ -875,8 +889,10 @@ def get_expected_generated_files(
         assert all(
             [isinstance(x, str) for x in files_to_remove]
         ), f"Temporary Requirement of Test Code: files_to_remove must be a list of strings, not {files_to_remove}"
-
-        ## Remove all Template Docs files from Expectations
+        
+     
+        ## Remove all Template Docs files from Expectations, because in the Template Project
+        # 2 dedicated foldres are used to maintain mkdocs and spinx Docs (which get moved to ./docs in post hook)
         for (
             docs_builder_id,
             builder_docs_folder_name,

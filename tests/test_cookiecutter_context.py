@@ -111,6 +111,7 @@ RELEASE_DATE = datetime.datetime.now().strftime('%Y-%m-%d')
                                 ),
                                 ("docs_builder", "sphinx"),
                                 ("rtd_python_version", "3.10"),
+                                ('cicd', 'stable'),
                                 # since the below is expected to be put in the extra context before calling cookiecutter, it gets below the rest of Variables
                                 # ('_template', str(cookie)),
                             ]
@@ -155,6 +156,7 @@ RELEASE_DATE = datetime.datetime.now().strftime('%Y-%m-%d')
                                 'mkdocs',
                             ],  # NOTE Difference to 1st Item
                             "rtd_python_version": ["3.10", "3.8", "3.9", "3.11", "3.12"],
+                            'cicd': ['stable', 'experimental'],
                         },
                     ),
                 ]
@@ -201,6 +203,7 @@ RELEASE_DATE = datetime.datetime.now().strftime('%Y-%m-%d')
                                 ),
                                 ("docs_builder", "mkdocs"),
                                 ("rtd_python_version", "3.11"),
+                                ('cicd', 'experimental'),
                             ]
                         ),
                     ),
@@ -243,6 +246,7 @@ RELEASE_DATE = datetime.datetime.now().strftime('%Y-%m-%d')
                                 'sphinx',
                             ],  # NOTE Difference to 1st Item
                             "rtd_python_version": ["3.11", "3.8", "3.9", "3.10", "3.12"],
+                            'cicd': ['experimental', 'stable'],
                         },
                     ),
                 ]
