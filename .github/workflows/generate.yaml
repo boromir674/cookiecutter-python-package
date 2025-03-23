@@ -60,7 +60,19 @@ jobs:
       ## VALIDATE BISKOTAKI CI CONFIG file is in valid Yaml format ##
       - name: "Validate YAML format"
         run: |
-          GEN_CI_CONFIG=gen/biskotaki/.github/workflows/test.yaml
+          # At the moment the genraot can create 2 different designs of CI Pipeline
+          old_design=gen/biskotaki/.github/workflows/test.yaml
+          new_design=gen/biskotaki/.github/workflows/cicd.yml
+
+          # use whichever exists, else exit with error
+          GEN_CI_CONFIG=$([ -f $new_design ] && echo $new_design || echo $old_design)
+
+          if file not exists explicitly exit with error
+          if [ ! -f "$GEN_CI_CONFIG" ]; then
+            echo "ERROR: $GEN_CI_CONFIG does not exist"
+            exit 1
+          fi
+
           if [ ! $(yq eval 'true' "$GEN_CI_CONFIG") ]; then
             echo "ERROR: $GEN_CI_CONFIG is malformed"
             exit 1
