@@ -10,6 +10,7 @@ else:
 
 import pytest
 
+
 ### IMPORTANT ###
 # UPDATE every time a NEW Template File is added to the Generator
 # To increase control on test case behavior, see tests/conftest.py -> 'class HookRequest'
