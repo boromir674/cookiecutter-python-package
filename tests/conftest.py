@@ -130,8 +130,7 @@ class EmulatedRequest(t.Protocol):
 
 class EmulatedRequestFactory(t.Protocol):
     def pre(**kwargs: t.Any) -> EmulatedRequest: ...
-    def post(**kwargs: t.Any
-    ) -> EmulatedRequest: ...
+    def post(**kwargs: t.Any) -> EmulatedRequest: ...
 
 
 @pytest.fixture
@@ -214,7 +213,7 @@ def request_factory(distro_loc) -> t.Type[EmulatedRequestFactory]:
     assert engine_state_vars_supported_by_td
 
     # WHEN we define a way to create a valid input for pre and post hooks
-    
+
     @attr.s(auto_attribs=True, kw_only=True)
     class EmulatedHookRequest:
         """Hook Request Data Class.
@@ -319,10 +318,14 @@ def request_factory(distro_loc) -> t.Type[EmulatedRequestFactory]:
 
         return _create_request
 
-    return type('RequestFactory', (), {
-        'pre': get_create_request_func('pre'),
-        'post': get_create_request_func('post'),
-    })
+    return type(
+        'RequestFactory',
+        (),
+        {
+            'pre': get_create_request_func('pre'),
+            'post': get_create_request_func('post'),
+        },
+    )
 
 
 ### END
