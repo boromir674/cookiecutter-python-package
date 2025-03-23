@@ -36,7 +36,7 @@ def biskotaki_ci_project(
     mock_check('pypi', True)
     mock_check('readthedocs', True)
 
-    # Generate Biskotaki from CI Config Yaml
+    ######## GENERATE Biskotaki from CI Config Yaml ########
     project_dir: str = generate(
         no_input=True,
         output_dir=tmp_path,  # Path or string to a folder path

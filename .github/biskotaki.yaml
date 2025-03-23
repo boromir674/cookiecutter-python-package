@@ -18,3 +18,4 @@ default_context:
     docs_builder: "sphinx"
     ## READ THE DOCS CI Config ##
     rtd_python_version: "3.10"
+    cicd: 'experimental'

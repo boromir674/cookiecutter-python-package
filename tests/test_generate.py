@@ -77,6 +77,9 @@ def assert_interpreters_array_in_build_matrix() -> t.Callable[[str, t.Sequence[s
         interpreters: t.Sequence[str],
     ) -> None:
         p = Path(project_dir) / '.github' / 'workflows' / 'test.yaml'
+        if not p.exists():
+            p = Path(project_dir) / '.github' / 'workflows' / 'cicd.yml'
+        assert p.exists()
         contents = p.read_text()
         b = ', '.join((fr'\"{int_ver}\"' for int_ver in interpreters))
         assert r'\"python-version\": ' in contents
