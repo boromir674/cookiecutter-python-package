@@ -121,7 +121,7 @@ jobs:
           ## we skip ci, on pushes to 'release' branch ##
           # echo "TESTS_ENABLED=${{ env.RUN_UNIT_TESTS == 'true' && github.ref_name != 'release' }}" >> $GITHUB_OUTPUT
           
-          echo "TESTS_ENABLED=${{ env.RUN_UNIT_TESTS == 'true' }}" >> $GITHUB_OUTPUT"
+          echo "TESTS_ENABLED=${{ env.RUN_UNIT_TESTS == 'true' }}" >> $GITHUB_OUTPUT
 
           echo "PUBLISH_ON_PYPI=$PUBLISH_ON_PYPI" >> $GITHUB_OUTPUT
           echo "PIPE_DOCS_POLICY=$PIPE_DOCS_POLICY" >> $GITHUB_OUTPUT
