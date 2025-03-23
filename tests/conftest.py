@@ -112,8 +112,36 @@ def project_dir(generate_project, distro_loc, tmpdir):
     return proj_dir
 
 
+## NEW REQUEST FACTORY
+
+class EmulatedRequest(t.Protocol):
+    
+    project_dir: t.Union[str, None]
+    cookiecutter: t.Optional[t.Dict]
+    author: t.Optional[str]
+    author_email: t.Optional[str]
+    initialize_git_repo: t.Optional[bool]
+    interpreters: t.Optional[t.Dict]
+    project_type: t.Optional[str]
+    module_name: t.Optional[str]
+    cicd: t.Optional[str]
+
+class EmulatedRequestFactory(t.Protocol):
+    def pre(**kwargs: t.Any) -> EmulatedRequest: ...
+    def post(
+        project_dir: t.Union[str, None],
+        cookiecutter: t.Optional[t.Dict],
+        author: t.Optional[str],
+        author_email: t.Optional[str],
+        initialize_git_repo: t.Optional[bool],
+        interpreters: t.Optional[t.Dict],
+        project_type: t.Optional[str],
+        module_name: t.Optional[str],
+        cicd: t.Optional[str],
+    ) -> EmulatedRequest: ...
+
 @pytest.fixture
-def hook_request_new(distro_loc):
+def request_factory(distro_loc) -> EmulatedRequestFactory:
     """Emulate the templated data used in the 'pre' and 'post' hooks scripts.
 
     MUST be kept in SYNC with the 'pre' and 'post' hook scripts, and their
@@ -268,9 +296,13 @@ def hook_request_new(distro_loc):
         )
         cicd: t.Optional[str] = attr.ib(default='stable')
 
+        # add entries to this to fix tests/test_post_hook.py after prod code advances
         def __attrs_post_init__(self):
             """IMPORTANT: emulate jinja context vars (ie from list of choices to 1st choice)"""
+            # self.vars is available at Generator runtime.
+            # so populate values here to allow control per test case
             self.vars['project_type'] = self.project_type
+            self.vars['cicd'] = self.cicd
 
     class BaseHookRequest(metaclass=SubclassRegistry):
         pass
@@ -284,25 +316,19 @@ def hook_request_new(distro_loc):
     class PostGenProjectRequest(HookRequest):
         pass
 
-    return BaseHookRequest
-
-
-@pytest.fixture
-def request_factory(hook_request_new):
-    def create_request_function(type_id: str):
-        def _create_request(self, **kwargs):
-            return hook_request_new.create(type_id, **kwargs)
+    # Adapting exposed interface
+    def get_create_request_func(type_id: str):
+        def _create_request(**kwargs) -> HookRequest:
+            return BaseHookRequest.create(type_id, **kwargs)
 
         return _create_request
 
-    return type(
-        'RequestFactory',
-        (),
-        {
-            'pre': create_request_function('pre'),
-            'post': create_request_function('post'),
-        },
-    )()
+    return type('RequestFactory', (), {
+        'pre': get_create_request_func('pre'),
+        'post': get_create_request_func('post'),
+    })
+
+### END
 
 
 @pytest.fixture
