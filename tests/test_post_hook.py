@@ -10,13 +10,12 @@ else:
 
 import pytest
 
-
 ### IMPORTANT ###
 # UPDATE every time a NEW Template File is added to the Generator
 # To increase control on test case behavior, see tests/conftest.py -> 'class HookRequest'
 @pytest.fixture
-def get_post_gen_main(get_object, request_factory):
-    """Get post_gen_project.main method, with Monkeypatched objects.
+def create_request_from_emulated_project(request_factory):
+    """Create an emulated Gen Project and return a Request matching it.
 
     An minimal Project structure is automatically created to emulate the
     generated project state, before the post_get_project hook runs.
@@ -179,11 +178,28 @@ def get_post_gen_main(get_object, request_factory):
 
         return emulated_post_gen_request
 
+    return emulate_project_before_post_gen_hook
+
+
+### IMPORTANT ###
+# UPDATE every time a NEW Template File is added to the Generator
+# To increase control on test case behavior, see tests/conftest.py -> 'class HookRequest'
+@pytest.fixture
+def get_post_gen_main(get_object):
+    """Get post_gen_project.main method, with Monkeypatched objects.
+
+    An minimal Project structure is automatically created to emulate the
+    generated project state, before the post_get_project hook runs.
+
+    It includes minimal dummy files and folders, but emulates the structure of
+    that the app generates, before the post_gen_project "kicks-in".
+    """
     from pathlib import Path
 
     name = 'gg'
 
     def get_post_gen_hook_project_main(
+        request_from_emulated_project,
         add_cli: bool,
         project_dir: Path,
         extra_files: t.Optional[t.List[t.Union[str, t.Tuple[str, ...]]]] = None,
@@ -201,7 +217,7 @@ def get_post_gen_main(get_object, request_factory):
                 'project_type', 'module+cli' if add_cli else 'module'
             )
             # Create a dummy/minimal Project EMULATING file structure, before Post Gen Hook
-            emulated_request = emulate_project_before_post_gen_hook(
+            emulated_request = request_from_emulated_project(
                 project_dir, name=name, project_type=project_type, **kwargs
             )
             # sanity check that sth got generated
@@ -276,7 +292,7 @@ def get_post_gen_main(get_object, request_factory):
     ),
     ids=['add-cli', 'do-not-add-cli'],
 )
-def test_main(add_cli, get_post_gen_main, assert_initialized_git, tmpdir):
+def test_main(add_cli, get_post_gen_main, create_request_from_emulated_project, assert_initialized_git, tmpdir):
     """Verify post_gen_project behaviour, with emulated generated project."""
     from pathlib import Path
 
@@ -284,6 +300,7 @@ def test_main(add_cli, get_post_gen_main, assert_initialized_git, tmpdir):
     tmp_target_gen_dir = tmpdir.mkdir('cookiecutter_python.unit-tests.proj-targetr-gen-dir')
 
     post_hook_main = get_post_gen_main(
+        create_request_from_emulated_project,
         add_cli,  # control whether to add CLI or not, via request
         tmp_target_gen_dir,
     )
@@ -311,7 +328,7 @@ def test_main(add_cli, get_post_gen_main, assert_initialized_git, tmpdir):
 
 
 # REQUIRES well maintained emulated generated project (fixtures)
-def test_post_file_removal_deletes_empty_logfile_if_found(get_post_gen_main, tmp_path):
+def test_post_file_removal_deletes_empty_logfile_if_found(get_post_gen_main, create_request_from_emulated_project, tmp_path):
 
     # GIVEN a temporary directory, to store the emulated generated project
     project_dir: Path = tmp_path
@@ -324,6 +341,7 @@ def test_post_file_removal_deletes_empty_logfile_if_found(get_post_gen_main, tmp
     extra_files: t.List[str] = [FILE_TARGET_LOGS]
 
     post_hook_main = get_post_gen_main(
+        create_request_from_emulated_project,
         True,  # True -> with module+cli, else module
         # gen_output_dir,
         tmp_path,
@@ -341,7 +359,7 @@ def test_post_file_removal_deletes_empty_logfile_if_found(get_post_gen_main, tmp
 
 
 # REQUIRES well maintained emulated generated project (fixtures)
-def test_post_file_removal_keeps_logfile_if_found_non_empty(get_post_gen_main, tmp_path):
+def test_post_file_removal_keeps_logfile_if_found_non_empty(get_post_gen_main, create_request_from_emulated_project, tmp_path):
 
     # GIVEN a temporary directory, to store the emulated generated project
     project_dir: Path = tmp_path
@@ -352,6 +370,7 @@ def test_post_file_removal_keeps_logfile_if_found_non_empty(get_post_gen_main, t
     from cookiecutter_python._logging_config import FILE_TARGET_LOGS
 
     post_hook_main = get_post_gen_main(
+        create_request_from_emulated_project,
         True,  # True -> with module+cli, else module
         # gen_output_dir,
         tmp_path,
@@ -370,13 +389,14 @@ def test_post_file_removal_keeps_logfile_if_found_non_empty(get_post_gen_main, t
     assert (project_dir / FILE_TARGET_LOGS).stat().st_size > 0
 
 
-def test_stable_cicd_was_selected_and_worked(tmpdir, get_post_gen_main):
+def test_stable_cicd_was_selected_and_worked(tmpdir, create_request_from_emulated_project, get_post_gen_main):
     from pathlib import Path
 
     # GIVEN a temporary directory, for the emulated generated project
     tmp_target_gen_dir = tmpdir.mkdir('cookiecutter_python.unit-tests.proj-targetr-gen-dir')
 
     post_hook_main = get_post_gen_main(
+        create_request_from_emulated_project,
         False,  # control whether to add CLI or not, via request
         tmp_target_gen_dir,
         # cicd='experimental',
@@ -397,13 +417,14 @@ def test_stable_cicd_was_selected_and_worked(tmpdir, get_post_gen_main):
     assert not (Path(tmp_target_gen_dir) / '.github/workflows/signal-deploy.yml').exists()
 
 
-def test_experimental_cicd_was_selected_and_worked(tmpdir, get_post_gen_main):
+def test_experimental_cicd_was_selected_and_worked(tmpdir, create_request_from_emulated_project, get_post_gen_main):
     from pathlib import Path
 
     # GIVEN a temporary directory, for the emulated generated project
     tmp_target_gen_dir = tmpdir.mkdir('cookiecutter_python.unit-tests.proj-targetr-gen-dir')
 
     post_hook_main = get_post_gen_main(
+        create_request_from_emulated_project,
         False,  # control whether to add CLI or not, via request
         tmp_target_gen_dir,
         cicd='experimental',
