@@ -289,7 +289,7 @@ jobs:
         curl -Os https://uploader.codecov.io/latest/linux/codecov
         chmod +x codecov
     - name: Download Raw Coverage Data Artefacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: all_coverage_raw
     - name: Upload Coverage Reports to Codecov

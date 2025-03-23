@@ -27,7 +27,7 @@ jobs:
 
       # Download the coverage artifact
       - name: Download Coverage Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ "{{" }} inputs.coverage_artifact {{ "}}" }}
 
