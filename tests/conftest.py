@@ -130,21 +130,12 @@ class EmulatedRequest(t.Protocol):
 
 class EmulatedRequestFactory(t.Protocol):
     def pre(**kwargs: t.Any) -> EmulatedRequest: ...
-    def post(
-        project_dir: t.Union[str, None],
-        cookiecutter: t.Optional[t.Dict],
-        author: t.Optional[str],
-        author_email: t.Optional[str],
-        initialize_git_repo: t.Optional[bool],
-        interpreters: t.Optional[t.Dict],
-        project_type: t.Optional[str],
-        module_name: t.Optional[str],
-        cicd: t.Optional[str],
+    def post(**kwargs: t.Any
     ) -> EmulatedRequest: ...
 
 
 @pytest.fixture
-def request_factory(distro_loc) -> EmulatedRequestFactory:
+def request_factory(distro_loc) -> t.Type[EmulatedRequestFactory]:
     """Emulate the templated data used in the 'pre' and 'post' hooks scripts.
 
     MUST be kept in SYNC with the 'pre' and 'post' hook scripts, and their
@@ -223,8 +214,9 @@ def request_factory(distro_loc) -> EmulatedRequestFactory:
     assert engine_state_vars_supported_by_td
 
     # WHEN we define a way to create a valid input for pre and post hooks
+    
     @attr.s(auto_attribs=True, kw_only=True)
-    class HookRequest:
+    class EmulatedHookRequest:
         """Hook Request Data Class.
 
         This class is used to mock the 'templated variables' that are used in
@@ -268,7 +260,7 @@ def request_factory(distro_loc) -> EmulatedRequestFactory:
             default=OrderedDict(td_cookiecutter_json_data, **engine_state['cookiecutter'])
         )
         initialize_git_repo: t.Optional[bool] = attr.ib(default=True)
-        interpreters: t.Optional[t.Dict] = attr.ib(
+        interpreters: t.Optional[t.List[str]] = attr.ib(
             default=[
                 '3.6',
                 '3.7',
@@ -286,7 +278,7 @@ def request_factory(distro_loc) -> EmulatedRequestFactory:
             )
         )
         package_version_string: t.Optional[str] = attr.ib(default='0.0.1')
-        docs_extra_info: t.Optional[bool] = attr.ib(
+        docs_extra_info: t.Optional[t.Dict[str, str]] = attr.ib(
             default=dict(
                 **{'mkdocs': 'docs-mkdocs', 'sphinx': 'docs-sphinx'},
             )
@@ -307,33 +299,30 @@ def request_factory(distro_loc) -> EmulatedRequestFactory:
             self.vars['project_type'] = self.project_type
             self.vars['cicd'] = self.cicd
 
-    class BaseHookRequest(metaclass=SubclassRegistry):
+    class HookRequest(metaclass=SubclassRegistry):
         pass
 
     @attr.s(auto_attribs=True, kw_only=True)
-    @BaseHookRequest.register_as_subclass('pre')
-    class PreGenProjectRequest(HookRequest):
+    @HookRequest.register_as_subclass('pre')
+    class PreGenProjectRequest(EmulatedHookRequest):
         project_dir: str = attr.ib(default=None)
 
-    @BaseHookRequest.register_as_subclass('post')
-    class PostGenProjectRequest(HookRequest):
+    @HookRequest.register_as_subclass('post')
+    class PostGenProjectRequest(EmulatedHookRequest):
         pass
 
     # Adapting exposed interface
-    def get_create_request_func(type_id: str):
-        def _create_request(**kwargs) -> HookRequest:
-            return BaseHookRequest.create(type_id, **kwargs)
+    def get_create_request_func(type_id: str) -> t.Callable[..., EmulatedHookRequest]:
+        def _create_request(**kwargs):
+            ret: EmulatedHookRequest = HookRequest.create(type_id, **kwargs)
+            return ret
 
         return _create_request
 
-    return type(
-        'RequestFactory',
-        (),
-        {
-            'pre': get_create_request_func('pre'),
-            'post': get_create_request_func('post'),
-        },
-    )
+    return type('RequestFactory', (), {
+        'pre': get_create_request_func('pre'),
+        'post': get_create_request_func('post'),
+    })
 
 
 ### END
