@@ -61,7 +61,6 @@ def test_snapshot_ci_config_files_are_valid_yaml(snapshot_name, test_root):
     )
     assert 'jobs' in ci_config
 
-
     # Check CI Config
     assert ci_config['name'] == 'CI/CD Pipeline'
 

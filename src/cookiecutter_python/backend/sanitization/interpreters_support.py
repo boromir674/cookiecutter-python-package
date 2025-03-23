@@ -36,7 +36,9 @@ def verify_input_interpreters(interpreters: InterpretersSequence) -> None:
         raise InvalidInterpretersError(
             "Unsupported interpreter given Error!\n"
             + "Given interpreters: [{given}]\n".format(given=', '.join(interpreters))
-            + "Supported interpreters: [{supported}]\n".format(supported=', '.join(VALID_PYTHON_VERSIONS))
+            + "Supported interpreters: [{supported}]\n".format(
+                supported=', '.join(VALID_PYTHON_VERSIONS)
+            )
             + "Unsupported interpreters: [{unsupported}]".format(
                 unsupported=', '.join(iter(unsupported_interpreters(interpreters)))
             )

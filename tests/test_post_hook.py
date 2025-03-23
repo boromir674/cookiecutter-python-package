@@ -22,7 +22,7 @@ def get_post_gen_main(get_object, request_factory):
     generated project state, before the post_get_project hook runs.
 
     It includes minimal dummy files and folders, but emulates the structure of
-    that the app generates, before the post_gen_project "kicks-in".   
+    that the app generates, before the post_gen_project "kicks-in".
     """
 
     #### EMULATED PROJECT STRUCTURE, state before Post Gen Hook
@@ -31,14 +31,12 @@ def get_post_gen_main(get_object, request_factory):
     from cookiecutter_python.hooks.post_gen_project import CLI_ONLY, PYTEST_PLUGIN_ONLY
 
     def emulate_project_before_post_gen_hook(
-        project_dir: str,
-        name: str = 'biskotaki',
-        **kwargs
+        project_dir: str, name: str = 'biskotaki', **kwargs
     ):
         """An emulated Generated Project state, before the post_get_project hook ran.
-        
+
         It includes minimal dummy files and folders, but emulates the structure of
-        that the app generates, before the post_gen_project "kicks-in".   
+        that the app generates, before the post_gen_project "kicks-in".
 
         Returns:
             [type]: [description]
@@ -67,11 +65,11 @@ def get_post_gen_main(get_object, request_factory):
 
         mkdir(path.join(project_dir, 'scripts'))
         # Path(path.join(project_dir, 'scripts', 'gen_api_refs_pages.py')).touch()
-        
+
         # Create .github/workflows directory
         mkdir(path.join(project_dir, '.github'))
         mkdir(path.join(project_dir, '.github', 'workflows'))
-        
+
         # Generate, for given name and project_dir
         project_type: str = kwargs.pop('project_type', 'module+cli')
         emulated_post_gen_request = request_factory.post(
@@ -145,7 +143,9 @@ def get_post_gen_main(get_object, request_factory):
         # Sanity check that no-one inputs the same file twice
         print('\n' + '\n'.join(sorted([str(x) for x in extra_files_declared])) + '\n')
         print('\n' + '\n'.join(sorted([str(x) for x in create_emulated])) + '\n')
-        assert len(extra_files_declared) == expected_unique_files, f"{extra_files_declared} != {expected_unique_files}"
+        assert (
+            len(extra_files_declared) == expected_unique_files
+        ), f"{extra_files_declared} != {expected_unique_files}"
 
         ## Docs Builder Type Dependend Files ##
         from cookiecutter_python.hooks.post_gen_project import (
@@ -198,7 +198,9 @@ def get_post_gen_main(get_object, request_factory):
             absolute_proj_dir = Path(project_dir).absolute()
             assert len(list(absolute_proj_dir.iterdir())) == 0
 
-            project_type: str = kwargs.pop('project_type', 'module+cli' if add_cli else 'module')
+            project_type: str = kwargs.pop(
+                'project_type', 'module+cli' if add_cli else 'module'
+            )
             # Create a dummy/minimal Project EMULATING file structure, before Post Gen Hook
             emulated_request = emulate_project_before_post_gen_hook(
                 project_dir, name=name, project_type=project_type, **kwargs
@@ -222,11 +224,14 @@ def get_post_gen_main(get_object, request_factory):
                         _file.write('print("Hello World!")\n')
 
             # SANITY CHECK that request has cicd str value, otherwise the test cannot continue
-            assert isinstance(emulated_request.cicd, str), f"Mocked Reqeust is missing cicd str value: {emulated_request.cicd}"
+            assert isinstance(
+                emulated_request.cicd, str
+            ), f"Mocked Reqeust is missing cicd str value: {emulated_request.cicd}"
             return emulated_request
 
         # Create Alternative custom Mock Objects to use in Monkeypatch
         from sys import version_info
+
         _PYTHON_MINOR_VERSION = version_info.minor
 
         def _emulated_exit(exit_code: int):
@@ -238,17 +243,23 @@ def get_post_gen_main(get_object, request_factory):
             "main",
             "cookiecutter_python.hooks.post_gen_project",
             overrides={  # objects from above namespace to monkeypatch
-
                 # Monkeypatch the 'get_request' to defer from jinja2 rendering
                 'get_request': lambda: mock_get_request,
-
                 # Monkeypatch the 'sys' with alternative 'exit' and 'version_info' attributes
-                'sys': lambda: type('MockedSys', (), {
-                    'exit': _emulated_exit,
-                    'version_info': type('Mocked_version_info', (), {
-                        'minor': _PYTHON_MINOR_VERSION,
-                    }),
-                }),
+                'sys': lambda: type(
+                    'MockedSys',
+                    (),
+                    {
+                        'exit': _emulated_exit,
+                        'version_info': type(
+                            'Mocked_version_info',
+                            (),
+                            {
+                                'minor': _PYTHON_MINOR_VERSION,
+                            },
+                        ),
+                    },
+                ),
             },
         )
 
@@ -258,10 +269,14 @@ def get_post_gen_main(get_object, request_factory):
 
 
 # REQUIRES well maintained emulated generated project (fixtures)
-@pytest.mark.parametrize('add_cli', (
-    True,
-    False,
-), ids=['add-cli', 'do-not-add-cli'])
+@pytest.mark.parametrize(
+    'add_cli',
+    (
+        True,
+        False,
+    ),
+    ids=['add-cli', 'do-not-add-cli'],
+)
 def test_main(add_cli, get_post_gen_main, assert_initialized_git, tmpdir):
     """Verify post_gen_project behaviour, with emulated generated project."""
     from pathlib import Path
@@ -383,7 +398,6 @@ def test_stable_cicd_was_selected_and_worked(tmpdir, get_post_gen_main):
     assert not (Path(tmp_target_gen_dir) / '.github/workflows/signal-deploy.yml').exists()
 
 
-
 def test_experimental_cicd_was_selected_and_worked(tmpdir, get_post_gen_main):
     from pathlib import Path
 
@@ -412,4 +426,3 @@ def test_experimental_cicd_was_selected_and_worked(tmpdir, get_post_gen_main):
     # AND the .github/workflows.test.yaml file is missing
     assert not (Path(tmp_target_gen_dir) / '.github/workflows/test.yaml').exists()
     # assert not (Path(tmp_target_gen_dir) / '.github/workflows/test.yaml').is_file()
-

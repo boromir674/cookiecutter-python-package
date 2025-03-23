@@ -114,8 +114,9 @@ def project_dir(generate_project, distro_loc, tmpdir):
 
 ## NEW REQUEST FACTORY
 
+
 class EmulatedRequest(t.Protocol):
-    
+
     project_dir: t.Union[str, None]
     cookiecutter: t.Optional[t.Dict]
     author: t.Optional[str]
@@ -125,6 +126,7 @@ class EmulatedRequest(t.Protocol):
     project_type: t.Optional[str]
     module_name: t.Optional[str]
     cicd: t.Optional[str]
+
 
 class EmulatedRequestFactory(t.Protocol):
     def pre(**kwargs: t.Any) -> EmulatedRequest: ...
@@ -139,6 +141,7 @@ class EmulatedRequestFactory(t.Protocol):
         module_name: t.Optional[str],
         cicd: t.Optional[str],
     ) -> EmulatedRequest: ...
+
 
 @pytest.fixture
 def request_factory(distro_loc) -> EmulatedRequestFactory:
@@ -323,10 +326,15 @@ def request_factory(distro_loc) -> EmulatedRequestFactory:
 
         return _create_request
 
-    return type('RequestFactory', (), {
-        'pre': get_create_request_func('pre'),
-        'post': get_create_request_func('post'),
-    })
+    return type(
+        'RequestFactory',
+        (),
+        {
+            'pre': get_create_request_func('pre'),
+            'post': get_create_request_func('post'),
+        },
+    )
+
 
 ### END
 
@@ -838,8 +846,9 @@ def get_expected_generated_files(
 
         ## DERIVE the EXPECTED files to be removed, varying across 'Project Type'
         # we leverage the same production logic
-        ii = [x
-              for x in proj_type_2_files_to_remove[expected_project_type](
+        ii = [
+            x
+            for x in proj_type_2_files_to_remove[expected_project_type](
                 type('PostGenRequestLike', (), {'module_name': pkg_name})
             )
         ]
@@ -848,18 +857,21 @@ def get_expected_generated_files(
 
         # Augment the expected files for removal based on CI/CD option
         from cookiecutter_python.hooks.post_gen_project import CICD_DELETE
-        files_to_remove.update([os.path.join(*parts) for parts in CICD_DELETE[config.data.get('cicd', 'stable')]])
 
-#         CICD_DELETE = {
-#     'stable': [
-#         ('.github', 'workflows', 'cicd.yml'),
-#         ('.github', 'workflows', 'codecov-upload.yml'),
-#         ('.github', 'workflows', 'signal-deploy.yml'),
-#     ],
-#     'experimental': [
-#         ('.github', 'workflows', 'test.yaml'),
-#     ],
-# }     
+        files_to_remove.update(
+            [os.path.join(*parts) for parts in CICD_DELETE[config.data.get('cicd', 'stable')]]
+        )
+
+        #         CICD_DELETE = {
+        #     'stable': [
+        #         ('.github', 'workflows', 'cicd.yml'),
+        #         ('.github', 'workflows', 'codecov-upload.yml'),
+        #         ('.github', 'workflows', 'signal-deploy.yml'),
+        #     ],
+        #     'experimental': [
+        #         ('.github', 'workflows', 'test.yaml'),
+        #     ],
+        # }
 
         ## DERIVE expected files inside 'docs' gen dir
         from cookiecutter_python.backend import get_docs_gen_internal_config
@@ -915,8 +927,7 @@ def get_expected_generated_files(
         assert all(
             [isinstance(x, str) for x in files_to_remove]
         ), f"Temporary Requirement of Test Code: files_to_remove must be a list of strings, not {files_to_remove}"
-        
-     
+
         ## Remove all Template Docs files from Expectations, because in the Template Project
         # 2 dedicated foldres are used to maintain mkdocs and spinx Docs (which get moved to ./docs in post hook)
         for (

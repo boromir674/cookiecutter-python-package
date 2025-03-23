@@ -240,7 +240,9 @@ RELEASE_DATE = datetime.datetime.now().strftime('%Y-%m-%d')
                                 'no',
                                 'yes',
                             ],  # NOTE Difference to 1st Item
-                            "interpreters": {"supported-interpreters": ["3.10", "3.11", "3.12"]},
+                            "interpreters": {
+                                "supported-interpreters": ["3.10", "3.11", "3.12"]
+                            },
                             "docs_builder": [
                                 'mkdocs',
                                 'sphinx',
@@ -482,7 +484,6 @@ def test_cookiecutter_generates_context_with_expected_values(
         ), f"Context Missmatch at '{CK}' -> '{p1[0]}': Runtime: '{p1[1]}', Expected: '{p2[1]}'"
 
     assert prod_result[CK] == template_test_case['expected_context'][CK]
-
 
     # AND the back-up/copy of raw data is place under '_cookiecutter' key as Dict
     assert isinstance(prod_result['_cookiecutter'], dict)

@@ -12,7 +12,7 @@ def biskotaki_ci_project(
     tmp_path,
 ) -> Path:
     """Generated Project from '.github/biskotaki.yaml' config-file.
-    
+
     Use this Fixture to utilize a Project produced by the Generatpr at
     test-time (once), using the same '.github/biskotaki.yaml' config-file,
     used for publishing (via CI) the Biskotaki (generated) Project.
