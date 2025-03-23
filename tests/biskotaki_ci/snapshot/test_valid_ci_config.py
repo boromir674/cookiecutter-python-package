@@ -27,8 +27,8 @@ def test_snapshot_ci_config_files_are_valid_yaml(snapshot_name, test_root):
     snapshot_2_ci_workflow: t.Dict[str, Path] = {
         # CI adopts the New Pipeline Design, as proposed in Gold Standard
         'biskotaki-no-input': snapshot_dir / '.github' / 'workflows' / 'cicd.yml',
-        # Interactive dialog soon to adopt tje new pipeline design as default option, then change below
-        'biskotaki-interactive': snapshot_dir / '.github' / 'workflows' / 'test.yaml',
+        # Interactive also adopts the new pipeline design as default option
+        'biskotaki-interactive': snapshot_dir / '.github' / 'workflows' / 'cicd.yml',
     }
 
     ci_config_file: Path = snapshot_2_ci_workflow[snapshot_name]
