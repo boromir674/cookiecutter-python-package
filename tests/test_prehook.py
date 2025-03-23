@@ -60,7 +60,9 @@ def test_prehook_sanitization_throws_error_on_duplicate_interpreters():
 
 
 def test_prehook_sanitization_throws_error_on_unsupported_interpreters():
-    from cookiecutter_python.backend.sanitization.interpreters_support import VALID_PYTHON_VERSIONS
+    from cookiecutter_python.backend.sanitization.interpreters_support import (
+        VALID_PYTHON_VERSIONS,
+    )
 
     SUPPORTED_SET: t.Set[str] = VALID_PYTHON_VERSIONS
     unsupported_interpreter = '3.5'

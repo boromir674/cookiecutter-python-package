@@ -27,6 +27,7 @@ def get_post_gen_main(get_object, request_factory):
 
     #### EMULATED PROJECT STRUCTURE, state before Post Gen Hook
     from os import mkdir, path
+
     from cookiecutter_python.hooks.post_gen_project import CLI_ONLY, PYTEST_PLUGIN_ONLY
 
     def emulate_project_before_post_gen_hook(
@@ -110,8 +111,9 @@ def get_post_gen_main(get_object, request_factory):
             'module+cli': CLI_ONLY,
             'pytest-plugin': PYTEST_PLUGIN_ONLY,
         }
-        from cookiecutter_python.hooks.post_gen_project import CICD_DELETE
         import os
+
+        from cookiecutter_python.hooks.post_gen_project import CICD_DELETE
 
         def generate_all_extra_files(
             project_types: ProjectUniqueFilesMap,
