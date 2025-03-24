@@ -133,6 +133,11 @@ mkdocstrings-python = { version = "^1.7.5", optional = true }
 mkdocs-literate-nav = { version = "^0.6.1", optional = true }
 pymdown-extensions = { version = "^10.5", optional = true }
 mkdocs-click = { version = "^0.8.1", optional = true }
+griffe = { version = ">=1.0.0", markers = "python_version >= \"3.9\"", optional = true }
+
+
+# requests [security,tests] >= 2.8.1, == 2.8.* ; python_version < "2.7"
+# poetry add 'griffe >=1.0.0 ; python_version >= "3.9"' --optional
 
 ### EXTRAS ###
 [tool.poetry.extras]
@@ -162,6 +167,7 @@ docs = [
     "mkdocs-literate-nav",
     "pymdown-extensions",
     "mkdocs-click",
+    "griffe",
 ]
 
 [tool.poetry.scripts]
