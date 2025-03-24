@@ -171,7 +171,7 @@ jobs:
 
           echo "[INFO] Building Docs"
 
-          pix install virtualenv
+          pipx install virtualenv
           virtualend env --python='python${{ env.PY_VERSION }}'
           source env/bin/activate
 
