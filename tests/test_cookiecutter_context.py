@@ -479,11 +479,26 @@ def test_cookiecutter_generates_context_with_expected_values(
             + '\n'.join(template_test_case['expected_context'][CK].keys())
             + "\n]"
         )
-        assert (
-            p1[1] == p2[1]
-        ), f"Context Missmatch at '{CK}' -> '{p1[0]}': Runtime: '{p1[1]}', Expected: '{p2[1]}'"
+        if p1[0] == 'release_date':
+            # ACCOUNT for different timezones we accept date difference of 1 day
+            runtime_date = p1[1]
+            expected_date = p2[1]
+            # verify diff is at most 1 day
+            assert (
+                abs(
+                    datetime.datetime.strptime(runtime_date, '%Y-%m-%d')
+                    - datetime.datetime.strptime(expected_date, '%Y-%m-%d')
+                ).days
+                <= 1
+            ), f"Context Missmatch at '{CK}' -> '{p1[0]}': Runtime: '{runtime_date}', Expected: '{expected_date}'"
+        else:
+            assert (
+                p1[1] == p2[1]
+            ), f"Context Missmatch at '{CK}' -> '{p1[0]}': Runtime: '{p1[1]}', Expected: '{p2[1]}'"
 
-    assert prod_result[CK] == template_test_case['expected_context'][CK]
+    assert prod_result[CK] == dict(template_test_case['expected_context'][CK], **{
+        'release_date': prod_result[CK]['release_date'],
+    } if 'release_date' in prod_result[CK] else {})
 
     # AND the back-up/copy of raw data is place under '_cookiecutter' key as Dict
     assert isinstance(prod_result['_cookiecutter'], dict)
