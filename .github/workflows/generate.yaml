@@ -168,8 +168,19 @@ jobs:
         run: |
           echo "[INFO] Exporting to pip-installable Requirements for Docs"
           tox -e pin-deps -- -E docs  # poetry export
+
           echo "[INFO] Building Docs"
-          tox -e docs
+
+          pix install virtualenv
+          virtualend env --python='python${{ env.PY_VERSION }}'
+          source env/bin/activate
+
+          pip install -r reqs.txt
+          pip install -e .[docs]
+
+          mkdocs build
+
+          # tox -e docs
 
       # exlude 'site' dir from pushing to biskotaki repo
       - name: Exclude 'site' folder, built with Mkdocs, from 'git push'
