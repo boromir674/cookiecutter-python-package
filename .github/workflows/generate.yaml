@@ -50,100 +50,105 @@ jobs:
       - name: Install `generate-python` CLI
         run: pip install --user -e .
 
-      ## GENERATE FROM TEMPLATE into gen/ ##
-      # ROOT : gen/biskotaki/pyproject.toml
-      - name: Generate Biskotaki from Template
-        run: |
-          echo "    version: \"${{ env.PKG_VERSION }}\"" >> .github/biskotaki.yaml
-          generate-python -o gen --config-file ./.github/biskotaki.yaml --no-input -f --offline
+      ##### TEST 1: Generated Project with ./.github/biskotaki.yaml as User Config #####
 
-      ## VALIDATE BISKOTAKI CI CONFIG file is in valid Yaml format ##
-      - name: "Validate YAML format"
-        run: |
-          # At the moment the genraot can create 2 different designs of CI Pipeline
-          old_design=gen/biskotaki/.github/workflows/test.yaml
-          new_design=gen/biskotaki/.github/workflows/cicd.yml
+      # ## GENERATE FROM TEMPLATE into gen/ ##
+      # # ROOT : gen/biskotaki/pyproject.toml
+      # - name: Generate Biskotaki from Template
+      #   run: |
+      #     echo "    version: \"${{ env.PKG_VERSION }}\"" >> .github/biskotaki.yaml
+      #     generate-python -o gen --config-file ./.github/biskotaki.yaml --no-input -f --offline
 
-          # use whichever exists, else exit with error
-          GEN_CI_CONFIG=$([ -f $new_design ] && echo $new_design || echo $old_design)
+      # ## VALIDATE BISKOTAKI CI CONFIG file is in valid Yaml format ##
+      # - name: "Validate YAML format"
+      #   run: |
+      #     # At the moment the genraot can create 2 different designs of CI Pipeline
+      #     old_design=gen/biskotaki/.github/workflows/test.yaml
+      #     new_design=gen/biskotaki/.github/workflows/cicd.yml
 
-          # if file not exists explicitly exit with error
-          if [ ! -f "$GEN_CI_CONFIG" ]; then
-            echo "ERROR: $GEN_CI_CONFIG does not exist"
-            exit 1
-          fi
+      #     # use whichever exists, else exit with error
+      #     GEN_CI_CONFIG=$([ -f $new_design ] && echo $new_design || echo $old_design)
 
-          if [ ! $(yq eval 'true' "$GEN_CI_CONFIG") ]; then
-            echo "ERROR: $GEN_CI_CONFIG is malformed"
-            exit 1
-          fi
+      #     # if file not exists explicitly exit with error
+      #     if [ ! -f "$GEN_CI_CONFIG" ]; then
+      #       echo "ERROR: $GEN_CI_CONFIG does not exist"
+      #       exit 1
+      #     fi
 
-      ## Run Test Suite against the generated project ##
-      - name: Test distributions 'Source', 'Built' and 'edit' (dev env) mode installation
-        env:
-          TOXPYTHON: "python${{ env.PY_VERSION }}"
-        working-directory: gen/biskotaki
-        run: |
-          tox -e 'edit,sdist,wheel'
-          tox -e wheel-test
-          tox -e coverage
+      #     if [ ! $(yq eval 'true' "$GEN_CI_CONFIG") ]; then
+      #       echo "ERROR: $GEN_CI_CONFIG is malformed"
+      #       exit 1
+      #     fi
+
+      # ## Run Test Suite against the generated project ##
+      # - name: Test distributions 'Source', 'Built' and 'edit' (dev env) mode installation
+      #   env:
+      #     TOXPYTHON: "python${{ env.PY_VERSION }}"
+      #   working-directory: gen/biskotaki
+      #   run: |
+      #     tox -e 'edit,sdist,wheel'
+      #     tox -e wheel-test
+      #     tox -e coverage
       
-      ## Verify all Tox Envs PASS, as intented, out of the box ##
+      # ## Verify all Tox Envs PASS, as intented, out of the box ##
 
-      # Running Type Check, on src and Test code: Passes
-      - name: 'Mypy: Static Type Checker -> PASS'
-        working-directory: gen/biskotaki
-        run: |
-          tox -e pin-deps -- -E typing
-          tox -e type
+      # # Running Type Check, on src and Test code: Passes
+      # - name: 'Mypy: Static Type Checker -> PASS'
+      #   working-directory: gen/biskotaki
+      #   run: |
+      #     tox -e pin-deps -- -E typing
+      #     tox -e type
 
-      - name: 'Ruff: Fast Python Linter -> PASS'
-        working-directory: gen/biskotaki
-        run: tox -e ruff
+      # - name: 'Ruff: Fast Python Linter -> PASS'
+      #   working-directory: gen/biskotaki
+      #   run: tox -e ruff
 
-      # Running Lint Check, on src and Test code: Passes
-      - name: 'Isort, Black: Code Formatter -> PASS'
-        working-directory: gen/biskotaki
-        run: tox -e lint
-      # Running the Build script (sdist and wheel): produces Distro Artifacts: Source (.tar.gz) and Wheel (.whl) files
-      - name: 'Build: sdist, wheel -> PASS'
-        working-directory: gen/biskotaki
-        run: tox -e build
-      # Running Quality Checks against Distro Metadata: Passes with 10/10 score
-      - name: 'Pyroma: Distro Quality -> PASS'
-        working-directory: gen/biskotaki
-        run: tox -e check
+      # # Running Lint Check, on src and Test code: Passes
+      # - name: 'Isort, Black: Code Formatter -> PASS'
+      #   working-directory: gen/biskotaki
+      #   run: tox -e lint
+      # # Running the Build script (sdist and wheel): produces Distro Artifacts: Source (.tar.gz) and Wheel (.whl) files
+      # - name: 'Build: sdist, wheel -> PASS'
+      #   working-directory: gen/biskotaki
+      #   run: tox -e build
+      # # Running Quality Checks against Distro Metadata: Passes with 10/10 score
+      # - name: 'Pyroma: Distro Quality -> PASS'
+      #   working-directory: gen/biskotaki
+      #   run: tox -e check
 
-      # Docs Checks: Run Build Docs command, and verify it succeeds
-      - name: 'Sphinx: Build Docs Web Site (html/css/js) -> PASS'
-        working-directory: gen/biskotaki
-        run: |
-          echo "[INFO] Exporting to pip-installable Requirements for Docs"
-          tox -e pin-deps -- -E docs  # poetry export
-          echo "[INFO] Building Docs"
-          tox -e docs
+      # # Docs Checks: Run Build Docs command, and verify it succeeds
+      # - name: 'Sphinx: Build Docs Web Site (html/css/js) -> PASS'
+      #   working-directory: gen/biskotaki
+      #   run: |
+      #     echo "[INFO] Exporting to pip-installable Requirements for Docs"
+      #     tox -e pin-deps -- -E docs  # poetry export
+      #     echo "[INFO] Building Docs"
+      #     tox -e docs
 
-      - name: Remove requirements file generated with 'poetry export' for Docs
-        # See tox.ini -> testenv.setenv.DEFAULT_REQS_FILE
-        run: rm -f gen/biskotaki/reqs.txt
+      # - name: Remove requirements file generated with 'poetry export' for Docs
+      #   # See tox.ini -> testenv.setenv.DEFAULT_REQS_FILE
+      #   run: rm -f gen/biskotaki/reqs.txt
 
-      # tox -e graphs
+      # # tox -e graphs
 
-      ## PUSH to BISKOTAKI REPO ##
-      - name: Push to dedicated branch in biskotaki repo
-        # Pin to v1.7.2 -> 07c4d7b3def0a8ebe788a8f2c843a4e1de4f6900
-        uses: cpina/github-action-push-to-another-repository@07c4d7b3def0a8ebe788a8f2c843a4e1de4f6900
-        env:
-          SSH_DEPLOY_KEY: ${{ secrets.SSH_GITHUB_KEY }}
-        with:
-          source-directory: 'gen/biskotaki'
-          destination-github-username: 'boromir674'
-          destination-repository-name: 'biskotaki'
-          user-email: k.lampridis@hotmail.com
-          user-name: 'Konstantinos'
-          destination-repository-username: 'boromir674'
-          target-branch: ${{ env.branch }}
-          commit-message: 'apply Template from https://github.com/boromir674/cookiecutter-python-package'
+      # ## PUSH to BISKOTAKI REPO ##
+      # - name: Push to dedicated branch in biskotaki repo
+      #   # Pin to v1.7.2 -> 07c4d7b3def0a8ebe788a8f2c843a4e1de4f6900
+      #   uses: cpina/github-action-push-to-another-repository@07c4d7b3def0a8ebe788a8f2c843a4e1de4f6900
+      #   env:
+      #     SSH_DEPLOY_KEY: ${{ secrets.SSH_GITHUB_KEY }}
+      #   with:
+      #     source-directory: 'gen/biskotaki'
+      #     destination-github-username: 'boromir674'
+      #     destination-repository-name: 'biskotaki'
+      #     user-email: k.lampridis@hotmail.com
+      #     user-name: 'Konstantinos'
+      #     destination-repository-username: 'boromir674'
+      #     target-branch: ${{ env.branch }}
+      #     commit-message: 'apply Template from https://github.com/boromir674/cookiecutter-python-package'
+
+
+      ##### TEST 2: Generated Project with ./.github/biskotaki.yaml as User Config #####
 
       ## GENERATE Python GOLD STANDARD from TEMPLATE into gen/ ##
       # ROOT : gen-gold/biskotaki-gold-standard/pyproject.toml
@@ -171,8 +176,8 @@ jobs:
 
           echo "[INFO] Building Docs"
 
-          pipx install virtualenv
-          virtualend env --python='python${{ env.PY_VERSION }}'
+          # pipx install virtualenv
+          virtualenv env --python='python${{ env.PY_VERSION }}'
           source env/bin/activate
 
           pip install -r reqs.txt
