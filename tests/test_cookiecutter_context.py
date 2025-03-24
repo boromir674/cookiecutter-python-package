@@ -496,9 +496,16 @@ def test_cookiecutter_generates_context_with_expected_values(
                 p1[1] == p2[1]
             ), f"Context Missmatch at '{CK}' -> '{p1[0]}': Runtime: '{p1[1]}', Expected: '{p2[1]}'"
 
-    assert prod_result[CK] == dict(template_test_case['expected_context'][CK], **{
-        'release_date': prod_result[CK]['release_date'],
-    } if 'release_date' in prod_result[CK] else {})
+    assert prod_result[CK] == dict(
+        template_test_case['expected_context'][CK],
+        **(
+            {
+                'release_date': prod_result[CK]['release_date'],
+            }
+            if 'release_date' in prod_result[CK]
+            else {}
+        ),
+    )
 
     # AND the back-up/copy of raw data is place under '_cookiecutter' key as Dict
     assert isinstance(prod_result['_cookiecutter'], dict)
