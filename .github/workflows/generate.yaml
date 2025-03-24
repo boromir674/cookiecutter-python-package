@@ -172,7 +172,10 @@ jobs:
         working-directory: gen-gold/biskotaki-gold-standard
         run: |
           echo "[INFO] Exporting to pip-installable Requirements for Docs"
-          tox -e pin-deps -- -E docs  # poetry export
+
+          # unless we pin colorama in poetry.lock we 
+          # export the requirements without hashes
+          tox -e pin-deps -- -E docs --without-hashes
 
           echo "[INFO] Building Docs"
 
@@ -180,9 +183,14 @@ jobs:
           virtualenv env --python='python${{ env.PY_VERSION }}'
           source env/bin/activate
 
+          echo "[INFO] Installing Pinned Requirements for Docs"
+          # unless we pin colorama in poetry.lock it will fail if not 'poetry add' used
           pip install -r reqs.txt
+
+          echo "[INFO] Installing the Package with 'docs' extras"
           pip install -e .[docs]
 
+          echo "[INFO] Building the Docs"
           mkdocs build
 
           # tox -e docs
