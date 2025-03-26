@@ -42,12 +42,12 @@ def parse_actions_config(filename: t.Union[str, Path]) -> t.Union[ParsedYaml, No
 
 
 # Extract job names and their 'needs' sections
-def extract_job_dependencies(config: ParsedYaml) -> t.Dict[str, JobsNeedsValue]:
+def extract_job_dependencies(config: ParsedYaml) -> t.Dict[str, t.List[JobName]]:
     """Understand DAG of all Jobs"""
     # DAG representation
 
     # mapping of job names to their dependencies (previous steps in the dependency DAG)
-    job_dependencies: t.Dict[str, JobsNeedsValue] = {}
+    job_dependencies: t.Dict[str, t.List[JobName]] = {}
 
     if 'jobs' not in config:
         print("[WARNGING] No 'jobs' section found in config file")
@@ -56,7 +56,7 @@ def extract_job_dependencies(config: ParsedYaml) -> t.Dict[str, JobsNeedsValue]:
         for job_name, job_config in config['jobs'].items():
             needs: JobNeeds = job_config.get('needs')
 
-            current_job_needs_value: JobsNeedsValue = []
+            current_job_needs_value: t.List[JobName] = []
             if isinstance(needs, str):  # single dependency
                 current_job_needs_value = [needs]
             elif isinstance(needs, list):  # multiple dependencies
@@ -73,8 +73,11 @@ def extract_job_dependencies(config: ParsedYaml) -> t.Dict[str, JobsNeedsValue]:
 def generate_mermaid(job_dependencies: t.Dict[str, t.List[str]]) -> str:
     mermaid_code = 'graph LR;\n'
     for job_name, needs in job_dependencies.items():
-        for need in needs:
-            mermaid_code += f'  {need} --> {job_name}\n'
+        if needs:
+            mermaid_code += '\n'.join([f'  {prev_job} --> {job_name}' for prev_job in needs]) + '\n'
+        else:
+            mermaid_code += f'  {job_name}\n'
+
     return mermaid_code
 
 

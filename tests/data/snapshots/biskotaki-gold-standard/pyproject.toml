@@ -151,6 +151,7 @@ mkdocs-autorefs = { version = "=1.2.0", optional = true }
 # requests [security,tests] >= 2.8.1, == 2.8.* ; python_version < "2.7"
 # poetry add 'griffe >=1.0.0 ; python_version >= "3.9"' --optional
 
+
 ### EXTRAS ###
 [tool.poetry.extras]
 test = [
