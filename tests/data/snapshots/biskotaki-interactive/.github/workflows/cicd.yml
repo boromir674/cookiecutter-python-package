@@ -52,6 +52,7 @@ jobs:
       artifact_name: 'BUILD_ARTIFACT'
 
   codecov_coverage_host:
+    needs: test_n_build
     if: ${{ vars.CODECOV_JOB_ON != 'false' && !contains(github.event.head_commit.message, '_CI_SKIP_') }}
     uses: ./codecov-upload.yml
     with:

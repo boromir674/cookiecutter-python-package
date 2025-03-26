@@ -28,7 +28,7 @@ on:
 
 env:  # Note: not available at compile time to use, ie in 'if' conditions or 'with' object values
   ### STRESS TEST Job MATRIX ###
-  FULL_MATRIX_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.10\", \"3.11\", \"3.12\"]}"
+  FULL_MATRIX_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.7\", \"3.8\", \"3.9\", \"3.10\", \"3.11\"]}"
   # Python 3.7 has reached End of Life (EOL) on June 27th, 2023
   # Python 3.12 is in bugfix mode, same as 3.11 -> can start supporting 3.12 it
   UBUNTU_PY310_STRATEGY: "{\"platform\":[\"ubuntu-latest\"], \"python-version\":[\"3.10\"]}"
@@ -45,13 +45,14 @@ jobs:
     uses: boromir674/automated-workflows/.github/workflows/test_build.yml@test
     with:
       # Spawn Job per combination of factors in JOB_MATRIX
-      job_matrix: '{"platform": ["ubuntu-latest"], "python-version": ["3.10", "3.11", "3.12"]}'
+      job_matrix: '{"platform": ["ubuntu-latest"], "python-version": ["3.7", "3.8", "3.9", "3.10", "3.11"]}'
       build_installation: 'sdist, wheel'  # Verify sdist and wheel installations/"builds" against Tests
       # typecheck_policy: '1'  # {0: Skip, 1: Run, 2: Run and allow failures}
       # run_policy: '0'  # Force skip of downstream 'test_build' Test Job
       artifact_name: 'BUILD_ARTIFACT'
 
   codecov_coverage_host:
+    needs: test_n_build
     if: ${{ vars.CODECOV_JOB_ON != 'false' && !contains(github.event.head_commit.message, '_CI_SKIP_') }}
     uses: ./codecov-upload.yml
     with:
@@ -126,7 +127,7 @@ jobs:
     uses: boromir674/automated-workflows/.github/workflows/pypi_env.yml@8e97f596067fcbbaa0a6927ec1ee47dce4ab5f1a
     with:
       should_trigger: ${{ needs.set_github_outputs.outputs.PUBLISH_ON_PYPI == 'true' && needs.signal_deploy.outputs.AUTOMATED_DEPLOY == 'true' }}
-      distro_name: biskotaki
+      distro_name: cookiecutter_python
       distro_version: ${{ needs.test_suite.outputs.PEP_VERSION }}
       pypi_env: '${{ needs.signal_deploy.outputs.ENVIRONMENT_NAME }}'
       artifacts_path: downloaded-artifacts
