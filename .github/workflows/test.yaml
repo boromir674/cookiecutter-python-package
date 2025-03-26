@@ -175,11 +175,40 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - run: python -m pip install --upgrade pip && python -m pip install tox==3.28 tox-gh-actions
 
-    - name: Pin 'Static Type Checking' Dependencies
-      run: tox -vv -s false -e pin-deps -- -E typing
+    # TODO: use determinisitc build for type checking
+    # - name: Pin 'Static Type Checking' Dependencies
+    #   run: tox -vv -s false -e pin-deps -- -E typing
 
-    - name: Do Type Checking
-      run: tox -e type -vv -s false
+    # - name: Do Type Checking
+    #   run: tox -e type -vv -s false
+
+    # we use quick pip solution to deploy
+    - name: Install Project Dependencies
+      env:
+        PKG: src/cookiecutter_python
+      run: |
+        virtualenv .venv
+        source .venv/bin/activate
+        pip install -e .[typing]
+
+        # mypy does not like, by default, multiple conftest.py (ses pytest) files
+        # so we trick mypy into believing that tests is a package, because this way
+        # pytest can distinguish between our 2 conftest.py files
+
+        # create empty __init__.py in tests, temporarily
+        touch tests/__init__.py
+
+        mypy --show-error-codes \
+        --exclude tests/data \
+        ${{ env.PKG }}/hooks \
+        ${{ env.PKG }}/backend tests ${{ env.PKG }}/handle \
+        ${{ env.PKG }}/utils.py ${{ env.PKG }}/exceptions.py \
+        ${{ env.PKG }}/cli.py ${{ env.PKG }}/cli_handlers.py \
+        ${{ env.PKG }}/__main__.py ${{ env.PKG }}/__init__.py}
+
+    # delete temporarily created empty __init__.py in tests
+    - if: always()
+      run: rm tests/__init__.py
 
     ### Check if Requested RC Pipeline ###
     - name: "Update Source Sem Ver with Release Candidate *-rc' suffix"
