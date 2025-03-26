@@ -135,13 +135,18 @@ sphinx-autobuild = { version = "^2021.3.14", optional = true }
 tornado = { version = "^6.3.3", optional = true, python = ">=3.8,<3.13" }
 sphinx-inline-tabs = { version = "^2023.4.21", optional = true, python = ">=3.8,<3.13" }
 sphinxcontrib-mermaid = { version = "^0.9.2", optional = true, python = ">=3.7,<3.13" }
-# myst-parser = { version = "^2.0.0", optional = true, python = ">=3.8,<3.13" }
+myst-parser = { version = "^2.0.0", optional = true, markers = "python_version >= '3.8'", python = ">=3.10,<3.13" }
+markdown-it-py = { version = ">=1, <4", optional = true, python= ">=3.8,<3.13" }
 
 # Type Checking: packages required for the type check (ie mypy) to pass
 mypy = { version = "== 0.961", optional = true }
 types-requests = { version = "~= 2.27.26", optional = true }
 types-pyyaml = { version = "^6.0.12.5", optional = true }
 jinja2-time = "^0.2.0"
+
+# PEP 508
+# requests [security,tests] >= 2.8.1, == 2.8.* ; python_version < "2.7"
+
 
 [tool.poetry.extras]
 test = [
@@ -162,6 +167,7 @@ docs = [
     "sphinx-inline-tabs",
     "sphinxcontrib-mermaid",
     "myst-parser",
+    "markdown-it-py",
 ]
 docslive = [
     "sphinx",
@@ -173,6 +179,7 @@ docslive = [
     "sphinx-inline-tabs",
     "sphinxcontrib-mermaid",
     "myst-parser",
+    "markdown-it-py",
 ]
 typing = [
     "mypy",
