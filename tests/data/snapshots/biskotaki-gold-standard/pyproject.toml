@@ -108,7 +108,7 @@ exclude = [
 
 ### Dependency Constraints, aka Requirements ###
 [tool.poetry.dependencies]
-python = ">=3.8, <3.13"
+python = ">=3.10, <3.13"
 
 # Test: packages imported in test code and packages required for the "test runner"
 pytest = { version = "^8.0.0", optional = true }
