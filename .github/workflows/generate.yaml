@@ -167,33 +167,55 @@ jobs:
           poetry lock
         working-directory: gen-gold/biskotaki-gold-standard
 
-      ## MKDOCS Checks: Run Build Docs command, and verify it succeeds ##
+      # MKDOCS Checks: Run Build Docs command, and verify it succeeds ##
       - name: 'Mkdocs: Build Docs Web Site (html/css/js) -> PASS'
         working-directory: gen-gold/biskotaki-gold-standard
         run: |
-          echo "[INFO] Exporting to pip-installable Requirements for Docs"
-
-          # unless we pin colorama in poetry.lock we 
-          # export the requirements without hashes
-          tox -e pin-deps -- -E docs --without-hashes
-
-          echo "[INFO] Building Docs"
-
-          # pipx install virtualenv
           virtualenv env --python='python${{ env.PY_VERSION }}'
           source env/bin/activate
 
-          echo "[INFO] Installing Pinned Requirements for Docs"
-          # unless we pin colorama in poetry.lock it will fail if not 'poetry add' used
-          pip install -r reqs.txt
-
-          echo "[INFO] Installing the Package with 'docs' extras"
+          echo "[INFO] Installing Rolling Requirements for Docs"
           pip install -e .[docs]
 
           echo "[INFO] Building the Docs"
           mkdocs build
+      
+      - run: |
+          source env/bin/activate
+          pip list
+        working-directory: gen-gold/biskotaki-gold-standard
 
-          # tox -e docs
+      # echo "[INFO] Exporting to pip-installable Requirements for Docs"
+      # [ OPT 2 ]
+      #     # unless we pin colorama in poetry.lock we 
+      #     # export the requirements without hashes
+      #     tox -e pin-deps -- -E docs --without-hashes
+
+      #     echo "[INFO] Building Docs"
+
+      #     # pipx install virtualenv
+      #     virtualenv env --python='python${{ env.PY_VERSION }}'
+      #     source env/bin/activate
+
+      #     echo "[INFO] Installing Pinned Requirements for Docs"
+      #     # unless we pin colorama in poetry.lock it will fail if not 'poetry add' used
+      #     pip install -r reqs.txt
+
+      #     echo "[INFO] Installing the Package with 'docs' extras"
+      #     pip install -e .[docs]
+
+      #     echo "[INFO] Building the Docs"
+      #     mkdocs build
+
+      # [ OPT 1 ]
+      #     # tox -e docs
+
+      # [ OPT 3 ]
+
+
+      # BOTH tox and poetry based method have become unmaintanable
+
+      # We introduce a docker-based Mkdocs build and test
 
       # exlude 'site' dir from pushing to biskotaki repo
       - name: Exclude 'site' folder, built with Mkdocs, from 'git push'
