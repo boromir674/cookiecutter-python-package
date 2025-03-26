@@ -142,7 +142,8 @@ mkdocstrings-python = { version = "^1.7.5", optional = true }
 mkdocs-literate-nav = { version = "^0.6.1", optional = true }
 pymdown-extensions = { version = "^10.5", optional = true }{% if cookiecutter.project_type == "module+cli" %}
 mkdocs-click = { version = "^0.8.1", optional = true }
-griffe = { version = ">=1.0.0", markers = "python_version >= \"3.9\"", optional = true }{% endif %}{% endif %}
+griffe = { version = ">=1.0.0", markers = "python_version >= \"3.9\"", optional = true }
+colorama = { version = "0.4.5", optional = true }{% endif %}{% endif %}
 
 
 # requests [security,tests] >= 2.8.1, == 2.8.* ; python_version < "2.7"
@@ -182,7 +183,8 @@ docs = [{% if cookiecutter.docs_builder == "sphinx" %}
     "mkdocs-literate-nav",
     "pymdown-extensions",{% if cookiecutter.project_type == "module+cli" %}
     "mkdocs-click",
-    "griffe",{% endif %}{% endif %}
+    "griffe",
+    "colorama",{% endif %}{% endif %}
 ]{% if cookiecutter.docs_builder == "sphinx" %}
 docslive = [
     "sphinx",
