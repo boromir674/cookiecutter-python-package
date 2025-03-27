@@ -195,6 +195,7 @@ jobs:
         pip install mypy types-requests==2.27.31 pytest pytest-click types-pyyaml==6.0.12.12
 
         # Package in Edit mode
+        pip install markupsafe==2.0.1
         pip install -e '.[typing]'
 
         # mypy does not like, by default, multiple conftest.py (ses pytest) files
