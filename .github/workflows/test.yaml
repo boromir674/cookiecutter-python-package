@@ -183,7 +183,7 @@ jobs:
     #   run: tox -e type -vv -s false
 
     # we use quick pip solution to deploy
-    - name: Install Project Dependencies
+    - name: Do Type Checking
       env:
         PKG: src/cookiecutter_python
       run: |
@@ -198,13 +198,15 @@ jobs:
         # create empty __init__.py in tests, temporarily
         touch tests/__init__.py
 
+        echo "[INFO] Running mypy for type checking"
+
         mypy --show-error-codes \
         --exclude tests/data \
         ${{ env.PKG }}/hooks \
         ${{ env.PKG }}/backend tests ${{ env.PKG }}/handle \
         ${{ env.PKG }}/utils.py ${{ env.PKG }}/exceptions.py \
         ${{ env.PKG }}/cli.py ${{ env.PKG }}/cli_handlers.py \
-        ${{ env.PKG }}/__main__.py ${{ env.PKG }}/__init__.py}
+        ${{ env.PKG }}/__main__.py ${{ env.PKG }}/__init__.py
 
     # delete temporarily created empty __init__.py in tests
     - if: always()
