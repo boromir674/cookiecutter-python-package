@@ -42,6 +42,7 @@ def pre_main(request):
 
     # If INTERACTIVE, Run Dialog Pipeline, to update Context
     if interactive_mode:
+        # Render Context to be used in Dialogs
         user_input = parse_context(request.config_file)
         _context.update(
             {

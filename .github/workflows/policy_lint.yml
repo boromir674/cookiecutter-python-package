@@ -53,7 +53,7 @@ on:
       bandit:
         required: false
         type: string
-        description: 'Bandit Acceptance '
+        description: 'Bandit Acceptance Criteria'
         # ie { "l": 10 } -> allowes at most 10 low, 0 m, and 0 h
         # ie { "l": 10, "m": 3 } -> allowes at most 10 low, 3 m, and 0 h
         # Default is 6 allowed low, 0 m, and 0 h

@@ -93,6 +93,26 @@ delete_files = {
     'module+cli': lambda x: PYTEST_PLUGIN_ONLY(x),
 }
 
+### Define specialized files present per 'CI/CD option' ###
+CICD_DELETE = {
+    'stable': [
+        ('.github', 'workflows', 'cicd.yml'),
+        ('.github', 'workflows', 'codecov-upload.yml'),
+        ('.github', 'workflows', 'signal-deploy.yml'),
+    ],
+    'experimental': [
+        ('.github', 'workflows', 'test.yaml'),
+    ],
+}
+
+#     ('.github', 'workflows', 'test.yml'),
+# ]
+# CICD_STABLE_EXPERIMENTAL = lambda x: [
+#     ('.github', 'workflows', 'cicd.yml'),
+#     ('.github', 'workflows', 'codecov-upload.yml'),
+#     ('.github', 'workflows', 'signal-deploy.yml'),
+# ]
+
 # TODO: read from cookiecuuter['_template'] / cookiecutter.json
 # delete mkdocs.yml if not using mkdocs
 # delete sphinx files if not using sphinx
@@ -108,21 +128,33 @@ def post_file_removal(request):
 
     Delete files that are not relevant to the project type requested to
     generate.
-    
+
     For example, if the user requested a 'module' project type,
     then delete the files that are only relevant to a 'module+cli' project.
+
+    Deletes Files according to CI/CD Pipeline option [stable, experimental]
 
     Args:
         request ([type]): [description]
     """
     from pathlib import Path
-    
+    IRELEVANT_CI_CD_FILES: t.Iterable[t.Tuple[str, ...]] = CICD_DELETE[request.vars['cicd']]
+
     files_to_remove = [
+        ## Post-Gen File Removal, given 'Project Type', 
         os.path.join(request.project_dir, *x) for x in delete_files[request.vars['project_type']](request)
+    ] + [
+        ## Remove test.tml or cicd.yml based on CI/CD Option ##
+        os.path.join(request.project_dir, *path_components) for path_components
+        in IRELEVANT_CI_CD_FILES
     ]
-    ## Post Removal, given 'Project Type', of potentially extra files ##
     for file in files_to_remove:
-        os.remove(file)
+        try:
+            os.remove(file)
+        except FileNotFoundError as error:
+            print(f"** Could not remove '{file}'")
+            print('Exception: ' + str(error))
+            raise PostFileRemovalError(error)
 
     ## Remove gen 'docs' folders, given 'Docs Website Builder' (DWB) ##
     for builder_id, gen_docs_folder_name in request.docs_extra_info.items():

@@ -108,7 +108,7 @@ exclude = [
 
 ### Dependency Constraints, aka Requirements ###
 [tool.poetry.dependencies]
-python = ">=3.8, <3.13"
+python = ">=3.10, <3.13"
 
 # Test: packages imported in test code and packages required for the "test runner"
 pytest = { version = "^8.0.0", optional = true }
@@ -122,17 +122,35 @@ pytest-run-subprocess = { version = "^0.10.0", optional = true }
 mypy = { version = "^1.8.0", optional = true }
 
 # Docs: dev and build dependencies
-mkdocs = { version = "^1.5.3", optional = true }
-mkdocs-macros-plugin = { version = "^1.0.5", optional = true }
-mkdocs-material = { version = "^9.4.14", optional = true }
-mkdocs-mermaid2-plugin = { version = "^1.1.1", optional = true }
+mkdocs = { version = "^1.6.1", optional = true }
+mkdocs-material = { version = "^9.6.9", optional = true }
 mkdocs-section-index = { version = "^0.3.8", optional = true }
+mkdocs-macros-plugin = { version = "^1.0.5", optional = true }
+mkdocs-mermaid2-plugin = { version = "^1.1.1", optional = true }
 mkdocs-gen-files = { version = "^0.5.0", optional = true }
-mkdocstrings = { version = "^0.24.0", optional = true }
-mkdocstrings-python = { version = "^1.7.5", optional = true }
+
+mkdocstrings = { version = "=0.26.2", optional = true }
+
+# last to support python 3.8
+# mkdocstrings = { version = "=0.24.3", optional = true }
+mkdocstrings-python = { version = "=1.11.1", optional = true }
+
+# last to support mkdocstrings < 0.25
+# mkdocstrings-python = { version = "=1.10.0", optional = true }
+
 mkdocs-literate-nav = { version = "^0.6.1", optional = true }
 pymdown-extensions = { version = "^10.5", optional = true }
 mkdocs-click = { version = "^0.8.1", optional = true }
+
+# griffe can be trusted for sem ver, but dropping python support they consider "Minor" (1.4.0 last to support 3.8), if > 1.4.0 add python = ">=3.9"
+griffe = { version = "=1.4.0", optional = true }
+colorama = { version = "0.4.5", optional = true }
+# set to last version supporting python 3.8
+mkdocs-autorefs = { version = "=1.2.0", optional = true }
+
+# requests [security,tests] >= 2.8.1, == 2.8.* ; python_version < "2.7"
+# poetry add 'griffe >=1.0.0 ; python_version >= "3.9"' --optional
+
 
 ### EXTRAS ###
 [tool.poetry.extras]
@@ -162,6 +180,9 @@ docs = [
     "mkdocs-literate-nav",
     "pymdown-extensions",
     "mkdocs-click",
+    "griffe",
+    "colorama",
+    "mkdocs-autorefs",
 ]
 
 [tool.poetry.scripts]

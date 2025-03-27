@@ -108,7 +108,7 @@ exclude = [
 
 ### Dependency Constraints, aka Requirements ###
 [tool.poetry.dependencies]
-python = ">=3.8, <3.13"
+python = ">=3.10, <3.13"
 
 # Test: packages imported in test code and packages required for the "test runner"
 pytest = { version = "^8.0.0", optional = true }
@@ -127,6 +127,10 @@ sphinxcontrib-spelling = { version = "~= 7.3.3", optional = true }
 sphinx-autobuild = { version = "^2021.3.14", optional = true }
 sphinx-inline-tabs = { version = "^2023.4.21", optional = true, python = ">=3.8,<3.13" }
 sphinxcontrib-mermaid = { version = "^0.9.2", optional = true, python = ">=3.7,<3.13" }
+
+# requests [security,tests] >= 2.8.1, == 2.8.* ; python_version < "2.7"
+# poetry add 'griffe >=1.0.0 ; python_version >= "3.9"' --optional
+
 
 ### EXTRAS ###
 [tool.poetry.extras]

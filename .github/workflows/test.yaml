@@ -117,8 +117,12 @@ jobs:
             # Fall back to the default strategy
             echo "matrix=$UBUNTU_PY310_STRATEGY" >> $GITHUB_OUTPUT
           fi
+
           ## we skip ci, on pushes to 'release' branch ##
-          echo "TESTS_ENABLED=${{ env.RUN_UNIT_TESTS == 'true' && github.ref_name != 'release' }}" >> $GITHUB_OUTPUT
+          # echo "TESTS_ENABLED=${{ env.RUN_UNIT_TESTS == 'true' && github.ref_name != 'release' }}" >> $GITHUB_OUTPUT
+          
+          echo "TESTS_ENABLED=${{ env.RUN_UNIT_TESTS == 'true' }}" >> $GITHUB_OUTPUT
+
           echo "PUBLISH_ON_PYPI=$PUBLISH_ON_PYPI" >> $GITHUB_OUTPUT
           echo "PIPE_DOCS_POLICY=$PIPE_DOCS_POLICY" >> $GITHUB_OUTPUT
           echo "PIPE_DOCS_PY=$PY_VERSION" >> $GITHUB_OUTPUT
@@ -171,11 +175,49 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - run: python -m pip install --upgrade pip && python -m pip install tox==3.28 tox-gh-actions
 
-    - name: Pin 'Static Type Checking' Dependencies
-      run: tox -vv -s false -e pin-deps -- -E typing
+    # TODO: use determinisitc build for type checking
+    # - name: Pin 'Static Type Checking' Dependencies
+    #   run: tox -vv -s false -e pin-deps -- -E typing
 
+    # - name: Do Type Checking
+    #   run: tox -e type -vv -s false
+
+    # we use quick pip solution to deploy
     - name: Do Type Checking
-      run: tox -e type -vv -s false
+      env:
+        PKG: src/cookiecutter_python  # for DRYness
+        MYPYPATH: src/stubs/  # REQUIRED for mypy to find our custom stubs
+      run: |
+        virtualenv .venv
+        source .venv/bin/activate
+
+        # MYPY only Dependencies
+        pip install mypy types-requests==2.27.31 pytest pytest-click types-pyyaml==6.0.12.12
+
+        # Package in Edit mode
+        pip install markupsafe==2.0.1
+        pip install -e '.[typing]'
+
+        # mypy does not like, by default, multiple conftest.py (ses pytest) files
+        # so we trick mypy into believing that tests is a package, because this way
+        # pytest can distinguish between our 2 conftest.py files
+
+        # create empty __init__.py in tests, temporarily
+        touch tests/__init__.py
+
+        echo "[INFO] Running mypy for type checking"
+
+        mypy --show-error-codes \
+        --exclude tests/data \
+        "${PKG}/hooks" \
+        "${PKG}/backend" tests "${PKG}/handle" \
+        "${PKG}/utils.py" "${PKG}/exceptions.py" \
+        "${PKG}/cli.py" "${PKG}/cli_handlers.py" \
+        "${PKG}/__main__.py" "${PKG}/__init__.py"
+
+    # delete temporarily created empty __init__.py in tests
+    - if: always()
+      run: rm tests/__init__.py
 
     ### Check if Requested RC Pipeline ###
     - name: "Update Source Sem Ver with Release Candidate *-rc' suffix"
@@ -249,7 +291,7 @@ jobs:
         mv ./.tox/coverage.xml ./coverage-${{ matrix.platform }}-${{ matrix.python-version }}.xml
 
     - name: "Upload Test Coverage as Artifacts"
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: all_coverage_raw
         path: coverage-${{ matrix.platform }}-${{ matrix.python-version }}.xml
@@ -269,7 +311,7 @@ jobs:
         tox -e check -vv -s false
 
     - name: Upload Source & Wheel distributions as Artefacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: dist-${{ matrix.platform }}-${{ matrix.python-version }}
         path: ${{ env.DIST_DIR }}
@@ -285,7 +327,7 @@ jobs:
         curl -Os https://uploader.codecov.io/latest/linux/codecov
         chmod +x codecov
     - name: Download Raw Coverage Data Artefacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: all_coverage_raw
     - name: Upload Coverage Reports to Codecov
@@ -301,7 +343,7 @@ jobs:
 # Ref Page: https://automated-workflows.readthedocs.io/en/main/ref_docker/
   docker_build:
     needs: [set_github_outputs, test_suite]
-    uses: boromir674/automated-workflows/.github/workflows/docker.yml@v1.1.0
+    uses: boromir674/automated-workflows/.github/workflows/docker.yml@v1.14.0
     if: always()
     with:
       acceptance_policy: ${{ needs.set_github_outputs.outputs.PIPE_DOCKER_POLICY }}
@@ -360,7 +402,7 @@ jobs:
   ## JOB: PYPI UPLOAD ##
   pypi_publish:
     needs: [set_github_outputs, test_suite, check_which_git_branch_we_are_on]
-    uses: boromir674/automated-workflows/.github/workflows/pypi_env.yml@8e97f596067fcbbaa0a6927ec1ee47dce4ab5f1a
+    uses: boromir674/automated-workflows/.github/workflows/pypi_env.yml@v1.14.0
     with:
       should_trigger: ${{ needs.set_github_outputs.outputs.PUBLISH_ON_PYPI == 'true' && needs.check_which_git_branch_we_are_on.outputs.AUTOMATED_DEPLOY == 'true' }}
       distro_name: cookiecutter_python
@@ -390,7 +432,7 @@ jobs:
     name: Build Documentation
     needs: set_github_outputs
     # bafaa2c2a014758a4421fe9b5c02ba66dbfdbef6
-    uses: boromir674/automated-workflows/.github/workflows/policy_docs.yml@test
+    uses: boromir674/automated-workflows/.github/workflows/policy_docs.yml@v1.14.0
     with:
       run_policy: '${{ needs.set_github_outputs.outputs.PIPE_DOCS_POLICY }}'
       python_version: ${{ needs.set_github_outputs.outputs.PIPE_DOCS_PY }}
@@ -401,7 +443,7 @@ jobs:
   code_visualization:
     needs: set_github_outputs
     name: Code Visualization of Python Imports as Graphs, in .svg
-    uses: boromir674/automated-workflows/.github/workflows/python_imports.yml@v1.3.0
+    uses: boromir674/automated-workflows/.github/workflows/python_imports.yml@v1.14.0
     with:
       run_policy: '${{ needs.set_github_outputs.outputs.PIPE_CODE_VIZ_POLICY }}'
       branches: 'main, master, dev'
@@ -413,7 +455,7 @@ jobs:
   gh_release:
     needs: [test_suite, check_which_git_branch_we_are_on]
     if: ${{ needs.check_which_git_branch_we_are_on.outputs.AUTOMATED_DEPLOY == 'true' }}
-    uses: boromir674/automated-workflows/.github/workflows/gh-release.yml@test
+    uses: boromir674/automated-workflows/.github/workflows/gh-release.yml@v1.14.0
     name: 'GH Release'
     with:
       tag: ${{ github.ref_name }}

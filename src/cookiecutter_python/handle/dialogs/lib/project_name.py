@@ -9,7 +9,7 @@ from ..dialog import InteractiveDialog
 @InteractiveDialog.register_as_subclass('project-name')
 class ProjectNameDialog:
     def dialog(self, cookie_vars) -> Mapping[str, str]:
-
+        # TODO: automatically create list from cookiecutter json
         return prompt(
             [
                 {
@@ -157,6 +157,14 @@ class ProjectNameDialog:
                     # 'choices': ['3.8', '3.9', '3.10', '3.11', '3.12'],
                     'choices': cookie_vars['rtd_python_version']['choices'],
                     'default': cookie_vars['rtd_python_version']['default'],
+                },
+                # CICD Pipeline design: stable, experimental
+                {
+                    'type': 'select',
+                    'name': 'cicd',
+                    'message': 'Select the CI/CD Pipeline Design',
+                    'choices': cookie_vars['cicd']['choices'],
+                    'default': cookie_vars['cicd']['default'],
                 },
             ]
         )

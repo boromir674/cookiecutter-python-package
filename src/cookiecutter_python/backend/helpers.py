@@ -8,8 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 def parse_context(config_file: str):
-    # initialize data
-    user_context = {}
+    """Render Context on demand, using cookiecutter.json and optional config file."""
     from pathlib import Path
 
     my_dir = Path(__file__).parent.absolute()
@@ -39,30 +38,32 @@ def parse_context(config_file: str):
 
     # in cookiecutter 1.7, a 'choice' variable is a json array
     choices = {k: v for k, v in cook_json.items() if isinstance(v, list)}
-    assert 'rtd_python_version' in choices, f"KEYS: {choices.keys()}"
-    choice_defaults = {k: v[0] for k, v in choices.items()}
-
-    # start
-    c = cook_json['interpreters']
-
-    cookie_defaults = dict(cook_json, **choice_defaults)
 
     if config_file:
         from .user_config_proxy import get_user_config
 
         data = get_user_config(config_file, default_config=False)
         # data = load_yaml(config_file)
-        user_context = data['default_context']
-        _interpreters: t.Mapping[str, t.List[str]] = user_context.get('interpreters', '{}')
+        user_default_context = data['default_context']
+        _interpreters: t.Mapping[str, t.List[str]] = user_default_context.get(
+            'interpreters', '{}'
+        )
         if isinstance(_interpreters, str):
             logger.warning(
                 "Interpreters expected to be loaded in a python dict already. Got a string instead."
             )
             logger.info("Converting interpreters %s to a python dict", _interpreters)
             _interpreters = json.loads(_interpreters)
-        c = _interpreters
+        user_interpreters = _interpreters
+    else:
+        user_default_context = {}
+        user_interpreters = cook_json['interpreters']
 
-    context_defaults = dict(cookie_defaults, **user_context)
+    context_defaults = dict(
+        cook_json,
+        **{k: v for k, v in user_default_context.items()},
+        **{k: v[0] for k, v in choices.items() if k not in user_default_context},
+    )
 
     from cookiecutter_python.handle.interactive_cli_pipeline import (
         InteractiveDialogsPipeline,
@@ -70,8 +71,6 @@ def parse_context(config_file: str):
 
     pipe = InteractiveDialogsPipeline()
 
-    # c = json.loads(context_defaults.get('interpreters', '{}'))
-    cc = c.get('supported-interpreters', ["3.6", "3.7", "3.8", "3.9", "3.10", "3.11"])
     # assert choices['rtd_python_version'] == [], f"DEBUG: {choices['rtd_python_version']}"
     res = pipe.process(
         [
@@ -94,7 +93,13 @@ def parse_context(config_file: str):
                 },
                 "supported-interpreters": {
                     # 'default': context_defaults['initialize_git_repo'],
-                    'choices': [(choice, True) for choice in cc],
+                    'choices': [
+                        (choice, True)
+                        for choice in user_interpreters.get(
+                            'supported-interpreters',
+                            ["3.6", "3.7", "3.8", "3.9", "3.10", "3.11"],
+                        )
+                    ],
                 },
                 "docs_builder": {
                     'default': context_defaults['docs_builder'],
@@ -103,6 +108,10 @@ def parse_context(config_file: str):
                 "rtd_python_version": {
                     'default': context_defaults['rtd_python_version'],
                     'choices': choices['rtd_python_version'],
+                },
+                "cicd": {
+                    'default': context_defaults['cicd'],
+                    'choices': choices['cicd'],
                 },
             }
         ]

@@ -1,0 +1,103 @@
+###############################
+##     Signal Auto Deploy    ##
+##     Reusable Workflow     ##
+###############################
+
+# Outputs the signal for automated deployment, as a Boolean
+# Outputs the Environment Name that should be used for deployment, as a String
+
+name: 'Signal Automated Deployment'
+
+on:
+  workflow_call:
+    inputs:
+      # Required Inputs
+      # Optional Inputs
+      main_branch:
+        description: 'The name of the main branch, associated with the production environment'
+        required: true
+        default: 'main'
+        type: string
+      release_branch:
+        description: 'The name of the release branch, associated with the test/staging environment'
+        required: true
+        default: 'release'
+        type: string
+    outputs:
+      AUTOMATED_DEPLOY:
+        description: "Boolean value to signal if the automated deployment should happen"
+        value: ${{ jobs.check_which_git_branch_we_are_on.outputs.AUTOMATED_DEPLOY }}
+      ENVIRONMENT_NAME:
+        description: "Github Environment Name that should be used for deployment"
+        value: ${{ jobs.check_which_git_branch_we_are_on.outputs.ENVIRONMENT_NAME }}
+
+jobs:
+  ## JOB: Signal for Automated PyPI Upload ##
+  check_which_git_branch_we_are_on:
+    runs-on: ubuntu-latest
+    # logic below assumes github.ref is a tag, so we allow to run only on tag push
+    # PROD if: startsWith(github.ref, 'refs/tags/')
+    env:
+      RELEASE_BR: ${{ inputs.release_branch }}
+      MAIN_BR: ${{ inputs.main_branch }}
+    outputs:
+      AUTOMATED_DEPLOY: ${{ steps.set_environment_name.outputs.AUTOMATED_DEPLOY }}
+      ENVIRONMENT_NAME: ${{ steps.set_environment_name.outputs.ENVIRONMENT_NAME }}
+    steps:
+      # Fetch 'main' and 'release' branches
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - run: git branch -a
+
+      - name: 'git branch --track "${{ env.RELEASE_BR }}" "origin/${{ env.RELEASE_BR }}"'
+        id: track_release_br
+        run: |
+          exit_code=0
+          git branch --track "${{ env.RELEASE_BR }}" "origin/${{ env.RELEASE_BR }}" || exit_code=$?
+
+          if [[ $exit_code -ne 0 ]]; then
+            echo "[WARN] Could not track '${{ env.RELEASE_BR }}' branch. Possibly origin/${{ env.RELEASE_BR }} has been already deleted"
+          fi
+          echo "TRACK_RELEASE_CODE=${exit_code}" >> $GITHUB_OUTPUT
+
+      - name: 'git branch --track "${{ env.MAIN_BR }}" "origin/${{ env.MAIN_BR }}"'
+        id: track_main_br
+        run: |
+          exit_code=0
+          git branch --track "${{ env.MAIN_BR }}" "origin/${{ env.MAIN_BR }}" || exit_code=$?
+          if [[ $exit_code -ne 0 ]]; then
+            echo "[WARN] Could not track '${{ env.MAIN_BR }}' branch!"
+          fi
+          echo "TRACK_MAIN_CODE=${exit_code}" >> $GITHUB_OUTPUT
+
+      - name: "Check if '${{ github.ref }}' tag is on '${{ env.MAIN_BR }}' branch"
+        if: steps.track_main_br.outputs.TRACK_MAIN_CODE == 0
+        uses: rickstaa/action-contains-tag@a9ff27d505ba2bf074a2ebb48b208e76d35ff308
+        id: main_contains_tag
+        with:
+          reference: ${{ env.MAIN_BR }}
+          tag: "${{ github.ref }}"
+
+      - name: "Check if '${{ github.ref }}' tag is on '${{ env.RELEASE_BR }}' branch"
+        if: steps.track_release_br.outputs.TRACK_RELEASE_CODE == 0
+        uses: rickstaa/action-contains-tag@a9ff27d505ba2bf074a2ebb48b208e76d35ff308
+        id: release_contains_tag
+        with:
+          reference: ${{ env.RELEASE_BR }}
+          tag: "${{ github.ref }}"
+
+      - name: Pick Production or Test Environment, if tag on MAIN_BR or release branch respectively
+        id: set_environment_name
+        run: |
+          DEPLOY=true
+          if [[ "${{ steps.main_contains_tag.outputs.retval }}" == "true" ]]; then
+            echo "ENVIRONMENT_NAME=PROD_DEPLOYMENT" >> $GITHUB_OUTPUT
+          elif [[ "${{ steps.release_contains_tag.outputs.retval }}" == "true" ]]; then
+            echo "ENVIRONMENT_NAME=TEST_DEPLOYMENT" >> $GITHUB_OUTPUT
+          else
+            echo "A tag was pushed but not on ${MAIN_BR} or ${RELEASE_BR} branch. No deployment will be done."
+            DEPLOY=false
+          fi
+          echo "AUTOMATED_DEPLOY=$DEPLOY" >> $GITHUB_OUTPUT
