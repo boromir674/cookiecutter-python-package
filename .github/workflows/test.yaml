@@ -189,7 +189,8 @@ jobs:
       run: |
         virtualenv .venv
         source .venv/bin/activate
-        pip install -e .[typing]
+
+        pip install mypy types-requests pytest pytest-click types-pyyaml
 
         # mypy does not like, by default, multiple conftest.py (ses pytest) files
         # so we trick mypy into believing that tests is a package, because this way
