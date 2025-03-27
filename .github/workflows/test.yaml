@@ -36,7 +36,7 @@ env:
   ##### JOB ON/OFF SWITCHES - Top/1st level overrides #####
   RUN_UNIT_TESTS: "true"
   RUN_LINT_CHECKS: "true"
-  DOCKER_JOB_ON: "true"
+  DOCKER_JOB_ON: "false"
   PUBLISH_ON_PYPI: "true"
   DOCS_JOB_ON: "true"
   DRAW_DEPENDENCIES: "true"
