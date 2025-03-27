@@ -296,8 +296,8 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
       # TODO: implement mechanism for uploading test reports on separate artifact names. then codecov host upload job should be able somehow to get all of them. then change below from true to false
-        overwrite: true
-        name: all_coverage_raw
+        overwrite: false
+        name: coverage-${{ matrix.platform }}-${{ matrix.python-version }}.xml
         path: coverage-${{ matrix.platform }}-${{ matrix.python-version }}.xml
         if-no-files-found: error
 
@@ -333,7 +333,7 @@ jobs:
     - name: Download Raw Coverage Data Artefacts
       uses: actions/download-artifact@v4
       with:
-        name: all_coverage_raw
+        name: coverage-ubuntu-latest-3.10.xml
     - name: Upload Coverage Reports to Codecov
       run: |
         for file in coverage*.xml; do
