@@ -189,15 +189,15 @@ jobs:
         MYPYPATH: src/stubs/  # REQUIRED for mypy to find our custom stubs
       shell: bash
       run: |
-        virtualenv .venv
-        source .venv/bin/activate
+        virtualenv venv
+        # source venv/bin/activate
 
         # MYPY only Dependencies
-        pip install mypy types-requests==2.27.31 pytest pytest-click types-pyyaml==6.0.12.12
+        venv/bin/pip install mypy types-requests==2.27.31 pytest pytest-click types-pyyaml==6.0.12.12
 
         # Package in Edit mode
-        pip install markupsafe==2.0.1
-        pip install -e '.[typing]'
+        venv/bin/pip install markupsafe==2.0.1
+        venv/bin/pip install -e '.[typing]'
 
         # mypy does not like, by default, multiple conftest.py (ses pytest) files
         # so we trick mypy into believing that tests is a package, because this way
@@ -208,7 +208,7 @@ jobs:
 
         echo "[INFO] Running mypy for type checking"
 
-        mypy --show-error-codes \
+        venv/bin/mypy --show-error-codes \
         --exclude tests/data \
         "${PKG}/hooks" \
         "${PKG}/backend" tests "${PKG}/handle" \
