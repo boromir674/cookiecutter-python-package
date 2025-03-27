@@ -187,6 +187,7 @@ jobs:
       env:
         PKG: src/cookiecutter_python  # for DRYness
         MYPYPATH: src/stubs/  # REQUIRED for mypy to find our custom stubs
+      shell: bash
       run: |
         virtualenv .venv
         source .venv/bin/activate
