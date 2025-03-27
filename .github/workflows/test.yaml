@@ -218,7 +218,7 @@ jobs:
         "${PKG}/__main__.py" "${PKG}/__init__.py"
 
     # delete temporarily created empty __init__.py in tests
-    - if: matrix.platform != 'windows-latest'
+    - if: matrix.platform != 'windows-latest' && always()
       run: rm tests/__init__.py
 
     ### Check if Requested RC Pipeline ###
@@ -330,13 +330,19 @@ jobs:
       run: |
         curl -Os https://uploader.codecov.io/latest/linux/codecov
         chmod +x codecov
-    - name: Download Raw Coverage Data Artefacts
+
+    - name: Download All Artifacts
       uses: actions/download-artifact@v4
       with:
-        name: coverage-ubuntu-latest-3.10.xml
+        path: coverage
+        pattern: coverage-*
+        merge-multiple: true
+
+    - run: ls -R coverage
+
     - name: Upload Coverage Reports to Codecov
       run: |
-        for file in coverage*.xml; do
+        for file in coverage/coverage*.xml; do
           OS_NAME=$(echo $file | sed -E "s/coverage-(\w\+)-/\1/")
           PY_VERSION=$(echo $file | sed -E "s/coverage-\w\+-(\d\.)\+/\1/")
           ./codecov -f $file -e "OS=$OS_NAME,PYTHON=$PY_VERSION" --flags unittests --verbose
