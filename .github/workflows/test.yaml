@@ -185,12 +185,13 @@ jobs:
     # we use quick pip solution to deploy
     - name: Do Type Checking
       env:
-        PKG: src/cookiecutter_python
+        PKG: src/cookiecutter_python  # for DRYness
+        MYPYPATH: src/stubs/  # REQUIRED for mypy to find our custom stubs
       run: |
         virtualenv .venv
         source .venv/bin/activate
 
-        pip install mypy types-requests pytest pytest-click types-pyyaml
+        pip install mypy types-requests==2.27.31 pytest pytest-click types-pyyaml==6.0.12.12
 
         # mypy does not like, by default, multiple conftest.py (ses pytest) files
         # so we trick mypy into believing that tests is a package, because this way
@@ -203,11 +204,11 @@ jobs:
 
         mypy --show-error-codes \
         --exclude tests/data \
-        ${{ env.PKG }}/hooks \
-        ${{ env.PKG }}/backend tests ${{ env.PKG }}/handle \
-        ${{ env.PKG }}/utils.py ${{ env.PKG }}/exceptions.py \
-        ${{ env.PKG }}/cli.py ${{ env.PKG }}/cli_handlers.py \
-        ${{ env.PKG }}/__main__.py ${{ env.PKG }}/__init__.py
+        "${PKG}/hooks" \
+        "${PKG}/backend" tests "${PKG}/handle" \
+        "${PKG}/utils.py" "${PKG}/exceptions.py" \
+        "${PKG}/cli.py" "${PKG}/cli_handlers.py" \
+        "${PKG}/__main__.py" "${PKG}/__init__.py"
 
     # delete temporarily created empty __init__.py in tests
     - if: always()
