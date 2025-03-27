@@ -27,8 +27,7 @@ on:
 
 env:
   ### STRESS TEST Job MATRIX ###
-  # FULL_MATRIX_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.8\", \"3.9\", \"3.10\", \"3.12\"]}"
-  FULL_MATRIX_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\"], \"python-version\": [\"3.8\", \"3.12\"]}"
+  FULL_MATRIX_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.8\", \"3.9\", \"3.10\", \"3.12\"]}"
   # Python 3.7 has reached End of Life (EOL) on June 27th, 2023
   # Python 3.12 is in bugfix mode, same as 3.11 -> can start supporting 3.12 it
   UBUNTU_PY310_STRATEGY: "{\"platform\": [\"ubuntu-latest\"], \"python-version\": [\"3.10\"]}"
@@ -472,5 +471,5 @@ jobs:
       tag: ${{ github.ref_name }}
       draft: ${{ needs.check_which_git_branch_we_are_on.outputs.ENVIRONMENT_NAME == 'TEST_DEPLOYMENT' }}
     secrets:
-      # passing the GH_TOKEN PAT, to render in GH as ie: 'boromir674 released this yesterday', instead of 'github-actions released this yesterday'
-      gh_token: ${{ secrets.GH_TOKEN }}
+      # pass a Github PAT "sign" Release (ie render in UI as 'boromir674 (instead of github-actions) released this yesterday'
+      gh_token: ${{ secrets.PYTHON_GEN_GH_RELEASE_RW }}
