@@ -183,42 +183,43 @@ jobs:
     #   run: tox -e type -vv -s false
 
     # we use quick pip solution to deploy
-    # - name: Do Type Checking
-    #   env:
-    #     PKG: src/cookiecutter_python  # for DRYness
-    #     MYPYPATH: src/stubs/  # REQUIRED for mypy to find our custom stubs
-    #   shell: bash
-    #   run: |
-    #     virtualenv venv
-    #     # source venv/bin/activate
+    - name: Do Type Checking
+      if: matrix.platform != 'windows-latest'
+      env:
+        PKG: src/cookiecutter_python  # for DRYness
+        MYPYPATH: src/stubs/  # REQUIRED for mypy to find our custom stubs
+      shell: bash
+      run: |
+        virtualenv venv
+        # source venv/bin/activate
 
-    #     # MYPY only Dependencies
-    #     venv/bin/pip install mypy types-requests==2.27.31 pytest pytest-click types-pyyaml==6.0.12.12
+        # MYPY only Dependencies
+        venv/bin/pip install mypy types-requests==2.27.31 pytest pytest-click types-pyyaml==6.0.12.12
 
-    #     # Package in Edit mode
-    #     venv/bin/pip install markupsafe==2.0.1
-    #     venv/bin/pip install -e '.[typing]'
+        # Package in Edit mode
+        venv/bin/pip install markupsafe==2.0.1
+        venv/bin/pip install -e '.[typing]'
 
-    #     # mypy does not like, by default, multiple conftest.py (ses pytest) files
-    #     # so we trick mypy into believing that tests is a package, because this way
-    #     # pytest can distinguish between our 2 conftest.py files
+        # mypy does not like, by default, multiple conftest.py (ses pytest) files
+        # so we trick mypy into believing that tests is a package, because this way
+        # pytest can distinguish between our 2 conftest.py files
 
-    #     # create empty __init__.py in tests, temporarily
-    #     touch tests/__init__.py
+        # create empty __init__.py in tests, temporarily
+        touch tests/__init__.py
 
-    #     echo "[INFO] Running mypy for type checking"
+        echo "[INFO] Running mypy for type checking"
 
-    #     venv/bin/mypy --show-error-codes \
-    #     --exclude tests/data \
-    #     "${PKG}/hooks" \
-    #     "${PKG}/backend" tests "${PKG}/handle" \
-    #     "${PKG}/utils.py" "${PKG}/exceptions.py" \
-    #     "${PKG}/cli.py" "${PKG}/cli_handlers.py" \
-    #     "${PKG}/__main__.py" "${PKG}/__init__.py"
+        venv/bin/mypy --show-error-codes \
+        --exclude tests/data \
+        "${PKG}/hooks" \
+        "${PKG}/backend" tests "${PKG}/handle" \
+        "${PKG}/utils.py" "${PKG}/exceptions.py" \
+        "${PKG}/cli.py" "${PKG}/cli_handlers.py" \
+        "${PKG}/__main__.py" "${PKG}/__init__.py"
 
-    # # delete temporarily created empty __init__.py in tests
-    # - if: always()
-    #   run: rm tests/__init__.py
+    # delete temporarily created empty __init__.py in tests
+    - if: matrix.platform != 'windows-latest'
+      run: rm tests/__init__.py
 
     ### Check if Requested RC Pipeline ###
     - name: "Update Source Sem Ver with Release Candidate *-rc' suffix"
@@ -294,6 +295,8 @@ jobs:
     - name: "Upload Test Coverage as Artifacts"
       uses: actions/upload-artifact@v4
       with:
+      # TODO: implement mechanism for uploading test reports on separate artifact names. then codecov host upload job should be able somehow to get all of them. then change below from true to false
+        overwrite: true
         name: all_coverage_raw
         path: coverage-${{ matrix.platform }}-${{ matrix.python-version }}.xml
         if-no-files-found: error
