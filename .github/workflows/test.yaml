@@ -411,13 +411,13 @@ jobs:
 
   ## JOB: PYPI UPLOAD ##
   pypi_publish:
-    needs: [set_github_outputs, test_suite, check_which_git_branch_we_are_on]
+    needs: [test_suite]
     uses: boromir674/automated-workflows/.github/workflows/pypi_env.yml@test
     with:
-      should_trigger: ${{ needs.set_github_outputs.outputs.PUBLISH_ON_PYPI == 'true' && needs.check_which_git_branch_we_are_on.outputs.AUTOMATED_DEPLOY == 'true' }}
+      should_trigger: true
       distro_name: cookiecutter_python
       distro_version: ${{ needs.test_suite.outputs.PEP_VERSION }}
-      pypi_env: '${{ needs.check_which_git_branch_we_are_on.outputs.ENVIRONMENT_NAME }}'
+      pypi_env: 'TEST_DEPLOYMENT'
       artifacts_path: downloaded-artifacts
 
       require_wheel: true
