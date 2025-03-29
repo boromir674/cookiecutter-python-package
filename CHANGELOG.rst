@@ -2,6 +2,66 @@
 Changelog
 =========
 
+
+2.5.0 (2024-03-27)
+==================
+
+| This release introduces the option for generating a newly designed cleaner `CI/CD` Pipeline,
+| via `cicd` CLI flag option, and by passing the `experimental` value
+
+| It also includes fixes, refactoring, and updates to testing snapshots for better reliability.
+
+Changes
+^^^^^^^
+
+feature
+"""""""
+- update prod cookiecutter template
+- update pyproject template with mkdocs extras
+- pin griffe package for mkdocs-based Generated Projects
+- implement the 'cicd' option in Gen Config
+- allow Generator to accept python 3.12, 3.13, and 3.14 in supported-interpreters context variable
+
+ci
+""
+- fix type checking by installing missing package
+- run the docs build process for biskotaki gold, without pinned dependencies
+- fix CI Pipeline by using Automated Workflows v1.14.0
+- bump ga-workflows to v1.13.1
+- use 'actions/download-artifact@v4' where necessary
+- improve messaging to console
+- run pip install without requiring hashes, since it fails on CI
+- run CI on every branch push
+- improve Job Template name
+- add 'experimental' CI pipeline to `CI Biskotaki`
+
+test
+""""
+- update biskotaki CI no-input/interactive Snapshots
+- update no-input and interactive Snapshots generated from .github/biskotaki.yaml
+- update Gold-Standard Biskotaki to CI Matrix [3.10, 3.11, 3.12] and RTD Python 3.11
+- add 2 Test cases verifying post hook behavior at unit-level for different cicd options
+- document the 'Jinja Context generation' Automated Test code
+- exclude tests marked with 'slow' from collection, unless --run-slow flag
+- mark with 'slow' tests that run tox lint and ruff cmds on Snapshot Projects
+- reduce complexity of too complex pytest fixture
+- apply ruff in code
+- pass mypy checks
+
+refactor
+""""""""
+- generate with python 3.10 <= x <= 3.13 for Gold Standard
+- context render used in interactive mode
+- hide warnings about interpreter mismatch to help local development console declutter
+
+fix
+"""
+- Gold Standard CI Visualization script
+- Gold Standard dependency updates
+- ci pipeline generated as in Gold Standard biskotaki
+- fix docker image that needed maintenance
+
+
 2.4.0 (2024-03-14)
 ==================
 

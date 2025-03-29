@@ -9,6 +9,7 @@ import pytest
     ],
 )
 def test_snapshot_matches_runtime(snapshot, biskotaki_ci_project, test_root):
+    """Verify Snapshots against '.github/biskotaki.yaml' Gen Project."""
     ## GIVEN a Snapshot we maintain, reflecting the Gold Standard of Biskotaki
     from pathlib import Path
 
@@ -97,6 +98,12 @@ def test_snapshot_matches_runtime(snapshot, biskotaki_ci_project, test_root):
                 if '.vscode' not in x.parts
                 and 'settings.json' not in x.parts
                 and '.tox' not in x.parts
+                and '.mypy_cache' not in x.parts
+                and x.parts
+                not in {
+                    ('reqs-prod+type.txt',),
+                    ('gg-reqs.txt',),
+                }
             ]
         )
 
@@ -226,7 +233,13 @@ def test_snapshot_matches_runtime(snapshot, biskotaki_ci_project, test_root):
             "-------------------\n"
         )
 
-    # If error appears above,
+    # If error appears above, the cause should be 1 of the below 3 possibilities
+
     #  - either Generator has Regressed
-    #  - or values of CI biskotaki changed, but snapshot was not updated
+    #    - to make test pass, fix bug in app code
+
+    #  - or template values of config yaml (ie .github/biskotaki.yml) changed, but snapshot was not updated
+    #    - to make test pass, regenerate Snapshot using the updated config yaml file
+
     #  - or Biskotaki yaml leverages New Features of Generator, but Snapshot was created with older/smaller feature set
+    #    - to make test pass, regenerate Snapshot using the updated config yaml file

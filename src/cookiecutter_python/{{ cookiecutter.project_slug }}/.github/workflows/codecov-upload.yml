@@ -1,0 +1,58 @@
+######################################
+##     Reusable Codecov Workflow    ##
+######################################
+
+on:
+  workflow_call:
+    inputs:
+      coverage_artifact:
+        required: true
+        type: string
+        description: "Name of the coverage artifact to upload to Codecov"
+      verbose:
+        required: false
+        type: boolean
+        description: >
+          Whether to print more info on Workflow (web) interface; default: true
+          If true, with "print" more information on $GITHUB_OUTPUT.
+        default: true
+
+jobs:
+  upload_coverage:
+    name: Upload Coverage to Codecov
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Download the coverage artifact
+      - name: Download Coverage Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ "{{" }} inputs.coverage_artifact {{ "}}" }}
+
+      # Get the Codecov binary
+      - name: Get Codecov Binary
+        run: |
+          curl -Os https://uploader.codecov.io/latest/linux/codecov
+          chmod +x codecov
+
+      # Upload coverage reports to Codecov
+      - name: Upload Coverage Reports to Codecov
+        run: |
+          for file in coverage*.xml; do
+            OS_NAME=$(echo $file | sed -E "s/coverage-(\w+)-.*/\1/")
+            PY_VERSION=$(echo $file | sed -E "s/coverage-\w+-(\d+\.\d+).*/\1/")
+            ./codecov -f $file -e "OS=$OS_NAME,PYTHON=$PY_VERSION" --flags unittests --verbose
+            echo "[INFO] Sent to Codecov: $file"
+          done
+
+      # If Verbose, Write to Workflow Output
+      - name: Report Uploaded Coverage XML Files
+        if: ${{ "{{" }} inputs.verbose {{ "}}" }}
+        run: |
+          for file in coverage*.xml; do
+
+            echo " - Codecov Upload: $file" >> $GITHUB_OUTPUT
+
+          done

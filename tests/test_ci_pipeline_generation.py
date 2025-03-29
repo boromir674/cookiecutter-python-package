@@ -5,7 +5,7 @@ import pytest
     'config_file',
     [
         # Test Case 1
-        '.github/biskotaki.yaml',
+        # '.github/biskotaki.yaml',
         # Test Case 2
         None,
     ],

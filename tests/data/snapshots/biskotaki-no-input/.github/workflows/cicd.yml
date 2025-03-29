@@ -1,0 +1,155 @@
+name: CI/CD Pipeline
+# Continuous Integration / Continuous Delivery
+# Features Top-level Switches (only via vars context) to override Trigger Job Conditions
+
+# Triggers on all Branches and v* Tags
+
+### Stress-Testing, with Multi-Factor Job Matrix, on: ###
+# - tags v*
+# - the 'stress-test' branch (GITHUB_REF_NAME == 'stress-test')
+
+
+### Production PyPI Publish, pypi.org, on: ###
+# - v* tags on 'master' branch only
+
+### Staging/Test PyPI Publish, test.pypi.org, on: ###
+## Test PyPI publish on: ##
+# - v*-rc 'pre-release' tags on 'release' branch
+
+### Dockerhub publish on ###
+# - all branches and tags
+
+on:
+  push:
+    branches:
+      - "*"
+    tags:
+      - v*
+
+env:  # Note: not available at compile time to use, ie in 'if' conditions or 'with' object values
+  ### STRESS TEST Job MATRIX ###
+  FULL_MATRIX_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.7\", \"3.8\", \"3.9\", \"3.10\", \"3.11\"]}"
+  # Python 3.7 has reached End of Life (EOL) on June 27th, 2023
+  # Python 3.12 is in bugfix mode, same as 3.11 -> can start supporting 3.12 it
+  UBUNTU_PY310_STRATEGY: "{\"platform\":[\"ubuntu-latest\"], \"python-version\":[\"3.10\"]}"
+  TEST_STRATEGY: "{\"platform\":[\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\":[\"3.9\"]}"
+
+
+  ############################
+
+
+jobs:
+  # RUN TEST SUITE ON ALL PLATFORMS
+  test_n_build:
+    if: ${{ vars.TEST_JOB_ON != 'false' && !contains(github.event.head_commit.message, '_CI_SKIP_') }}
+    uses: boromir674/automated-workflows/.github/workflows/test_build.yml@test
+    with:
+      # Spawn Job per combination of factors in JOB_MATRIX
+      job_matrix: '{"platform": ["ubuntu-latest"], "python-version": ["3.7", "3.8", "3.9", "3.10", "3.11"]}'
+      build_installation: 'sdist, wheel'  # Verify sdist and wheel installations/"builds" against Tests
+      # typecheck_policy: '1'  # {0: Skip, 1: Run, 2: Run and allow failures}
+      # run_policy: '0'  # Force skip of downstream 'test_build' Test Job
+      artifact_name: 'BUILD_ARTIFACT'
+
+  codecov_coverage_host:
+    needs: test_n_build
+    if: ${{ vars.CODECOV_JOB_ON != 'false' && !contains(github.event.head_commit.message, '_CI_SKIP_') }}
+    uses: ./codecov-upload.yml
+    with:
+      coverage_artifact: ${{ needs.test_n_build.outputs.COVERAGE_ARTIFACT }}
+
+
+  ## DOCKER BUILD and PUBLISH ON DOCKERHUB ##
+  # Ref Page: https://automated-workflows.readthedocs.io/en/main/ref_docker/
+  docker_build:
+    needs: test_n_build
+    if: always() && vars.DOCKER_JOB_ON != 'false'
+    uses: boromir674/automated-workflows/.github/workflows/docker.yml@v1.1.0
+    with:
+      # - CDeployment : Builds and Publishes only if Tests ran and passed
+      acceptance_policy: ${{ vars.DOCKER_JOB_ON == 'true' && '1' || 2 }}  # Continuous Deployment
+      # # - CDelivery   : Builds and Publishes if Tests Passed or if Tests were Skipped
+      # acceptance_policy: ${{ vars.DOCKER_JOB_ON == 'true' && '1' || 3 }}  # Continuous Delivery
+      image_slug: "bgs"
+      # target_stage: "some_stage_alias"  # no stage, means no `--target` flag, on build
+      tests_pass: ${{ needs.test_n_build.result == 'success' }}
+      tests_run: ${{ !contains(fromJSON('["skipped", "cancelled"]'), needs.test_n_build.result) }}
+      DOCKER_USER: ${{ vars.DOCKER_USER }}
+    secrets:
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+  ### STATIC CODE ANALYSIS & LINTING ###
+  lint:
+    name: Static Code Analysis
+    if: ${{ vars.LINT_JOB_ON != 'false' && !contains(github.event.head_commit.message, '_CI_SKIP_') }}
+    uses: ./.github/workflows/policy_lint.yml
+    with:
+      run_policy: '2'
+      dedicated_branches: 'main, master, dev'
+      source_code_targets: 'src,tests,scripts'
+      python_version: '3.11'
+      pylint_threshold: '8.2'
+
+  ### DOCS BUILD/TEST - DOCUMENTATION SITE ###
+  docs:
+    name: Build Documentation
+    uses: boromir674/automated-workflows/.github/workflows/policy_docs.yml@v1.3.0
+    with:
+      run_policy: '2'
+      python_version: '3.11'
+      command: 'tox -s false -e pin-deps -- -E docs && tox -e docs --sitepackages -vv -s false'
+
+  ### DRAW PYTHON DEPENDENCY GRAPHS ###
+  code_visualization:
+    name: Code Visualization of Python Imports as Graphs, in .svg
+    if: ${{ vars.CODE_VIZ_JOB_ON != 'false' }}
+    uses: boromir674/automated-workflows/.github/workflows/python_imports.yml@v1.3.0
+    with:
+      run_policy: ${{ vars.CODE_VIZ_JOB_ON == 'true' && '1' || vars.CODE_VIZ_POLICY || '2' }}
+      branches: 'main, master, dev'
+      source_code_targets: 'src'
+      python_version: '3.11'
+      artifacts_dir: 'dependency-graphs'
+
+
+  ## JOB: Signal for Automated Publishing/Deployment ##
+  signal_deploy:
+    needs: test_n_build
+    if: ${{ startsWith(github.event.ref, 'refs/tags/v') }}
+    uses: ./.github/workflows/signal-deploy.yml
+    with:
+      main_branch: main
+      release_branch: release
+
+  ## JOB: PYPI UPLOAD ##
+  pypi_publish:
+    needs: signal_deploy
+    uses: boromir674/automated-workflows/.github/workflows/pypi_env.yml@8e97f596067fcbbaa0a6927ec1ee47dce4ab5f1a
+    if: always() && vars.GH_RELEASE_JOB_ON != 'false' && (
+      vars.GH_RELEASE_JOB_ON == 'true' ||
+      (needs.signal_deploy.outputs.AUTOMATED_DEPLOY == 'true' && needs.*.result == 'success'))
+    with:
+      distro_name: cookiecutter_python
+      distro_version: ${{ needs.test_n_build.outputs.PEP_VERSION }}
+      pypi_env: '${{ needs.signal_deploy.outputs.ENVIRONMENT_NAME }}'
+      require_wheel: true
+      allow_existing: true
+      should_trigger: ${{ needs.signal_deploy.outputs.AUTOMATED_DEPLOY == 'true' }}
+    secrets:
+      TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+
+  ### JOB: Make a Github Release ###
+  gh_release:
+    needs: signal_deploy
+    if: vars.GH_RELEASE_JOB_ON != 'false' && (
+      vars.GH_RELEASE_JOB_ON == 'true' ||
+      needs.signal_deploy.outputs.AUTOMATED_DEPLOY == 'true')
+    uses: boromir674/automated-workflows/.github/workflows/gh-release.yml
+    name: 'GH Release'
+    with:
+      tag: ${{ github.ref_name }}
+      artifact: 'BUILD_ARTIFACT'
+      draft: ${{ needs.signal_deploy.outputs.ENVIRONMENT_NAME == 'TEST_DEPLOYMENT' }}
+    secrets:
+      # passing the GH_TOKEN PAT, to render in GH as ie: 'boromir674 released this yesterday', instead of 'github-actions released this yesterday'
+      gh_token: ${{ secrets.GH_TOKEN }}
