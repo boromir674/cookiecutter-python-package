@@ -854,17 +854,6 @@ def get_expected_generated_files(
             [os.path.join(*parts) for parts in CICD_DELETE[config.data.get('cicd', 'stable')]]
         )
 
-        #         CICD_DELETE = {
-        #     'stable': [
-        #         ('.github', 'workflows', 'cicd.yml'),
-        #         ('.github', 'workflows', 'codecov-upload.yml'),
-        #         ('.github', 'workflows', 'signal-deploy.yml'),
-        #     ],
-        #     'experimental': [
-        #         ('.github', 'workflows', 'test.yaml'),
-        #     ],
-        # }
-
         ## DERIVE expected files inside 'docs' gen dir
         from cookiecutter_python.backend import get_docs_gen_internal_config
 

@@ -98,6 +98,11 @@ def test_snapshot_matches_runtime(snapshot, biskotaki_ci_project, test_root):
                 if '.vscode' not in x.parts
                 and 'settings.json' not in x.parts
                 and '.tox' not in x.parts
+                and '.mypy_cache' not in x.parts
+                and x.parts not in {
+                    ('reqs-prod+type.txt',),
+                    ('gg-reqs.txt',),
+                }
             ]
         )
 
