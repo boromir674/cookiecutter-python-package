@@ -29,9 +29,9 @@ def test_referenced_job_output_vars_correspond_to_existing_jobs(
     # The test is implemented as a pytest test because it's easier to write
     # than a custom script.
 
-    # GIVEN the supported 'cicd' options, available in 'generate-python' CLI
-    CICDDesignOption: t.Literal["stable", "experimental"]
+    CICDDesignOption = t.Literal["stable", "experimental"]
 
+    # GIVEN the supported 'cicd' options, available in 'generate-python' CLI
     CICD_OPTIONS: t.Set[CICDDesignOption] = {"stable", "experimental"}
 
     # GIVEN the EXPECTED paths to the generated Github Workflows per CICD Option
@@ -48,7 +48,7 @@ def test_referenced_job_output_vars_correspond_to_existing_jobs(
     # Sanity check that the generated workflows are not empty, otherwise the test is pointless
     assert all_rendered_yaml_workflows, "No generated workflows found!"
     assert all(
-        [type(x) == tuple for x in all_rendered_yaml_workflows]
+        [type(x) is tuple for x in all_rendered_yaml_workflows]
     ), "All paths should be tuples of strings"
 
     cicd_option_2_yaml_file_paths: t.Dict[CICDDesignOption, t.Iterable[Path]] = {
@@ -66,10 +66,8 @@ def test_referenced_job_output_vars_correspond_to_existing_jobs(
         cicd_option_2_yaml_file_paths.values()
     ), "No workflows found!"
     assert all(
-        [type(x) == list for x in cicd_option_2_yaml_file_paths.values()]
+        [type(x) is list for x in cicd_option_2_yaml_file_paths.values()]
     ), "All values should be lists of paths"
-    assert type(cicd_option_2_yaml_file_paths['stable']) == list
-    assert type(cicd_option_2_yaml_file_paths['experimental']) == list
 
     # GIVEN we maintain a registry of the cicd options used at generation time for every Snapshot
     snapshot_name_2_cicd_option_value: t.Dict[str, CICDDesignOption] = {
