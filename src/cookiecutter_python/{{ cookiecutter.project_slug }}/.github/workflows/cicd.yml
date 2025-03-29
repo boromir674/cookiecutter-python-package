@@ -125,15 +125,16 @@ jobs:
   pypi_publish:
     needs: signal_deploy
     uses: boromir674/automated-workflows/.github/workflows/pypi_env.yml@8e97f596067fcbbaa0a6927ec1ee47dce4ab5f1a
+    if: always() && vars.GH_RELEASE_JOB_ON != 'false' && (
+      vars.GH_RELEASE_JOB_ON == 'true' ||
+      (needs.signal_deploy.outputs.AUTOMATED_DEPLOY == 'true' && needs.*.result == 'success'))
     with:
-      should_trigger: ${{ "{{" }} needs.set_github_outputs.outputs.PUBLISH_ON_PYPI == 'true' && needs.signal_deploy.outputs.AUTOMATED_DEPLOY == 'true' {{ "}}" }}
       distro_name: cookiecutter_python
-      distro_version: ${{ "{{" }} needs.test_suite.outputs.PEP_VERSION {{ "}}" }}
+      distro_version: ${{ "{{" }} needs.test_n_build.outputs.PEP_VERSION {{ "}}" }}
       pypi_env: '${{ "{{" }} needs.signal_deploy.outputs.ENVIRONMENT_NAME {{ "}}" }}'
-      artifacts_path: downloaded-artifacts
-
       require_wheel: true
       allow_existing: true
+      should_trigger: ${{ "{{" }} needs.signal_deploy.outputs.AUTOMATED_DEPLOY == 'true' {{ "}}" }}
     secrets:
       TWINE_PASSWORD: ${{ "{{" }} secrets.TWINE_PASSWORD {{ "}}" }}
 
