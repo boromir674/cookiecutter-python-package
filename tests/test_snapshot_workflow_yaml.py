@@ -1,10 +1,9 @@
 """Validate generated Github Workflows for logical errors"""
 
 import typing as t
+from pathlib import Path
 
 import pytest
-
-from pathlib import Path
 
 # @pytest.fixture(params=["gold-standard", "biskotaki-no-input", "biskotaki-interactive"])
 # def snapshot_project_data(request, test_root: Path) -> Path:
