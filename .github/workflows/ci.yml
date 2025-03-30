@@ -39,7 +39,7 @@ jobs:
 
     # Export "pinned" (exact) dependencies' versions in requirements.txt format
     - name: 'Export pinned Prod + Test dependencies'
-      run: uv export --no-dev --extra test --frozen --format requirements-txt -o requirements.txt
+      run: uv export --no-emit-project --no-dev --extra test --frozen --format requirements-txt -o requirements.txt
 
     # Install dependencies in virtualenv
     - name: 'Install "Prod + Test" dependencies'
@@ -54,14 +54,15 @@ jobs:
     - name: 'Install Package without dependencies'
       run: |
         source env/bin/activate
-        python -m pip install --no-deps dist/*.tar.gz
+        # python -m pip install --no-deps dist/*.tar.gz
+        python -m pip install --no-deps -e .
         deactivate
 
     # Run tests
     - name: 'Run tests'
       run: |
         source env/bin/activate
-        pytest -ra -vvs -n auto tests
+        pytest -ra -vvs -n auto --run-slow
         deactivate
 
 
