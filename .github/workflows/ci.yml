@@ -65,6 +65,44 @@ jobs:
         pytest -ra -n auto
         deactivate
 
+  test_integration:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    # Install uv to manage pinned versions
+    - name: Install uv
+      run: pip install -U uv
+
+    # Build Source Distribution
+    - name: 'Build Source Distribution'
+      run: uv build --sdist
+
+    # Export "pinned" (exact) dependencies' versions in requirements.txt format
+    - name: 'Export pinned Prod + Test dependencies'
+      run: uv export --no-emit-project --no-dev --extra test --frozen --format requirements-txt -o requirements.txt
+
+    # Install dependencies in virtualenv
+    - name: 'Install "Prod + Test" dependencies'
+      run: |
+        python -m pip install virtualenv &&
+        python -m virtualenv env
+        source env/bin/activate
+        python -m pip install -r requirements.txt
+        deactivate
+
+    # Install Package withouth dependencies
+    - name: 'Install Package without dependencies'
+      run: |
+        source env/bin/activate
+        # python -m pip install --no-deps dist/*.tar.gz
+        python -m pip install --no-deps -e .
+        deactivate
+
     # Run Integration tests
     - name: 'Run Integration tests'
       if: always()
