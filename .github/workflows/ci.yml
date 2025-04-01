@@ -65,6 +65,13 @@ jobs:
         pytest -ra -n auto
         deactivate
 
+    # Run Integration tests
+    - name: 'Run Integration tests'
+      run: |
+        source env/bin/activate
+        pytest -ra -n auto --run-slow --run-network_bound -vvs
+        deactivate
+
 
 ## TYPE CHECK
 
