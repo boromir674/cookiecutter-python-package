@@ -62,7 +62,7 @@ jobs:
     - name: 'Run tests'
       run: |
         source env/bin/activate
-        pytest -ra -vvs -n auto --run-slow
+        pytest -ra -n auto
         deactivate
 
 
