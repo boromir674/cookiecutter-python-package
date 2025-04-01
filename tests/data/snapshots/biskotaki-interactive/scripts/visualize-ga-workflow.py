@@ -74,9 +74,9 @@ def generate_mermaid(job_dependencies: t.Dict[str, t.List[str]]) -> str:
     mermaid_code = 'graph LR;\n'
     for job_name, needs in job_dependencies.items():
         if needs:
-            mermaid_code += '\n'.join([
-                f'  {prev_job} --> {job_name}' for prev_job in needs
-            ]) + '\n'
+            mermaid_code += (
+                '\n'.join([f'  {prev_job} --> {job_name}' for prev_job in needs]) + '\n'
+            )
         else:
             mermaid_code += f'  {job_name}\n'
 

@@ -389,11 +389,18 @@ def sdist_built_at_runtime_with_uv(run_subprocess) -> Path:
     # import cookiecutter_python
     # distro_path = Path(cookiecutter_python.__file__).parent.absolute()
     project_path = Path(__file__).parent.parent
+    import sys
 
+    # result = run_subprocess('uv', 'python', 'pin', sys.executable, check=False)
+    # assert result.exit_code == 0, f"Expected exit code 0, got {result.exit_code}\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}\n"
+    
     # invoke uv as build frontend to whatever [build-system] is in pyproject.toml
     COMMAND_LINE_ARGS: t.List[str] = [
+        # 'uv', 'python', 'pin', sys.executable, '&&',
         "uv",
         "build",
+        "--python",
+        sys.executable,
         "--sdist",
         "--out-dir",
         str(OUT_DIR),
@@ -409,7 +416,7 @@ def sdist_built_at_runtime_with_uv(run_subprocess) -> Path:
     print("==========")
     print(result.stderr)
     print("==========")
-    assert result.exit_code == 0, f"Expected exit code 0, got {result.exit_code}"
+    assert result.exit_code == 0, f"Expected exit code 0, got {result.exit_code}\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}\n"
 
     # THIS IS ONLY FOR UV BUILD CMD
     assert re.search(r"Building source distribution\.\.\.", result.stderr)
@@ -618,6 +625,7 @@ def test_sdist_includes_dirs_and_files_exactly_as_expected_when_produced_via_uv_
     )
 
 
+@pytest.mark.slow
 def test_sdist_includes_dirs_and_files_exactly_as_expected_when_produced_via_build_module_frontend(
     sdist_built_at_runtime_with_build: Path,
     sdist_correct_file_structure: t.Tuple[str],
