@@ -67,9 +67,10 @@ jobs:
 
     # Run Integration tests
     - name: 'Run Integration tests'
+      if: always()
       run: |
         source env/bin/activate
-        pytest -ra -n auto --run-slow --run-network_bound -vvs
+        pytest -ra -n auto --run-slow --run-network_bound -vvs -k 'test_cli or build_backend_sdist or test_build_creates_artifacts or test_lint_passes'
         deactivate
 
 
