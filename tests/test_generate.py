@@ -88,10 +88,10 @@ def assert_interpreters_array_in_build_matrix() -> t.Callable[[str, t.Sequence[s
     return _assert_interpreters_array_in_build_matrix
 
 
-CLI_RELATED_FILES = {
+CLI_RELATED_FILES = (
     'cli.py',
     '__main__.py',
-}
+)
 "Files, only expected to be generated for cli type of Projects"
 
 

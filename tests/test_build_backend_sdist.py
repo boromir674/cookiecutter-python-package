@@ -240,7 +240,7 @@ def sdist_correct_file_structure():
         'tests/data/snapshots/biskotaki-gold-standard/docs/tags.md',
         'tests/data/snapshots/biskotaki-gold-standard/LICENSE',
         'tests/data/snapshots/biskotaki-gold-standard/mkdocs.yml',
-        'tests/data/snapshots/biskotaki-gold-standard/poetry.lock',
+        # 'tests/data/snapshots/biskotaki-gold-standard/poetry.lock',
         'tests/data/snapshots/biskotaki-gold-standard/pyproject.toml',
         'tests/data/snapshots/biskotaki-gold-standard/README.rst',
         'tests/data/snapshots/biskotaki-gold-standard/scripts/gen_api_refs_pages.py',
@@ -294,7 +294,9 @@ def sdist_correct_file_structure():
         'tests/data/snapshots/biskotaki-no-input/docs/Makefile',
         'tests/data/snapshots/biskotaki-no-input/docs/spelling_wordlist.txt',
         'tests/data/snapshots/biskotaki-no-input/LICENSE',
-        'tests/data/snapshots/biskotaki-no-input/poetry.lock',
+        # probably this was added accidentally, but when there is ci for maintaining modern locks
+        # we shall uncomment
+        # 'tests/data/snapshots/biskotaki-no-input/poetry.lock',
         'tests/data/snapshots/biskotaki-no-input/pyproject.toml',
         'tests/data/snapshots/biskotaki-no-input/README.rst',
         'tests/data/snapshots/biskotaki-no-input/scripts/parse_version.py',
@@ -344,7 +346,6 @@ def sdist_correct_file_structure():
         'tests/data/snapshots/biskotaki-no-input/.readthedocs.yml',
         
         'tests/generator_defaults_shift/test_docs_settings.py',
-        'tests/__init__.py',
         'tests/test_build_backend_sdist.py',
         'tests/test_ci_pipeline_generation.py',
         'tests/test_cli.py',
