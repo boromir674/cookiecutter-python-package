@@ -39,7 +39,9 @@ class CheckReadthedocsFeatureNotSupported(Exception):
     pass
 
 
-reason = "We do not support yet, the 'check-pypi' feature, if --config-file is NOT supplied."
+reason = (
+    "We do not support yet, the 'check-pypi' feature, if --config-file is NOT supplied."
+)
 
 
 @pytest.mark.runner_setup(mix_stderr=False)
@@ -160,9 +162,9 @@ def test_cli_offline(
     )
 
     package_exists_on_readthedocs = check_readthedocs_result(result.stdout)
-    assert package_exists_on_readthedocs == check_web_server_expected_result('readthedocs')(
-        config, FOUND_ON_READTHEDOCS
-    )
+    assert package_exists_on_readthedocs == check_web_server_expected_result(
+        'readthedocs'
+    )(config, FOUND_ON_READTHEDOCS)
 
 
 @pytest.fixture

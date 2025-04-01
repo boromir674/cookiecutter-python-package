@@ -9,7 +9,9 @@ def assert_scaffolded_without_cli(module_file) -> t.Callable[[str], None]:
 
     def assert_project_generated_without_cli(project_dir: str) -> None:
         get_file: t.Callable[[str], str] = module_file(project_dir)
-        assert all(not path.isfile(get_file(file_name)) for file_name in CLI_RELATED_FILES)
+        assert all(
+            not path.isfile(get_file(file_name)) for file_name in CLI_RELATED_FILES
+        )
 
     return assert_project_generated_without_cli
 
@@ -60,7 +62,9 @@ def test_supported_python_interpreters(
 
 
 @pytest.fixture
-def assert_interpreters_array_in_build_matrix() -> t.Callable[[str, t.Sequence[str]], None]:
+def assert_interpreters_array_in_build_matrix() -> (
+    t.Callable[[str, t.Sequence[str]], None]
+):
     """Test that Job Matrix is generated correctly and stored as Workflow env var.
 
     Test proper generation of github workflow config yaml for lines such as:
@@ -111,7 +115,8 @@ def module_file():
 
         def _get_file_path(*file_path):
             return reduce(
-                lambda i, j: i / j, [p, SRC_DIR_NAME, python_module] + [_ for _ in file_path]
+                lambda i, j: i / j,
+                [p, SRC_DIR_NAME, python_module] + [_ for _ in file_path],
             )
 
         return _get_file_path

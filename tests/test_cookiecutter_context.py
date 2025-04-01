@@ -149,13 +149,25 @@ RELEASE_DATE = datetime.datetime.now().strftime('%Y-%m-%d')
                                 'yes',
                             ],  # NOTE Difference to 1st Item
                             "interpreters": {
-                                "supported-interpreters": ["3.7", "3.8", "3.9", "3.10", "3.11"]
+                                "supported-interpreters": [
+                                    "3.7",
+                                    "3.8",
+                                    "3.9",
+                                    "3.10",
+                                    "3.11",
+                                ]
                             },
                             "docs_builder": [
                                 'sphinx',
                                 'mkdocs',
                             ],  # NOTE Difference to 1st Item
-                            "rtd_python_version": ["3.10", "3.8", "3.9", "3.11", "3.12"],
+                            "rtd_python_version": [
+                                "3.10",
+                                "3.8",
+                                "3.9",
+                                "3.11",
+                                "3.12",
+                            ],
                             'cicd': ['experimental', 'stable'],
                         },
                     ),
@@ -199,7 +211,13 @@ RELEASE_DATE = datetime.datetime.now().strftime('%Y-%m-%d')
                                 ("initialize_git_repo", "no"),
                                 (
                                     "interpreters",
-                                    {"supported-interpreters": ["3.10", "3.11", "3.12"]},
+                                    {
+                                        "supported-interpreters": [
+                                            "3.10",
+                                            "3.11",
+                                            "3.12",
+                                        ]
+                                    },
                                 ),
                                 ("docs_builder", "mkdocs"),
                                 ("rtd_python_version", "3.11"),
@@ -247,7 +265,13 @@ RELEASE_DATE = datetime.datetime.now().strftime('%Y-%m-%d')
                                 'mkdocs',
                                 'sphinx',
                             ],  # NOTE Difference to 1st Item
-                            "rtd_python_version": ["3.11", "3.8", "3.9", "3.10", "3.12"],
+                            "rtd_python_version": [
+                                "3.11",
+                                "3.8",
+                                "3.9",
+                                "3.10",
+                                "3.12",
+                            ],
                             'cicd': ['experimental', 'stable'],
                         },
                     ),
@@ -291,7 +315,9 @@ def template_test_case(
     import os
     import sys
 
-    testing_against_sdist: bool = any([x in os.environ for x in ('PY_SDIST', 'PY_WHEEL')])
+    testing_against_sdist: bool = any(
+        [x in os.environ for x in ('PY_SDIST', 'PY_WHEEL')]
+    )
     if sys.platform == 'win32' and testing_against_sdist:
         # now we allow only the 'expected_cookiecutter_parent_dir' to deviate by 1 letter !!!
         _expected_cookiecutter_parent_dir = _expected_cookiecutter_parent_dir.replace(
@@ -400,9 +426,9 @@ def test_cookiecutter_generates_context_with_expected_values(
     # Define parameter values expected to be passed at runtime to cookiecutter's generate_context function
     # expected to be passed as kwargs
     # str(cookie / 'cookiecutter.json')
-    expected_context_file_passed = template_test_case['expected_context']['cookiecutter'][
-        '_template'
-    ]
+    expected_context_file_passed = template_test_case['expected_context'][
+        'cookiecutter'
+    ]['_template']
 
     from cookiecutter.config import get_config
 
@@ -459,7 +485,12 @@ def test_cookiecutter_generates_context_with_expected_values(
 
     # SANITY check User Config YAML data passed as Dict to 'default_context' kwarg of generate_context
     assert expected_default_context_passed == OrderedDict(
-        [(k, v) for k, v in yaml.safe_load(config_yaml.read_text())['default_context'].items()]
+        [
+            (k, v)
+            for k, v in yaml.safe_load(config_yaml.read_text())[
+                'default_context'
+            ].items()
+        ]
     )
     # AND Cookiecutter inserts 2 keys into Jinja Context: 'cookiecutter' and '_cookiecutter'
     assert set(prod_result.keys()) == {CK, '_cookiecutter'}
@@ -521,4 +552,6 @@ def test_cookiecutter_generates_context_with_expected_values(
         assert p1[0] == p2[0]
         if p1[0] in {'project_short_description', 'pypi_subtitle'}:
             continue
-        assert p1[1] == p2[1], f"Error at key {p1[0]} with value {p1[1]}! Expected {p2[1]}!"
+        assert (
+            p1[1] == p2[1]
+        ), f"Error at key {p1[0]} with value {p1[1]}! Expected {p2[1]}!"

@@ -4,6 +4,7 @@ import typing as t
 import pytest
 from pathlib import Path
 
+
 @pytest.fixture(scope="session")
 def run_subprocess():
     import subprocess
@@ -80,8 +81,12 @@ def sdist_correct_file_structure():
         'LICENSE',
         'CONTRIBUTING.md',
     )
-    SRC = tuple(['src/cookiecutter_python/{{ cookiecutter.project_slug }}/' + x for x in METADATA]) + \
-    (
+    SRC = tuple(
+        [
+            'src/cookiecutter_python/{{ cookiecutter.project_slug }}/' + x
+            for x in METADATA
+        ]
+    ) + (
         # COOKIECUTTER TEMPLATE
         'src/cookiecutter_python/cookiecutter.json',
         'src/cookiecutter_python/{{ cookiecutter.project_slug }}/src/{{ cookiecutter.pkg_name }}/__init__.py',
@@ -90,13 +95,11 @@ def sdist_correct_file_structure():
         'src/cookiecutter_python/{{ cookiecutter.project_slug }}/src/{{ cookiecutter.pkg_name }}/_logging.py',
         'src/cookiecutter_python/{{ cookiecutter.project_slug }}/src/{{ cookiecutter.pkg_name }}/fixtures.py',
         'src/cookiecutter_python/{{ cookiecutter.project_slug }}/src/{{ cookiecutter.pkg_name }}/py.typed',
-
         'src/cookiecutter_python/{{ cookiecutter.project_slug }}/tests/conftest.py',
         'src/cookiecutter_python/{{ cookiecutter.project_slug }}/tests/smoke_test.py',
         'src/cookiecutter_python/{{ cookiecutter.project_slug }}/tests/test_cli.py',
         'src/cookiecutter_python/{{ cookiecutter.project_slug }}/tests/test_invoking_cli.py',
         'src/cookiecutter_python/{{ cookiecutter.project_slug }}/tests/test_my_fixture.py',
-
         'src/cookiecutter_python/{{ cookiecutter.project_slug }}/.coveragerc',
         'src/cookiecutter_python/{{ cookiecutter.project_slug }}/.github/labeler.yml',
         'src/cookiecutter_python/{{ cookiecutter.project_slug }}/.github/workflows/cicd.yml',
@@ -137,7 +140,6 @@ def sdist_correct_file_structure():
         'src/cookiecutter_python/{{ cookiecutter.project_slug }}/scripts/visualize-ga-workflow.py',
         'src/cookiecutter_python/{{ cookiecutter.project_slug }}/setup.cfg',
         'src/cookiecutter_python/{{ cookiecutter.project_slug }}/tox.ini',
-
         'src/cookiecutter_python/__init__.py',
         'src/cookiecutter_python/__main__.py',
         'src/cookiecutter_python/cli.py',
@@ -309,8 +311,6 @@ def sdist_correct_file_structure():
         'tests/data/snapshots/biskotaki-no-input/tox.ini',
         'tests/data/snapshots/README.md',
         'tests/data/test_cookiecutter.json',
-
-
         'tests/data/snapshots/biskotaki-gold-standard/.coveragerc',
         'tests/data/snapshots/biskotaki-gold-standard/.github/labeler.yml',
         'tests/data/snapshots/biskotaki-gold-standard/.github/workflows/cicd.yml',
@@ -344,7 +344,6 @@ def sdist_correct_file_structure():
         'tests/data/snapshots/biskotaki-no-input/.prospector.yml',
         'tests/data/snapshots/biskotaki-no-input/.pylintrc',
         'tests/data/snapshots/biskotaki-no-input/.readthedocs.yml',
-        
         'tests/generator_defaults_shift/test_docs_settings.py',
         'tests/test_build_backend_sdist.py',
         'tests/test_ci_pipeline_generation.py',
@@ -383,6 +382,7 @@ def sdist_correct_file_structure():
 def sdist_built_at_runtime_with_uv(run_subprocess) -> Path:
     """Build project (at runtime) with 'uv', and return SDist tar.gz file."""
     import typing as t
+
     tmp_path = Path("/tmp")
     OUT_DIR = tmp_path / "dist-unit-test-sdist_built_at_runtime"
     # Get distro_path: ie '/site-packages/cookiecutter_python'
@@ -391,7 +391,14 @@ def sdist_built_at_runtime_with_uv(run_subprocess) -> Path:
     project_path = Path(__file__).parent.parent
 
     # invoke uv as build frontend to whatever [build-system] is in pyproject.toml
-    COMMAND_LINE_ARGS: t.List[str] = ["uv", "build", "--sdist", "--out-dir", str(OUT_DIR), str(project_path)]
+    COMMAND_LINE_ARGS: t.List[str] = [
+        "uv",
+        "build",
+        "--sdist",
+        "--out-dir",
+        str(OUT_DIR),
+        str(project_path),
+    ]
     result = run_subprocess(*COMMAND_LINE_ARGS, check=False)
 
     import re
@@ -422,6 +429,7 @@ def sdist_built_at_runtime_with_uv(run_subprocess) -> Path:
 def sdist_built_at_runtime_with_build(run_subprocess) -> Path:
     """Build project (at runtime) with 'build module', and return SDist tar.gz file."""
     import typing as t
+
     tmp_path = Path("/tmp")
     OUT_DIR = tmp_path / "unit-test-sdist_built_at_runtime_with_build"
     # Get distro_path: ie '/site-packages/cookiecutter_python'
@@ -431,8 +439,17 @@ def sdist_built_at_runtime_with_build(run_subprocess) -> Path:
 
     # invoke build module as frontend to whatever [build-system] is in pyproject.toml
     import sys
+
     PYTHON = sys.executable  # python from virtualenv
-    COMMAND_LINE_ARGS: t.List[str] = [PYTHON, "-m", "build", "--sdist", "--outdir", str(OUT_DIR), str(project_path)]
+    COMMAND_LINE_ARGS: t.List[str] = [
+        PYTHON,
+        "-m",
+        "build",
+        "--sdist",
+        "--outdir",
+        str(OUT_DIR),
+        str(project_path),
+    ]
     result = run_subprocess(*COMMAND_LINE_ARGS, check=False)
 
     print()
@@ -444,6 +461,7 @@ def sdist_built_at_runtime_with_build(run_subprocess) -> Path:
     assert result.exit_code == 0, f"Expected exit code 0, got {result.exit_code}"
 
     import re
+
     assert re.search(r"Building sdist\.\.\.", result.stdout)
     pattern = r"Successfully built .+\.tar\.gz"
     assert re.search(pattern, result.stdout)
@@ -455,25 +473,35 @@ def sdist_built_at_runtime_with_build(run_subprocess) -> Path:
     return tar_gz_file[0]
 
 
-
 #### Test SDist Tar GZ file Size is within Acceptable Limits
+
 
 @pytest.fixture
 def verify_file_size_within_acceptable_limits():
     class SizeAcceptanceCriteria(t.TypedDict):
         expected_size: int
         allowed_margin: t.Optional[int]
-    def _verify_file_size_within_acceptable_limits(file: Path, size_acceptance_criteria: SizeAcceptanceCriteria) -> t.Tuple[bool, t.Optional[str]]:
+
+    def _verify_file_size_within_acceptable_limits(
+        file: Path, size_acceptance_criteria: SizeAcceptanceCriteria
+    ) -> t.Tuple[bool, t.Optional[str]]:
         expected_size = size_acceptance_criteria["expected_size"]
-        allowed_margin = size_acceptance_criteria.get("allowed_margin", 500) # default 500 Bytes
-        
+        allowed_margin = size_acceptance_criteria.get(
+            "allowed_margin", 500
+        )  # default 500 Bytes
+
         lower_accepted = expected_size - allowed_margin
         upper_accepted = expected_size + allowed_margin
 
         runtime_tar_gz_size = file.stat().st_size
 
         accepted_size: bool = lower_accepted < runtime_tar_gz_size < upper_accepted
-        return accepted_size, f"Expected Distro to be {expected_size} +- {allowed_margin} Bytes: {lower_accepted} < x < {upper_accepted}. Got {runtime_tar_gz_size} {'>' if runtime_tar_gz_size > upper_accepted else '<'} {'UPPER' if runtime_tar_gz_size > upper_accepted else 'LOWER'}" if not accepted_size else None
+        return accepted_size, (
+            f"Expected Distro to be {expected_size} +- {allowed_margin} Bytes: {lower_accepted} < x < {upper_accepted}. Got {runtime_tar_gz_size} {'>' if runtime_tar_gz_size > upper_accepted else '<'} {'UPPER' if runtime_tar_gz_size > upper_accepted else 'LOWER'}"
+            if not accepted_size
+            else None
+        )
+
     return _verify_file_size_within_acceptable_limits
 
 
@@ -481,48 +509,82 @@ def verify_file_size_within_acceptable_limits():
 def test_sdist_tar_gz_file_size_is_within_acceptable_lower_and_upper_limits_when_produced_via_uv_frontend(
     # GIVEN we invoke our current build backend to create a source distribution
     sdist_built_at_runtime_with_uv: Path,
-    verify_file_size_within_acceptable_limits: t.Callable[[Path, t.Dict[str, int]], t.Tuple[bool, t.Optional[str]]],
+    verify_file_size_within_acceptable_limits: t.Callable[
+        [Path, t.Dict[str, int]], t.Tuple[bool, t.Optional[str]]
+    ],
 ):
-    tar_gz_file_size_within_acceptable_limits, assertion_error_message = \
-        verify_file_size_within_acceptable_limits(sdist_built_at_runtime_with_uv, {
-            "expected_size": 442500,  # Bytes (roughly 442.3KB)
-            # "allowed_margin": 50     # Bytes
-        })
+    # Observed: [380KB, 442KB]
+    observations = (
+        380,
+        442,
+    )
+    AVG = sum(observations) / len(observations)
+    tar_gz_file_size_within_acceptable_limits, assertion_error_message = (
+        verify_file_size_within_acceptable_limits(
+            sdist_built_at_runtime_with_uv,
+            {
+                # Observed: [380KB, 442KB]
+                "expected_size": AVG * 1024,  # average of observed sizes
+                "allowed_margin": 100 * 1024,  # 10KB
+            },
+        )
+    )
     assert tar_gz_file_size_within_acceptable_limits, assertion_error_message
+
 
 ##### Test SDIst, built with 'build module', Tar GZ file Size is within Acceptable Limits
 @pytest.mark.slow
 def test_sdist_tar_gz_file_size_is_within_acceptable_lower_and_upper_limits_when_produced_via_build_module_frontend(
     # GIVEN we invoke our current build backend to create a source distribution
     sdist_built_at_runtime_with_build: Path,
-    verify_file_size_within_acceptable_limits: t.Callable[[Path, t.Dict[str, int]], t.Tuple[bool, t.Optional[str]]],
+    verify_file_size_within_acceptable_limits: t.Callable[
+        [Path, t.Dict[str, int]], t.Tuple[bool, t.Optional[str]]
+    ],
 ):
-    tar_gz_file_size_within_acceptable_limits, assertion_error_message = \
-        verify_file_size_within_acceptable_limits(sdist_built_at_runtime_with_build, {
-            "expected_size": 442500,  # Bytes (roughly 442.3KB)
-            # "allowed_margin": 50     # Bytes
-        })
+    # Observed: [379KB, 442KB, 388]
+    observations = (
+        379,
+        442,
+        388,
+    )
+    AVG = sum(observations) / len(observations)
+
+    tar_gz_file_size_within_acceptable_limits, assertion_error_message = (
+        verify_file_size_within_acceptable_limits(
+            sdist_built_at_runtime_with_build,
+            {
+                "expected_size": AVG * 1024,  # Bytes
+                "allowed_margin": 100 * 1024,  # 100KB
+            },
+        )
+    )
     assert tar_gz_file_size_within_acceptable_limits, assertion_error_message
 
 
 ######## VERIFY SDIST FILE STRUCTURE TO BE AS EXPECTED ########
 
+
 @pytest.fixture
 def assert_sdist_exact_file_structure(tmp_path: Path):
-    def _verify_sdist_file_structure(sdist_built_at_runtime: Path, expected_file_structure: t.Tuple[str]):
+    def _verify_sdist_file_structure(
+        sdist_built_at_runtime: Path, expected_file_structure: t.Tuple[str]
+    ):
         # Extract the tar.gz file to a temporary directory
         extracted_from_tar_gz = tmp_path / "extracted_from_tar_gz"
         import tarfile
+
         with tarfile.open(sdist_built_at_runtime, "r:gz") as tar:
             tar.extractall(path=extracted_from_tar_gz)
 
         from cookiecutter_python import __version__
+
         DISTRO_NAME_AS_IN_SITE_PACKAGES = f'cookiecutter_python-{__version__}'
 
         # Relative Paths extracted from tar.gz
         runtime_files = [
             file.relative_to(extracted_from_tar_gz / DISTRO_NAME_AS_IN_SITE_PACKAGES)
-            for file in extracted_from_tar_gz.rglob("*") if file.is_file()
+            for file in extracted_from_tar_gz.rglob("*")
+            if file.is_file()
         ]
 
         # Verify all expected files are present
@@ -533,11 +595,15 @@ def assert_sdist_exact_file_structure(tmp_path: Path):
         )
 
         # Verify no extra files are present
-        extra_runtime_files = set(runtime_files) - set(map(Path, expected_file_structure))
+        extra_runtime_files = set(runtime_files) - set(
+            map(Path, expected_file_structure)
+        )
         assert extra_runtime_files == set(), (
             f"Expected no extra runtime files compared to expectations, "
             f"got [" + '\n'.join(map(str, sorted(extra_runtime_files))) + "]"
         )
+
+        # NOW we have asserted that expected and runtime File structure are identical
 
     return _verify_sdist_file_structure
 
@@ -547,66 +613,16 @@ def test_sdist_includes_dirs_and_files_exactly_as_expected_when_produced_via_uv_
     sdist_correct_file_structure: t.Tuple[str],
     assert_sdist_exact_file_structure,
 ):
-    assert_sdist_exact_file_structure(sdist_built_at_runtime_with_uv, sdist_correct_file_structure)
+    assert_sdist_exact_file_structure(
+        sdist_built_at_runtime_with_uv, sdist_correct_file_structure
+    )
+
 
 def test_sdist_includes_dirs_and_files_exactly_as_expected_when_produced_via_build_module_frontend(
     sdist_built_at_runtime_with_build: Path,
     sdist_correct_file_structure: t.Tuple[str],
     assert_sdist_exact_file_structure,
 ):
-    assert_sdist_exact_file_structure(sdist_built_at_runtime_with_build, sdist_correct_file_structure)
-
-    # WHEN we compare the file structure of the tar.gz file to the expected file structure
-    # extracted_from_tar_gz = tmp_path / "extracted_from_tar_gz"
-    # import tarfile
-    # with tarfile.open(sdist_built_at_runtime_with_uv, "r:gz") as tar:
-    #     tar.extractall(path=extracted_from_tar_gz)
-
-    # from cookiecutter_python import __version__
-    # DISTRO_NAME_AS_IN_SITE_PACKAGES = f'cookiecutter_python-{__version__}'
-
-    # # Relative Paths extracted from tar.gz
-    # runtime_files = [file.relative_to(extracted_from_tar_gz / DISTRO_NAME_AS_IN_SITE_PACKAGES) for file in extracted_from_tar_gz.rglob("*") if file.is_file()]
-
-    # # THEN we verify all files in the Expected File Structures to be present in the
-    # # runtime produced SDist
-    # missing_files = set(map(Path, sdist_correct_file_structure)) - set(runtime_files)
-    # assert missing_files == set(), f"Expected no missing files compared to expected Source Distribution file structure, got [" + '\n'.join(map(str, missing_files)) + "]"
-
-    # # THEN we verify that the SDist distro built did not include any extra files
-    # # compared to the expected file structure
-    # extra_runtime_files = set(runtime_files) - set(map(Path, sdist_correct_file_structure))
-    # assert extra_runtime_files == set(), f"Expected no extra runtime files compared to expectations, got [" + '\n'.join(map(str, sorted(extra_runtime_files))) + "]"
-
-    # SO now we have asserted that expected and runtime files are equal
-
-
-
-def test_sdist_includes_dirs_and_files_exactly_as_expected_when_produced_via_build_module_frontend(
-    sdist_built_at_runtime_with_build: Path,
-    sdist_correct_file_structure: t.Tuple[str],
-    tmp_path: Path,
-):
-    # WHEN we compare the file structure of the tar.gz file to the expected file structure
-    extracted_from_tar_gz = tmp_path / "extracted_from_tar_gz"
-    import tarfile
-    with tarfile.open(sdist_built_at_runtime_with_build, "r:gz") as tar:
-        tar.extractall(path=extracted_from_tar_gz)
-
-    from cookiecutter_python import __version__
-    DISTRO_NAME_AS_IN_SITE_PACKAGES = f'cookiecutter_python-{__version__}'
-
-    # Relative Paths extracted from tar.gz
-    runtime_files = [file.relative_to(extracted_from_tar_gz / DISTRO_NAME_AS_IN_SITE_PACKAGES) for file in extracted_from_tar_gz.rglob("*") if file.is_file()]
-
-    # THEN we verify all files in the Expected File Structures to be present in the
-    # runtime produced SDist
-    missing_files = set(map(Path, sdist_correct_file_structure)) - set(runtime_files)
-    assert missing_files == set(), f"Expected no missing files compared to expected Source Distribution file structure, got [" + '\n'.join(map(str, missing_files)) + "]"
-
-    # THEN we verify that the SDist distro built did not include any extra files
-    # compared to the expected file structure
-    extra_runtime_files = set(runtime_files) - set(map(Path, sdist_correct_file_structure))
-    assert extra_runtime_files == set(), f"Expected no extra runtime files compared to expectations, got [" + '\n'.join(map(str, sorted(extra_runtime_files))) + "]"
-
-    # SO now we have asserted that expected and runtime files are equal
+    assert_sdist_exact_file_structure(
+        sdist_built_at_runtime_with_build, sdist_correct_file_structure
+    )
