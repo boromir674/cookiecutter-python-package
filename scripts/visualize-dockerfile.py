@@ -123,7 +123,10 @@ def parse_cli_args() -> t.Tuple[Path, t.Optional[str]]:
     parser = argparse.ArgumentParser(description='Process Dockerfile paths.')
 
     parser.add_argument(
-        'dockerfile_path', nargs='?', default='Dockerfile', help='Path to the Dockerfile'
+        'dockerfile_path',
+        nargs='?',
+        default='Dockerfile',
+        help='Path to the Dockerfile',
     )
     parser.add_argument(
         '-o', '--output', help='Output path. If not specified, print to stdout.'
