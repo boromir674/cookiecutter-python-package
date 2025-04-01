@@ -59,6 +59,9 @@ exclude = [
     ".travis.yml"
 ]
 
+[tool.poetry.scripts]
+generate-python = 'cookiecutter_python.cli:main'
+
 
 [project]
 authors = [
