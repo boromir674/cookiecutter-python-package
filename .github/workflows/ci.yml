@@ -70,6 +70,7 @@ jobs:
       if: always()
       run: |
         source env/bin/activate
+        pip install 'tox<4.0'  # integration tests dependency
         pytest -ra -n auto --run-slow --run-network_bound -vvs -k 'test_cli or build_backend_sdist or test_build_creates_artifacts or test_lint_passes'
         deactivate
 
