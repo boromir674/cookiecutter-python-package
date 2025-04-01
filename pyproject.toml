@@ -137,18 +137,6 @@ generate-python = "cookiecutter_python.cli:main"
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 #### PIP INSTALL EXTRAS - Integration ####
 # enables pip install -e 'cookiecutter-python[test]'
 [tool.poetry.extras]
@@ -156,23 +144,6 @@ test = [
     "pytest",
     "pytest-run-subprocess",
 ]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 #### TOOLS - Non UV / POETRY ####
