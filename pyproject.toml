@@ -162,11 +162,12 @@ markers = [
     "slow: Marks a slow test",
     "integration: Tests applicable to a newly Generated Project, running with tox",
     "network_bound: Require internet connection",
+    "requires_uv: Tests that need to execute the uv binary",
 ]
 # for explict --run-integration -> pip install pytest-explicit
 explicit-only = [
     "integration",
     "network_bound",
     "slow",
+    "requires_uv",
 ]
-

@@ -513,6 +513,7 @@ def verify_file_size_within_acceptable_limits():
 
 
 ##### Test SDIst, built with 'uv', Tar GZ file Size is within Acceptable Limits
+@pytest.mark.requires_uv
 def test_sdist_tar_gz_file_size_is_within_acceptable_lower_and_upper_limits_when_produced_via_uv_frontend(
     # GIVEN we invoke our current build backend to create a source distribution
     sdist_built_at_runtime_with_uv: Path,
@@ -615,6 +616,7 @@ def assert_sdist_exact_file_structure(tmp_path: Path):
     return _verify_sdist_file_structure
 
 
+@pytest.mark.requires_uv
 def test_sdist_includes_dirs_and_files_exactly_as_expected_when_produced_via_uv_frontend(
     sdist_built_at_runtime_with_uv: Path,
     sdist_correct_file_structure: t.Tuple[str],
