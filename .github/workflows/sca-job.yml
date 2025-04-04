@@ -63,21 +63,21 @@ jobs:
 
       ## Isort ##
       - name: 'Isort: Require Semantic and Alphabetic order of the Python Imports'
-        if: always() && ${{ matrix.platform != 'windows-latest' }}
+        if: always()
         run: uvx isort --skip ${{ env.LINT_EXCLUDES }} --check "${{ env.LINT_ARGS }}"
 
       ## Black ##
       - name: 'Black: Require Project Style to be followed by the Python Code'
-        if: always() && ${{ matrix.platform != 'windows-latest' && inputs.force_styles == 'true' }}
+        if: always()
         run: uvx black --check --skip-string-normalization --exclude ${{ env.LINT_EXCLUDES }} --config pyproject.toml "${{ env.LINT_ARGS }}"
 
       ## Pyflakes, Pyroma, McCabe, DodgyRun, Profile Validator ##
       - name: Run prospector on application source code 
-        if: always() && ${{ matrix.platform != 'windows-latest' }}
+        if: always()
         run: uvx prospector[with_pyroma] src
 
       - name: Run prospector on test source code 
-        if: always() && ${{ matrix.platform != 'windows-latest' }}
+        if: always()
         run: uvx prospector[with_pyroma] tests
 
       ## Bandit ##
@@ -86,4 +86,4 @@ jobs:
         run: |
           uv venv
           uv pip install 'bandit[toml]' 'bandit-sarif-formatter==1.1.1'
-          uv run bandit -r -c pyproject.toml ${{ env.LINT_ARGS }}
+          uv run bandit -r -c pyproject.toml -x 'src/cookiecutter_python/{{ cookiecutter.project_slug }}/' src
