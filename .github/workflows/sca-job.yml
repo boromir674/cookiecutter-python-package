@@ -59,17 +59,17 @@ jobs:
 
       ## Ruff ##
       - name: 'Ruff: Require Project to pass Ruff Checks'
-        run: uvx ruff check "${{ env.LINT_ARGS }}"
+        run: uvx ruff check ${{ env.LINT_ARGS }}
 
       ## Isort ##
       - name: 'Isort: Require Semantic and Alphabetic order of the Python Imports'
         if: always()
-        run: uvx isort --skip ${{ env.LINT_EXCLUDES }} --check "${{ env.LINT_ARGS }}"
+        run: uvx isort --skip ${{ env.LINT_EXCLUDES }} --check ${{ env.LINT_ARGS }}
 
       ## Black ##
       - name: 'Black: Require Project Style to be followed by the Python Code'
         if: always()
-        run: uvx black --check --skip-string-normalization --exclude ${{ env.LINT_EXCLUDES }} --config pyproject.toml "${{ env.LINT_ARGS }}"
+        run: uvx black --check --skip-string-normalization --exclude ${{ env.LINT_EXCLUDES }} --config pyproject.toml ${{ env.LINT_ARGS }}
 
       ## Pyflakes, Pyroma, McCabe, DodgyRun, Profile Validator ##
       - name: Run prospector on application source code 
