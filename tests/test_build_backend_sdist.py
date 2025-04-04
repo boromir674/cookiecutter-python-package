@@ -70,9 +70,9 @@ def run_subprocess():
 
     return execute_command_in_subprocess
 
-
+# EXPECTATIONS as fixture
 @pytest.fixture(scope="session")
-def sdist_correct_file_structure():
+def sdist_expected_correct_file_structure():
     METADATA = (
         'pyproject.toml',
         # TODO: generate md files instead of rst!
@@ -377,6 +377,80 @@ def sdist_correct_file_structure():
     return SRC + TESTS + METADATA + ADDED_METADATA
 
 
+@pytest.fixture
+def verify_file_size_within_acceptable_limits():
+    class SizeAcceptanceCriteria(t.TypedDict):
+        expected_size: int
+        allowed_margin: t.Optional[int]
+
+    def _verify_file_size_within_acceptable_limits(
+        file: Path, size_acceptance_criteria: SizeAcceptanceCriteria
+    ) -> t.Tuple[bool, t.Optional[str]]:
+        expected_size = size_acceptance_criteria["expected_size"]
+        allowed_margin = size_acceptance_criteria.get(
+            "allowed_margin", 500
+        )  # default 500 Bytes
+
+        lower_accepted = expected_size - allowed_margin
+        upper_accepted = expected_size + allowed_margin
+
+        runtime_tar_gz_size = file.stat().st_size
+
+        accepted_size: bool = lower_accepted < runtime_tar_gz_size < upper_accepted
+        return accepted_size, (
+            f"Expected Distro to be {expected_size} +- {allowed_margin} Bytes: {lower_accepted} < x < {upper_accepted}. Got {runtime_tar_gz_size} {'>' if runtime_tar_gz_size > upper_accepted else '<'} {'UPPER' if runtime_tar_gz_size > upper_accepted else 'LOWER'}"
+            if not accepted_size
+            else None
+        )
+
+    return _verify_file_size_within_acceptable_limits
+
+
+@pytest.fixture
+def assert_sdist_exact_file_structure(tmp_path: Path):
+    def _verify_sdist_file_structure(
+        sdist_built_at_runtime: Path, expected_file_structure: t.Tuple[str]
+    ):
+        # Extract the tar.gz file to a temporary directory
+        extracted_from_tar_gz = tmp_path / "extracted_from_tar_gz"
+        import tarfile
+
+        with tarfile.open(sdist_built_at_runtime, "r:gz") as tar:
+            tar.extractall(path=extracted_from_tar_gz)
+
+        from cookiecutter_python import __version__
+
+        DISTRO_NAME_AS_IN_SITE_PACKAGES = f'cookiecutter_python-{__version__}'
+
+        # Relative Paths extracted from tar.gz
+        runtime_files = [
+            file.relative_to(extracted_from_tar_gz / DISTRO_NAME_AS_IN_SITE_PACKAGES)
+            for file in extracted_from_tar_gz.rglob("*")
+            if file.is_file()
+        ]
+
+        # Verify all expected files are present
+        missing_files = set(map(Path, expected_file_structure)) - set(runtime_files)
+        assert missing_files == set(), (
+            f"Expected no missing files compared to expected Source Distribution file structure, "
+            f"got [" + '\n'.join(map(str, missing_files)) + "]"
+        )
+
+        # Verify no extra files are present
+        extra_runtime_files = set(runtime_files) - set(
+            map(Path, expected_file_structure)
+        )
+        assert extra_runtime_files == set(), (
+            f"Expected no extra runtime files compared to expectations, "
+            f"got [" + '\n'.join(map(str, sorted(extra_runtime_files))) + "]"
+        )
+
+        # NOW we have asserted that expected and runtime File structure are identical
+
+    return _verify_sdist_file_structure
+
+
+
 ######## uv + poetry as build backend ########
 @pytest.fixture(scope="module")
 def sdist_built_at_runtime_with_uv(run_subprocess) -> Path:
@@ -431,6 +505,47 @@ def sdist_built_at_runtime_with_uv(run_subprocess) -> Path:
     return tar_gz_file[0]
 
 
+## Test SDist Tar GZ file Size is within Acceptable Limits
+@pytest.mark.requires_uv
+def test_sdist_tar_gz_file_size_is_within_acceptable_lower_and_upper_limits_when_produced_via_uv_frontend(
+    # GIVEN we invoke our current build backend to create a source distribution
+    sdist_built_at_runtime_with_uv: Path,
+    verify_file_size_within_acceptable_limits: t.Callable[
+        [Path, t.Dict[str, int]], t.Tuple[bool, t.Optional[str]]
+    ],
+):
+    # Observed: [380KB, 442KB]
+    observations = (
+        380,
+        442,
+    )
+    AVG = sum(observations) / len(observations)
+    tar_gz_file_size_within_acceptable_limits, assertion_error_message = (
+        verify_file_size_within_acceptable_limits(
+            sdist_built_at_runtime_with_uv,
+            {
+                # Observed: [380KB, 442KB]
+                "expected_size": AVG * 1024,  # average of observed sizes
+                "allowed_margin": 100 * 1024,  # 10KB
+            },
+        )
+    )
+    assert tar_gz_file_size_within_acceptable_limits, assertion_error_message
+
+
+## VERIFY SDIST FILE STRUCTURE TO BE EXACTLY AS EXPECTED ##
+@pytest.mark.requires_uv
+def test_sdist_includes_dirs_and_files_exactly_as_expected_when_produced_via_uv_frontend(
+    sdist_built_at_runtime_with_uv: Path,
+    sdist_expected_correct_file_structure: t.Tuple[str],
+    assert_sdist_exact_file_structure,
+):
+    assert_sdist_exact_file_structure(
+        sdist_built_at_runtime_with_uv, sdist_expected_correct_file_structure
+    )
+
+
+
 ######## Build + poetry as build backend ########
 @pytest.fixture(scope="module")
 def sdist_built_at_runtime_with_build(run_subprocess) -> Path:
@@ -480,67 +595,7 @@ def sdist_built_at_runtime_with_build(run_subprocess) -> Path:
     return tar_gz_file[0]
 
 
-#### Test SDist Tar GZ file Size is within Acceptable Limits
-
-
-@pytest.fixture
-def verify_file_size_within_acceptable_limits():
-    class SizeAcceptanceCriteria(t.TypedDict):
-        expected_size: int
-        allowed_margin: t.Optional[int]
-
-    def _verify_file_size_within_acceptable_limits(
-        file: Path, size_acceptance_criteria: SizeAcceptanceCriteria
-    ) -> t.Tuple[bool, t.Optional[str]]:
-        expected_size = size_acceptance_criteria["expected_size"]
-        allowed_margin = size_acceptance_criteria.get(
-            "allowed_margin", 500
-        )  # default 500 Bytes
-
-        lower_accepted = expected_size - allowed_margin
-        upper_accepted = expected_size + allowed_margin
-
-        runtime_tar_gz_size = file.stat().st_size
-
-        accepted_size: bool = lower_accepted < runtime_tar_gz_size < upper_accepted
-        return accepted_size, (
-            f"Expected Distro to be {expected_size} +- {allowed_margin} Bytes: {lower_accepted} < x < {upper_accepted}. Got {runtime_tar_gz_size} {'>' if runtime_tar_gz_size > upper_accepted else '<'} {'UPPER' if runtime_tar_gz_size > upper_accepted else 'LOWER'}"
-            if not accepted_size
-            else None
-        )
-
-    return _verify_file_size_within_acceptable_limits
-
-
-##### Test SDIst, built with 'uv', Tar GZ file Size is within Acceptable Limits
-@pytest.mark.requires_uv
-def test_sdist_tar_gz_file_size_is_within_acceptable_lower_and_upper_limits_when_produced_via_uv_frontend(
-    # GIVEN we invoke our current build backend to create a source distribution
-    sdist_built_at_runtime_with_uv: Path,
-    verify_file_size_within_acceptable_limits: t.Callable[
-        [Path, t.Dict[str, int]], t.Tuple[bool, t.Optional[str]]
-    ],
-):
-    # Observed: [380KB, 442KB]
-    observations = (
-        380,
-        442,
-    )
-    AVG = sum(observations) / len(observations)
-    tar_gz_file_size_within_acceptable_limits, assertion_error_message = (
-        verify_file_size_within_acceptable_limits(
-            sdist_built_at_runtime_with_uv,
-            {
-                # Observed: [380KB, 442KB]
-                "expected_size": AVG * 1024,  # average of observed sizes
-                "allowed_margin": 100 * 1024,  # 10KB
-            },
-        )
-    )
-    assert tar_gz_file_size_within_acceptable_limits, assertion_error_message
-
-
-##### Test SDIst, built with 'build module', Tar GZ file Size is within Acceptable Limits
+## Test SDist Tar GZ file Size is within Acceptable Limits
 @pytest.mark.slow
 def test_sdist_tar_gz_file_size_is_within_acceptable_lower_and_upper_limits_when_produced_via_build_module_frontend(
     # GIVEN we invoke our current build backend to create a source distribution
@@ -569,70 +624,13 @@ def test_sdist_tar_gz_file_size_is_within_acceptable_lower_and_upper_limits_when
     assert tar_gz_file_size_within_acceptable_limits, assertion_error_message
 
 
-######## VERIFY SDIST FILE STRUCTURE TO BE AS EXPECTED ########
-
-
-@pytest.fixture
-def assert_sdist_exact_file_structure(tmp_path: Path):
-    def _verify_sdist_file_structure(
-        sdist_built_at_runtime: Path, expected_file_structure: t.Tuple[str]
-    ):
-        # Extract the tar.gz file to a temporary directory
-        extracted_from_tar_gz = tmp_path / "extracted_from_tar_gz"
-        import tarfile
-
-        with tarfile.open(sdist_built_at_runtime, "r:gz") as tar:
-            tar.extractall(path=extracted_from_tar_gz)
-
-        from cookiecutter_python import __version__
-
-        DISTRO_NAME_AS_IN_SITE_PACKAGES = f'cookiecutter_python-{__version__}'
-
-        # Relative Paths extracted from tar.gz
-        runtime_files = [
-            file.relative_to(extracted_from_tar_gz / DISTRO_NAME_AS_IN_SITE_PACKAGES)
-            for file in extracted_from_tar_gz.rglob("*")
-            if file.is_file()
-        ]
-
-        # Verify all expected files are present
-        missing_files = set(map(Path, expected_file_structure)) - set(runtime_files)
-        assert missing_files == set(), (
-            f"Expected no missing files compared to expected Source Distribution file structure, "
-            f"got [" + '\n'.join(map(str, missing_files)) + "]"
-        )
-
-        # Verify no extra files are present
-        extra_runtime_files = set(runtime_files) - set(
-            map(Path, expected_file_structure)
-        )
-        assert extra_runtime_files == set(), (
-            f"Expected no extra runtime files compared to expectations, "
-            f"got [" + '\n'.join(map(str, sorted(extra_runtime_files))) + "]"
-        )
-
-        # NOW we have asserted that expected and runtime File structure are identical
-
-    return _verify_sdist_file_structure
-
-
-@pytest.mark.requires_uv
-def test_sdist_includes_dirs_and_files_exactly_as_expected_when_produced_via_uv_frontend(
-    sdist_built_at_runtime_with_uv: Path,
-    sdist_correct_file_structure: t.Tuple[str],
-    assert_sdist_exact_file_structure,
-):
-    assert_sdist_exact_file_structure(
-        sdist_built_at_runtime_with_uv, sdist_correct_file_structure
-    )
-
-
+## VERIFY SDIST FILE STRUCTURE TO BE AS EXPECTED ##
 @pytest.mark.slow
 def test_sdist_includes_dirs_and_files_exactly_as_expected_when_produced_via_build_module_frontend(
     sdist_built_at_runtime_with_build: Path,
-    sdist_correct_file_structure: t.Tuple[str],
+    sdist_expected_correct_file_structure: t.Tuple[str],
     assert_sdist_exact_file_structure,
 ):
     assert_sdist_exact_file_structure(
-        sdist_built_at_runtime_with_build, sdist_correct_file_structure
+        sdist_built_at_runtime_with_build, sdist_expected_correct_file_structure
     )
