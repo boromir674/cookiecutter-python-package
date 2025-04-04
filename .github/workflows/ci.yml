@@ -137,6 +137,7 @@ jobs:
   # RUN INTEGRATION TESTS
   test_integration:
     # needs: build
+    # if: ${{ env.OV_TEST_INTEGRATION != false }}
     runs-on: ubuntu-latest
     steps:
       # - uses: actions/checkout@v4
@@ -229,4 +230,79 @@ jobs:
 ## DOCS
 
 
-## TEST SUITE in EDIT MODE
+## Build an SDist and run against Test Suite
+
+  sdist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      ## Build Source Distribution ##
+      - name: 'Build Source Distribution'
+        run: uv build --sdist --out-dir dist
+
+      - name: 'Export pinned Prod + Test dependencies'
+        run: uv export --no-emit-project --no-dev --extra test --frozen --format requirements-txt -o requirements.txt
+
+      - run: uv venv
+
+      # Install dependencies in virtualenv
+      - name: 'Install "Prod + Test" dependencies'
+        run: uv pip install -r requirements.txt
+
+      # here the .venv is built with the exact dependencies
+
+      # Install Package from SDist
+      - name: 'Install Package from SDist, without dependencies'
+        run: uv pip install --no-deps dist/*.tar.gz
+
+      # Run tests
+      - name: 'Run tests'
+        run: uv run pytest -ra -n auto
+
+
+  wheel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      ## Build Wheel Distribution ##
+      - name: 'Build Wheel Distribution'
+        run: uv build --wheel --out-dir dist
+
+      - name: 'Export pinned Prod + Test dependencies'
+        run: uv export --no-emit-project --no-dev --extra test --frozen --format requirements-txt -o requirements.txt
+
+      - run: uv venv
+
+      # Install dependencies in virtualenv
+      - name: 'Install "Prod + Test" dependencies'
+        run: uv pip install -r requirements.txt
+
+      # here the .venv is built with the exact dependencies
+
+      # Install Package from Wheel
+      - name: 'Install Package from SDist, without dependencies'
+        run: uv pip install --no-deps dist/*.whl
+
+      # Run tests
+      - name: 'Run tests'
+        run: uv run pytest -ra -n auto
