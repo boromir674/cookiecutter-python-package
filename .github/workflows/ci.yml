@@ -306,3 +306,34 @@ jobs:
       # Run tests
       - name: 'Run tests'
         run: uv run pytest -ra -n auto
+
+
+  all_wheels:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      ## Build Wheel Distribution ##
+      - name: 'Build Wheel Distribution for Package and its Dependencies'
+        run: uv build --wheel --all-packages --out-dir dist
+
+      - run: uv venv
+
+      # TODO: Investigate a way to export only the test deps from pyproject
+
+      # Install Prod Wheels
+      - name: 'Install "Prod Wheels and leverage "extras" to install test deps'
+        run: uv pip install --no-deps "dist/*.whl[test]"
+
+      # Run tests
+      - name: 'Run tests'
+        run: uv run pytest -ra -n auto
