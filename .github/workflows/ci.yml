@@ -5,6 +5,10 @@ name: CI Pipeline
 # on feature-branches, should be as quick as possible
 #  runs only tests, type check, docs build dynamically based on changes
 
+# THIS PIPELINE IS UNDER DEVELOPMENT
+# when it is feature-full, we shall add a "changes-dection" job to optimize pipeline by skipping jobs that do need to run
+# and only run the jobs that are needed
+
 on:
   push:
     branches:
@@ -66,7 +70,7 @@ jobs:
           name: env
           if-no-files-found: error
 
-  # UNIT TEST
+  # RUN UNIT TESTS
   test_unit:
     needs: build
     runs-on: ubuntu-latest
@@ -105,6 +109,7 @@ jobs:
           python -m pytest -ra -n auto
           # deactivate
 
+  # RUN INTEGRATION TESTS
   test_integration:
     needs: build
     runs-on: ubuntu-latest
@@ -154,6 +159,17 @@ jobs:
           python -m pytest -ra -n auto --run-requires_uv --run-slow --run-network_bound -vvs -k 'test_cli or build_backend_sdist or test_build_creates_artifacts or test_lint_passes'
 
 
+  # STATIC CODE ANALYSIS: ruff, isort, black, bandit, mccabe, mccabe, prospector, etc
+  sca:
+    uses: ./.github/workflows/sca-job.yml
+    with:
+      python_version: '3.10'
+      allow_failure: true  # (this feature is WIP)
+      # pylint_threshold: '8.0'  # out of 10
+      # force_styles: 'true'
+
+
+## PYDEPS
 
 ## TYPE CHECK
 
