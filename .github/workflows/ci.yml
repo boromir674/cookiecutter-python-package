@@ -151,7 +151,7 @@ jobs:
 
           uv pip install --system 'tox<4.0'  # integration tests dependency
 
-          python -m pytest -ra -vvs --run-slow -k test_build_creates_artifacts
+          python -m pytest -ra -vvs --run-slow -k build_backend_sdist
 
           # python -m pytest -ra -n auto --run-requires_uv --run-slow --run-network_bound -vvs -k 'test_cli or build_backend_sdist or test_build_creates_artifacts or test_lint_passes'
 
