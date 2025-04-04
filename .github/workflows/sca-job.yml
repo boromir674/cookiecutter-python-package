@@ -43,7 +43,7 @@ jobs:
   lint:
     name: "Static Code Analysis"
     runs-on: ubuntu-latest
-    if: always() && needs.decide_run_lint.outputs.RUN_SQA == 'true'
+    if: inputs.enable_job == true
     env:
       LINT_ARGS: "tests src/cookiecutter_python/backend src/cookiecutter_python/handle scripts"
       LINT_EXCLUDES: 'tests/data/snapshots'
