@@ -30,8 +30,10 @@ jobs:
           python-version: '3.10'
 
       # Install uv to manage pinned versions
-      - name: Install uv
-        run: pip install -U uv
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
 
       # Build Source Distribution
       # - name: 'Build Source Distribution'
@@ -151,9 +153,12 @@ jobs:
 
           uv pip install --system 'tox<4.0'  # integration tests dependency
 
-          python -m pytest -ra -vvs --run-slow -k build_backend_sdist
+          # Isolate flaky tests
+          python -m pytest -ra -vvs --run-slow -k via_build_module
+          python -m pytest -ra -vvs --run-slow -k test_build_creates_artifacts
 
-          # python -m pytest -ra -n auto --run-requires_uv --run-slow --run-network_bound -vvs -k 'test_cli or build_backend_sdist or test_build_creates_artifacts or test_lint_passes'
+          # Run eveything once again for sanity
+          python -m pytest -ra -n auto --run-requires_uv --run-slow --run-network_bound -vvs -k 'test_cli or build_backend_sdist or test_build_creates_artifacts or test_lint_passes'
 
 
 
