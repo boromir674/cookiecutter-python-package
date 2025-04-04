@@ -205,8 +205,8 @@ jobs:
           uv pip install 'tox<4.0'  # integration tests dependency
 
           # Isolate flaky tests
-          uv run pytest -ra -vvs --run-slow -k via_build_module
-          uv run pytest -ra -vvs --run-slow -k test_build_creates_artifacts
+          # uv run pytest -ra -vvs --run-slow -k via_build_module
+          # uv run pytest -ra -vvs --run-slow -k test_build_creates_artifacts
 
           # Run eveything once again for sanity
           uv run pytest -ra -n auto --run-requires_uv --run-slow --run-network_bound -vvs -k 'test_cli or build_backend_sdist or test_build_creates_artifacts or test_lint_passes'
