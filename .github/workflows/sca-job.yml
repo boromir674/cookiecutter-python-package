@@ -87,3 +87,4 @@ jobs:
           uv venv
           uv pip install 'bandit[toml]' 'bandit-sarif-formatter==1.1.1'
           uv run bandit -r -c pyproject.toml -x 'src/cookiecutter_python/{{ cookiecutter.project_slug }}/' src
+    continue-on-error: ${{ inputs.allow_failure }}
