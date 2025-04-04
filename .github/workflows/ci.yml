@@ -24,9 +24,83 @@ jobs:
   # for 'high' branches (ie dev) run sdist/wheel tests
 
 ## Temporary TEST against reproducible build
-  build:
+  # build:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Set up Python 3.10
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: '3.10'
+
+  #     # Install uv to manage pinned versions
+  #     - name: Install the latest version of uv
+  #       uses: astral-sh/setup-uv@v5
+  #       with:
+  #         version: "latest"
+
+  #     # Build Source Distribution
+  #     # - name: 'Build Source Distribution'
+  #     #   run: uv build --sdist
+
+  #     # Export "pinned" (exact) dependencies' versions in requirements.txt format
+  #     - name: 'Export pinned Prod + Test dependencies'
+  #       run: uv export --no-emit-project --no-dev --extra test --frozen --format requirements-txt -o requirements.txt
+
+  #     # Install dependencies in virtualenv
+  #     - name: 'Install "Prod + Test" dependencies'
+  #       run: |
+  #         uv venv
+  #         uv pip install -r requirements.txt
+
+  #     # here the .venv is built with the exact dependencies
+
+  #     # Install Package (without dependencies)
+  #     - name: 'Install Package without dependencies'
+  #       run: uv pip install --no-deps -e .
+
+  #     # CI Artifact UPLOAD built env
+  #     - name: Upload Built Env in CI Artifacts
+  #       uses: actions/upload-artifact@v4
+  #       with:      
+  #         overwrite: false
+  #         # we pass to path value, only the necessary "transferable" packages to be used in other job
+  #         # if this solution persists then todo exclude __pychache__
+  #         path: .venv/lib/python3.10/site-packages
+  #         name: env
+  #         if-no-files-found: error
+
+  # RUN UNIT TESTS
+  test_unit:
+    # needs: build
     runs-on: ubuntu-latest
     steps:
+      # - uses: actions/checkout@v4
+      # - name: Set up Python 3.10
+      #   uses: actions/setup-python@v5
+      #   with:
+      #     python-version: '3.10'
+
+      # - name: Download site packages Artifacts
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: env
+      #     path: env
+      #     # pattern: env/*
+      #     # merge-multiple: true
+
+      # - run: ls -la env
+      # - run: python -m site
+      # - run: which python
+
+      #   # try to put the site packages in the system's python site packages
+      # - name: Place site packages from CI to system's python site packages
+      #   env:
+      #     SITE_PACKAGES: /opt/hostedtoolcache/Python/3.10.16/x64/lib/python3.10/site-packages/
+      #   run: |
+      #     sudo cp -r env/* ${{ env.SITE_PACKAGES }}
+      #     sudo chown -R $USER:$USER ${{ env.SITE_PACKAGES }}
+
       - uses: actions/checkout@v4
       - name: Set up Python 3.10
         uses: actions/setup-python@v5
@@ -39,19 +113,15 @@ jobs:
         with:
           version: "latest"
 
-      # Build Source Distribution
-      # - name: 'Build Source Distribution'
-      #   run: uv build --sdist
-
       # Export "pinned" (exact) dependencies' versions in requirements.txt format
       - name: 'Export pinned Prod + Test dependencies'
         run: uv export --no-emit-project --no-dev --extra test --frozen --format requirements-txt -o requirements.txt
 
+      - run: uv venv
+
       # Install dependencies in virtualenv
       - name: 'Install "Prod + Test" dependencies'
-        run: |
-          uv venv
-          uv pip install -r requirements.txt
+        run: uv pip install -r requirements.txt
 
       # here the .venv is built with the exact dependencies
 
@@ -59,104 +129,87 @@ jobs:
       - name: 'Install Package without dependencies'
         run: uv pip install --no-deps -e .
 
-      # CI Artifact UPLOAD built env
-      - name: Upload Built Env in CI Artifacts
-        uses: actions/upload-artifact@v4
-        with:      
-          overwrite: false
-          # we pass to path value, only the necessary "transferable" packages to be used in other job
-          # if this solution persists then todo exclude __pychache__
-          path: .venv/lib/python3.10/site-packages
-          name: env
-          if-no-files-found: error
-
-  # RUN UNIT TESTS
-  test_unit:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
-      - name: Download site packages Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: env
-          path: env
-          # pattern: env/*
-          # merge-multiple: true
-
-      - run: ls -la env
-      - run: python -m site
-      - run: which python
-
-        # try to put the site packages in the system's python site packages
-      - name: Place site packages from CI to system's python site packages
-        env:
-          SITE_PACKAGES: /opt/hostedtoolcache/Python/3.10.16/x64/lib/python3.10/site-packages/
-        run: |
-          sudo cp -r env/* ${{ env.SITE_PACKAGES }}
-          sudo chown -R $USER:$USER ${{ env.SITE_PACKAGES }}
-
       # Run tests
       - name: 'Run tests'
-        run: |
-          # source env/bin/activate
-          # chmod +x env/bin/pytest
-          python -m pytest -ra -n auto
-          # deactivate
+        run: uv run pytest -ra -n auto
+
 
   # RUN INTEGRATION TESTS
   test_integration:
-    needs: build
+    # needs: build
     runs-on: ubuntu-latest
     steps:
+      # - uses: actions/checkout@v4
+      # - name: Set up Python 3.10
+      #   uses: actions/setup-python@v5
+      #   with:
+      #     python-version: '3.10'
+
+      # - name: Download site packages Artifacts
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: env
+      #     path: env
+
+      # - run: ls -la env
+      # - run: python -m site
+
+      # - name: Place site packages from CI to system's python site packages
+      #   env:
+      #     SITE_PACKAGES: /opt/hostedtoolcache/Python/3.10.16/x64/lib/python3.10/site-packages/
+      #   run: |
+      #     sudo cp -r env/* ${{ env.SITE_PACKAGES }}
+      #     sudo chown -R $USER:$USER ${{ env.SITE_PACKAGES }}
+
+      # # Install uv which tests depends on at runtime
+      # - name: Install the latest version of uv
+      #   uses: astral-sh/setup-uv@v5
+      #   with:
+      #     version: "latest"
+
+
       - uses: actions/checkout@v4
       - name: Set up Python 3.10
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      - name: Download site packages Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: env
-          path: env
-
-      - run: ls -la env
-      - run: python -m site
-
-      - name: Place site packages from CI to system's python site packages
-        env:
-          SITE_PACKAGES: /opt/hostedtoolcache/Python/3.10.16/x64/lib/python3.10/site-packages/
-        run: |
-          sudo cp -r env/* ${{ env.SITE_PACKAGES }}
-          sudo chown -R $USER:$USER ${{ env.SITE_PACKAGES }}
-
-      # Install uv which tests depends on at runtime
+      # Install uv to manage pinned versions
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@v5
         with:
           version: "latest"
+
+      # Export "pinned" (exact) dependencies' versions in requirements.txt format
+      - name: 'Export pinned Prod + Test dependencies'
+        run: uv export --no-emit-project --no-dev --extra test --frozen --format requirements-txt -o requirements.txt
+
+      - run: uv venv
+
+      # Install dependencies in virtualenv
+      - name: 'Install "Prod + Test" dependencies'
+        run: uv pip install -r requirements.txt
+
+      # here the .venv is built with the exact dependencies
+
+      # Install Package (without dependencies)
+      - name: 'Install Package without dependencies'
+        run: uv pip install --no-deps -e .
 
       # Run Integration tests
       - name: 'Run Integration tests'
         if: always()
         run: |
           # leverage uv to install other runtime test dependencies in the system site-packages!
-          # the `--system` flag, which installs into the first Python interpreter found on the `PATH`, like `pip`.
 
-          uv pip install --system 'tox<4.0'  # integration tests dependency
+          uv pip install 'tox<4.0'  # integration tests dependency
 
           # Isolate flaky tests
-          python -m pytest -ra -vvs --run-slow -k via_build_module
-          python -m pytest -ra -vvs --run-slow -k test_build_creates_artifacts
+          uv run pytest -ra -vvs --run-slow -k via_build_module
+          uv run pytest -ra -vvs --run-slow -k test_build_creates_artifacts
 
           # Run eveything once again for sanity
-          python -m pytest -ra -n auto --run-requires_uv --run-slow --run-network_bound -vvs -k 'test_cli or build_backend_sdist or test_build_creates_artifacts or test_lint_passes'
+          uv run pytest -ra -n auto --run-requires_uv --run-slow --run-network_bound -vvs -k 'test_cli or build_backend_sdist or test_build_creates_artifacts or test_lint_passes'
 
 
   # STATIC CODE ANALYSIS: ruff, isort, black, bandit, mccabe, mccabe, prospector, etc
