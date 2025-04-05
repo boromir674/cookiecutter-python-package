@@ -316,7 +316,6 @@ jobs:
       # assuming a pure-python package is being built (otherwise needs platform-specific path)!
       WHEEL_FILE: 'cookiecutter_python-*.whl'
     steps:
-      - uses: actions/checkout@v4
       - name: Set up Python 3.10
         uses: actions/setup-python@v5
         with:
@@ -326,6 +325,8 @@ jobs:
         uses: astral-sh/setup-uv@v5
         with:
           version: "latest"
+
+      - uses: actions/checkout@v4
 
       ## Build Wheel Distribution ##
       - name: 'Build Wheel Distribution for Package and its Dependencies'
@@ -350,7 +351,7 @@ jobs:
         run: echo "module_wheel_path=$(ls module_wheel/*.whl)" >> $GITHUB_OUTPUT
 
       - name: Install module wheel and download test extras from pypi
-        run: uv pip install --no-deps "${{ steps.module_wheel_path.outputs.module_wheel_path }}[test]"
+        run: uv pip install "${{ steps.module_wheel_path.outputs.module_wheel_path }}[test]"
 
       # TODO: use pinned test deps, instead of "rolling" the test deps as done above
 
