@@ -1,5 +1,5 @@
 import typing as t
-
+from pathlib import Path
 import pytest
 
 
@@ -16,10 +16,18 @@ def assert_scaffolded_without_cli(module_file) -> t.Callable[[str], None]:
     return assert_project_generated_without_cli
 
 
+# dynamic param 'marks' argument
+tests_root: Path = Path(__file__).parent
+RUNNING_FROM_LOCAL_CHECKOUT: bool = (tests_root.parent / '.github').exists()
+
+
 @pytest.mark.parametrize(
     'config_file, expected_interpreters',
     [
-        ('.github/biskotaki.yaml', ['3.7', '3.8', '3.9', '3.10', '3.11']),
+        pytest.param('.github/biskotaki.yaml', ['3.7', '3.8', '3.9', '3.10', '3.11'],             marks=pytest.mark.skipif(
+                not RUNNING_FROM_LOCAL_CHECKOUT,
+                reason=f"'Running tests from within local checkout is required to test this feature. Current path: {tests_root}'",
+            ),),
         (None, ['3.6', '3.7', '3.8', '3.9', '3.10', '3.11']),
         (
             'tests/data/biskotaki-without-interpreters.yaml',
@@ -96,7 +104,7 @@ CLI_RELATED_FILES = (
     'cli.py',
     '__main__.py',
 )
-"Files, only expected to be generated for cli type of Projects"
+"""Files, only expected to be generated for cli type of Projects"""
 
 
 @pytest.fixture
@@ -127,6 +135,7 @@ def module_file():
 @pytest.fixture(params=[x for x in CLI_RELATED_FILES])
 def cli_related_file_name(request):
     return request.param
+
 
 
 def test_enabling_add_cli_templated_variable(

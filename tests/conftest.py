@@ -593,11 +593,6 @@ def user_config(distro_loc: Path) -> ConfigInterfaceGeneric[ConfigProtocol]:
         return data
 
     _prod_yaml_loader: t.Callable[[PathLike], t.MutableMapping] = prod_load_yaml
-    # Aliases, for shortcuts
-    config_files = {
-        'biskotaki': '.github/biskotaki.yaml',
-        'without-interpreters': 'tests/data/biskotaki-without-interpreters.yaml',
-    }
 
     @attr.s(auto_attribs=True, slots=True)
     class ConfigData:
@@ -628,10 +623,18 @@ def user_config(distro_loc: Path) -> ConfigInterfaceGeneric[ConfigProtocol]:
         _data: t.Mapping = attr.ib(init=False)
 
         def __attrs_post_init__(self):
+            # called on user_config[config_file]
+
             if self.path is not None:
-                # Read data coming from yaml
+                # Read data coming from yaml file, designed for --config-file flag
+
+                config_files = {
+                    'biskotaki': '.github/biskotaki.yaml',
+                    'without-interpreters': 'tests/data/biskotaki-without-interpreters.yaml',
+                }
+
                 data_file = Path(my_dir) / '..' / config_files.get(self.path, self.path)
-                assert data_file.exists()
+                assert data_file.exists(), f"{data_file} does not exist. Possilbly running test suite outside of source directory."
                 assert data_file.is_file()
                 assert data_file.suffix in (
                     '.yaml',
@@ -706,6 +709,8 @@ def user_config(distro_loc: Path) -> ConfigInterfaceGeneric[ConfigProtocol]:
         def config_file(self) -> t.Union[str, None]:
             return self._config_file_arg
 
+    # NOTE: this offers client code: user_config[config_file]
+    # TODO: remove this unecessary adapter
     return type(
         'ConfigFile',
         (),
