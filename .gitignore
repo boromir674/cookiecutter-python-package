@@ -37,3 +37,10 @@ notes\.md
 
 cookie-py.log
 dev-notes/
+*\.txt
+temp
+*\.tar\.gz
+docs-dist/
+docs-build/
+WIP.sh
+\.mutmut-cache
