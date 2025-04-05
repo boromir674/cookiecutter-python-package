@@ -213,7 +213,7 @@ default_context:
             )),
             marks=pytest.mark.skipif(
                 SHOULD_SKIP,
-                reason=f"'Running tests from within local checkout is required to test this feature. Current path: {MY_DIR}'",
+                reason=f"'Test is impossible outside of project, automatically replaced by 'test_prod_template' test case. Current path: {MY_DIR}'",
             )
         ),
         pytest.param(
@@ -330,7 +330,7 @@ default_context:
             )),
             marks=pytest.mark.skipif(
                 not SHOULD_SKIP,
-                reason=f"Tests are running from local checkout so 'prod_template' should be used",
+                reason=f"Test is redundant, since we are running inside project",
             )
         ),
         (
@@ -485,9 +485,8 @@ def template_test_case(
 
     # ADD to Expected CONTEXT (ordered): template dir or url
     expected_context[C_KEY]['_template'] = _expected_cookiecutter_parent_dir
-
-    # include output+dir in the context dict
-    # context[CK]['_output_dir'] = os.path.abspath(output_dir)
+    
+    # '_output_dir' key is ADDED HERE (expected_context[C_KEY]['_template']) dynamically
 
     # ADD to Expected CONTEXT (ordered): include repo dir or url in the context dict
     expected_context[C_KEY]['_repo_dir'] = _expected_cookiecutter_parent_dir
@@ -554,7 +553,6 @@ def template_test_case(
     return {
         'cookie': COOKIE_TEMPLATE_DIR,
         'user_config': USER_CONFIG_FILE,
-        'expected_context': expected_context,
         'get_expected_context': get_expected_context,
         'cookiecutter_callback': COOKIECUTTER_CALLABLE,
     }
