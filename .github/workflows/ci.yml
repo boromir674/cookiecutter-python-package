@@ -310,6 +310,11 @@ jobs:
 
   all_wheels:
     runs-on: ubuntu-latest
+    env:
+      module_name: cookiecutter_python
+      # assuming project "declares" 1 python module (in the package)
+      # assuming a pure-python package is being built (otherwise needs platform-specific path)!
+      WHEEL_FILE: 'cookiecutter_python-*.whl'
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python 3.10
@@ -326,13 +331,21 @@ jobs:
       - name: 'Build Wheel Distribution for Package and its Dependencies'
         run: uv build --wheel --all-packages --out-dir dist
 
+      - run: mkdir module_wheel/
+      - run: mv dist/${{ env.WHEEL_FILE }} module_wheel/
+
       - run: uv venv
 
-      # TODO: Investigate a way to export only the test deps from pyproject
+      - run: uv pip install --no-deps "dist/*.whl"
+
+      - name: Install module wheel and download test extras from pypi
+        run: uv pip install --no-deps "module_wheel/*.whl[test]"
+
+      # TODO: use pinned test deps, instead of "rolling" the test deps as done above
 
       # Install Prod Wheels
-      - name: 'Install "Prod Wheels and leverage "extras" to install test deps'
-        run: uv pip install --no-deps "dist/*.whl[test]"
+      # - name: 'Install "Prod Wheels and leverage "extras" to install test deps'
+      #   run: uv pip install --no-deps "dist/*.whl[test]"
 
       # Run tests
       - name: 'Run tests'
