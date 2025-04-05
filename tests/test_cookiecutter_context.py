@@ -3,7 +3,7 @@ import typing as t
 from collections import OrderedDict
 from pathlib import Path
 from unittest.mock import patch
-
+import tempfile
 import pytest
 
 MY_DIR = Path(__file__).parent
@@ -23,6 +23,44 @@ RELEASE_DATE = datetime.datetime.now().strftime('%Y-%m-%d')
 # Verifies cookiecutter.generate_context is called with expected input parameter values
 # Verifies the Jinja Context object generated has the 'cookiecutter' and '_cookiecutter' keys
 # Verifies values of keys are == "exactly equal" to expected values
+
+
+# TEST CASE 2 depends on finding the .github/biskotaki.yaml in local checkout,
+# because its automatic discovery mechanism relies on relative path from this file
+
+TEST_TIME_BISKOTAKI_CONFIG = None
+SHOULD_SKIP = False
+
+if not (MY_DIR.parent / '.github' / 'biskotaki.yaml').exists():
+    SHOULD_SKIP = True
+    # Create a temporary file to use as a test config and PRESERVE it on close!
+    with tempfile.NamedTemporaryFile(mode='w+b', delete=False) as fp:
+        fp.write(b"""
+default_context:
+    project_name: Biskotaki
+    project_type: module
+    project_slug: biskotaki
+    pkg_name: biskotaki
+    repo_name: biskotaki
+    readthedocs_project_slug: biskotaki
+    docker_image: biskotaki
+    full_name: Konstantinos Lampridis
+    author: Konstantinos Lampridis
+    email: k.lampridis@hotmail.com
+    author_email: k.lampridis@hotmail.com
+    github_username: boromir674
+    project_short_description: Project generated using https://github.com/boromir674/cookiecutter-python-package
+    initialize_git_repo: 'no'
+    interpreters: {"supported-interpreters": ["3.7", "3.8", "3.9", "3.10", "3.11"]}
+    ## Documentation Config ##
+    docs_builder: "sphinx"
+    ## READ THE DOCS CI Config ##
+    rtd_python_version: "3.10"
+    cicd: 'experimental'
+
+""")
+        fp.close()
+        TEST_TIME_BISKOTAKI_CONFIG = Path(fp.name)
 
 
 @pytest.fixture(
@@ -61,9 +99,9 @@ RELEASE_DATE = datetime.datetime.now().strftime('%Y-%m-%d')
                 ]
             ),
         ),
-        (
+        pytest.param(
             # TEST CASE 2 - Production Template included in Distribution
-            'PROD_TEMPLATE',  # GIVEN the prod Template (cookiecutter.json + jinja Template project)
+            ('PROD_TEMPLATE',  # GIVEN the prod Template (cookiecutter.json + jinja Template project)
             'BISKOTAKI_CONFIG',  # and the .github/biskotaki.yaml User Config YAML
             # EXPECTED CONTEXT
             OrderedDict(
@@ -172,10 +210,131 @@ RELEASE_DATE = datetime.datetime.now().strftime('%Y-%m-%d')
                         },
                     ),
                 ]
-            ),
+            )),
+            marks=pytest.mark.skipif(
+                SHOULD_SKIP,
+                reason=f"'Running tests from within local checkout is required to test this feature. Current path: {MY_DIR}'",
+            )
+        ),
+        pytest.param(
+            # TEST CASE 3 - Production Template included in Distribution
+            ('PROD_TEMPLATE',  # GIVEN the prod Template (cookiecutter.json + jinja Template project)
+            'TEST_TIME_BISKOTAKI_CONFIG',  # and a User Config File that "should be identical" to .github/biskotaki.yaml
+            # EXPECTED CONTEXT
+            OrderedDict(
+                [
+                    # 1st Item mapped in Jinja context with dedicated key
+                    (
+                        'cookiecutter',
+                        OrderedDict(
+                            [
+                                ('project_name', 'Biskotaki'),
+                                ('project_type', 'module'),
+                                ("project_slug", "biskotaki"),
+                                ("pkg_name", "biskotaki"),
+                                ("repo_name", "biskotaki"),
+                                ("readthedocs_project_slug", "biskotaki"),
+                                ("docker_image", "biskotaki"),
+                                ("full_name", "Konstantinos Lampridis"),
+                                ("author", "Konstantinos Lampridis"),
+                                ("author_email", 'k.lampridis@hotmail.com'),
+                                ("github_username", 'boromir674'),
+                                (
+                                    "project_short_description",
+                                    "Project generated using https://github.com/boromir674/cookiecutter-python-package",
+                                ),
+                                (
+                                    "pypi_subtitle",
+                                    "Project generated using https://github.com/boromir674/cookiecutter-python-package",
+                                ),
+                                ("release_date", RELEASE_DATE),
+                                ("year", str(datetime.datetime.now().year)),
+                                ("version", "0.0.1"),
+                                ("initialize_git_repo", "no"),
+                                (
+                                    "interpreters",
+                                    {
+                                        "supported-interpreters": [
+                                            "3.6",
+                                            "3.7",
+                                            "3.8",
+                                            "3.9",
+                                            "3.10",
+                                            "3.11",
+                                        ]
+                                    },
+                                ),
+                                ("docs_builder", "sphinx"),
+                                ("rtd_python_version", "3.10"),
+                                ('cicd', 'experimental'),
+                                # since the below is expected to be put in the extra context before calling cookiecutter, it gets below the rest of Variables
+                                # ('_template', str(cookie)),
+                            ]
+                        ),
+                    ),
+                    # 2nd Item mapped in Jinja context with dedicated key _cookiecutter
+                    (
+                        '_cookiecutter',
+                        {
+                            'project_name': 'Biskotaki',
+                            'project_type': [
+                                'module',
+                                'module+cli',
+                                'pytest-plugin',
+                            ],  # NOTE Difference to 1st Item
+                            "project_slug": "biskotaki",
+                            "pkg_name": "biskotaki",
+                            "repo_name": "biskotaki",
+                            "readthedocs_project_slug": "biskotaki",
+                            "docker_image": "biskotaki",
+                            "full_name": "Konstantinos Lampridis",
+                            "author": "Konstantinos Lampridis",
+                            "author_email": 'k.lampridis@hotmail.com',
+                            "github_username": 'boromir674',
+                            # "project_short_description": "Project generated using https://github.com/boromir674/cookiecutter-python-package",
+                            "project_short_description": "{{ cookiecutter.project_short_description }}",
+                            "pypi_subtitle": "Project generated using https://github.com/boromir674/cookiecutter-python-package",
+                            # current date in format '2024-03-04'
+                            # "release_date": datetime.datetime.now().strftime('%Y-%m-%d'),
+                            "release_date": "{% now 'utc', '%Y-%m-%d' %}",
+                            "year": "{% now 'utc', '%Y' %}",
+                            "version": "0.0.1",
+                            "initialize_git_repo": [
+                                'no',
+                                'yes',
+                            ],  # NOTE Difference to 1st Item
+                            "interpreters": {
+                                "supported-interpreters": [
+                                    "3.7",
+                                    "3.8",
+                                    "3.9",
+                                    "3.10",
+                                    "3.11",
+                                ]
+                            },
+                            "docs_builder": [
+                                'sphinx',
+                                'mkdocs',
+                            ],  # NOTE Difference to 1st Item
+                            "rtd_python_version": [
+                                "3.10",
+                                "3.8",
+                                "3.9",
+                                "3.11",
+                                "3.12",
+                            ],
+                            'cicd': ['experimental', 'stable'],
+                        },
+                    ),
+                ]
+            )),
+            marks=pytest.mark.skipif(
+                not SHOULD_SKIP,
+                reason=f"Tests are running from local checkout so 'prod_template' should be used",
+            )
         ),
         (
-            # TEST CASE 3 - Production Template + Gold Standard User Config
+            # TEST CASE 4 - Production Template + Gold Standard User Config
             'PROD_TEMPLATE',  # GIVEN the prod Template (cookiecutter.json + jinja Template project)
             'GOLD_STANDARD_CONFIG',  # and the tests/data/gold-standard.yml
             # EXPECTED CONTEXT
@@ -282,7 +441,8 @@ RELEASE_DATE = datetime.datetime.now().strftime('%Y-%m-%d')
     ids=(
         'simple_template',  # TEST CASE 1
         'prod_template',  # TEST CASE 2
-        'gold_standard',  # TEST CASE 3
+        'test_prod_template',  # TEST CASE 3
+        'gold_standard',  # TEST CASE 4
     ),
 )
 def template_test_case(
@@ -299,6 +459,7 @@ def template_test_case(
     # Set User Config YAML
     ALIAS_TO_CONFIG_FILE = {
         'BISKOTAKI_CONFIG': MY_DIR / '..' / '.github' / 'biskotaki.yaml',
+        'TEST_TIME_BISKOTAKI_CONFIG': TEST_TIME_BISKOTAKI_CONFIG,
         'GOLD_STANDARD_CONFIG': MY_DIR / 'data' / 'gold-standard.yml',
         'PYTEST_PLUGIN_CONFIG': MY_DIR / 'data' / 'pytest-fixture.yaml',
     }

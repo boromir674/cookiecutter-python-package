@@ -636,10 +636,6 @@ def user_config(distro_loc: Path) -> ConfigInterfaceGeneric[ConfigProtocol]:
                 data_file = Path(my_dir) / '..' / config_files.get(self.path, self.path)
                 assert data_file.exists(), f"{data_file} does not exist. Possilbly running test suite outside of source directory."
                 assert data_file.is_file()
-                assert data_file.suffix in (
-                    '.yaml',
-                    '.yml',
-                ), f"Invalid user config file {data_file}. Expected .yaml or .yml extension."
 
                 self._config_file_arg = data_file
                 self._data_file_path = data_file
