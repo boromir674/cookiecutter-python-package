@@ -78,7 +78,7 @@ jobs:
 
   # RUN UNIT TESTS
   test_unit:
-    if: env.OV_TEST_UNIT != 'false'
+    if: ${{ env.OV_TEST_UNIT != 'false' }}
     runs-on: ubuntu-latest
     steps:
       # - uses: actions/checkout@v4
