@@ -329,17 +329,28 @@ jobs:
 
       ## Build Wheel Distribution ##
       - name: 'Build Wheel Distribution for Package and its Dependencies'
-        run: uv build --wheel --all-packages --out-dir dist
+        run: 'pip wheel --wheel-dir dist .'
 
-      - run: mkdir module_wheel/
+        # --find-links dist --use-feature=fast-deps --use-feature=2020-resolver
+
+        # run: uv build --wheel --all-packages --out-dir dist
+
+      - run: mkdir moulde_wheel/
       - run: mv dist/${{ env.WHEEL_FILE }} module_wheel/
 
       - run: uv venv
 
-      - run: uv pip install --no-deps "dist/*.whl"
+      - run: uv pip install --no-deps dist/*.whl
+      # - run: uv pip install --no-deps $(ls dist/*.whl)
+      # - run: find dist -name "*.whl" -print0 | xargs -0 uv pip install --no-deps
+
+      # here we need to manually extract the wheel file path, asserting there is only 1
+      - name: Extract Module Wheel file path
+        id: module_wheel_path
+        run: echo "module_wheel_path=$(ls module_wheel/*.whl)" >> $GITHUB_OUTPUT
 
       - name: Install module wheel and download test extras from pypi
-        run: uv pip install --no-deps "module_wheel/*.whl[test]"
+        run: uv pip install --no-deps "${{ steps.module_wheel_path.outputs.module_wheel_path }}[test]"
 
       # TODO: use pinned test deps, instead of "rolling" the test deps as done above
 
