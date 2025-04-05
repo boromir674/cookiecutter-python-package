@@ -18,6 +18,12 @@ on:
       - '!dev'
       - '!release'
 
+env:
+  # OVERRIDES
+  # OV_TEST_INTEGRATION: true
+  OV_TEST_UNIT: true
+
+
 jobs:
   # For Test Suite this pipeline aims for speed
   # so for feature branches test in edit mode
@@ -72,7 +78,7 @@ jobs:
 
   # RUN UNIT TESTS
   test_unit:
-    # needs: build
+    if: env.OV_TEST_UNIT != 'false'
     runs-on: ubuntu-latest
     steps:
       # - uses: actions/checkout@v4
@@ -137,7 +143,7 @@ jobs:
   # RUN INTEGRATION TESTS
   test_integration:
     # needs: build
-    # if: ${{ env.OV_TEST_INTEGRATION != false }}
+    if: env.OV_TEST_INTEGRATION == 'true'
     runs-on: ubuntu-latest
     steps:
       # - uses: actions/checkout@v4
@@ -215,6 +221,7 @@ jobs:
 
   # STATIC CODE ANALYSIS: mypy, ruff, isort, black, bandit, mccabe, prospector, etc
   sca:
+    if: env.OV_SCA == 'true'
     uses: ./.github/workflows/sca-job.yml
     with:
       python_version: '3.10'
@@ -226,13 +233,11 @@ jobs:
 
 ## TYPE CHECK
 
-
 ## DOCS
 
-
 ## Build an SDist and run against Test Suite
-
   sdist:
+    if: env.OV_SDIST != 'false'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -269,8 +274,9 @@ jobs:
       - name: 'Run tests'
         run: uv run pytest -ra -n auto
 
-
+## Build a Wheel and run against Test Suite
   wheel:
+    if: env.OV_WHEEL != 'false'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -307,8 +313,9 @@ jobs:
       - name: 'Run tests'
         run: uv run pytest -ra -n auto
 
-
+## Build all Wheels and run against Test Suite
   all_wheels:
+    if: env.OV_ALL_WHEELS != 'false'
     runs-on: ubuntu-latest
     env:
       module_name: cookiecutter_python
