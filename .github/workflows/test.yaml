@@ -159,189 +159,19 @@ jobs:
       PIPE_CODE_VIZ_POLICY: ${{ steps.derive_code_viz_policy.outputs.POL }}
 
 # RUN TEST SUITE ON ALL PLATFORMS
-  test_suite:
-    runs-on: ${{ matrix.platform }}
+  test:
     needs: set_github_outputs
     if: ${{ needs.set_github_outputs.outputs.TESTS_ENABLED == 'true' }}
-    strategy:
-      matrix: ${{fromJSON(needs.set_github_outputs.outputs.matrix)}}
-    env:
-      WHEELS_PIP_DIR: "wheels-pip"
-    outputs:
-      PEP_VERSION: ${{ steps.extract_wheel_info.outputs.PEP_VERSION }}
-    steps:
-    - run: echo "Platform -> ${{ matrix.platform }} , Python -> ${{ matrix.python-version }}"
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
-
-    # TODO: use determinisitc build for type checking
-    # - name: Pin 'Static Type Checking' Dependencies
-    #   run: tox -vv -s false -e pin-deps -- -E typing
-
-    # - name: Do Type Checking
-    #   run: tox -e type -vv -s false
-
-    - name: Install uv
-      run: curl -LsSf https://astral.sh/uv/install.sh | sh
-
-    - uses: actions/checkout@v4
-
-    # we use quick pip solution to deploy
-    - name: Do Type Checking
-      if: matrix.platform != 'windows-latest'
-      env:
-        PKG: src/cookiecutter_python  # for DRYness
-        MYPYPATH: src/stubs/  # REQUIRED for mypy to find our custom stubs
-      shell: bash
-      run: |
-        uv export --no-emit-project --no-dev --extra typing --frozen --format requirements-txt -o requirements.txt
-        uv venv
-        uv pip install -r requirements.txt
-
-        # MYPY only Dependencies
-        # uv pip install mypy types-requests==2.27.31 pytest pytest-click types-pyyaml==6.0.12.12 'markupsafe==2.0.1'
-
-        # Package in Edit mode
-        # venv/bin/pip install --no-deps -e '.'
-
-        # mypy does not like, by default, multiple conftest.py (ses pytest) files
-        # so we trick mypy into believing that tests is a package, because this way
-        # pytest can distinguish between our 2 conftest.py files
-
-        # create empty __init__.py in tests, temporarily
-        touch tests/__init__.py
-
-        echo "[INFO] Running mypy for type checking"
-
-        uv run mypy --show-error-codes \
-        --exclude tests/data \
-        "${PKG}/hooks" \
-        "${PKG}/backend" "${PKG}/handle" \
-        "${PKG}/utils.py" "${PKG}/exceptions.py" \
-        "${PKG}/cli.py" "${PKG}/cli_handlers.py" \
-        "${PKG}/__main__.py" "${PKG}/__init__.py"
-      # NOTE: we excluded the test code from type checking since we do not have reproducible builds
-      # for locally iterating till we solve type check issues on CI
-
-    # delete temporarily created empty __init__.py in tests
-    - if: matrix.platform != 'windows-latest' && always()
-      run: rm tests/__init__.py
-
-    ### Check if Requested RC Pipeline ###
-    - name: "Update Source Sem Ver with Release Candidate *-rc' suffix"
-      if: ${{ startsWith(github.event.ref, 'refs/tags/v') && contains(github.event.ref, '-rc') }}
-      shell: bash
-      run: |
-        # Extract PROD Sem Ver
-        SEMVER="$(grep -E -o '^version\s*=\s*\".*\"' pyproject.toml | cut -d'"' -f2)"
-
-        # Derive RC Sem Ver
-        RC_SEMVER="${SEMVER}-rc"
-
-        ## Set Source Sem Ver to Release Candidate Sem Ver ##
-        # if needed: chmod +x ./scripts/distro-sem-ver-bump.sh
-        sh ./scripts/distro-sem-ver-bump.sh "${RC_SEMVER}"
-
-    # Install Prod + Test Dependencies (without package)
-    - name: 'Install Dependencies'
-      run: |
-        uv export --no-emit-project --no-dev --extra test --frozen --format requirements-txt -o requirements.txt
-        uv venv
-        uv pip install -r requirements.txt
-
-    #### Install in EDIT mode and Run TESTS ####
-    - name: 'Run tests'
-      run: |
-        uv pip install --no-deps -e .
-        uv run pytest -ra -n auto
-
-    #### Install WHEEL and Run TESTS WHEEL
-    - run: |
-        # rm -rf .venv
-        uv build --out-dir dist .
-        # uv pip uninstall -y cookiecutter_python
-        uv pip install --exists-action w --force-reinstall dist/cookiecutter_python-*.whl
-        uv run pytest -ra -n auto
-
-    #### Build All Wheels, install and Test
-    - name: Build All Wheels
-      run: pip wheel --wheel-dir dist-wheels .
-
-    - run: mkdir module_wheel/
-    - run: mv dist-wheels/cookiecutter_python*.ehl module_wheel/
-
-    - run: uv venv
-
-    - run: uv pip install --no-deps dist-wheels/*.whl
-
-    - name: Extract Module Wheel file path
-      id: module_wheel_path
-      run: echo "module_wheel_path=$(ls module_wheel/*.whl)" >> $GITHUB_OUTPUT
-
-    - name: Install module wheel and download test extras from pypi
-      run: uv pip install "${{ steps.module_wheel_path.outputs.module_wheel_path }}[test]"
-
-    - name: Show produced Wheel(s) for Distro and its Requirements
-      run: ls -l dist-wheels/
-
-    # Run tests
-    - name: 'Run tests'
-      run: uv run pytest -ra -n auto
-
-    ## Code Coverage ##
-    - name: "Combine Coverage (dev, sdist, wheel) & make Reports"
-      env:
-        COVERAGE_FILE: ${{ github.workspace }}/.coverage
-      run: |
-        rm -rf .venv
-        uv venv
-        uv pip install 'coverage[toml] >= 5.1' 'diff_cover >=6'
-
-        echo '[INFO] Running coverage'
-        uv run coverage combine --keep
-        uv run coverage report --skip-covered --show-missing -i
-        uv run coverage xml -o ./.tox/coverage.xml -i
-        uv run coverage html -d ./.tox/htmlcov -i
-
-    - name: Rename Coverage Files
-      shell: bash
-      run: |
-        mv ./.tox/coverage.xml ./coverage-${{ matrix.platform }}-${{ matrix.python-version }}.xml
-
-    - name: "Upload Test Coverage as Artifacts"
-      uses: actions/upload-artifact@v4
-      with:
-      # TODO: implement mechanism for uploading test reports on separate artifact names. then codecov host upload job should be able somehow to get all of them. then change below from true to false
-        overwrite: false
-        name: coverage-${{ matrix.platform }}-${{ matrix.python-version }}.xml
-        path: coverage-${{ matrix.platform }}-${{ matrix.python-version }}.xml
-        if-no-files-found: error
-
-    - name: Check for compliance with Python Best Practices
-      shell: bash
-      env:
-        PKG_VERSION: ${{ steps.extract_wheel_info.outputs.PEP_VERSION }}
-        WHEEL_PATH: ${{ env.WHEELS_PIP_DIR }}/${{ env.WHEEL_NAME }}
-      run: |
-        DIST_DIR=dist
-        echo "DIST_DIR=${DIST_DIR}" >> $GITHUB_ENV
-        mkdir ${DIST_DIR}
-        mv ".tox/${DIST_DIR}/cookiecutter_python-${PKG_VERSION}.tar.gz" "${DIST_DIR}"
-        mv "${{ env.WHEEL_PATH }}" "${DIST_DIR}"
-        tox -e check -vv -s false
-
-    - name: Upload Source & Wheel distributions as Artefacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: dist-${{ matrix.platform }}-${{ matrix.python-version }}
-        path: ${{ env.DIST_DIR }}
-        if-no-files-found: error
+    uses: ./.github/workflows/test-job.yml
+    with:
+      # job_matrix: ${{ needs.set_github_outputs.outputs.matrix }}
+      job_matrix: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.11\"]}"
+      # job_matrix: "{\"platform\": [\"windows-latest\"], \"python-version\": [\"3.11\"]}"
+      # artifact_name: 'dist'
 
   codecov_coverage_host:
     runs-on: ubuntu-latest
-    needs: test_suite
+    needs: test
     steps:
     - uses: actions/checkout@v4
     - name: Get Codecov binary
@@ -370,15 +200,15 @@ jobs:
 ## DOCKER BUILD and PUBLISH ON DOCKERHUB ##
 # Ref Page: https://automated-workflows.readthedocs.io/en/main/ref_docker/
   docker_build:
-    needs: [set_github_outputs, test_suite]
+    needs: [set_github_outputs, test]
     uses: boromir674/automated-workflows/.github/workflows/docker.yml@v1.14.0
     if: always()
     with:
       acceptance_policy: ${{ needs.set_github_outputs.outputs.PIPE_DOCKER_POLICY }}
       image_slug: "generate-python"
       # target_stage: "some_stage_alias"  # no stage, means no `--target` flag, on build
-      tests_pass: ${{ needs.test_suite.result == 'success' }}
-      tests_run: ${{ !contains(fromJSON('["skipped", "cancelled"]'), needs.test_suite.result) }}
+      tests_pass: ${{ needs.test.result == 'success' }}
+      tests_run: ${{ !contains(fromJSON('["skipped", "cancelled"]'), needs.test.result) }}
       DOCKER_USER: ${{ vars.DOCKER_USER }}
     secrets:
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -429,12 +259,12 @@ jobs:
 
   ## JOB: PYPI UPLOAD ##
   pypi_publish:
-    needs: [set_github_outputs, test_suite, check_which_git_branch_we_are_on]
+    needs: [set_github_outputs, test, check_which_git_branch_we_are_on]
     uses: boromir674/automated-workflows/.github/workflows/pypi_env.yml@test
     with:
       should_trigger: ${{ needs.set_github_outputs.outputs.PUBLISH_ON_PYPI == 'true' && needs.check_which_git_branch_we_are_on.outputs.AUTOMATED_DEPLOY == 'true' }}
       distro_name: cookiecutter_python
-      distro_version: ${{ needs.test_suite.outputs.PEP_VERSION }}
+      distro_version: ${{ needs.test.outputs.PEP_VERSION }}
       pypi_env: '${{ needs.check_which_git_branch_we_are_on.outputs.ENVIRONMENT_NAME }}'
       artifacts_path: downloaded-artifacts
 
@@ -446,6 +276,7 @@ jobs:
 ### STATIC CODE ANALYSIS & LINTING ###
   lint:
     name: Static Code Analysis
+    if: false
     needs: set_github_outputs
     uses: ./.github/workflows/policy_lint.yml
     with:
@@ -457,6 +288,7 @@ jobs:
 
 ### DOCS BUILD/TEST - DOCUMENTATION SITE ###
   docs:
+    if: false
     name: Build Documentation
     needs: set_github_outputs
     # bafaa2c2a014758a4421fe9b5c02ba66dbfdbef6
@@ -469,6 +301,7 @@ jobs:
 
 ### DRAW PYTHON DEPENDENCY GRAPHS ###
   code_visualization:
+    if: false
     needs: set_github_outputs
     name: Code Visualization of Python Imports as Graphs, in .svg
     uses: boromir674/automated-workflows/.github/workflows/python_imports.yml@v1.14.0
@@ -481,7 +314,7 @@ jobs:
 
 ### Make a Github Release ###
   gh_release:
-    needs: [test_suite, check_which_git_branch_we_are_on]
+    needs: [test, check_which_git_branch_we_are_on]
     if: ${{ needs.check_which_git_branch_we_are_on.outputs.AUTOMATED_DEPLOY == 'true' }}
     uses: boromir674/automated-workflows/.github/workflows/gh-release.yml@v1.14.0
     name: 'GH Release'

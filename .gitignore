@@ -44,3 +44,5 @@ docs-dist/
 docs-build/
 WIP.sh
 \.mutmut-cache
+html/
+dist_docs/
