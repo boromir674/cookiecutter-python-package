@@ -98,6 +98,7 @@ def test_snapshot_matches_runtime(snapshot, biskotaki_ci_project, test_root):
                 if '.vscode' not in x.parts
                 and 'settings.json' not in x.parts
                 and '.tox' not in x.parts
+                and 'dist' not in x.parts
                 and '.mypy_cache' not in x.parts
                 and x.parts
                 not in {
@@ -153,7 +154,9 @@ def test_snapshot_matches_runtime(snapshot, biskotaki_ci_project, test_root):
     )
 
     if RUNNING_ON_CI:  # quickly do sanity check
-        assert all([line_pair[0] == line_pair[1] for line_pair in line_pairs_generator]), (
+        assert all(
+            [line_pair[0] == line_pair[1] for line_pair in line_pairs_generator]
+        ), (
             f"File: CHANGELOG.rst has different content at Runtime vs Snapshot\n"
             "-------------------\n"
             f"Runtime: {runtime_changelog}\n"
@@ -194,7 +197,9 @@ def test_snapshot_matches_runtime(snapshot, biskotaki_ci_project, test_root):
         ]
     )
     if RUNNING_ON_CI:  # quickly do sanity check
-        assert all([line_pair[0] == line_pair[1] for line_pair in line_pairs_generator]), (
+        assert all(
+            [line_pair[0] == line_pair[1] for line_pair in line_pairs_generator]
+        ), (
             f"File: docs/conf.py has different content at Runtime vs Snapshot\n"
             "-------------------\n"
             f"Runtime: {runtime_conf}\n"

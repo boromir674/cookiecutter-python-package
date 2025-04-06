@@ -5,6 +5,15 @@ Developer's Corner
 Here we present the **Software Architecture** and offer **Guides** on how to
 leverage the **CI/CD** to do various Development Operations, in a **GitOps** way.
 
+Architecture
+============
+
+.. toctree::
+   :maxdepth: 1
+
+   architecture
+   dependencies
+
 CI/CD Pipeline
 ==============
 
@@ -13,13 +22,6 @@ CI/CD Pipeline
 
    ci_cd_pipeline
 
-Architecture
-============
-
-.. toctree::
-   :maxdepth: 1
-
-   architecture
 
 GitOps Guides
 =============

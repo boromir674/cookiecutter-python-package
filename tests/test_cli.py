@@ -39,23 +39,36 @@ class CheckReadthedocsFeatureNotSupported(Exception):
     pass
 
 
-reason = "We do not support yet, the 'check-pypi' feature, if --config-file is NOT supplied."
+
+# dynamic param 'marks' argument
+tests_root: Path = Path(__file__).parent
+
+# RUNNING_FROM_LOCAL_CHECKOUT: bool = (tests_root.parent / 'src' / 'cookiecutter_python' / '__init__.py').exists()
+RUNNING_FROM_LOCAL_CHECKOUT: bool = (tests_root.parent / '.github').exists()
 
 
 @pytest.mark.runner_setup(mix_stderr=False)
 @pytest.mark.parametrize(
     'config_file, default_config',
     [
-        # Test Case 1: BISKOTAKI User Config
-        ('.github/biskotaki.yaml', False),
+        # Test Case 1: with CI BISKOTAKI User Config
+        pytest.param(
+            '.github/biskotaki.yaml',
+            False,
+            marks=pytest.mark.skipif(
+                not RUNNING_FROM_LOCAL_CHECKOUT,
+                reason=f"'Running tests from within local checkout is required to test this feature. Current path: {tests_root}'",
+            ),
+        ),
         # Test Case 2: No User Config + enable ~/.cookiecutterrc
         (None, True),
         # Test Case 3: biskotaki-without-interpreters.yaml
         ('without-interpreters', False),
         # Test Case 4: pytest-fixture.yaml
         ('tests/data/pytest-fixture.yaml', False),
+        
     ],
-    ids=['biskotaki', 'None', 'without-interpreters', 'pytest-fixture'],
+    ids=['biskotaki', 'None', 'without-interpreters', 'pytest-fixture',],
 )
 def test_cli_offline(
     config_file,
@@ -160,9 +173,9 @@ def test_cli_offline(
     )
 
     package_exists_on_readthedocs = check_readthedocs_result(result.stdout)
-    assert package_exists_on_readthedocs == check_web_server_expected_result('readthedocs')(
-        config, FOUND_ON_READTHEDOCS
-    )
+    assert package_exists_on_readthedocs == check_web_server_expected_result(
+        'readthedocs'
+    )(config, FOUND_ON_READTHEDOCS)
 
 
 @pytest.fixture

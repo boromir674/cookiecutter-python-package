@@ -34,7 +34,9 @@ def test_file_is_valid_yaml(config_file, user_config, mock_check, tmpdir):
         default_config=False,
     )
 
-    generate_ci_pipeline_config = Path(project_dir) / '.github' / 'workflows' / 'test.yaml'
+    generate_ci_pipeline_config = (
+        Path(project_dir) / '.github' / 'workflows' / 'test.yaml'
+    )
     assert generate_ci_pipeline_config.exists()
     assert generate_ci_pipeline_config.is_file()
 

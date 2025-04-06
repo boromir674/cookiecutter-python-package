@@ -11,7 +11,8 @@ import pytest
 
 
 @pytest.mark.parametrize(
-    'snapshot', ["biskotaki-gold-standard", "biskotaki-no-input", "biskotaki-interactive"]
+    'snapshot',
+    ["biskotaki-gold-standard", "biskotaki-no-input", "biskotaki-interactive"],
 )
 def test_referenced_job_output_vars_correspond_to_existing_jobs(
     # GIVEN a Snapshot from calling the Generator
@@ -77,7 +78,9 @@ def test_referenced_job_output_vars_correspond_to_existing_jobs(
         'biskotaki-interactive': 'experimental',
     }
     # GIVEN we identify the Snapshot's project cicd option used at generation time
-    snapshot_cicd_value: CICDDesignOption = snapshot_name_2_cicd_option_value[SNAPSHOT_NAME]
+    snapshot_cicd_value: CICDDesignOption = snapshot_name_2_cicd_option_value[
+        SNAPSHOT_NAME
+    ]
 
     # WHEN we iterate over the expected generated workflows for this Snapshot
     import yaml
@@ -90,7 +93,8 @@ def test_referenced_job_output_vars_correspond_to_existing_jobs(
             # except poyo.exceptions.PoyoException as error:
             except yaml.YAMLError as error:
                 raise RuntimeError(
-                    'Unable to parse YAML file {}. Error: {}' ''.format(yaml_workflow, error)
+                    'Unable to parse YAML file {}. Error: {}'
+                    ''.format(yaml_workflow, error)
                 ) from error
             # THEN we check the yaml_dict that all jobs that reference variables from other jobs also depend on those jobs
 

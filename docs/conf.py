@@ -56,7 +56,7 @@ extensions = [
     'sphinx_inline_tabs',  # pip install sphinx-inline-tabs ^2023.4.21
 
     ## MERMAID directive ##
-    'sphinxcontrib.mermaid',  # pip install sphinxcontrib-mermaid
+    'sphinxcontrib.mermaid',  # pip install sphinxcontrib-mermaid==1.0.0
 
     ## Render MARKDOWN Files ##
     'myst_parser',  # pip install myst-parser

@@ -1,0 +1,406 @@
+# CI Pipeline
+
+name: CI Pipeline
+# primarily serves as quick feedback on every push
+# on feature-branches, should be as quick as possible
+#  runs only tests, type check, docs build dynamically based on changes
+
+# THIS PIPELINE IS UNDER DEVELOPMENT
+# when it is feature-full, we shall add a "changes-dection" job to optimize pipeline by skipping jobs that do need to run
+# and only run the jobs that are needed
+
+on:
+  push:
+    branches:
+      - '*'
+      # except main, dev, release, branches
+      - '!main'
+      - '!dev'
+      - '!release'
+      - '!try-ci'
+
+env:
+  # OVERRIDES
+  # OV_TEST_INTEGRATION: true
+  OV_TEST_UNIT: true
+
+
+jobs:
+  # For Test Suite this pipeline aims for speed
+  # so for feature branches test in edit mode
+  # for 'high' branches (ie dev) run sdist/wheel tests
+
+## Temporary TEST against reproducible build
+  # build:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Set up Python 3.10
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: '3.10'
+
+  #     # Install uv to manage pinned versions
+  #     - name: Install the latest version of uv
+  #       uses: astral-sh/setup-uv@v5
+  #       with:
+  #         version: "latest"
+
+  #     # Build Source Distribution
+  #     # - name: 'Build Source Distribution'
+  #     #   run: uv build --sdist
+
+  #     # Export "pinned" (exact) dependencies' versions in requirements.txt format
+  #     - name: 'Export pinned Prod + Test dependencies'
+  #       run: uv export --no-emit-project --no-dev --extra test --frozen --format requirements-txt -o requirements.txt
+
+  #     # Install dependencies in virtualenv
+  #     - name: 'Install "Prod + Test" dependencies'
+  #       run: |
+  #         uv venv
+  #         uv pip install -r requirements.txt
+
+  #     # here the .venv is built with the exact dependencies
+
+  #     # Install Package (without dependencies)
+  #     - name: 'Install Package without dependencies'
+  #       run: uv pip install --no-deps -e .
+
+  #     # CI Artifact UPLOAD built env
+  #     - name: Upload Built Env in CI Artifacts
+  #       uses: actions/upload-artifact@v4
+  #       with:      
+  #         overwrite: false
+  #         # we pass to path value, only the necessary "transferable" packages to be used in other job
+  #         # if this solution persists then todo exclude __pychache__
+  #         path: .venv/lib/python3.10/site-packages
+  #         name: env
+  #         if-no-files-found: error
+
+  # RUN UNIT TESTS
+  test_unit:
+    if: ${{ vars.OV_TEST_UNIT != 'false' }}
+    runs-on: ubuntu-latest
+    steps:
+      # - uses: actions/checkout@v4
+      # - name: Set up Python 3.10
+      #   uses: actions/setup-python@v5
+      #   with:
+      #     python-version: '3.10'
+
+      # - name: Download site packages Artifacts
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: env
+      #     path: env
+      #     # pattern: env/*
+      #     # merge-multiple: true
+
+      # - run: ls -la env
+      # - run: python -m site
+      # - run: which python
+
+      #   # try to put the site packages in the system's python site packages
+      # - name: Place site packages from CI to system's python site packages
+      #   env:
+      #     SITE_PACKAGES: /opt/hostedtoolcache/Python/3.10.16/x64/lib/python3.10/site-packages/
+      #   run: |
+      #     sudo cp -r env/* ${{ env.SITE_PACKAGES }}
+      #     sudo chown -R $USER:$USER ${{ env.SITE_PACKAGES }}
+
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      # Install uv to manage pinned versions
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      # Export "pinned" (exact) dependencies' versions in requirements.txt format
+      - name: 'Export pinned Prod + Test dependencies'
+        run: uv export --no-emit-project --no-dev --extra test --frozen --format requirements-txt -o requirements.txt
+
+      - run: uv venv
+
+      # Install dependencies in virtualenv
+      - name: 'Install "Prod + Test" dependencies'
+        run: uv pip install -r requirements.txt
+
+      # here the .venv is built with the exact dependencies
+
+      # Install Package (without dependencies)
+      - name: 'Install Package without dependencies'
+        run: uv pip install --no-deps -e .
+
+      # Run tests
+      - name: 'Run tests'
+        run: uv run pytest -ra -n auto
+
+
+  # RUN INTEGRATION TESTS
+  test_integration:
+    # needs: build
+    if: vars.OV_TEST_INTEGRATION == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      # - uses: actions/checkout@v4
+      # - name: Set up Python 3.10
+      #   uses: actions/setup-python@v5
+      #   with:
+      #     python-version: '3.10'
+
+      # - name: Download site packages Artifacts
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: env
+      #     path: env
+
+      # - run: ls -la env
+      # - run: python -m site
+
+      # - name: Place site packages from CI to system's python site packages
+      #   env:
+      #     SITE_PACKAGES: /opt/hostedtoolcache/Python/3.10.16/x64/lib/python3.10/site-packages/
+      #   run: |
+      #     sudo cp -r env/* ${{ env.SITE_PACKAGES }}
+      #     sudo chown -R $USER:$USER ${{ env.SITE_PACKAGES }}
+
+      # # Install uv which tests depends on at runtime
+      # - name: Install the latest version of uv
+      #   uses: astral-sh/setup-uv@v5
+      #   with:
+      #     version: "latest"
+
+
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      # Install uv to manage pinned versions
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      # Export "pinned" (exact) dependencies' versions in requirements.txt format
+      - name: 'Export pinned Prod + Test dependencies'
+        run: uv export --no-emit-project --no-dev --extra test --frozen --format requirements-txt -o requirements.txt
+
+      - run: uv venv
+
+      # Install dependencies in virtualenv
+      - name: 'Install "Prod + Test" dependencies'
+        run: uv pip install -r requirements.txt
+
+      # here the .venv is built with the exact dependencies
+
+      # Install Package (without dependencies)
+      - name: 'Install Package without dependencies'
+        run: uv pip install --no-deps -e .
+
+      # Run Integration tests
+      - name: 'Run Integration tests'
+        if: always()
+        run: |
+          # leverage uv to install other runtime test dependencies in the system site-packages!
+
+          uv pip install 'tox<4.0'  # integration tests dependency
+
+          # Isolate flaky tests
+          uv run pytest -ra -vvs --run-slow -k via_build_module
+          uv run pytest -ra -vvs --run-slow -k test_build_creates_artifacts
+
+          # Run eveything once again for sanity
+          uv run pytest -ra -n auto --run-requires_uv --run-slow --run-network_bound -vvs -k 'test_cli or build_backend_sdist or test_build_creates_artifacts or test_lint_passes'
+
+
+  # STATIC CODE ANALYSIS: mypy, ruff, isort, black, bandit, mccabe, prospector, etc
+  sca:
+    if: vars.OV_SCA == 'true'
+    uses: ./.github/workflows/sca-job.yml
+    with:
+      python_version: '3.10'
+      allow_failure: true
+      # force_styles: 'true'
+
+
+  smaple_matrix_test:
+    runs-on: ${{ matrix.platform }}
+    # trigger if event is pr to dev
+    if: github.event_name == 'pull_request' && github.base_ref == 'dev'
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: [3.10]
+    steps:
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      - uses: actions/checkout@v4
+
+      - name: 'Export pinned Prod + Test dependencies'
+        run: uv export --no-emit-project --no-dev --extra test --frozen --format requirements-txt -o requirements.txt
+
+      - name: Install dependencies
+        run: |
+          uv venv
+          uv pip install -r requirements.txt
+
+      - name: Run tests
+        run: |
+          uv run pytest -ra -n auto --run-slow --run-network_bound -vvs
+
+## PYDEPS
+
+## TYPE CHECK
+
+## DOCS
+
+## Build an SDist and run against Test Suite
+  sdist:
+    if: vars.OV_SDIST != 'false'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      ## Build Source Distribution ##
+      - name: 'Build Source Distribution'
+        run: uv build --sdist --out-dir dist
+
+      - name: 'Export pinned Prod + Test dependencies'
+        run: uv export --no-emit-project --no-dev --extra test --frozen --format requirements-txt -o requirements.txt
+
+      - run: uv venv
+
+      # Install dependencies in virtualenv
+      - name: 'Install "Prod + Test" dependencies'
+        run: uv pip install -r requirements.txt
+
+      # here the .venv is built with the exact dependencies
+
+      # Install Package from SDist
+      - name: 'Install Package from SDist, without dependencies'
+        run: uv pip install --no-deps dist/*.tar.gz
+
+      # Run tests
+      - name: 'Run tests'
+        run: uv run pytest -ra -n auto
+
+## Build a Wheel and run against Test Suite
+  wheel:
+    if: vars.OV_WHEEL != 'false'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      ## Build Wheel Distribution ##
+      - name: 'Build Wheel Distribution'
+        run: uv build --wheel --out-dir dist
+
+      - name: 'Export pinned Prod + Test dependencies'
+        run: uv export --no-emit-project --no-dev --extra test --frozen --format requirements-txt -o requirements.txt
+
+      - run: uv venv
+
+      # Install dependencies in virtualenv
+      - name: 'Install "Prod + Test" dependencies'
+        run: uv pip install -r requirements.txt
+
+      # here the .venv is built with the exact dependencies
+
+      # Install Package from Wheel
+      - name: 'Install Package from SDist, without dependencies'
+        run: uv pip install --no-deps dist/*.whl
+
+      # Run tests
+      - name: 'Run tests'
+        run: uv run pytest -ra -n auto
+
+## Build all Wheels and run against Test Suite
+  all_wheels:
+    if: vars.OV_ALL_WHEELS != 'false'
+    runs-on: ubuntu-latest
+    env:
+      module_name: cookiecutter_python
+      # assuming project "declares" 1 python module (in the package)
+      # assuming a pure-python package is being built (otherwise needs platform-specific path)!
+      WHEEL_FILE: 'cookiecutter_python-*.whl'
+    steps:
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      - uses: actions/checkout@v4
+
+      ## Build Wheel Distribution ##
+      - name: 'Build Wheel Distribution for Package and its Dependencies'
+        run: 'pip wheel --wheel-dir dist .'
+
+        # --find-links dist --use-feature=fast-deps --use-feature=2020-resolver
+
+        # run: uv build --wheel --all-packages --out-dir dist
+
+      - run: mkdir module_wheel/
+      - run: mv dist/${{ env.WHEEL_FILE }} module_wheel/
+
+      - run: uv venv
+
+      - run: uv pip install --no-deps dist/*.whl
+      # - run: uv pip install --no-deps $(ls dist/*.whl)
+      # - run: find dist -name "*.whl" -print0 | xargs -0 uv pip install --no-deps
+
+      # here we need to manually extract the wheel file path, asserting there is only 1
+      - name: Extract Module Wheel file path
+        id: module_wheel_path
+        run: echo "module_wheel_path=$(ls module_wheel/*.whl)" >> $GITHUB_OUTPUT
+
+      - name: Install module wheel and download test extras from pypi
+        run: uv pip install "${{ steps.module_wheel_path.outputs.module_wheel_path }}[test]"
+
+      # TODO: use pinned test deps, instead of "rolling" the test deps as done above
+
+      # Install Prod Wheels
+      # - name: 'Install "Prod Wheels and leverage "extras" to install test deps'
+      #   run: uv pip install --no-deps "dist/*.whl[test]"
+
+      # Run tests
+      - name: 'Run tests'
+        run: uv run pytest -ra -n auto
