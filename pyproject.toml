@@ -176,3 +176,9 @@ explicit-only = [
     "slow",
     "requires_uv",
 ]
+
+
+
+[tool.isort]
+profile = 'black'
+
