@@ -1,0 +1,344 @@
+name: "Test Job"
+
+on:
+  workflow_call:
+    inputs:
+      typecheck_policy:
+        required: false
+        type: string
+        default: "1"
+        description: "0 = Off, 1 = On, 2 = Allow Fail"
+
+      # JOB_MATRIX
+      job_matrix:
+        required: false
+        type: string
+        default: "{\"platform\": [\"ubuntu-latest\"], \"python-version\": [\"3.10\"]}"
+
+      # POLICY
+      run_policy:
+        required: false
+        type: string
+        default: '1'
+        description: "0 = Off, 1 = On"
+
+      # TODO support this feature
+      # # BUILD_INSTALLATION
+      # build_installation:
+      #   required: false
+      #   type: string
+      #   default: 'edit sdist wheel'
+      #   description: "Code Installation Modes, for running Tests"
+
+      # ARTIFACT NAME
+      artifact_name:
+        required: false
+        type: string
+        default: 'dist'
+        description: "CI Artifact Name (id / alias) for uploading Distros, such as files .tar.gz, .whl(s)"
+
+    ### OUTPUTS ###
+    # Map the workflow outputs to job outputs
+    outputs:
+      PEP_VERSION:
+        description: "PEP version of the wheel file"
+        value: ${{ jobs.test_suite.outputs.PEP_VERSION }}
+      # COVERAGE_ARTIFACT:
+      #   description: "CI Artifact Name (id / alias) of uploaded Coverage XML"
+      #   value: ${{ jobs.test_build.outputs.COVERAGE_ARTIFACT }}
+
+jobs:
+  # RUN TEST SUITE ON ALL PLATFORMS
+  test_suite:
+    runs-on: ${{ matrix.platform }}
+    if: always() && inputs.run_policy != 0
+    strategy:
+      matrix: ${{fromJSON(inputs.job_matrix)}}
+      fail-fast: false
+    outputs:
+      PEP_VERSION: ${{ steps.extract_wheel_info.outputs.PEP_VERSION }}
+      # COVERAGE_ARTIFACT: ${{ steps.set_coverage_artifact.outputs.COVERAGE_ARTIFACT }}
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      WHEELS_PIP_DIR: "wheels-pip"
+        # --cov-report=html:{envdir}/htmlcov \
+      PYTEST_ARGS: >
+        -ra --cov --cov-report=term-missing \
+        --cov-context=test \
+        --cov-report=xml:coverage.{envname}.xml \
+        -n auto tests
+      # log deletion post hook fails on windows, due to permission error! (other process is using the file, so removing is denied)
+      # windows spawn multiple processes, so log deletion is not possible, even when running 1 Single Unit Test
+      BUG_LOG_DEL_WIN: 'permission_error'
+
+    steps:
+      - run: 'echo "OS: ${{ matrix.platform }}, Python: ${{ matrix.python-version }}"'
+
+      # Setup Python
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        if: matrix.platform != 'windows-latest'
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: Install uv
+        if: matrix.platform == 'windows-latest'
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      - uses: actions/checkout@v4
+
+      # ### Sanity Check that folder is Compatible for Python Distro / Build ###
+      # - run: uvx pyroma --directory .
+
+      # # TYPE CHECKING with MYPY
+      # - name: Do Type Checking
+      #   if: matrix.platform != 'windows-latest'
+      #   env:
+      #     PKG: src/cookiecutter_python  # for DRYness
+      #     MYPYPATH: src/stubs/  # REQUIRED for mypy to find our custom stubs
+      #   shell: bash
+      #   run: |
+      #     uv export --no-emit-project --no-dev --extra typing --frozen --format requirements-txt -o requirements.txt
+      #     uv venv
+      #     uv pip install -r requirements.txt
+
+      #     # mypy does not like, by default, multiple conftest.py (ses pytest) files
+      #     # so we trick mypy into believing that tests is a package, because this way
+      #     # pytest can distinguish between our 2 conftest.py files
+
+      #     # create empty __init__.py in tests, temporarily
+      #     touch tests/__init__.py
+
+      #     echo "[INFO] Running mypy for type checking"
+
+      #     uv run mypy --show-error-codes \
+      #     --exclude tests/data \
+      #     "${PKG}/hooks" \
+      #     "${PKG}/backend" "${PKG}/handle" \
+      #     "${PKG}/utils.py" "${PKG}/exceptions.py" \
+      #     "${PKG}/cli.py" "${PKG}/cli_handlers.py" \
+      #     "${PKG}/__main__.py" "${PKG}/__init__.py"
+
+      #   # TODO start typechecking tests
+      #   # TODO add the --check-untyped-defs flag
+
+      # # delete temporarily created empty __init__.py in tests
+      # - if: matrix.platform != 'windows-latest' && always()
+      #   run: rm tests/__init__.py
+
+      ### Check if Requested RC Pipeline ###
+      - name: "Update Source Sem Ver with Release Candidate *-rc' suffix"
+        if: ${{ startsWith(github.event.ref, 'refs/tags/v') && contains(github.event.ref, '-rc') }}
+        shell: bash
+        run: |
+          # Extract PROD Sem Ver
+          SEMVER="$(grep -E -o '^version\s*=\s*\".*\"' pyproject.toml | cut -d'"' -f2)"
+
+          # Derive RC Sem Ver
+          RC_SEMVER="${SEMVER}-rc"
+
+          ## Set Source Sem Ver to Release Candidate Sem Ver ##
+          # if needed: chmod +x ./scripts/distro-sem-ver-bump.sh
+          sh ./scripts/distro-sem-ver-bump.sh "${RC_SEMVER}"
+
+      # UV Export Prod + Test Dependencies (without package)
+      - name: "Export exact 'Prod + Test' Dependencies in requirements.txt format"
+        run: uv export --no-emit-project --no-dev --extra test --frozen --format requirements-txt -o requirements.txt
+
+      - name: Install exact 'Prod + Test' Dependencies
+        # activate explicitly for windows %#$ bug, to maybe offer a workaround for windows unable for uv pip to find test-env automatically
+        shell: bash
+        run: |
+          uv venv
+          if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
+            echo "[INFO] Activating virtual environment for Windows"
+            . .venv/Scripts/activate
+          fi
+          echo "[INFO] Installing exact 'Prod + Test' Dependencies"
+          uv pip install --no-deps -r requirements.txt
+
+      #### Install in EDIT mode and Run TESTS ####
+      - name: 'Run tests'
+        shell: bash  # to solve issue on windows ci
+        run: |
+          if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
+            echo "[INFO] Activating virtual environment for Windows"
+            . .venv/Scripts/activate
+          fi
+          uv pip install --no-deps -e .
+
+          # DEBUG
+          uv run --active pytest -ra -vvs -k test_gs_matches_runtime
+
+          # uv run pytest ${{ env.PYTEST_ARGS }}
+          # uv run pytest -ra --cov --cov-report=term-missing \
+          #   --cov-context=test \
+          #   --cov-report=xml:coverage.test-edit.xml \
+          #   -n auto tests
+
+      #### Build WHEEL/SDIST Distros, Install Wheel and Run TESTS
+      - name: 'Build Wheel/Sdist distros, using uv and poetry.core.masonry.api'
+        shell: bash
+        run: |
+          set -o pipefail
+          uv build --out-dir dist . 2>&1 | tee test_output.log
+
+      - run: mkdir verification
+      - name: Verify packaged Wheel/Sdist Distros are valid according to python standards
+        shell: bash
+        working-directory: verification
+        run: |
+          uv venv check-env
+          if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
+            echo "[INFO] Activating virtual environment for Windows"
+            . check-env/Scripts/activate
+          fi
+          uv pip install poetry-core pyroma 'twine >=5.0.0, <6.0.0'
+          # --active
+
+          # Check .tar.gz file using 'pyroma' command
+          echo "[INFO] Running pyroma on the sdist"
+          uv run --active pyroma --file "$(ls ../dist/*.tar.gz)"
+
+          # Check both .whl and .tar.gz files using 'twine check' command
+          echo "[INFO] Running twine check on the sdist and wheel"
+          uv run --active python -m twine check ../dist/*
+
+      ## UV Build WHEEL - TESTS ##
+      - name: Install Wheel and Run Test Suite
+        shell: bash  # to solve issue on windows ci
+        run: |
+          if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
+            echo "[INFO] Activating virtual environment for Windows"
+            . .venv/Scripts/activate
+          fi
+
+          uv pip uninstall cookiecutter_python
+          uv pip install --no-deps dist/cookiecutter_python-*.whl
+
+          # uv run pytest ${{ env.PYTEST_ARGS }}
+
+          uv run --active pytest -ra --cov --cov-report=term-missing \
+            --cov-context=test \
+            --cov-report=xml:coverage.test-wheel.xml \
+            -n auto tests
+
+      - name: Extract PEP Version
+        id: extract_wheel_info
+        shell: bash
+        run: |
+          # Extract PEP version from wheel file name
+          WHEEL_FILE=$(ls dist/cookiecutter_python-*.whl)
+
+          # extract file name from wheel file
+          WHEEL_NAME="$(basename $WHEEL_FILE)"
+
+          echo "WHEEL_NAME=$WHEEL_NAME" >> $GITHUB_ENV
+
+          # extract pep version from wheel file name, supporting patterns such as below:
+          # - '1.15.0rc0' from 'cookiecutter_python-1.15.0rc0-py3-none-any.whl'
+          # - '1.2.12' from 'cookiecutter_python-1.2.12-py3-none-any.whl'
+          # - '1.2.12' from 'cookiecutter_python-1.2.12-cp3-abi3-any.whl'
+          # - '3.0.7' from 'cookiecutter_python-3.0.7-jy3-none-any.whl'
+          # - '8.9.37dev0' from 'cookiecutter_python-8-9-37dev0-jy3-none-win32.whl'
+          # - '8.9.37dev0' from 'cookiecutter_python-8-9-37dev0-jy3-none-linux_i386.whl'
+
+          PEP_VERSION=$(echo $WHEEL_NAME | cut -d'-' -f2 | sed 's/-/./g')
+          echo "PEP_VERSION=$PEP_VERSION" >> $GITHUB_OUTPUT
+
+          echo "[INFO] Extracted PEP version: $PEP_VERSION"
+          ls -l "${WHEEL_FILE}"
+
+      #### Build All Wheels, install and Test
+      - name: Build All Wheels
+        run: pip wheel --wheel-dir dist-wheels .
+
+      - name: Show Wheels, produced using 'pip', for Distro and its Requirements
+        run: ls -l dist-wheels/
+
+      - name: Derive Module Wheel distro file path
+        id: module_wheel_path
+        shell: bash
+        run: |
+          mkdir module_wheel/
+          mv dist-wheels/cookiecutter_python*.whl module_wheel/
+          echo "MODULE_WHEEL_PATH=$(ls module_wheel/*.whl)" >> $GITHUB_OUTPUT
+
+      - name: Install Wheels of Dependencies
+        shell: bash
+        run: |
+          rm -rf .venv
+          uv venv
+          if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
+            echo "[INFO] Activating virtual environment for Windows"
+            . .venv/Scripts/activate
+          fi
+          uv pip install --no-deps dist-wheels/*.whl
+
+      - name: Install module wheel with test extras downloaded at runtime from pypi
+        if: matrix.platform != 'windows-latest'
+        run: uv pip install "${{ steps.module_wheel_path.outputs.MODULE_WHEEL_PATH }}[test]"
+      
+      - if: matrix.platform == 'windows-latest'
+        name: Install module wheel with test extras downloaded at runtime from pypi
+        shell: bash
+        run: |
+          if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
+            echo "[INFO] Activating virtual environment for Windows"
+            . .venv/Scripts/activate
+          fi
+          uv pip install "${{ steps.module_wheel_path.outputs.MODULE_WHEEL_PATH }}[test]"
+
+      # Run tests
+      - name: 'Run tests'
+        # run: uv run pytest ${{ env.PYTEST_ARGS }}
+        shell: bash  # to solve issue on windows ci
+        run: |
+          if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
+            echo "[INFO] Activating virtual environment for Windows"
+            . .venv/Scripts/activate
+          fi
+          uv run --active pytest -ra --cov --cov-report=term-missing \
+            --cov-report=html:test-wheels/htmlcov --cov-context=test \
+            --cov-report=xml:coverage.test-wheels.xml \
+            -n auto tests
+
+      ## Code Coverage ## TODO; enable combine by moving each .coverage file to other dir to avoid override of subsequent coverage invocations with pytest
+      - name: "Combine Coverage (dev, sdist, wheel) & make Reports"
+        env:
+          COVERAGE_FILE: ${{ github.workspace }}/.coverage
+          OUTPUT_XML: coverage-${{ matrix.platform }}-${{ matrix.python-version }}.xml
+        shell: bash
+        run: |
+          rm -rf .venv
+          uv venv
+          uv pip install 'coverage[toml] >= 5.1' 'diff_cover >=6'
+
+          echo '[INFO] Running coverage'
+          # uv run coverage combine --keep
+          uv run coverage report --skip-covered --show-missing -i
+          uv run coverage xml -o ./${{ env.OUTPUT_XML }} -i
+          # uv run coverage html -d ./htmlcov -i
+
+      - name: "Upload Test Coverage as Artifacts"
+        uses: actions/upload-artifact@v4
+        with:
+        # TODO: implement mechanism for uploading test reports on separate artifact names. then codecov host upload job should be able somehow to get all of them. then change below from true to false
+          overwrite: false
+          name: coverage-${{ matrix.platform }}-${{ matrix.python-version }}.xml
+          path: coverage-${{ matrix.platform }}-${{ matrix.python-version }}.xml
+          if-no-files-found: error
+
+      - name: Upload Source & Wheel distributions as Artefacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.platform }}-${{ matrix.python-version }}
+          path: dist
+          if-no-files-found: error
