@@ -59,7 +59,7 @@ def pre_main(request):
             # just update interpreters cookiecutter extra_context
             from .load_config import get_interpreters_from_yaml
 
-            interpreters: t.Mapping[str, t.Sequence[str]] = get_interpreters_from_yaml(
+            interpreters = get_interpreters_from_yaml(
                 request.config_file
             )
             if interpreters:

@@ -222,15 +222,14 @@ jobs:
 
   # STATIC CODE ANALYSIS: mypy, ruff, isort, black, bandit, mccabe, prospector, etc
   sca:
-    if: vars.OV_SCA == 'true'
+    if: vars.OV_SCA == 'true' || (vars.OV_SCA != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')
     uses: ./.github/workflows/sca-job.yml
     with:
       python_version: '3.10'
-      allow_failure: true
-      # force_styles: 'true'
+      allow_failure: ${{ github.event_name == 'pull_request' && github.base_ref == 'dev' && 'false' || 'true' }}
+      force_styles: ${{ github.event_name == 'pull_request' && github.base_ref == 'dev' && 'true' || 'false' }}
 
-
-  smaple_matrix_test:
+  sample_matrix_test:
     runs-on: ${{ matrix.platform }}
     # trigger if event is pr to dev
     if: github.event_name == 'pull_request' && github.base_ref == 'dev'

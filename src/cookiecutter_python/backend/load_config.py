@@ -6,8 +6,6 @@ from json import JSONDecodeError
 
 import yaml
 
-GivenInterpreters = t.Mapping[str, t.Sequence[str]]
-
 logger = logging.getLogger(__name__)
 
 
@@ -24,7 +22,7 @@ def load_yaml(config_file) -> t.MutableMapping:
     return yaml_dict
 
 
-def get_interpreters_from_yaml(config_file: str) -> t.Optional[GivenInterpreters]:
+def get_interpreters_from_yaml(config_file: str) -> t.Optional[t.Mapping[str, t.Sequence[str]]]:
     """Parse the 'interpreters' variable out of the user's config yaml file.
 
     Args:
@@ -35,7 +33,7 @@ def get_interpreters_from_yaml(config_file: str) -> t.Optional[GivenInterpreters
         UserYamlDesignError: if yaml does not contain the 'default_context' key
 
     Returns:
-        GivenInterpreters: dictionary with intepreters as a sequence of strings,
+        t.Mapping[str, t.Sequence[str]]: dictionary with intepreters as a sequence of strings,
             mapped to the 'supported-interpreters' key
     """
     data = load_yaml(config_file)

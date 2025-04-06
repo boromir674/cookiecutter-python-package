@@ -14,8 +14,8 @@ def get_request():
     # Templated Variables should be centralized here for easier inspection
     # Also, this makes static code analyzers to avoid issues with syntax errors
     # due to the templated (dynamically injected) code in this file
-    cookiecutter = OrderedDict()
-    cookiecutter: OrderedDict = {{cookiecutter}}
+    cookiecutter: OrderedDict = OrderedDict()
+    cookiecutter: OrderedDict = {{cookiecutter}}  # type:ignore[no-redef]
 
     logger.info("Cookiecutter Data: %s", json.dumps(cookiecutter, sort_keys=True, indent=4))
 
