@@ -38,11 +38,9 @@ def test_referenced_job_output_vars_correspond_to_existing_jobs(
     # GIVEN the EXPECTED paths to the generated Github Workflows per CICD Option
     from cookiecutter_python.hooks.post_gen_project import CICD_DELETE
 
-    d: t.Dict[str, t.List[t.Tuple[str, ...]]] = CICD_DELETE
-
     all_rendered_yaml_workflows: t.Set[t.Tuple[str, ...]] = {
         tuple_of_strings
-        for list_of_tuples in d.values()
+        for list_of_tuples in CICD_DELETE.values()
         for tuple_of_strings in list_of_tuples
     }
 

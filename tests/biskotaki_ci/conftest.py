@@ -29,6 +29,7 @@ def biskotaki_ci_project(
     #### if running OUTSIDE of local checkout ####
 
     TEST_TIME_BISKOTAKI_CONFIG = None
+    biskotaki_yaml: Path
 
     if not (test_root.parent / '.github' / 'biskotaki.yaml').exists():
         import tempfile
@@ -64,7 +65,7 @@ default_context:
     else:
         #### else RUNNING_FROM_LOCAL_CHECKOUT ####
         
-        biskotaki_yaml: Path = test_root.parent / '.github' / 'biskotaki.yaml'
+        biskotaki_yaml = test_root.parent / '.github' / 'biskotaki.yaml'
         assert biskotaki_yaml.exists()
         assert biskotaki_yaml.is_file()
         assert biskotaki_yaml.name == 'biskotaki.yaml'

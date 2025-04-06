@@ -94,7 +94,7 @@ delete_files = {
 }
 
 ### Define specialized files present per 'CI/CD option' ###
-CICD_DELETE = {
+CICD_DELETE: t.Dict[str, t.List[t.Tuple[str, ...]]] = {
     'stable': [
         ('.github', 'workflows', 'cicd.yml'),
         ('.github', 'workflows', 'codecov-upload.yml'),

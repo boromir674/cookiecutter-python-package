@@ -113,18 +113,21 @@ def module_file():
     from os import listdir
     from pathlib import Path
 
-    SRC_DIR_NAME = 'src'
+    SRC_DIR_NAME: str = 'src'
 
     def build_get_file_path(project_dir: str) -> t.Callable[[str], str]:
-        p = Path(project_dir)
+        p: Path = Path(project_dir)
         src_dir_files = listdir(p / SRC_DIR_NAME)
         # sanity check that Generator produces only 1 python module/package
-        [python_module] = src_dir_files
+        assert len(src_dir_files) == 1
+        python_module: str = src_dir_files[0]
 
-        def _get_file_path(*file_path):
+        def _get_file_path(*file_path: t.Union[str, Path]):
+            l1: t.List[t.Union[str, Path]] = [p, SRC_DIR_NAME, python_module]
+
             return reduce(
-                lambda i, j: i / j,
-                [p, SRC_DIR_NAME, python_module] + [_ for _ in file_path],
+                lambda i, j: Path(i) / Path(j),
+                l1 + [_ for _ in file_path]
             )
 
         return _get_file_path

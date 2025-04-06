@@ -440,7 +440,7 @@ default_context:
     ],
     ids=(
         'simple_template',  # TEST CASE 1
-        'prod_template',  # TEST CASE 2
+        'prod_template',  # TEST CASE 2 (mutually exclusinve with Test Case 3)
         'test_prod_template',  # TEST CASE 3
         'gold_standard',  # TEST CASE 4
     ),
@@ -457,13 +457,14 @@ def template_test_case(
     )
 
     # Set User Config YAML
-    ALIAS_TO_CONFIG_FILE = {
+    ALIAS_TO_CONFIG_FILE: t.Dict[str, t.Optional[Path]] = {
         'BISKOTAKI_CONFIG': MY_DIR / '..' / '.github' / 'biskotaki.yaml',
         'TEST_TIME_BISKOTAKI_CONFIG': TEST_TIME_BISKOTAKI_CONFIG,
         'GOLD_STANDARD_CONFIG': MY_DIR / 'data' / 'gold-standard.yml',
         'PYTEST_PLUGIN_CONFIG': MY_DIR / 'data' / 'pytest-fixture.yaml',
     }
-    USER_CONFIG_FILE: Path = ALIAS_TO_CONFIG_FILE.get(request.param[1], request.param[1])
+
+    USER_CONFIG_FILE = ALIAS_TO_CONFIG_FILE.get(request.param[1], request.param[1])
 
     # Prepare Expected Context, produced at runtime by cookiecutter (under the hood)
     expected_context: OrderedDict = request.param[2]

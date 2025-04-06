@@ -43,7 +43,7 @@ def test_registering_multiple_exceptions_under_the_same_type_allows_catching_mul
     from cookiecutter_python.backend import sanitize
 
     assert SANITIZE_TASK_TYPE in sanitize.sanitizers_map
-    assert sanitize.sanitizers_map[SANITIZE_TASK_TYPE]
+    assert sanitize.sanitizers_map[SANITIZE_TASK_TYPE]  # type:ignore[truthy-function]
 
     # SANITY Production Sanitizers automatically loaded!
     PRODUCTION_SANITIZERS = {

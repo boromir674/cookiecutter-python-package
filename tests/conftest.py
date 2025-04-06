@@ -256,7 +256,7 @@ def request_factory(distro_loc) -> t.Type[EmulatedRequestFactory]:
         ### that the templating engine would have produced.
 
         # Templated Vars (cookiecutter) use in Context for Jinja Rendering
-        vars: t.Optional[t.Dict] = attr.ib(
+        vars: t.Dict[str, t.Any] = attr.ib(
             # IMPORTANT: emulates jinja context vars (ie from list of choices to 1st choice)
             default=OrderedDict(
                 td_cookiecutter_json_data, **engine_state['cookiecutter']
@@ -302,7 +302,9 @@ def request_factory(distro_loc) -> t.Type[EmulatedRequestFactory]:
             self.vars['project_type'] = self.project_type
             self.vars['cicd'] = self.cicd
 
-    class HookRequest(metaclass=SubclassRegistry):
+    class HookRequestFacility(SubclassRegistry[EmulatedHookRequest]):
+        pass
+    class HookRequest(metaclass=HookRequestFacility):
         pass
 
     @attr.s(auto_attribs=True, kw_only=True)
@@ -558,17 +560,14 @@ def cli_invoker_params() -> t.Callable[[t.Any], CLIRunnerParameters]:
 # keep in Sync with user_config Fixture, if Type Check fails
 class ConfigProtocol(Protocol):
     data: t.Mapping
+    config_file: t.Union[str, None]
 
-
-ConfigInterface = t.TypeVar('ConfigInterface')
-
-
-class ConfigInterfaceGeneric(t.Generic[ConfigInterface]):
-    def __getitem__(self, file_path_str: t.Union[str, None]) -> ConfigInterface: ...
+class ConfigInterfaceProtocol(t.Protocol):
+    def __getitem__(self, file_path_str: t.Union[str, None]) -> ConfigProtocol: ...
 
 
 @pytest.fixture
-def user_config(distro_loc: Path) -> ConfigInterfaceGeneric[ConfigProtocol]:
+def user_config(distro_loc: Path) -> ConfigInterfaceProtocol:
     """Context Values Interface, derived either from User's YAML or Default JSON
 
     Args:
@@ -618,7 +617,7 @@ def user_config(distro_loc: Path) -> ConfigInterfaceGeneric[ConfigProtocol]:
         path: t.Union[str, None]
 
         _data_file_path: t.Union[str, Path, None] = attr.ib(init=False, default=None)
-        _config_file_arg: t.Optional[str] = attr.ib(init=False, default=None)
+        _config_file_arg: t.Optional[Path] = attr.ib(init=False, default=None)
         _loader: DataLoader = attr.ib(init=False)
         _data: t.Mapping = attr.ib(init=False)
 
@@ -702,7 +701,7 @@ def user_config(distro_loc: Path) -> ConfigInterfaceGeneric[ConfigProtocol]:
             return self._data['project_slug']
 
         @property
-        def config_file(self) -> t.Union[str, None]:
+        def config_file(self) -> t.Union[Path, None]:
             return self._config_file_arg
 
     # NOTE: this offers client code: user_config[config_file]
@@ -795,7 +794,7 @@ def project_files() -> t.Callable[[t.Union[str, Path]], RelativePathsGenerator]:
 def get_expected_generated_files(
     distro_loc: Path,
     project_files: t.Callable[[t.Union[str, Path]], RelativePathsGenerator],
-) -> t.Callable[[ConfigInterfaceGeneric[ConfigProtocol]], t.Set[Path]]:
+) -> t.Callable[[ConfigInterfaceProtocol], t.Set[Path]]:
     """Derive Expected Files, Pre-Generation, for sanity checks Post-Generation.
 
     Callable accepting a Config, User's Yaml or Default Json, and returning the

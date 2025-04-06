@@ -100,7 +100,7 @@ def test_log_file_not_present_in_newly_generated_project(
     # exception misbehaviour fixed on Windows?
     import os
 
-    has_developer_mitigated_windows_glitch: bool = (
+    has_developer_mitigated_windows_glitch = (
         os.environ.get("BUG_LOG_DEL_WIN") != "permission_error"
     )
 

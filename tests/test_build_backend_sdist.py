@@ -380,16 +380,16 @@ def sdist_expected_correct_file_structure():
 @pytest.fixture
 def verify_file_size_within_acceptable_limits():
     class SizeAcceptanceCriteria(t.TypedDict):
-        expected_size: int
-        allowed_margin: t.Optional[int]
+        expected_size: t.Union[int, float]
+        allowed_margin: t.Optional[t.Union[int, float]]
 
     def _verify_file_size_within_acceptable_limits(
         file: Path, size_acceptance_criteria: SizeAcceptanceCriteria
     ) -> t.Tuple[bool, t.Optional[str]]:
         expected_size = size_acceptance_criteria["expected_size"]
         allowed_margin = size_acceptance_criteria.get(
-            "allowed_margin", 500
-        )  # default 500 Bytes
+            "allowed_margin"
+        ) or 500  # default 500 Bytes
 
         lower_accepted = expected_size - allowed_margin
         upper_accepted = expected_size + allowed_margin
@@ -511,7 +511,7 @@ def test_sdist_tar_gz_file_size_is_within_acceptable_lower_and_upper_limits_when
     # GIVEN we invoke our current build backend to create a source distribution
     sdist_built_at_runtime_with_uv: Path,
     verify_file_size_within_acceptable_limits: t.Callable[
-        [Path, t.Dict[str, int]], t.Tuple[bool, t.Optional[str]]
+        [Path, t.Dict[str, t.Union[int, float]]], t.Tuple[bool, t.Optional[str]]
     ],
 ):
     # Observed: [380KB, 442KB]
@@ -601,7 +601,7 @@ def test_sdist_tar_gz_file_size_is_within_acceptable_lower_and_upper_limits_when
     # GIVEN we invoke our current build backend to create a source distribution
     sdist_built_at_runtime_with_build: Path,
     verify_file_size_within_acceptable_limits: t.Callable[
-        [Path, t.Dict[str, int]], t.Tuple[bool, t.Optional[str]]
+        [Path, t.Dict[str, t.Union[int, float]]], t.Tuple[bool, t.Optional[str]]
     ],
 ):
     # Observed: [379KB, 442KB, 388]

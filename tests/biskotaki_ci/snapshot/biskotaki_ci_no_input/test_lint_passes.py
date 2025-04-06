@@ -77,6 +77,6 @@ def test_running_ruff_passes(snapshot_name, test_root):
         shutil.rmtree(snapshot_dir / '.tox' / 'ruff')
 
     # SANITY verify .tox/ruff exists, when using tox 3.x
-    assert res.returncode == 0, f"Failed to run `tox -e ruff` for {snapshot_name}\nSTDOUT:\n{res.stdout}\nSTDERR:\n{res.stderr}"
+    assert res.returncode == 0, f"Failed to run `tox -e ruff` for {snapshot_name}\nSTDOUT:\n{res.stdout.decode(encoding='utf-8')}\nSTDERR:\n{res.stderr.decode(encoding='utf-8')}"
 
     # VERIFIED that Generator emits python code that pass Ruff out of the box !!

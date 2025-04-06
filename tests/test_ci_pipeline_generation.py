@@ -45,10 +45,10 @@ def test_file_is_valid_yaml(config_file, user_config, mock_check, tmpdir):
 
     import yaml
 
-    def sanitize_load(s):
+    def sanitize_load(s: str):
         for w in "on".split():
             reg = re.compile(r'^(on):', re.MULTILINE)
-            s: str = reg.sub(r'\1<TEST>:', s)
+            s = reg.sub(r'\1<TEST>:', s)
         # >> Issue: [B506:yaml_load] Use of unsafe yaml load. Allows instantiation of arbitrary objects. Consider yaml.safe_load().
         # Severity: Medium   Confidence: High
         # CWE: CWE-20 (https://cwe.mitre.org/data/definitions/20.html)
