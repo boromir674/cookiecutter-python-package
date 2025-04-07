@@ -315,8 +315,17 @@ jobs:
 
       # Run tests
       - name: Run tests
+        shell: bash
         run: |
-          uv run pytest -ra -n auto --run-requires_uv --run-network_bound -vvs
+          if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
+            echo "[INFO] Activating virtual environment for Windows"
+            . .venv/Scripts/activate
+          else
+            # Linux and MacOS
+            echo "[INFO] Activating virtual environment for Linux/MacOS"
+            . .venv/bin/activate
+          fi
+          pytest -ra -n auto --run-requires_uv --run-network_bound -vvs
 
 ## PYDEPS
 
