@@ -310,6 +310,7 @@ jobs:
 
       # Install the Package Wheel
       - name: Install our Package Wheel
+        shell: bash
         run: uv pip install --no-deps dist/*.whl
 
       # Run tests
