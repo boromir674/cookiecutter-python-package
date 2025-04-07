@@ -1,7 +1,6 @@
 import json
 import logging
 import typing as t
-from abc import abstractmethod
 from typing import Pattern, Tuple
 
 from ..input_sanitization import Sanitize
