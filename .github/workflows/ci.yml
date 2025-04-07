@@ -275,8 +275,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # platform: [ubuntu-latest, macos-latest, windows-latest]
-        platform: [windows-latest]
+        platform: [ubuntu-latest, macos-latest, windows-latest]
+        # platform: [windows-latest]
         python-version: ['3.10']
     steps:
       - name: Set up Python ${{ matrix.python-version }}
