@@ -337,7 +337,7 @@ default_context:
             ),
             marks=pytest.mark.skipif(
                 not SHOULD_SKIP,
-                reason=f"Test is redundant, since we are running inside project",
+                reason="Test is redundant, since we are running inside project",
             ),
         ),
         (

@@ -434,8 +434,8 @@ def assert_sdist_exact_file_structure(tmp_path: Path):
         # Verify all expected files are present
         missing_files = set(map(Path, expected_file_structure)) - set(runtime_files)
         assert missing_files == set(), (
-            f"Expected no missing files compared to expected Source Distribution file structure, "
-            f"got [" + '\n'.join(map(str, missing_files)) + "]"
+            "Expected no missing files compared to expected Source Distribution file structure, "
+            "got [" + '\n'.join(map(str, missing_files)) + "]"
         )
 
         # Verify no extra files are present
@@ -443,8 +443,8 @@ def assert_sdist_exact_file_structure(tmp_path: Path):
             map(Path, expected_file_structure)
         )
         assert extra_runtime_files == set(), (
-            f"Expected no extra runtime files compared to expectations, "
-            f"got [" + '\n'.join(map(str, sorted(extra_runtime_files))) + "]"
+            "Expected no extra runtime files compared to expectations, "
+            "got [" + '\n'.join(map(str, sorted(extra_runtime_files))) + "]"
         )
 
         # NOW we have asserted that expected and runtime File structure are identical
@@ -497,9 +497,8 @@ def sdist_built_at_runtime_with_uv(run_subprocess) -> Path:
 
     # THIS IS ONLY FOR UV BUILD CMD
     assert re.search(r"Building source distribution\.\.\.", result.stderr)
-    pattern = r"Successfully built /tmp/pytest-of-[^/]+/pytest-\d+/test_build_produces_dist_with_\d+/dist-unit-test-sdist_built_at_runtime/cookiecutter_python-\d+\.\d+\.\d+\.tar\.gz"
-    pat = r"Successfully built /tmp/dist-unit-test-sdist_built_at_runtime/cookiecutter_python-.+\.tar\.gz"
-    assert re.search(pat, result.stderr)
+    pattern = r"Successfully built /tmp/dist-unit-test-sdist_built_at_runtime/cookiecutter_python-.+\.tar\.gz"
+    assert re.search(pattern, result.stderr)
 
     # After build, retrieve the tar.gz file
     tar_gz_file = list(OUT_DIR.glob("*.tar.gz"))
