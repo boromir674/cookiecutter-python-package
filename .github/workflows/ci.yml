@@ -24,18 +24,12 @@ on:
     branches:  # ALLOWED Base Branches
       - dev
 
-env:
-  # OVERRIDES
-  # OV_TEST_INTEGRATION: true
-  OV_TEST_UNIT: true
-
-
 jobs:
   # For Test Suite this pipeline aims for speed
   # so for feature branches test in edit mode
   # for 'high' branches (ie dev) run sdist/wheel tests
 
-  # RUN UNIT TESTS
+  # RUN UNIT TESTS in Edit MODE
   test_unit:
     if: ${{ vars.OV_TEST_UNIT != 'false' }}
     runs-on: ubuntu-latest
@@ -64,8 +58,8 @@ jobs:
 
       # here the .venv is built with the exact dependencies
 
-      # Install Package (without dependencies)
-      - name: 'Install Package without dependencies'
+      # Install Package in EDIT mode (without dependencies)
+      - name: 'Install Package in Edit mode, without dependencies'
         run: uv pip install --no-deps -e .
 
       # Run tests
@@ -75,8 +69,7 @@ jobs:
 
   # RUN INTEGRATION TESTS
   test_integration:
-    # needs: build
-    if: vars.OV_TEST_INTEGRATION == 'true'
+    if: vars.OV_TEST_INTEGRATION == 'true' || (github.event_name == 'pull_request' && github.base_ref == 'dev')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -125,6 +118,7 @@ jobs:
 
   # STATIC CODE ANALYSIS: mypy, ruff, isort, black, bandit, mccabe, prospector, etc
   sca:
+    # Unless override, default trigger is (only) on PR to dev
     if: vars.OV_SCA == 'true' || (vars.OV_SCA != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')
     uses: ./.github/workflows/sca-job.yml
     with:
@@ -133,9 +127,10 @@ jobs:
       force_styles: ${{ github.event_name == 'pull_request' && github.base_ref == 'dev' && 'true' || 'false' }}
 
   sample_matrix_test:
+    # Unless override, default trigger is (only) on PR to dev
+    if: vars.OV_MATRIX_TEST == 'true' || (vars.OV_MATRIX_TEST != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')
     runs-on: ${{ matrix.platform }}
     # trigger if event is pr to dev
-    if: github.event_name == 'pull_request' && github.base_ref == 'dev'
     strategy:
       fail-fast: false
       matrix:
@@ -147,13 +142,22 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v5
-        with:
-          version: "latest"
+      - name: Install uv
+        # if: matrix.platform != 'windows-latest'
+        shell: bash
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      # - name: Install the latest version of uv
+      #   uses: astral-sh/setup-uv@v5
+      #   with:
+      #     version: "latest"
 
       - uses: actions/checkout@v4
 
+      # Build Package Wheel
+      - run: uv build --wheel --out-dir dist
+
+      # Install exact Prod + Test dependencies
       - name: 'Export pinned Prod + Test dependencies'
         run: uv export --no-emit-project --no-dev --extra test --frozen --format requirements-txt -o requirements.txt
 
@@ -162,6 +166,7 @@ jobs:
           uv venv
           uv pip install -r requirements.txt
 
+      # Run tests
       - name: Run tests
         run: |
           uv run pytest -ra -n auto --run-slow --run-network_bound -vvs
@@ -174,7 +179,8 @@ jobs:
 
 ## Build an SDist and run against Test Suite
   sdist:
-    if: vars.OV_SDIST != 'false'
+    # Unless override, default trigger 'always'
+    if: vars.OV_SDIST != 'false' || (vars.OV_SDIST != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -213,7 +219,7 @@ jobs:
 
 ## Build a Wheel and run against Test Suite
   wheel:
-    if: vars.OV_WHEEL != 'false'
+    if: vars.OV_WHEEL != 'false'  # Unless override, default trigger 'always'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -252,7 +258,7 @@ jobs:
 
 ## Build all Wheels and run against Test Suite
   all_wheels:
-    if: vars.OV_ALL_WHEELS != 'false'
+    if: vars.OV_ALL_WHEELS != 'false'  # Unless override, default trigger 'always'
     runs-on: ubuntu-latest
     env:
       module_name: cookiecutter_python
