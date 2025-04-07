@@ -7,6 +7,7 @@ from software_patterns import SubclassRegistry
 class HandlerBuilderRegistry(SubclassRegistry[t.Callable]):
     pass
 
+
 class HandlerBuilder(metaclass=HandlerBuilderRegistry):
     pass
 

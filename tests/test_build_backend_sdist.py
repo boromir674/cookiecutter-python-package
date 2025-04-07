@@ -71,6 +71,7 @@ def run_subprocess():
 
     return execute_command_in_subprocess
 
+
 # EXPECTATIONS as fixture
 @pytest.fixture(scope="session")
 def sdist_expected_correct_file_structure():
@@ -388,9 +389,9 @@ def verify_file_size_within_acceptable_limits():
         file: Path, size_acceptance_criteria: SizeAcceptanceCriteria
     ) -> t.Tuple[bool, t.Optional[str]]:
         expected_size = size_acceptance_criteria["expected_size"]
-        allowed_margin = size_acceptance_criteria.get(
-            "allowed_margin"
-        ) or 500  # default 500 Bytes
+        allowed_margin = (
+            size_acceptance_criteria.get("allowed_margin") or 500
+        )  # default 500 Bytes
 
         lower_accepted = expected_size - allowed_margin
         upper_accepted = expected_size + allowed_margin
@@ -451,7 +452,6 @@ def assert_sdist_exact_file_structure(tmp_path: Path):
     return _verify_sdist_file_structure
 
 
-
 ######## uv + poetry as build backend ########
 @pytest.fixture(scope="module")
 def sdist_built_at_runtime_with_uv(run_subprocess) -> Path:
@@ -491,7 +491,9 @@ def sdist_built_at_runtime_with_uv(run_subprocess) -> Path:
     print("==========")
     print(result.stderr)
     print("==========")
-    assert result.exit_code == 0, f"Expected exit code 0, got {result.exit_code}\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}\n"
+    assert (
+        result.exit_code == 0
+    ), f"Expected exit code 0, got {result.exit_code}\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}\n"
 
     # THIS IS ONLY FOR UV BUILD CMD
     assert re.search(r"Building source distribution\.\.\.", result.stderr)
@@ -544,7 +546,6 @@ def test_sdist_includes_dirs_and_files_exactly_as_expected_when_produced_via_uv_
     assert_sdist_exact_file_structure(
         sdist_built_at_runtime_with_uv, sdist_expected_correct_file_structure
     )
-
 
 
 ######## Build + poetry as build backend ########

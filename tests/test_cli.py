@@ -39,7 +39,6 @@ class CheckReadthedocsFeatureNotSupported(Exception):
     pass
 
 
-
 # dynamic param 'marks' argument
 tests_root: Path = Path(__file__).parent
 
@@ -66,9 +65,13 @@ RUNNING_FROM_LOCAL_CHECKOUT: bool = (tests_root.parent / '.github').exists()
         ('without-interpreters', False),
         # Test Case 4: pytest-fixture.yaml
         ('tests/data/pytest-fixture.yaml', False),
-        
     ],
-    ids=['biskotaki', 'None', 'without-interpreters', 'pytest-fixture',],
+    ids=[
+        'biskotaki',
+        'None',
+        'without-interpreters',
+        'pytest-fixture',
+    ],
 )
 def test_cli_offline(
     config_file,

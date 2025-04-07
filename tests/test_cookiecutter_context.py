@@ -36,7 +36,8 @@ if not (MY_DIR.parent / '.github' / 'biskotaki.yaml').exists():
     SHOULD_SKIP = True
     # Create a temporary file to use as a test config and PRESERVE it on close!
     with tempfile.NamedTemporaryFile(mode='w+b', delete=False) as fp:
-        fp.write(b"""
+        fp.write(
+            b"""
 default_context:
     project_name: Biskotaki
     project_type: module
@@ -59,7 +60,8 @@ default_context:
     rtd_python_version: "3.10"
     cicd: 'experimental'
 
-""")
+"""
+        )
         fp.close()
         TEST_TIME_BISKOTAKI_CONFIG = Path(fp.name)
 
@@ -102,237 +104,241 @@ default_context:
         ),
         pytest.param(
             # TEST CASE 2 - Production Template included in Distribution
-            ('PROD_TEMPLATE',  # GIVEN the prod Template (cookiecutter.json + jinja Template project)
-            'BISKOTAKI_CONFIG',  # and the .github/biskotaki.yaml User Config YAML
-            # EXPECTED CONTEXT
-            OrderedDict(
-                [
-                    # 1st Item mapped in Jinja context with dedicated key
-                    (
-                        'cookiecutter',
-                        OrderedDict(
-                            [
-                                ('project_name', 'Biskotaki'),
-                                ('project_type', 'module'),
-                                ("project_slug", "biskotaki"),
-                                ("pkg_name", "biskotaki"),
-                                ("repo_name", "biskotaki"),
-                                ("readthedocs_project_slug", "biskotaki"),
-                                ("docker_image", "biskotaki"),
-                                ("full_name", "Konstantinos Lampridis"),
-                                ("author", "Konstantinos Lampridis"),
-                                ("author_email", 'k.lampridis@hotmail.com'),
-                                ("github_username", 'boromir674'),
-                                (
-                                    "project_short_description",
-                                    "Project generated using https://github.com/boromir674/cookiecutter-python-package",
-                                ),
-                                (
-                                    "pypi_subtitle",
-                                    "Project generated using https://github.com/boromir674/cookiecutter-python-package",
-                                ),
-                                ("release_date", RELEASE_DATE),
-                                ("year", str(datetime.datetime.now().year)),
-                                ("version", "0.0.1"),
-                                ("initialize_git_repo", "no"),
-                                (
-                                    "interpreters",
-                                    {
-                                        "supported-interpreters": [
-                                            "3.6",
-                                            "3.7",
-                                            "3.8",
-                                            "3.9",
-                                            "3.10",
-                                            "3.11",
-                                        ]
-                                    },
-                                ),
-                                ("docs_builder", "sphinx"),
-                                ("rtd_python_version", "3.10"),
-                                ('cicd', 'experimental'),
-                                # since the below is expected to be put in the extra context before calling cookiecutter, it gets below the rest of Variables
-                                # ('_template', str(cookie)),
-                            ]
+            (
+                'PROD_TEMPLATE',  # GIVEN the prod Template (cookiecutter.json + jinja Template project)
+                'BISKOTAKI_CONFIG',  # and the .github/biskotaki.yaml User Config YAML
+                # EXPECTED CONTEXT
+                OrderedDict(
+                    [
+                        # 1st Item mapped in Jinja context with dedicated key
+                        (
+                            'cookiecutter',
+                            OrderedDict(
+                                [
+                                    ('project_name', 'Biskotaki'),
+                                    ('project_type', 'module'),
+                                    ("project_slug", "biskotaki"),
+                                    ("pkg_name", "biskotaki"),
+                                    ("repo_name", "biskotaki"),
+                                    ("readthedocs_project_slug", "biskotaki"),
+                                    ("docker_image", "biskotaki"),
+                                    ("full_name", "Konstantinos Lampridis"),
+                                    ("author", "Konstantinos Lampridis"),
+                                    ("author_email", 'k.lampridis@hotmail.com'),
+                                    ("github_username", 'boromir674'),
+                                    (
+                                        "project_short_description",
+                                        "Project generated using https://github.com/boromir674/cookiecutter-python-package",
+                                    ),
+                                    (
+                                        "pypi_subtitle",
+                                        "Project generated using https://github.com/boromir674/cookiecutter-python-package",
+                                    ),
+                                    ("release_date", RELEASE_DATE),
+                                    ("year", str(datetime.datetime.now().year)),
+                                    ("version", "0.0.1"),
+                                    ("initialize_git_repo", "no"),
+                                    (
+                                        "interpreters",
+                                        {
+                                            "supported-interpreters": [
+                                                "3.6",
+                                                "3.7",
+                                                "3.8",
+                                                "3.9",
+                                                "3.10",
+                                                "3.11",
+                                            ]
+                                        },
+                                    ),
+                                    ("docs_builder", "sphinx"),
+                                    ("rtd_python_version", "3.10"),
+                                    ('cicd', 'experimental'),
+                                    # since the below is expected to be put in the extra context before calling cookiecutter, it gets below the rest of Variables
+                                    # ('_template', str(cookie)),
+                                ]
+                            ),
                         ),
-                    ),
-                    # 2nd Item mapped in Jinja context with dedicated key _cookiecutter
-                    (
-                        '_cookiecutter',
-                        {
-                            'project_name': 'Biskotaki',
-                            'project_type': [
-                                'module',
-                                'module+cli',
-                                'pytest-plugin',
-                            ],  # NOTE Difference to 1st Item
-                            "project_slug": "biskotaki",
-                            "pkg_name": "biskotaki",
-                            "repo_name": "biskotaki",
-                            "readthedocs_project_slug": "biskotaki",
-                            "docker_image": "biskotaki",
-                            "full_name": "Konstantinos Lampridis",
-                            "author": "Konstantinos Lampridis",
-                            "author_email": 'k.lampridis@hotmail.com',
-                            "github_username": 'boromir674',
-                            # "project_short_description": "Project generated using https://github.com/boromir674/cookiecutter-python-package",
-                            "project_short_description": "{{ cookiecutter.project_short_description }}",
-                            "pypi_subtitle": "Project generated using https://github.com/boromir674/cookiecutter-python-package",
-                            # current date in format '2024-03-04'
-                            # "release_date": datetime.datetime.now().strftime('%Y-%m-%d'),
-                            "release_date": "{% now 'utc', '%Y-%m-%d' %}",
-                            "year": "{% now 'utc', '%Y' %}",
-                            "version": "0.0.1",
-                            "initialize_git_repo": [
-                                'no',
-                                'yes',
-                            ],  # NOTE Difference to 1st Item
-                            "interpreters": {
-                                "supported-interpreters": [
-                                    "3.7",
+                        # 2nd Item mapped in Jinja context with dedicated key _cookiecutter
+                        (
+                            '_cookiecutter',
+                            {
+                                'project_name': 'Biskotaki',
+                                'project_type': [
+                                    'module',
+                                    'module+cli',
+                                    'pytest-plugin',
+                                ],  # NOTE Difference to 1st Item
+                                "project_slug": "biskotaki",
+                                "pkg_name": "biskotaki",
+                                "repo_name": "biskotaki",
+                                "readthedocs_project_slug": "biskotaki",
+                                "docker_image": "biskotaki",
+                                "full_name": "Konstantinos Lampridis",
+                                "author": "Konstantinos Lampridis",
+                                "author_email": 'k.lampridis@hotmail.com',
+                                "github_username": 'boromir674',
+                                # "project_short_description": "Project generated using https://github.com/boromir674/cookiecutter-python-package",
+                                "project_short_description": "{{ cookiecutter.project_short_description }}",
+                                "pypi_subtitle": "Project generated using https://github.com/boromir674/cookiecutter-python-package",
+                                # current date in format '2024-03-04'
+                                # "release_date": datetime.datetime.now().strftime('%Y-%m-%d'),
+                                "release_date": "{% now 'utc', '%Y-%m-%d' %}",
+                                "year": "{% now 'utc', '%Y' %}",
+                                "version": "0.0.1",
+                                "initialize_git_repo": [
+                                    'no',
+                                    'yes',
+                                ],  # NOTE Difference to 1st Item
+                                "interpreters": {
+                                    "supported-interpreters": [
+                                        "3.7",
+                                        "3.8",
+                                        "3.9",
+                                        "3.10",
+                                        "3.11",
+                                    ]
+                                },
+                                "docs_builder": [
+                                    'sphinx',
+                                    'mkdocs',
+                                ],  # NOTE Difference to 1st Item
+                                "rtd_python_version": [
+                                    "3.10",
                                     "3.8",
                                     "3.9",
-                                    "3.10",
                                     "3.11",
-                                ]
+                                    "3.12",
+                                ],
+                                'cicd': ['experimental', 'stable'],
                             },
-                            "docs_builder": [
-                                'sphinx',
-                                'mkdocs',
-                            ],  # NOTE Difference to 1st Item
-                            "rtd_python_version": [
-                                "3.10",
-                                "3.8",
-                                "3.9",
-                                "3.11",
-                                "3.12",
-                            ],
-                            'cicd': ['experimental', 'stable'],
-                        },
-                    ),
-                ]
-            )),
+                        ),
+                    ]
+                ),
+            ),
             marks=pytest.mark.skipif(
                 SHOULD_SKIP,
                 reason=f"'Test is impossible outside of project, automatically replaced by 'test_prod_template' test case. Current path: {MY_DIR}'",
-            )
+            ),
         ),
         pytest.param(
             # TEST CASE 3 - Production Template included in Distribution
-            ('PROD_TEMPLATE',  # GIVEN the prod Template (cookiecutter.json + jinja Template project)
-            'TEST_TIME_BISKOTAKI_CONFIG',  # and a User Config File that "should be identical" to .github/biskotaki.yaml
-            # EXPECTED CONTEXT
-            OrderedDict(
-                [
-                    # 1st Item mapped in Jinja context with dedicated key
-                    (
-                        'cookiecutter',
-                        OrderedDict(
-                            [
-                                ('project_name', 'Biskotaki'),
-                                ('project_type', 'module'),
-                                ("project_slug", "biskotaki"),
-                                ("pkg_name", "biskotaki"),
-                                ("repo_name", "biskotaki"),
-                                ("readthedocs_project_slug", "biskotaki"),
-                                ("docker_image", "biskotaki"),
-                                ("full_name", "Konstantinos Lampridis"),
-                                ("author", "Konstantinos Lampridis"),
-                                ("author_email", 'k.lampridis@hotmail.com'),
-                                ("github_username", 'boromir674'),
-                                (
-                                    "project_short_description",
-                                    "Project generated using https://github.com/boromir674/cookiecutter-python-package",
-                                ),
-                                (
-                                    "pypi_subtitle",
-                                    "Project generated using https://github.com/boromir674/cookiecutter-python-package",
-                                ),
-                                ("release_date", RELEASE_DATE),
-                                ("year", str(datetime.datetime.now().year)),
-                                ("version", "0.0.1"),
-                                ("initialize_git_repo", "no"),
-                                (
-                                    "interpreters",
-                                    {
-                                        "supported-interpreters": [
-                                            "3.6",
-                                            "3.7",
-                                            "3.8",
-                                            "3.9",
-                                            "3.10",
-                                            "3.11",
-                                        ]
-                                    },
-                                ),
-                                ("docs_builder", "sphinx"),
-                                ("rtd_python_version", "3.10"),
-                                ('cicd', 'experimental'),
-                                # since the below is expected to be put in the extra context before calling cookiecutter, it gets below the rest of Variables
-                                # ('_template', str(cookie)),
-                            ]
+            (
+                'PROD_TEMPLATE',  # GIVEN the prod Template (cookiecutter.json + jinja Template project)
+                'TEST_TIME_BISKOTAKI_CONFIG',  # and a User Config File that "should be identical" to .github/biskotaki.yaml
+                # EXPECTED CONTEXT
+                OrderedDict(
+                    [
+                        # 1st Item mapped in Jinja context with dedicated key
+                        (
+                            'cookiecutter',
+                            OrderedDict(
+                                [
+                                    ('project_name', 'Biskotaki'),
+                                    ('project_type', 'module'),
+                                    ("project_slug", "biskotaki"),
+                                    ("pkg_name", "biskotaki"),
+                                    ("repo_name", "biskotaki"),
+                                    ("readthedocs_project_slug", "biskotaki"),
+                                    ("docker_image", "biskotaki"),
+                                    ("full_name", "Konstantinos Lampridis"),
+                                    ("author", "Konstantinos Lampridis"),
+                                    ("author_email", 'k.lampridis@hotmail.com'),
+                                    ("github_username", 'boromir674'),
+                                    (
+                                        "project_short_description",
+                                        "Project generated using https://github.com/boromir674/cookiecutter-python-package",
+                                    ),
+                                    (
+                                        "pypi_subtitle",
+                                        "Project generated using https://github.com/boromir674/cookiecutter-python-package",
+                                    ),
+                                    ("release_date", RELEASE_DATE),
+                                    ("year", str(datetime.datetime.now().year)),
+                                    ("version", "0.0.1"),
+                                    ("initialize_git_repo", "no"),
+                                    (
+                                        "interpreters",
+                                        {
+                                            "supported-interpreters": [
+                                                "3.6",
+                                                "3.7",
+                                                "3.8",
+                                                "3.9",
+                                                "3.10",
+                                                "3.11",
+                                            ]
+                                        },
+                                    ),
+                                    ("docs_builder", "sphinx"),
+                                    ("rtd_python_version", "3.10"),
+                                    ('cicd', 'experimental'),
+                                    # since the below is expected to be put in the extra context before calling cookiecutter, it gets below the rest of Variables
+                                    # ('_template', str(cookie)),
+                                ]
+                            ),
                         ),
-                    ),
-                    # 2nd Item mapped in Jinja context with dedicated key _cookiecutter
-                    (
-                        '_cookiecutter',
-                        {
-                            'project_name': 'Biskotaki',
-                            'project_type': [
-                                'module',
-                                'module+cli',
-                                'pytest-plugin',
-                            ],  # NOTE Difference to 1st Item
-                            "project_slug": "biskotaki",
-                            "pkg_name": "biskotaki",
-                            "repo_name": "biskotaki",
-                            "readthedocs_project_slug": "biskotaki",
-                            "docker_image": "biskotaki",
-                            "full_name": "Konstantinos Lampridis",
-                            "author": "Konstantinos Lampridis",
-                            "author_email": 'k.lampridis@hotmail.com',
-                            "github_username": 'boromir674',
-                            # "project_short_description": "Project generated using https://github.com/boromir674/cookiecutter-python-package",
-                            "project_short_description": "{{ cookiecutter.project_short_description }}",
-                            "pypi_subtitle": "Project generated using https://github.com/boromir674/cookiecutter-python-package",
-                            # current date in format '2024-03-04'
-                            # "release_date": datetime.datetime.now().strftime('%Y-%m-%d'),
-                            "release_date": "{% now 'utc', '%Y-%m-%d' %}",
-                            "year": "{% now 'utc', '%Y' %}",
-                            "version": "0.0.1",
-                            "initialize_git_repo": [
-                                'no',
-                                'yes',
-                            ],  # NOTE Difference to 1st Item
-                            "interpreters": {
-                                "supported-interpreters": [
-                                    "3.7",
+                        # 2nd Item mapped in Jinja context with dedicated key _cookiecutter
+                        (
+                            '_cookiecutter',
+                            {
+                                'project_name': 'Biskotaki',
+                                'project_type': [
+                                    'module',
+                                    'module+cli',
+                                    'pytest-plugin',
+                                ],  # NOTE Difference to 1st Item
+                                "project_slug": "biskotaki",
+                                "pkg_name": "biskotaki",
+                                "repo_name": "biskotaki",
+                                "readthedocs_project_slug": "biskotaki",
+                                "docker_image": "biskotaki",
+                                "full_name": "Konstantinos Lampridis",
+                                "author": "Konstantinos Lampridis",
+                                "author_email": 'k.lampridis@hotmail.com',
+                                "github_username": 'boromir674',
+                                # "project_short_description": "Project generated using https://github.com/boromir674/cookiecutter-python-package",
+                                "project_short_description": "{{ cookiecutter.project_short_description }}",
+                                "pypi_subtitle": "Project generated using https://github.com/boromir674/cookiecutter-python-package",
+                                # current date in format '2024-03-04'
+                                # "release_date": datetime.datetime.now().strftime('%Y-%m-%d'),
+                                "release_date": "{% now 'utc', '%Y-%m-%d' %}",
+                                "year": "{% now 'utc', '%Y' %}",
+                                "version": "0.0.1",
+                                "initialize_git_repo": [
+                                    'no',
+                                    'yes',
+                                ],  # NOTE Difference to 1st Item
+                                "interpreters": {
+                                    "supported-interpreters": [
+                                        "3.7",
+                                        "3.8",
+                                        "3.9",
+                                        "3.10",
+                                        "3.11",
+                                    ]
+                                },
+                                "docs_builder": [
+                                    'sphinx',
+                                    'mkdocs',
+                                ],  # NOTE Difference to 1st Item
+                                "rtd_python_version": [
+                                    "3.10",
                                     "3.8",
                                     "3.9",
-                                    "3.10",
                                     "3.11",
-                                ]
+                                    "3.12",
+                                ],
+                                'cicd': ['experimental', 'stable'],
                             },
-                            "docs_builder": [
-                                'sphinx',
-                                'mkdocs',
-                            ],  # NOTE Difference to 1st Item
-                            "rtd_python_version": [
-                                "3.10",
-                                "3.8",
-                                "3.9",
-                                "3.11",
-                                "3.12",
-                            ],
-                            'cicd': ['experimental', 'stable'],
-                        },
-                    ),
-                ]
-            )),
+                        ),
+                    ]
+                ),
+            ),
             marks=pytest.mark.skipif(
                 not SHOULD_SKIP,
                 reason=f"Test is redundant, since we are running inside project",
-            )
+            ),
         ),
         (
             # TEST CASE 4 - Production Template + Gold Standard User Config
@@ -487,7 +493,7 @@ def template_test_case(
 
     # ADD to Expected CONTEXT (ordered): template dir or url
     expected_context[C_KEY]['_template'] = _expected_cookiecutter_parent_dir
-    
+
     # '_output_dir' key is ADDED HERE (expected_context[C_KEY]['_template']) dynamically
 
     # ADD to Expected CONTEXT (ordered): include repo dir or url in the context dict
@@ -547,10 +553,13 @@ def template_test_case(
                 else:
                     yield k, v
                     yield '_output_dir', str(folder_path.absolute())
-        return OrderedDict([
-            (C_KEY, OrderedDict([(k, v) for k, v in gen()])),
-            ('_cookiecutter', expected_context['_cookiecutter']),
-        ])
+
+        return OrderedDict(
+            [
+                (C_KEY, OrderedDict([(k, v) for k, v in gen()])),
+                ('_cookiecutter', expected_context['_cookiecutter']),
+            ]
+        )
 
     return {
         'cookie': COOKIE_TEMPLATE_DIR,
@@ -590,9 +599,7 @@ def test_cookiecutter_generates_context_with_expected_values(
     expected_extra_context_passed = None
     if 'interpreters' in EXPECTED_CONTEXT['cookiecutter']:
         expected_extra_context_passed = {
-            'interpreters': EXPECTED_CONTEXT['cookiecutter'][
-                'interpreters'
-            ]
+            'interpreters': EXPECTED_CONTEXT['cookiecutter']['interpreters']
         }
 
     from cookiecutter.generate import generate_context
@@ -634,7 +641,9 @@ def test_cookiecutter_generates_context_with_expected_values(
     # THEN the internal generate_context of coociecutter was called with expected runtime input values
 
     generate_context_mock.assert_called_with(
-        context_file=str(Path(EXPECTED_CONTEXT['cookiecutter']['_template']) / 'cookiecutter.json'),
+        context_file=str(
+            Path(EXPECTED_CONTEXT['cookiecutter']['_template']) / 'cookiecutter.json'
+        ),
         default_context=expected_default_context_passed,
         extra_context=expected_extra_context_passed,
     )
@@ -658,9 +667,7 @@ def test_cookiecutter_generates_context_with_expected_values(
 
     # AND the internal data in jinja context map under 'cookiecutter' key are as expected
     assert len(prod_result[C_KEY]) == len(EXPECTED_CONTEXT[C_KEY])
-    for p1, p2 in zip(
-        prod_result[C_KEY].items(), EXPECTED_CONTEXT[C_KEY].items()
-    ):
+    for p1, p2 in zip(prod_result[C_KEY].items(), EXPECTED_CONTEXT[C_KEY].items()):
         assert p1[0] == p2[0], (
             "All PROD Keys: [\n"
             + '\n'.join(prod_result[C_KEY].keys())
@@ -700,9 +707,7 @@ def test_cookiecutter_generates_context_with_expected_values(
     assert isinstance(prod_result['_cookiecutter'], dict)
 
     # AND the internal data in jinja context map under '_cookiecutter' key are as expected
-    assert len(prod_result['_cookiecutter']) == len(
-        EXPECTED_CONTEXT['_cookiecutter']
-    )
+    assert len(prod_result['_cookiecutter']) == len(EXPECTED_CONTEXT['_cookiecutter'])
     for p1, p2 in zip(
         prod_result['_cookiecutter'].items(),
         EXPECTED_CONTEXT['_cookiecutter'].items(),

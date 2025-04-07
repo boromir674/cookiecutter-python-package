@@ -304,6 +304,7 @@ def request_factory(distro_loc) -> t.Type[EmulatedRequestFactory]:
 
     class HookRequestFacility(SubclassRegistry[EmulatedHookRequest]):
         pass
+
     class HookRequest(metaclass=HookRequestFacility):
         pass
 
@@ -562,6 +563,7 @@ class ConfigProtocol(Protocol):
     data: t.Mapping
     config_file: t.Union[str, None]
 
+
 class ConfigInterfaceProtocol(t.Protocol):
     def __getitem__(self, file_path_str: t.Union[str, None]) -> ConfigProtocol: ...
 
@@ -633,7 +635,9 @@ def user_config(distro_loc: Path) -> ConfigInterfaceProtocol:
                 }
 
                 data_file = Path(my_dir) / '..' / config_files.get(self.path, self.path)
-                assert data_file.exists(), f"{data_file} does not exist. Possilbly running test suite outside of source directory."
+                assert (
+                    data_file.exists()
+                ), f"{data_file} does not exist. Possilbly running test suite outside of source directory."
                 assert data_file.is_file()
 
                 self._config_file_arg = data_file

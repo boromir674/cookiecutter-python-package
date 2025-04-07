@@ -22,7 +22,9 @@ def load_yaml(config_file) -> t.MutableMapping:
     return yaml_dict
 
 
-def get_interpreters_from_yaml(config_file: str) -> t.Optional[t.Mapping[str, t.Sequence[str]]]:
+def get_interpreters_from_yaml(
+    config_file: str,
+) -> t.Optional[t.Mapping[str, t.Sequence[str]]]:
     """Parse the 'interpreters' variable out of the user's config yaml file.
 
     Args:

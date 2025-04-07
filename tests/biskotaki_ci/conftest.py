@@ -36,7 +36,8 @@ def biskotaki_ci_project(
 
         # Create a temporary file to use as a test config and PRESERVE it on close!
         with tempfile.NamedTemporaryFile(mode='w+b', delete=False) as fp:
-            fp.write(b"""
+            fp.write(
+                b"""
 default_context:
     project_name: Biskotaki
     project_type: module
@@ -59,13 +60,14 @@ default_context:
     rtd_python_version: "3.10"
     cicd: 'experimental'
 
-""")
+"""
+            )
             fp.close()
             TEST_TIME_BISKOTAKI_CONFIG = Path(fp.name)
         biskotaki_yaml = TEST_TIME_BISKOTAKI_CONFIG
     else:
         #### else RUNNING_FROM_LOCAL_CHECKOUT ####
-        
+
         biskotaki_yaml = test_root.parent / '.github' / 'biskotaki.yaml'
         assert biskotaki_yaml.exists()
         assert biskotaki_yaml.is_file()

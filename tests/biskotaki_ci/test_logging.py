@@ -10,7 +10,7 @@ def biskotaki_ci_like_gen_proj(tmp_path):
 
     # GIVEN any existing valid config file to use in generation
     config_file: Path = tmp_path / 'any_valid_config_file.yml'
-    
+
     config_file.write_text(
         """
 default_context:

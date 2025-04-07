@@ -25,10 +25,14 @@ RUNNING_FROM_LOCAL_CHECKOUT: bool = (tests_root.parent / '.github').exists()
 @pytest.mark.parametrize(
     'config_file, expected_interpreters',
     [
-        pytest.param('.github/biskotaki.yaml', ['3.7', '3.8', '3.9', '3.10', '3.11'],             marks=pytest.mark.skipif(
+        pytest.param(
+            '.github/biskotaki.yaml',
+            ['3.7', '3.8', '3.9', '3.10', '3.11'],
+            marks=pytest.mark.skipif(
                 not RUNNING_FROM_LOCAL_CHECKOUT,
                 reason=f"'Running tests from within local checkout is required to test this feature. Current path: {tests_root}'",
-            ),),
+            ),
+        ),
         (None, ['3.6', '3.7', '3.8', '3.9', '3.10', '3.11']),
         (
             'tests/data/biskotaki-without-interpreters.yaml',
@@ -126,10 +130,7 @@ def module_file():
         def _get_file_path(*file_path: t.Union[str, Path]):
             l1: t.List[t.Union[str, Path]] = [p, SRC_DIR_NAME, python_module]
 
-            return reduce(
-                lambda i, j: Path(i) / Path(j),
-                l1 + [_ for _ in file_path]
-            )
+            return reduce(lambda i, j: Path(i) / Path(j), l1 + [_ for _ in file_path])
 
         return _get_file_path
 
@@ -139,7 +140,6 @@ def module_file():
 @pytest.fixture(params=[x for x in CLI_RELATED_FILES])
 def cli_related_file_name(request):
     return request.param
-
 
 
 def test_enabling_add_cli_templated_variable(
