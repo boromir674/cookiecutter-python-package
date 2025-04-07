@@ -468,7 +468,6 @@ def sdist_built_at_runtime_with_uv(run_subprocess) -> Path:
 
     # result = run_subprocess('uv', 'python', 'pin', sys.executable, check=False)
     # assert result.exit_code == 0, f"Expected exit code 0, got {result.exit_code}\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}\n"
-
     # invoke uv as build frontend to whatever [build-system] is in pyproject.toml
     COMMAND_LINE_ARGS: t.List[str] = [
         # 'uv', 'python', 'pin', sys.executable, '&&',
