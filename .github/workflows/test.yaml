@@ -23,6 +23,7 @@ on:
     branches:
       - "*"
       - '!migrate-to-uv'
+      - '!ci-redesign'
     tags:
       - v*
 
