@@ -496,7 +496,7 @@ def sdist_built_at_runtime_with_uv(run_subprocess) -> Path:
 
     # THIS IS ONLY FOR UV BUILD CMD
     assert re.search(r"Building source distribution\.\.\.", result.stderr)
-    pattern = r"Successfully built /tmp/dist-unit-test-sdist_built_at_runtime/cookiecutter_python-.+\.tar\.gz"
+    pattern = r"Successfully built .+cookiecutter_python-.+\.tar\.gz"
     assert re.search(pattern, result.stderr)
 
     # After build, retrieve the tar.gz file
@@ -585,7 +585,7 @@ def sdist_built_at_runtime_with_build(run_subprocess) -> Path:
     import re
 
     assert re.search(r"Building sdist\.\.\.", result.stdout)
-    pattern = r"Successfully built .+\.tar\.gz"
+    pattern = r"Successfully built .+cookiecutter_python-.+\.tar\.gz"
     assert re.search(pattern, result.stdout)
 
     # After build, retrieve the tar.gz file
