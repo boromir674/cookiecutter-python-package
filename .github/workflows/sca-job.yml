@@ -81,10 +81,131 @@ jobs:
         run: uvx prospector[with_pyroma] tests
 
       ## Bandit ##
-      - name: Run Bandit for Security Analysis
-        if: always()
+    #   - name: Run Bandit for Security Analysis
+    #     if: always()
+    #     run: |
+    #       uv venv
+    #       uv pip install 'bandit[toml]' 'bandit-sarif-formatter==1.1.1'
+    #       . .venv/bin/activate
+    #       bandit -r -c pyproject.toml -x 'src/cookiecutter_python/{{ cookiecutter.project_slug }}/' src
+    # continue-on-error: ${{ inputs.allow_failure }}
+
+
+  ### BANDIT - Analysis ###
+  bandit:
+    name: "Bandit: Security Analysis"
+    runs-on: ubuntu-latest
+    env:
+      _SARIF_FILE: results-sarif.json
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ inputs.python_version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python_version }}
+
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: Install dependencies
         run: |
           uv venv
           uv pip install 'bandit[toml]' 'bandit-sarif-formatter==1.1.1'
-          uv run bandit -r -c pyproject.toml -x 'src/cookiecutter_python/{{ cookiecutter.project_slug }}/' src
-    continue-on-error: ${{ inputs.allow_failure }}
+
+      ## Run BANDIT to identify CWEs ##
+      - name: 'Bandit: Security Analysis'
+        run: |
+          . .venv/bin/activate
+          bandit -r -c pyproject.toml -q -f sarif -o "${{ env._SARIF_FILE }}" src tests || 'true'
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@main
+        with:
+          name: ${{ env._SARIF_FILE }}
+          path: ${{ env._SARIF_FILE }}
+          if-no-files-found: error
+
+      - uses: github/codeql-action/init@v3
+        with:
+          # config-file: ./.github/codeql/codeql-config.yml  # or ${{ vars.VAR_CONTENT }} !
+          config: |
+            paths-ignore:
+              - 'src/cookiecutter_python/{{ cookiecutter.project_slug }}/'
+              - 'src/cookiecutter_python/{{ cookiecutter.project_slug }}/**'
+              - 'src/cookiecutter_python/{{ cookiecutter.project_slug }}/**/*'
+              - 'src/cookiecutter_python/{{ cookiecutter.project_slug }}/*'
+              - 'src/cookiecutter_python/{{ cookiecutter.project_slug }}/tests/test_cli.py'
+
+            # disable-default-queries: true
+            # queries:
+            #   - uses: security-extended
+
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ env._SARIF_FILE }}
+
+      - name: 'Parse Bandit Results, and prepare comparing LOW, MEDIUM, and HIGH'
+        run: |
+          # Parse Totals Object
+          TOTALS=$(jq '.runs[0].properties.metrics._totals' "${{ env._SARIF_FILE }}")
+
+          # Find CWE's of HIGH Severity
+          HIGH=$(echo $TOTALS | jq '.["SEVERITY.HIGH"]')
+
+          # Find CWE's of MEDIUM Severity
+          MEDIUM=$(echo $TOTALS | jq '.["SEVERITY.MEDIUM"]')
+
+          # Find CWE's of LOW Severity
+          LOW=$(echo $TOTALS | jq '.["SEVERITY.LOW"]')
+
+          # Report and Env
+          echo HIGH=$HIGH >> $GITHUB_ENV
+          echo MEDIUM=$MEDIUM >> $GITHUB_ENV
+          echo LOW=$LOW >> $GITHUB_ENV
+
+      - name: Write to Job Step Summary
+        run: |
+          echo "## Bandit - Results" >> $GITHUB_STEP_SUMMARY
+          echo "HIGH: $HIGH" >> $GITHUB_STEP_SUMMARY
+          echo "MEDIUM: $MEDIUM" >> $GITHUB_STEP_SUMMARY
+          echo "LOW: $LOW" >> $GITHUB_STEP_SUMMARY
+
+      - name: Destructure Input Acceptance Thresholds
+        run: |
+          MAX_HIGH=$(echo '${{ inputs.bandit }}' | jq -r '.h')
+          MAX_MEDIUM=$(echo '${{ inputs.bandit }}' | jq -r '.m')
+          MAX_LOW=$(echo '${{ inputs.bandit }}' | jq -r '.l')
+
+          echo "## User Acceptable - Thresholds" >> $GITHUB_STEP_SUMMARY
+          echo "HIGH: $MAX_HIGH" >> $GITHUB_STEP_SUMMARY
+          echo "MEDIUM: $MAX_MEDIUM" >> $GITHUB_STEP_SUMMARY
+          echo "LOW: $MAX_LOW" >> $GITHUB_STEP_SUMMARY
+
+          echo MAX_HIGH=$MAX_HIGH >> $GITHUB_ENV
+          echo MAX_MEDIUM=$MAX_MEDIUM >> $GITHUB_ENV
+          echo MAX_LOW=$MAX_LOW >> $GITHUB_ENV
+
+      #### JOB STATUS ####
+      - name: "If we found more than ${{ env.MAX_HIGH }} HIGH Severity CWE's, Fail!"
+        if: ${{ env.MAX_HIGH < env.HIGH }}
+        run: |
+          echo "Bandit Failed! | Found more HIGH Severity CWE's in code than allowed/acceptable amount."
+          echo "[ERROR] **HIGH**: $HIGH > $MAX_HIGH" >> $GITHUB_STEP_SUMMARY
+          exit 1
+
+      - name: "If we found more than ${{ env.MAX_MEDIUM }} MEDIUM Severity CWE's, Fail!"
+        if: ${{ env.MAX_MEDIUM < env.MEDIUM }}
+        run: |
+          echo "Bandit Failed! | Found more MEDIUM Severity CWE's in code than allowed/acceptable amount."
+          echo "[ERROR] **MEDIUM**: $MEDIUM > $MAX_MEDIUM" >> $GITHUB_STEP_SUMMARY
+          exit 1
+
+      - name: "If we found more than ${{ env.MAX_LOW }} LOW Severity CWE's, Fail!"
+        if: ${{ env.MAX_LOW < env.LOW }}
+        run: |
+          echo "Bandit Failed! | Found more LOW Severity CWE's in code than allowed/acceptable amount."
+          echo "[ERROR] **LOW**: $LOW > $MAX_LOW" >> $GITHUB_STEP_SUMMARY
+          exit 1
+
+      - run: echo "**Bandit Passed!**" >> $GITHUB_STEP_SUMMARY
