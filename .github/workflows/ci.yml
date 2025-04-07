@@ -285,14 +285,14 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install uv
-        # if: matrix.platform != 'windows-latest'
-        shell: bash
+        if: matrix.platform != 'windows-latest'
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
-      # - name: Install the latest version of uv
-      #   uses: astral-sh/setup-uv@v5
-      #   with:
-      #     version: "latest"
+      - name: Install the latest version of uv
+        if: matrix.platform == 'windows-latest'
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
 
       - uses: actions/checkout@v4
 
