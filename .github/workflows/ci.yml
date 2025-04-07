@@ -29,7 +29,9 @@ jobs:
   # so for feature branches test in edit mode
   # for 'high' branches (ie dev) run sdist/wheel tests
 
-  # RUN UNIT TESTS in Edit MODE
+  ### FASTER JOBS ###
+
+  # INSTALL PACKAGE in Edit mode and run Test Suite against it
   test_unit:
     if: ${{ vars.OV_TEST_UNIT != 'false' }}
     runs-on: ubuntu-latest
@@ -66,120 +68,9 @@ jobs:
       - name: 'Run tests'
         run: uv run pytest -ra -n auto
 
-
-  # RUN INTEGRATION TESTS
-  test_integration:
-    if: vars.OV_TEST_INTEGRATION == 'true' || (github.event_name == 'pull_request' && github.base_ref == 'dev')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
-      # Install uv to manage pinned versions
-      - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v5
-        with:
-          version: "latest"
-
-      # Export "pinned" (exact) dependencies' versions in requirements.txt format
-      - name: 'Export pinned Prod + Test dependencies'
-        run: uv export --no-emit-project --no-dev --extra test --frozen --format requirements-txt -o requirements.txt
-
-      - run: uv venv
-
-      # Install dependencies in virtualenv
-      - name: 'Install "Prod + Test" dependencies'
-        run: uv pip install -r requirements.txt
-
-      # here the .venv is built with the exact dependencies
-
-      # Install Package (without dependencies)
-      - name: 'Install Package without dependencies'
-        run: uv pip install --no-deps -e .
-
-      # Run Integration tests
-      - name: 'Run Integration tests'
-        if: always()
-        run: |
-          # leverage uv to install other runtime test dependencies in the system site-packages!
-
-          uv pip install 'tox<4.0'  # integration tests dependency
-
-          # Isolate flaky tests
-          uv run pytest -ra -vvs --run-slow -k via_build_module
-          uv run pytest -ra -vvs --run-slow -k test_build_creates_artifacts
-
-          # Run eveything once again for sanity
-          uv run pytest -ra -n auto --run-requires_uv --run-slow --run-network_bound -vvs -k 'test_cli or build_backend_sdist or test_build_creates_artifacts or test_lint_passes'
-
-
-  # STATIC CODE ANALYSIS: mypy, ruff, isort, black, bandit, mccabe, prospector, etc
-  sca:
-    # Unless override, default trigger is (only) on PR to dev
-    if: vars.OV_SCA == 'true' || (vars.OV_SCA != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')
-    uses: ./.github/workflows/sca-job.yml
-    with:
-      python_version: '3.10'
-      allow_failure: ${{ github.event_name == 'pull_request' && github.base_ref == 'dev' && 'false' || 'true' }}
-      force_styles: ${{ github.event_name == 'pull_request' && github.base_ref == 'dev' && 'true' || 'false' }}
-
-  sample_matrix_test:
-    # Unless override, default trigger is (only) on PR to dev
-    if: vars.OV_MATRIX_TEST == 'true' || (vars.OV_MATRIX_TEST != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')
-    runs-on: ${{ matrix.platform }}
-    # trigger if event is pr to dev
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: [3.10]
-    steps:
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Install uv
-        # if: matrix.platform != 'windows-latest'
-        shell: bash
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
-
-      # - name: Install the latest version of uv
-      #   uses: astral-sh/setup-uv@v5
-      #   with:
-      #     version: "latest"
-
-      - uses: actions/checkout@v4
-
-      # Build Package Wheel
-      - run: uv build --wheel --out-dir dist
-
-      # Install exact Prod + Test dependencies
-      - name: 'Export pinned Prod + Test dependencies'
-        run: uv export --no-emit-project --no-dev --extra test --frozen --format requirements-txt -o requirements.txt
-
-      - name: Install dependencies
-        run: |
-          uv venv
-          uv pip install -r requirements.txt
-
-      # Run tests
-      - name: Run tests
-        run: |
-          uv run pytest -ra -n auto --run-slow --run-network_bound -vvs
-
-## PYDEPS
-
-## TYPE CHECK
-
-## DOCS
-
-## Build an SDist and run against Test Suite
+  # Build PACKAGE SDist and run Test Suite against it
+  ## Unless override, default trigger 'always'
   sdist:
-    # Unless override, default trigger 'always'
     if: vars.OV_SDIST != 'false' || (vars.OV_SDIST != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')
     runs-on: ubuntu-latest
     steps:
@@ -217,7 +108,8 @@ jobs:
       - name: 'Run tests'
         run: uv run pytest -ra -n auto
 
-## Build a Wheel and run against Test Suite
+  # BUILD PACKAGE Wheel and run Tests Suite against it
+  ## Unless override, default trigger 'always'
   wheel:
     if: vars.OV_WHEEL != 'false'  # Unless override, default trigger 'always'
     runs-on: ubuntu-latest
@@ -256,7 +148,8 @@ jobs:
       - name: 'Run tests'
         run: uv run pytest -ra -n auto
 
-## Build all Wheels and run against Test Suite
+  # BUILD ALL WHEELS and run Test Suite against them
+  ## Unless override, default trigger 'always'
   all_wheels:
     if: vars.OV_ALL_WHEELS != 'false'  # Unless override, default trigger 'always'
     runs-on: ubuntu-latest
@@ -312,3 +205,116 @@ jobs:
       # Run tests
       - name: 'Run tests'
         run: uv run pytest -ra -n auto
+
+  # STATIC CODE ANALYSIS: mypy, ruff, isort, black, bandit, mccabe, prospector, etc
+  ## Unless override, default trigger is (only) on PR to dev
+  sca:
+    # Unless override, default trigger is (only) on PR to dev
+    if: vars.OV_SCA == 'true' || (vars.OV_SCA != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')
+    uses: ./.github/workflows/sca-job.yml
+    with:
+      python_version: '3.10'
+      allow_failure: ${{ github.event_name == 'pull_request' && github.base_ref == 'dev' && 'false' || 'true' }}
+      force_styles: ${{ github.event_name == 'pull_request' && github.base_ref == 'dev' && 'true' || 'false' }}
+
+
+  # RUN INTEGRATION TESTS: slower due to automated installations involved via pip
+  ## Unless override, default trigger is (only) on PR to dev
+  test_integration:
+    if: vars.OV_TEST_INTEGRATION == 'true' || (vars.OV_SCA != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      # Install uv to manage pinned versions
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      # Export "pinned" (exact) dependencies' versions in requirements.txt format
+      - name: 'Export pinned Prod + Test dependencies'
+        run: uv export --no-emit-project --no-dev --extra test --frozen --format requirements-txt -o requirements.txt
+
+      - run: uv venv
+
+      # Install dependencies in virtualenv
+      - name: 'Install "Prod + Test" dependencies'
+        run: uv pip install -r requirements.txt
+
+      # here the .venv is built with the exact dependencies
+
+      # Install Package (without dependencies)
+      - name: 'Install Package without dependencies'
+        run: uv pip install --no-deps -e .
+
+      # Run Integration tests
+      - name: 'Run Integration tests'
+        if: always()
+        run: |
+          # leverage uv to install other runtime test dependencies in the system site-packages!
+
+          uv pip install 'tox<4.0'  # integration tests dependency
+
+          # Isolate flaky tests
+          uv run pytest -ra -vvs --run-slow -k via_build_module
+          uv run pytest -ra -vvs --run-slow -k test_build_creates_artifacts
+
+          # Run eveything once again for sanity
+          uv run pytest -ra -n auto --run-requires_uv --run-slow --run-network_bound -vvs -k 'test_cli or build_backend_sdist or test_build_creates_artifacts or test_lint_passes'
+
+  # CROSS PLATFORM TESTING: slower due to Test Matrix containing Windows Job
+  ## Unless override, default trigger is (only) on PR to dev
+  sample_matrix_test:
+    if: vars.OV_MATRIX_TEST == 'true' || (vars.OV_MATRIX_TEST != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')
+    runs-on: ${{ matrix.platform }}
+    # trigger if event is pr to dev
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: [3.10]
+    steps:
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install uv
+        # if: matrix.platform != 'windows-latest'
+        shell: bash
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      # - name: Install the latest version of uv
+      #   uses: astral-sh/setup-uv@v5
+      #   with:
+      #     version: "latest"
+
+      - uses: actions/checkout@v4
+
+      # Build Package Wheel
+      - run: uv build --wheel --out-dir dist
+
+      # Install exact Prod + Test dependencies
+      - name: 'Export pinned Prod + Test dependencies'
+        run: uv export --no-emit-project --no-dev --extra test --frozen --format requirements-txt -o requirements.txt
+
+      - name: Install dependencies
+        run: |
+          uv venv
+          uv pip install -r requirements.txt
+
+      # Run tests
+      - name: Run tests
+        run: |
+          uv run pytest -ra -n auto --run-slow --run-network_bound -vvs
+
+## PYDEPS
+
+## TYPE CHECK
+
+## DOCS
