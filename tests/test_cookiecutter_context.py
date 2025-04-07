@@ -1,9 +1,10 @@
 import datetime
+import tempfile
 import typing as t
 from collections import OrderedDict
 from pathlib import Path
 from unittest.mock import patch
-import tempfile
+
 import pytest
 
 MY_DIR = Path(__file__).parent

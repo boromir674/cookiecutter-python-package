@@ -1,6 +1,7 @@
+import typing as t
+
 import click
 from software_patterns import SubclassRegistry
-import typing as t
 
 
 class HandlerBuilderRegistry(SubclassRegistry[t.Callable]):

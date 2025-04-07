@@ -1,5 +1,6 @@
-from typing import Any, Iterable, List, Union
 import typing as t
+from typing import Any, Iterable, List, Union
+
 import attr
 
 from .check_server_result import CheckWebServerResult

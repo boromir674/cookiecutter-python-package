@@ -33,6 +33,7 @@ def biskotaki_ci_project(
 
     if not (test_root.parent / '.github' / 'biskotaki.yaml').exists():
         import tempfile
+
         # Create a temporary file to use as a test config and PRESERVE it on close!
         with tempfile.NamedTemporaryFile(mode='w+b', delete=False) as fp:
             fp.write(b"""
