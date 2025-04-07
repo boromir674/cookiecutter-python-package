@@ -46,3 +46,6 @@ WIP.sh
 \.mutmut-cache
 html/
 dist_docs/
+coverage\.xml
+coverage\.*
+check-yaml
