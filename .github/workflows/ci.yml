@@ -329,7 +329,7 @@ jobs:
             echo "[INFO] Activating virtual environment for Linux/MacOS"
             . .venv/bin/activate
           fi
-          pytest -ra --run-requires_uv --run-network_bound -vvs -k 'test_cookiecutter_context[gold_standard]'
+          pytest -ra --run-requires_uv --run-network_bound -vvs -k 'context_with_expected_values[gold_standard]'
 
 ## PYDEPS
 
