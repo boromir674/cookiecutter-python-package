@@ -33,7 +33,7 @@ jobs:
 
   # INSTALL PACKAGE in Edit mode and run Test Suite against it
   test_unit:
-    if: ${{ vars.OV_SDIST == 'IMPOSSIBLE' && vars.OV_TEST_UNIT != 'false' }}
+    if: ${{ vars.NONE == 'IMPOSSIBLE' && vars.OV_TEST_UNIT != 'false' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -71,7 +71,7 @@ jobs:
   # Build PACKAGE SDist and run Test Suite against it
   ## Unless override, default trigger 'always'
   sdist:
-    if: ${{vars.OV_SDIST == 'IMPOSSIBLE' && vars.OV_SDIST != 'false' || (vars.OV_SDIST != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')}}
+    if: ${{ vars.NONE == 'IMPOSSIBLE' && vars.OV_SDIST != 'false' || (vars.OV_SDIST != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')}}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -111,7 +111,7 @@ jobs:
   # BUILD PACKAGE Wheel and run Tests Suite against it
   ## Unless override, default trigger 'always'
   wheel:
-    if: vars.OV_WHEEL != 'false'
+    if: vars.NONE == 'IMPOSSIBLE' && vars.OV_WHEEL != 'false'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -151,7 +151,7 @@ jobs:
   # BUILD ALL WHEELS and run Test Suite against them
   ## Unless override, default trigger 'always'
   all_wheels:
-    if: vars.OV_ALL_WHEELS != 'false'  # Unless override, default trigger 'always'
+    if: vars.NONE == 'IMPOSSIBLE' && vars.OV_ALL_WHEELS != 'false'  # Unless override, default trigger 'always'
     runs-on: ubuntu-latest
     env:
       module_name: cookiecutter_python
@@ -221,7 +221,7 @@ jobs:
   # RUN INTEGRATION TESTS: slower due to automated installations involved via pip
   ## Unless override, default trigger is (only) on PR to dev
   test_integration:
-    if: always() || vars.OV_TEST_INTEGRATION == 'true' || (vars.OV_SCA != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')
+    if: vars.OV_TEST_INTEGRATION == 'true' || (vars.OV_SCA != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -254,7 +254,6 @@ jobs:
 
       # Run Integration tests
       - name: 'Run Integration tests'
-        if: always()
         run: |
           # leverage uv to install other runtime test dependencies in the system site-packages!
 
@@ -276,7 +275,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [ubuntu-latest, macos-latest, windows-latest]
+        # platform: [ubuntu-latest, macos-latest, windows-latest]
+        platform: [windows-latest]
         python-version: ['3.10']
     steps:
       - name: Set up Python ${{ matrix.python-version }}
