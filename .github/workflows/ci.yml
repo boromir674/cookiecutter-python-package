@@ -316,6 +316,10 @@ jobs:
       # Run tests
       - name: Run tests
         shell: bash
+        env:
+          # log deletion post hook fails on windows, due to permission error! (other process is using the file, so removing is denied)
+          # windows spawn multiple processes, so log deletion is not possible, even when running 1 Single Unit Test
+          BUG_LOG_DEL_WIN: 'permission_error'
         run: |
           if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
             echo "[INFO] Activating virtual environment for Windows"
@@ -326,7 +330,6 @@ jobs:
             . .venv/bin/activate
           fi
           pytest -ra --run-requires_uv --run-network_bound -vvs -k test_logging
-
 ## PYDEPS
 
 ## TYPE CHECK
