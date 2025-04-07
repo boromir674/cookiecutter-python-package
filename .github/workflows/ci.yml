@@ -33,7 +33,7 @@ jobs:
 
   # INSTALL PACKAGE in Edit mode and run Test Suite against it
   test_unit:
-    if: ${{ vars.NONE == 'IMPOSSIBLE' && vars.OV_TEST_UNIT != 'false' }}
+    if: ${{ vars.OV_TEST_UNIT != 'false' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -71,7 +71,7 @@ jobs:
   # Build PACKAGE SDist and run Test Suite against it
   ## Unless override, default trigger 'always'
   sdist:
-    if: ${{ vars.NONE == 'IMPOSSIBLE' && vars.OV_SDIST != 'false' || (vars.OV_SDIST != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')}}
+    if: ${{ vars.OV_SDIST != 'false' || (vars.OV_SDIST != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')}}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -111,7 +111,7 @@ jobs:
   # BUILD PACKAGE Wheel and run Tests Suite against it
   ## Unless override, default trigger 'always'
   wheel:
-    if: vars.NONE == 'IMPOSSIBLE' && vars.OV_WHEEL != 'false'
+    if: vars.OV_WHEEL != 'false'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -151,7 +151,7 @@ jobs:
   # BUILD ALL WHEELS and run Test Suite against them
   ## Unless override, default trigger 'always'
   all_wheels:
-    if: vars.NONE == 'IMPOSSIBLE' && vars.OV_ALL_WHEELS != 'false'  # Unless override, default trigger 'always'
+    if: vars.OV_ALL_WHEELS != 'false'  # Unless override, default trigger 'always'
     runs-on: ubuntu-latest
     env:
       module_name: cookiecutter_python
@@ -210,7 +210,7 @@ jobs:
   ## Unless override, default trigger is (only) on PR to dev
   sca:
     # Unless override, default trigger is (only) on PR to dev
-    if: always() || vars.OV_SCA == 'true' || (vars.OV_SCA != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')
+    if: vars.OV_SCA == 'true' || (vars.OV_SCA != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')
     uses: ./.github/workflows/sca-job.yml
     with:
       python_version: '3.10'
@@ -269,7 +269,7 @@ jobs:
   # CROSS PLATFORM TESTING: slower due to Test Matrix containing Windows Job
   ## Unless override, default trigger is (only) on PR to dev
   sample_matrix_test:
-    if: always() || vars.OV_MATRIX_TEST == 'true' || (vars.OV_MATRIX_TEST != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')
+    if: vars.OV_MATRIX_TEST == 'true' || (vars.OV_MATRIX_TEST != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')
     runs-on: ${{ matrix.platform }}
     # trigger if event is pr to dev
     strategy:
