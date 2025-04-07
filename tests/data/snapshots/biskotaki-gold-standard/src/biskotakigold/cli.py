@@ -4,6 +4,7 @@ import os
 import sys
 
 import click
+
 from biskotakigold import __version__
 
 this_file_location = os.path.dirname(os.path.realpath(os.path.abspath(__file__)))
