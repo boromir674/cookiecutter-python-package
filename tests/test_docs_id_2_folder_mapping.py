@@ -70,8 +70,8 @@ def test_get_docs_gen_internal_config_invalid_folder_name(
 )
 def test_get_docs_gen_internal_config_empty_directory(tmp_path: Path):
     """Test that an empty directory raises an assertion error."""
-    from cookiecutter_python.backend.gen_docs_common import (
-        NoDocsTemplateFolderError,  # type: ignore[attr-defined]
+    from cookiecutter_python.backend.gen_docs_common import (  # type: ignore[attr-defined]
+        NoDocsTemplateFolderError,
     )
 
     with patch(
