@@ -306,7 +306,11 @@ jobs:
       - name: Install dependencies
         run: |
           uv venv
-          uv pip install -r requirements.txt
+          uv pip install --no-deps -r requirements.txt
+
+      # Install the Package Wheel
+      - name: Install our Package Wheel
+        run: uv pip install --no-deps dist/*.whl
 
       # Run tests
       - name: Run tests
