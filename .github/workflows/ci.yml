@@ -215,8 +215,8 @@ jobs:
     uses: ./.github/workflows/sca-job.yml
     with:
       python_version: '3.10'
-      allow_failure: ${{ github.event_name == 'pull_request' && github.base_ref == 'dev' && 'false' || 'true' }}
-      force_styles: ${{ github.event_name == 'pull_request' && github.base_ref == 'dev' && 'true' || 'false' }}
+      allow_failure: ${{ github.event_name != 'pull_request' || github.base_ref != 'dev' }}
+      force_styles: ${{ github.event_name == 'pull_request' && github.base_ref == 'dev' }}
 
 
   # RUN INTEGRATION TESTS: slower due to automated installations involved via pip
