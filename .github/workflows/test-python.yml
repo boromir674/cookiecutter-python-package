@@ -1,0 +1,173 @@
+# Reusable Job for Testing Python
+
+name: Test Python
+on:
+  workflow_call:
+    inputs:
+      # App Installation Settings #
+      installation_mode:
+        required: true
+        description: "Installation mode for the package. Options are 'edit', 'sdist', or 'wheel'"
+        type: string
+      # Upload build to CI Artifacts
+      upload_distro:
+        required: false
+        default: false
+        type: boolean
+        description: "Whether to upload built python distro to CI Artifacts"
+
+      # Trigger Behavior Settings #
+      default_trigger:
+        required: false
+        default: 'true'
+        description: "Default trigger for the workflow. If true the 'default behavior' is to run on call. If false, the 'default behavior' is to be skipped."
+        type: boolean
+
+      override:
+        required: false
+        description: "Override the default trigger, 'true' gurantees run, 'false' not run"
+        type: boolean
+      # Environment Settings #
+      python_version:
+        required: false
+        default: '3.10'
+        description: "Python version to use for the job. Default is 3.10"
+        type: string
+      platform:
+        required: false
+        default: 'ubuntu-latest'
+        description: "Platform to use for the job. Default is 'ubuntu-latest'"
+        type: string
+jobs:
+  test:
+    if: inputs.override == 'true' || (inputs.override != 'false' && inputs.default_trigger == 'true')
+    runs-on: ${{ inputs.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${ inputs.python_version }
+        uses: actions/setup-python@v5
+        with:
+          python-version: '${{ inputs.python_version }}'
+
+      # Install uv
+      - name: Install uv
+        if: inputs.platform != 'windows-latest'
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: Install the latest version of uv
+        if: inputs.platform == 'windows-latest'
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      - name: 'Export pinned Prod + Test dependencies'
+        run: uv export --no-emit-project --no-dev --extra test --frozen --format requirements-txt -o requirements.txt
+
+      # Install dependencies in virtualenv
+      - name: 'Install "Prod + Test" dependencies'
+        shell: bash
+        run: |
+          uv venv
+          if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
+            . .venv/Scripts/activate
+          fi
+
+          echo "[INFO] Installing exact 'Prod + Test' Dependencies"
+          uv pip install --no-deps -r requirements.txt
+
+      # here the .venv is built with the exact dependencies
+
+      #### [IF] Build Sdist and Wheel Distributions ####
+      - name: 'Build SDist and Wheel Distributions if inputs.installation_mode in [sdist, wheel]'
+        if: contains(fromJSON('["sdist", "wheel"]'), inputs.installation_mode)
+        run: uv build --out-dir dist
+
+      ## Install Package in 'edit' mode or from Sdist/Wheel Distribution file ##
+      - name: 'Install Package Wheel, without dependencies'
+        shell: bash
+        run: |
+          if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
+            . .venv/Scripts/activate
+          fi
+
+          uv pip install --no-deps ${{ inputs.installation_mode == 'edit' && '-e .' || inputs.installation_mode == 'sdist' && 'dist/*.tar.gz' || inputs.installation_mode == 'wheel' && 'dist/*.whl' }}
+
+
+      #### Run Test Suite against the package ####
+      - name: 'Run tests'
+        shell: bash  # to solve issue on windows ci
+        env:
+          COVERAGE_FILE: '.coverage.${{ inputs.installation_mode }}'
+        run: |
+          if [[ "${{ inputs.platform }}" == "windows-latest" ]]; then
+            . .venv/Scripts/activate
+          fi
+          uv run --active pytest -ra --cov --cov-report=term-missing \
+            --cov-report=html:test-${{ inputs.installation_mode }}/htmlcov --cov-context=test \
+            --cov-report=xml:coverage.test-${{ inputs.installation_mode }}.xml \
+            -n auto tests
+
+      # Run tests
+      - name: Run tests
+        shell: bash
+        env:
+          # log deletion post hook fails on windows, due to permission error! (other process is using the file, so removing is denied)
+          # windows spawn multiple processes, so log deletion is not possible, even when running 1 Single Unit Test
+          BUG_LOG_DEL_WIN: 'permission_error'  # required on Windows Job
+          PY_WHEEL: 1 # required on Windows Job
+          COVERAGE_FILE: '.coverage.${{ inputs.installation_mode }}'
+        run: |
+          if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
+            echo "[INFO] Activating virtual environment for Windows"
+            . .venv/Scripts/activate
+          else
+            # Linux and MacOS
+            echo "[INFO] Activating virtual environment for Linux/MacOS"
+            . .venv/bin/activate
+          fi
+
+          pytest -ra --run-requires_uv --run-network_bound -vvs --cov --cov-report=term-missing \
+            --cov-report=html:test-${{ inputs.installation_mode }}/htmlcov --cov-context=test \
+            --cov-report=xml:coverage.test-${{ inputs.installation_mode }}.xml \
+            -n auto tests
+
+      ## Code Coverage ## TODO; enable combine by moving each .coverage file to other dir to avoid override of subsequent coverage invocations with pytest
+      - name: "Discover and Combine Coverage data into XML Reports"
+        env:
+          COVERAGE_FILE: .coverage
+          OUTPUT_XML: coverage-${{ inputs.platform }}-${{ inputs.python_version }}-${{ inputs.installation_mode }}.xml
+        shell: bash
+        run: |
+          uv venv cov-env
+          if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
+            . .cov-env/Scripts/activate
+          else
+            # Linux and MacOS
+            . .cov-env/bin/activate
+          fi
+
+          uv pip install 'coverage[toml] >= 5.1' 'diff_cover >=6'
+
+          echo '[INFO] Running coverage'
+          uv run --active coverage combine --keep
+          uv run --active coverage report --skip-covered --show-missing -i
+
+          uv run --active coverage xml -o ./${{ env.OUTPUT_XML }} -i
+          # uv run --active coverage html -d ./htmlcov -i
+
+      - name: "Upload Test Coverage as Artifacts"
+        uses: actions/upload-artifact@v4
+        with:
+          overwrite: false
+          name: coverage-${{ inputs.platform }}-${{ inputs.python_version }}-${{ inputs.installation_mode }}.xml
+          path: coverage-${{ inputs.platform }}-${{ inputs.python_version }}-${{ inputs.installation_mode }}.xml
+          if-no-files-found: error
+
+      - name: Upload Source & Wheel distributions as Artefacts
+        if: contains(fromJSON('["sdist", "wheel"]'), inputs.installation_mode) && inputs.upload_distro == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ inputs.platform }}-${{ inputs.python_version }}
+          path: dist
+          if-no-files-found: error

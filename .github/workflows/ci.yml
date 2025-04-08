@@ -1,13 +1,14 @@
 # CI Pipeline
 
+# For Test Suite this pipeline aims for speed
+# so for feature branches test is in edit mode
+# for 'high' branches (ie dev) runs sdist/wheel tests
+
+
 name: CI Pipeline
 # primarily serves as quick feedback on every push
 # on feature-branches, should be as quick as possible
-#  runs only tests, type check, docs build dynamically based on changes
-
-# THIS PIPELINE IS UNDER DEVELOPMENT
-# when it is feature-full, we shall add a "changes-dection" job to optimize pipeline by skipping jobs that do need to run
-# and only run the jobs that are needed
+# runs only tests, type check, docs build dynamically based on changes
 
 on:
   push:
@@ -18,136 +19,41 @@ on:
       - '!dev'
       - '!release'
       - '!try-ci'
-  # when PR to dev open/push event happens
-  pull_request:
-    types: [opened, synchronize, reopened]
-    branches:  # ALLOWED Base Branches
-      - dev
 
 jobs:
-  # For Test Suite this pipeline aims for speed
-  # so for feature branches test in edit mode
-  # for 'high' branches (ie dev) run sdist/wheel tests
 
   ### FASTER JOBS ###
 
   # INSTALL PACKAGE in Edit mode and run Test Suite against it
-  ## Unless override, default trigger 'always'
-  test_unit:
-    if: ${{ vars.OV_TEST_UNIT != 'false' }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
-      # Install uv to manage pinned versions
-      - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v5
-        with:
-          version: "latest"
-
-      # Export "pinned" (exact) dependencies' versions in requirements.txt format
-      - name: 'Export pinned Prod + Test dependencies'
-        run: uv export --no-emit-project --no-dev --extra test --frozen --format requirements-txt -o requirements.txt
-
-      - run: uv venv
-
-      # Install dependencies in virtualenv
-      - name: 'Install "Prod + Test" dependencies'
-        run: uv pip install -r requirements.txt
-
-      # here the .venv is built with the exact dependencies
-
-      # Install Package in EDIT mode (without dependencies)
-      - name: 'Install Package in Edit mode, without dependencies'
-        run: uv pip install --no-deps -e .
-
-      # Run tests
-      - name: 'Run tests'
-        run: uv run pytest -ra -n auto
+  test_unit:  ## Unless override, default trigger 'always'
+    uses: ./.github/workflows/test-python.yml
+    with:
+      default_trigger: true
+      override: ${{ vars.OV_TEST_UNIT }}
+      installation_mode: 'edit'
+      python_version: '3.10'
+      platform: 'ubuntu-latest'
 
   # Build PACKAGE SDist and run Test Suite against it
-  ## Unless override, default trigger 'always'
-  sdist:
-    if: ${{ vars.OV_SDIST != 'false' || (vars.OV_SDIST != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')}}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
-      - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v5
-        with:
-          version: "latest"
-
-      ## Build Source Distribution ##
-      - name: 'Build Source Distribution'
-        run: uv build --sdist --out-dir dist
-
-      - name: 'Export pinned Prod + Test dependencies'
-        run: uv export --no-emit-project --no-dev --extra test --frozen --format requirements-txt -o requirements.txt
-
-      - run: uv venv
-
-      # Install dependencies in virtualenv
-      - name: 'Install "Prod + Test" dependencies'
-        run: uv pip install -r requirements.txt
-
-      # here the .venv is built with the exact dependencies
-
-      # Install Package from SDist
-      - name: 'Install Package from SDist, without dependencies'
-        run: uv pip install --no-deps dist/*.tar.gz
-
-      # Run tests
-      - name: 'Run tests'
-        run: uv run pytest -ra -n auto
+  sdist:  ## Unless override, default trigger 'always'
+    uses: ./.github/workflows/test-python.yml
+    with:
+      default_trigger: true
+      override: ${{ vars.OV_SDIST }}
+      installation_mode: 'sdist'
+      python_version: '3.10'
+      platform: 'ubuntu-latest'
 
   # BUILD PACKAGE Wheel and run Tests Suite against it
-  ## Unless override, default trigger 'always'
-  wheel:
-    if: vars.OV_WHEEL != 'false'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
-      - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v5
-        with:
-          version: "latest"
-
-      ## Build Wheel Distribution ##
-      - name: 'Build Wheel Distribution'
-        run: uv build --wheel --out-dir dist
-
-      - name: 'Export pinned Prod + Test dependencies'
-        run: uv export --no-emit-project --no-dev --extra test --frozen --format requirements-txt -o requirements.txt
-
-      - run: uv venv
-
-      # Install dependencies in virtualenv
-      - name: 'Install "Prod + Test" dependencies'
-        run: uv pip install -r requirements.txt
-
-      # here the .venv is built with the exact dependencies
-
-      # Install Package from Wheel
-      - name: 'Install Package from SDist, without dependencies'
-        run: uv pip install --no-deps dist/*.whl
-
-      # Run tests
-      - name: 'Run tests'
-        run: uv run pytest -ra -n auto
+  wheel:  ## Unless override, default trigger 'always'
+    uses: ./.github/workflows/test-python.yml
+    with:
+      default_trigger: true
+      override: ${{ vars.OV_WHEEL }}
+      installation_mode: 'wheel'
+      upload_distro: true
+      python_version: '3.10'
+      platform: 'ubuntu-latest'
 
   # BUILD ALL WHEELS and run Test Suite against them
   ## Unless override, default trigger 'always'
