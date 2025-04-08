@@ -7,7 +7,6 @@ import click
 
 from . import __version__
 
-
 this_file_location = os.path.dirname(os.path.realpath(os.path.abspath(__file__)))
 
 
