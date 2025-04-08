@@ -2,6 +2,7 @@ import json
 import logging
 import typing as t
 
+
 GivenInterpreters = t.Mapping[str, t.Sequence[str]]
 
 logger = logging.getLogger(__name__)

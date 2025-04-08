@@ -6,6 +6,7 @@ from typing import Pattern, Tuple
 from ..input_sanitization import Sanitize
 from .base_sanitizer import BaseSanitizer
 
+
 __all__ = ['BaseSanitizer', 'InputValueError']
 
 

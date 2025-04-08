@@ -2,6 +2,7 @@ import sys
 import typing as t
 from pathlib import Path
 
+
 if sys.version_info >= (3, 8):
     from typing import Literal, Protocol
 else:

@@ -2,6 +2,7 @@ import os
 import sys
 import typing as t
 
+
 if sys.version_info >= (3, 8):
     from typing import Protocol
 else:
@@ -11,6 +12,7 @@ from pathlib import Path
 
 import attr
 import pytest
+
 
 my_dir: str = os.path.dirname(os.path.realpath(__file__))
 

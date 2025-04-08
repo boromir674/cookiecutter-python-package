@@ -7,6 +7,7 @@ from unittest.mock import patch
 
 import pytest
 
+
 MY_DIR = Path(__file__).parent
 C_KEY = 'cookiecutter'  # COOKIECUTTER_KEY
 # offest by 2 hours to match Jinja 'now' expression: {% now 'utc', '%Y-%m-%d' %}

@@ -3,6 +3,7 @@ import typing as t
 
 import pytest
 
+
 MY_DIR = os.path.dirname(os.path.realpath(__file__))
 TEST_DATA_DIR = os.path.join(MY_DIR, 'data')
 

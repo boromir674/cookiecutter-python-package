@@ -6,6 +6,7 @@ from software_patterns import ProxySubject, Singleton
 
 from ..proxy import BaseProxy
 
+
 __all__ = ['cookiecutter']
 
 
