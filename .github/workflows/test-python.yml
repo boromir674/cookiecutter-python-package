@@ -19,7 +19,7 @@ on:
       # Trigger Behavior Settings #
       default_trigger:
         required: false
-        default: 'true'
+        default: true
         description: "Default trigger for the workflow. If true the 'default behavior' is to run on call. If false, the 'default behavior' is to be skipped."
         type: boolean
 
