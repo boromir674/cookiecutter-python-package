@@ -1,0 +1,171 @@
+name: PR Validate
+on:
+  pull_request:
+    branches:
+      - dev
+    paths-ignore:
+      - .github/workflows/**
+
+jobs:
+  # RUN INTEGRATION TESTS
+  integration_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      # Install uv to manage pinned versions
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      # Export "pinned" (exact) dependencies' versions in requirements.txt format
+      - name: 'Export pinned Prod + Test dependencies'
+        run: uv export --no-emit-project --no-dev --extra test --frozen --format requirements-txt -o requirements.txt
+
+      - run: uv venv
+
+      # Install dependencies in virtualenv
+      - name: 'Install "Prod + Test" dependencies'
+        run: uv pip install -r requirements.txt
+
+      # here the .venv is built with the exact dependencies
+
+      # Install Package (without dependencies)
+      - name: 'Install Package without dependencies'
+        run: uv pip install --no-deps -e .
+
+      # Run Integration tests
+      - name: 'Run Integration tests'
+        run: |
+          # leverage uv to install other runtime test dependencies in the system site-packages!
+
+          uv pip install 'tox<4.0'  # integration tests dependency
+
+          # Isolate flaky tests
+          uv run pytest -ra -vvs --run-slow -k via_build_module
+          uv run pytest -ra -vvs --run-slow -k test_build_creates_artifacts
+
+          # Run eveything once again for sanity
+          uv run pytest -ra -n auto --run-requires_uv --run-slow --run-network_bound -vvs -k 'test_cli or build_backend_sdist or test_build_creates_artifacts or test_lint_passes'
+
+  # CROSS PLATFORM TESTING: 15s on Ubuntu, 25 on mac, 35 on windows
+  cross_platform_tests:
+    runs-on: ${{ matrix.platform }}
+    # trigger if event is pr to dev
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ubuntu-latest, macos-latest, windows-latest]
+        # platform: [windows-latest]
+        python-version: ['3.10']
+    steps:
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install uv
+        if: matrix.platform != 'windows-latest'
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: Install the latest version of uv
+        if: matrix.platform == 'windows-latest'
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      - uses: actions/checkout@v4
+
+      # Build Package Wheel
+      - run: uv build --wheel --out-dir dist
+
+      # Install exact Prod + Test dependencies
+      - name: 'Export pinned Prod + Test dependencies'
+        run: uv export --no-emit-project --no-dev --extra test --frozen --format requirements-txt -o requirements.txt
+
+      - name: Install dependencies
+        run: |
+          uv venv
+          uv pip install --no-deps -r requirements.txt
+
+      # Install the Package Wheel
+      - name: Install our Package Wheel
+        shell: bash
+        run: uv pip install --no-deps dist/*.whl
+
+      #### Run Test Suite against the package and measure Coverage ####
+      - name: Run Tests and measure Coverage
+        shell: bash
+        env:
+          # log deletion post hook fails on windows, due to permission error! (other process is using the file, so removing is denied)
+          # windows spawn multiple processes, so log deletion is not possible, even when running 1 Single Unit Test
+          BUG_LOG_DEL_WIN: 'permission_error'  # required on Windows Job
+          PY_WHEEL: 1 # required on Windows Job
+          COVERAGE_FILE: '.coverage.wheel'
+        run: |
+          if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
+            . .venv/Scripts/activate
+          else
+            # Linux and MacOS
+            . .venv/bin/activate
+          fi
+
+          pytest -ra --run-requires_uv --run-network_bound -vvs --cov --cov-report=term-missing \
+            --cov-report=html:test-wheel/htmlcov --cov-context=test \
+            --cov-report=xml:coverage.test-wheel.xml \
+            -n auto tests
+
+      ## Code Coverage ## TODO; enable combine by moving each .coverage file to other dir to avoid override of subsequent coverage invocations with pytest
+      - name: "Discover and Combine Coverage data into XML Reports"
+        env:
+          COVERAGE_FILE: .coverage
+          OUTPUT_XML: coverage-${{ matrix.platform }}-${{ matrix.python-version }}-wheel.xml
+        shell: bash
+        run: |
+          uv venv cov-env
+          if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
+            . cov-env/Scripts/activate
+          else
+            # Linux and MacOS
+            . cov-env/bin/activate
+          fi
+
+          uv pip install 'coverage[toml] >= 5.1' 'diff_cover >=6'
+
+          echo '[INFO] Running coverage'
+          uv run --active coverage combine --keep
+          uv run --active coverage report --skip-covered --show-missing -i
+
+          uv run --active coverage xml -o ./${{ env.OUTPUT_XML }} -i
+          # uv run --active coverage html -d ./htmlcov -i
+
+          echo "OUTPUT_XML=${{ env.OUTPUT_XML }}" >> $GITHUB_OUTPUT
+        id: coverage
+
+      - name: "Upload Test Coverage as Artifacts"
+        uses: actions/upload-artifact@v4
+        with:
+          overwrite: false
+          name: '${{ steps.coverage.outputs.OUTPUT_XML }}'
+          path: '${{ steps.coverage.outputs.OUTPUT_XML }}'
+          if-no-files-found: error
+
+  # STATIC CODE ANALYSIS: mypy, ruff, isort, black, bandit, mccabe, prospector, etc
+  sca:
+    uses: ./.github/workflows/sca-job.yml
+    with:
+      python_version: '3.10'
+      allow_failure: ${{ github.event_name != 'pull_request' || github.base_ref != 'dev' }}
+      force_styles: ${{ github.event_name == 'pull_request' && github.base_ref == 'dev' }}
+      bandit: '{"h": 1, "m": 2, "l": 4}'  # Automated Acceptance Criteria for Bandit
+
+## PYDEPS
+
+## TYPE CHECK
+
+## DOCS
