@@ -26,7 +26,8 @@ on:
       override:
         required: false
         description: "Override the default trigger, 'true' gurantees run, 'false' not run"
-        type: boolean
+        type: string  # IMPORTANT: must be string, to model 3 states {true, false, none}
+
       # Environment Settings #
       python_version:
         required: false
@@ -40,7 +41,7 @@ on:
         type: string
 jobs:
   test:
-    if: inputs.override == true || (inputs.override != false && inputs.default_trigger == true)
+    if: inputs.override == 'true' || (inputs.override != 'false' && inputs.default_trigger == true)
     runs-on: ${{ inputs.platform }}
     steps:
       - uses: actions/checkout@v4

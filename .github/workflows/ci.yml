@@ -29,7 +29,7 @@ jobs:
     uses: ./.github/workflows/test-python.yml
     with:
       default_trigger: true
-      override: ${{ vars.OV_TEST_UNIT }}
+      override: '${{ vars.OV_TEST_UNIT }}'
       installation_mode: 'edit'
       python_version: '3.10'
       platform: 'ubuntu-latest'
@@ -39,7 +39,7 @@ jobs:
     uses: ./.github/workflows/test-python.yml
     with:
       default_trigger: true
-      override: ${{ vars.OV_SDIST }}
+      override: '${{ vars.OV_SDIST }}'
       installation_mode: 'sdist'
       python_version: '3.10'
       platform: 'ubuntu-latest'
@@ -49,7 +49,7 @@ jobs:
     uses: ./.github/workflows/test-python.yml
     with:
       default_trigger: true
-      override: true
+      override: 'true'
       installation_mode: 'wheel'
       upload_distro: true
       python_version: '3.10'
@@ -58,7 +58,7 @@ jobs:
   # BUILD ALL WHEELS and run Test Suite against them
   ## Unless override, default trigger 'always'
   all_wheels:
-    if: vars.OV_ALL_WHEELS != 'false'  # Unless override, default trigger 'always'
+    if: vars.OV == 'ELA' && vars.OV_ALL_WHEELS != 'false'  # Unless override, default trigger 'always'
     runs-on: ubuntu-latest
     env:
       module_name: cookiecutter_python
