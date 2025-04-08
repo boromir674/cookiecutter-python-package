@@ -95,8 +95,8 @@ jobs:
           uv pip install --no-deps ${{ inputs.installation_mode == 'edit' && '-e .' || inputs.installation_mode == 'sdist' && 'dist/*.tar.gz' || inputs.installation_mode == 'wheel' && 'dist/*.whl' }}
 
 
-      #### Run Test Suite against the package ####
-      - name: Run tests
+      #### Run Test Suite against the package and measure Coverage ####
+      - name: Run Tests and measure Coverage
         shell: bash
         env:
           # log deletion post hook fails on windows, due to permission error! (other process is using the file, so removing is denied)
@@ -143,12 +143,15 @@ jobs:
           uv run --active coverage xml -o ./${{ env.OUTPUT_XML }} -i
           # uv run --active coverage html -d ./htmlcov -i
 
+          echo "OUTPUT_XML=${{ env.OUTPUT_XML }}" >> $GITHUB_OUTPUT
+        id: coverage
+
       - name: "Upload Test Coverage as Artifacts"
         uses: actions/upload-artifact@v4
         with:
           overwrite: false
-          name: coverage-${{ inputs.platform }}-${{ inputs.python_version }}-${{ inputs.installation_mode }}.xml
-          path: coverage-${{ inputs.platform }}-${{ inputs.python_version }}-${{ inputs.installation_mode }}.xml
+          name: '${{ steps.coverage.outputs.OUTPUT_XML }}'
+          path: '${{ steps.coverage.outputs.OUTPUT_XML }}'
           if-no-files-found: error
 
       - name: Upload Source & Wheel distributions as Artefacts
