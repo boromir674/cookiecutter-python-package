@@ -4,7 +4,6 @@
 # so for feature branches test is in edit mode
 # for 'high' branches (ie dev) runs sdist/wheel tests
 
-
 name: CI Pipeline
 # primarily serves as quick feedback on every push
 # on feature-branches, should be as quick as possible
