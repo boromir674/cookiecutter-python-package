@@ -95,20 +95,6 @@ jobs:
 
 
       #### Run Test Suite against the package ####
-      - name: 'Run tests'
-        shell: bash  # to solve issue on windows ci
-        env:
-          COVERAGE_FILE: '.coverage.${{ inputs.installation_mode }}'
-        run: |
-          if [[ "${{ inputs.platform }}" == "windows-latest" ]]; then
-            . .venv/Scripts/activate
-          fi
-          uv run --active pytest -ra --cov --cov-report=term-missing \
-            --cov-report=html:test-${{ inputs.installation_mode }}/htmlcov --cov-context=test \
-            --cov-report=xml:coverage.test-${{ inputs.installation_mode }}.xml \
-            -n auto tests
-
-      # Run tests
       - name: Run tests
         shell: bash
         env:
@@ -141,10 +127,10 @@ jobs:
         run: |
           uv venv cov-env
           if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
-            . .cov-env/Scripts/activate
+            . cov-env/Scripts/activate
           else
             # Linux and MacOS
-            . .cov-env/bin/activate
+            . cov-env/bin/activate
           fi
 
           uv pip install 'coverage[toml] >= 5.1' 'diff_cover >=6'
