@@ -40,7 +40,7 @@ on:
         type: string
 jobs:
   test:
-    if: inputs.override == 'true' || (inputs.override != 'false' && inputs.default_trigger == true)
+    if: inputs.override == true || (inputs.override != false && inputs.default_trigger == true)
     runs-on: ${{ inputs.platform }}
     steps:
       - uses: actions/checkout@v4
