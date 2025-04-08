@@ -57,7 +57,7 @@ jobs:
   # BUILD ALL WHEELS and run Test Suite against them
   ## Unless override, default trigger 'always'
   all_wheels:
-    if: vars.OV == 'ELA' && vars.OV_ALL_WHEELS != 'false'  # Unless override, default trigger 'always'
+    if: vars.OV_ALL_WHEELS != 'false'  # Unless override, default trigger 'always'
     runs-on: ubuntu-latest
     env:
       module_name: cookiecutter_python
@@ -122,7 +122,7 @@ jobs:
       python_version: '3.10'
       allow_failure: ${{ github.event_name != 'pull_request' || github.base_ref != 'dev' }}
       force_styles: ${{ github.event_name == 'pull_request' && github.base_ref == 'dev' }}
-
+      bandit: '{"h": 1, "m": 2, "l": 4}'  # Automated Acceptance Criteria for Bandit
 
   # RUN INTEGRATION TESTS: slower due to automated installations involved via pip
   ## Unless override, default trigger is (only) on PR to dev
