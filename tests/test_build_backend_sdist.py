@@ -585,7 +585,7 @@ def sdist_built_at_runtime_with_build(run_subprocess) -> Path:
     import re
 
     assert re.search(r"Building sdist\.\.\.", result.stdout)
-    pattern = r"Successfully built .+cookiecutter_python-.+\.tar\.gz"
+    pattern = "Successfully built .*cookiecutter_python-.+\.tar\.gz"
     assert re.search(pattern, result.stdout)
 
     # After build, retrieve the tar.gz file
