@@ -152,7 +152,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload Source & Wheel distributions as Artefacts
-        if: contains(fromJSON('["sdist", "wheel"]'), inputs.installation_mode) && inputs.upload_distro == 'true'
+        if: contains(fromJSON('["sdist", "wheel"]'), inputs.installation_mode) && inputs.upload_distro
         uses: actions/upload-artifact@v4
         with:
           name: dist-${{ inputs.platform }}-${{ inputs.python_version }}
