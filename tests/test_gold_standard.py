@@ -121,6 +121,7 @@ def validate_project():
 
     return _validate_project
 
+
 @pytest.fixture(scope='session')
 def compare_file_content():
     def _compare_file_content(runtime_file: Path, snap_file: Path):
@@ -128,7 +129,9 @@ def compare_file_content():
         runtime_file_content = runtime_file.read_text().splitlines()
         snap_file_content = snap_file.read_text().splitlines()
 
-        for line_index, line_pair in enumerate(zip(runtime_file_content, snap_file_content)):
+        for line_index, line_pair in enumerate(
+            zip(runtime_file_content, snap_file_content)
+        ):
             assert line_pair[0] == line_pair[1], (
                 f"File: {runtime_file.relative_to(runtime_file.parent)} has different content at Runtime than in Snapshot\n"
                 f"Line Index: {line_index}\n"
@@ -136,10 +139,13 @@ def compare_file_content():
                 f"Line Snapshot: {line_pair[1]}\n"
             )
         assert len(runtime_file_content) == len(snap_file_content)
+
     return _compare_file_content
 
 
-def test_gs_matches_runtime(gen_gs_project, validate_project, compare_file_content, test_root):
+def test_gs_matches_runtime(
+    gen_gs_project, validate_project, compare_file_content, test_root
+):
 
     ## GIVEN the Snapshot project files maintained for the Gold Standard of Biskotaki
     snapshot_dir: Path = test_root / 'data' / 'snapshots' / 'biskotaki-gold-standard'
