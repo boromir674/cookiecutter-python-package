@@ -31,6 +31,11 @@ on:
         type: string
         default: '3.10'
       ## Parametrizing Code Analysis Acceptance Criteria
+      bandit:
+        required: false
+        description: 'Bandit severity thresholds'
+        type: string
+        default: '{"h": 1, "m": 2, "l": 4}'  # JSON format
       pylint_threshold:
         required: false
         type: string
