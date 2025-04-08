@@ -120,6 +120,13 @@ def test_gs_matches_runtime(gen_gs_project, test_root):
         [x.relative_to(snapshot_dir) for x in snapshot_dir.glob('**/*')]
     )
 
+    # if 'cookie-py.log' file found show warning
+    if Path('cookie-py.log') in snap_relative_paths_set:
+        import logging
+
+        logger = logging.getLogger(__name__)
+        logger.warning("cookie-py.log file found in snapshot")
+
     # GIVEN we find the Runtime files (paths to dirs and files), using glob
     runtime_relative_paths_set = set(
         [x.relative_to(runtime_gs) for x in runtime_gs.glob('**/*')]

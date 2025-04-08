@@ -101,7 +101,9 @@ def get_main_with_mocked_template(get_object, request_factory):
 def test_main_with_invalid_interpreters(get_main_with_mocked_template, request_factory):
     result = get_main_with_mocked_template(
         overrides={
-            "get_request": lambda: lambda: request_factory.pre(interpreters=['3.5', '3.10'])
+            "get_request": lambda: lambda: request_factory.pre(
+                interpreters=['3.5', '3.10']
+            )
         }
     )()
     assert result == 1  # exit code of 1 indicates failed execution
@@ -109,7 +111,9 @@ def test_main_with_invalid_interpreters(get_main_with_mocked_template, request_f
 
 def test_main_with_invalid_module_name(get_main_with_mocked_template, request_factory):
     result = get_main_with_mocked_template(
-        overrides={"get_request": lambda: lambda: request_factory.pre(module_name="121212")}
+        overrides={
+            "get_request": lambda: lambda: request_factory.pre(module_name="121212")
+        }
     )()
     assert result == 1  # exit code of 1 indicates failed execution
 
@@ -130,6 +134,8 @@ def test_main_with_found_pre_existing_pypi_package(
     get_main_with_mocked_template, request_factory
 ):
     result = get_main_with_mocked_template(
-        overrides={"get_request": lambda: lambda: request_factory.pre(module_name="so_magic")}
+        overrides={
+            "get_request": lambda: lambda: request_factory.pre(module_name="so_magic")
+        }
     )()
     assert result == 0  # exit code of 1 indicates failed execution

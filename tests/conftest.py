@@ -62,7 +62,9 @@ def generate_project() -> t.Callable[[ProjectGenerationRequestDataProtocol], str
     """Generator backend used by the production Generator CLI."""
     from cookiecutter_python.backend.generator import generator as cookiecutter
 
-    def _generate_project(generate_request: ProjectGenerationRequestDataProtocol) -> str:
+    def _generate_project(
+        generate_request: ProjectGenerationRequestDataProtocol,
+    ) -> str:
         assert isinstance(
             generate_request.template, str
         ), f"Expexted str for template, got {type(generate_request.template)}"
@@ -254,9 +256,11 @@ def request_factory(distro_loc) -> t.Type[EmulatedRequestFactory]:
         ### that the templating engine would have produced.
 
         # Templated Vars (cookiecutter) use in Context for Jinja Rendering
-        vars: t.Optional[t.Dict] = attr.ib(
+        vars: t.Dict[str, t.Any] = attr.ib(
             # IMPORTANT: emulates jinja context vars (ie from list of choices to 1st choice)
-            default=OrderedDict(td_cookiecutter_json_data, **engine_state['cookiecutter'])
+            default=OrderedDict(
+                td_cookiecutter_json_data, **engine_state['cookiecutter']
+            )
         )
         initialize_git_repo: t.Optional[bool] = attr.ib(default=True)
         interpreters: t.Optional[t.List[str]] = attr.ib(
@@ -298,7 +302,10 @@ def request_factory(distro_loc) -> t.Type[EmulatedRequestFactory]:
             self.vars['project_type'] = self.project_type
             self.vars['cicd'] = self.cicd
 
-    class HookRequest(metaclass=SubclassRegistry):
+    class HookRequestFacility(SubclassRegistry[EmulatedHookRequest]):
+        pass
+
+    class HookRequest(metaclass=HookRequestFacility):
         pass
 
     @attr.s(auto_attribs=True, kw_only=True)
@@ -554,17 +561,15 @@ def cli_invoker_params() -> t.Callable[[t.Any], CLIRunnerParameters]:
 # keep in Sync with user_config Fixture, if Type Check fails
 class ConfigProtocol(Protocol):
     data: t.Mapping
+    config_file: t.Union[str, None]
 
 
-ConfigInterface = t.TypeVar('ConfigInterface')
-
-
-class ConfigInterfaceGeneric(t.Generic[ConfigInterface]):
-    def __getitem__(self, file_path_str: t.Union[str, None]) -> ConfigInterface: ...
+class ConfigInterfaceProtocol(t.Protocol):
+    def __getitem__(self, file_path_str: t.Union[str, None]) -> ConfigProtocol: ...
 
 
 @pytest.fixture
-def user_config(distro_loc: Path) -> ConfigInterfaceGeneric[ConfigProtocol]:
+def user_config(distro_loc: Path) -> ConfigInterfaceProtocol:
     """Context Values Interface, derived either from User's YAML or Default JSON
 
     Args:
@@ -589,11 +594,6 @@ def user_config(distro_loc: Path) -> ConfigInterfaceGeneric[ConfigProtocol]:
         return data
 
     _prod_yaml_loader: t.Callable[[PathLike], t.MutableMapping] = prod_load_yaml
-    # Aliases, for shortcuts
-    config_files = {
-        'biskotaki': '.github/biskotaki.yaml',
-        'without-interpreters': 'tests/data/biskotaki-without-interpreters.yaml',
-    }
 
     @attr.s(auto_attribs=True, slots=True)
     class ConfigData:
@@ -619,20 +619,26 @@ def user_config(distro_loc: Path) -> ConfigInterfaceGeneric[ConfigProtocol]:
         path: t.Union[str, None]
 
         _data_file_path: t.Union[str, Path, None] = attr.ib(init=False, default=None)
-        _config_file_arg: t.Optional[str] = attr.ib(init=False, default=None)
+        _config_file_arg: t.Optional[Path] = attr.ib(init=False, default=None)
         _loader: DataLoader = attr.ib(init=False)
         _data: t.Mapping = attr.ib(init=False)
 
         def __attrs_post_init__(self):
+            # called on user_config[config_file]
+
             if self.path is not None:
-                # Read data coming from yaml
+                # Read data coming from yaml file, designed for --config-file flag
+
+                config_files = {
+                    'biskotaki': '.github/biskotaki.yaml',
+                    'without-interpreters': 'tests/data/biskotaki-without-interpreters.yaml',
+                }
+
                 data_file = Path(my_dir) / '..' / config_files.get(self.path, self.path)
-                assert data_file.exists()
+                assert (
+                    data_file.exists()
+                ), f"{data_file} does not exist. Possilbly running test suite outside of source directory."
                 assert data_file.is_file()
-                assert data_file.suffix in (
-                    '.yaml',
-                    '.yml',
-                ), f"Invalid user config file {data_file}. Expected .yaml or .yml extension."
 
                 self._config_file_arg = data_file
                 self._data_file_path = data_file
@@ -674,7 +680,9 @@ def user_config(distro_loc: Path) -> ConfigInterfaceGeneric[ConfigProtocol]:
                 # Docs Building #
                 data['docs_builder'] = data['docs_builder'][0]  # choice variable
                 # RTD CI Python Version #
-                data['rtd_python_version'] = data['rtd_python_version'][0]  # choice variable
+                data['rtd_python_version'] = data['rtd_python_version'][
+                    0
+                ]  # choice variable
                 # CICD Pipeline Design old/new , stable/experimental
                 data['cicd'] = data['cicd'][0]  # choice variable
                 return data
@@ -697,9 +705,11 @@ def user_config(distro_loc: Path) -> ConfigInterfaceGeneric[ConfigProtocol]:
             return self._data['project_slug']
 
         @property
-        def config_file(self) -> t.Union[str, None]:
+        def config_file(self) -> t.Union[Path, None]:
             return self._config_file_arg
 
+    # NOTE: this offers client code: user_config[config_file]
+    # TODO: remove this unecessary adapter
     return type(
         'ConfigFile',
         (),
@@ -788,7 +798,7 @@ def project_files() -> t.Callable[[t.Union[str, Path]], RelativePathsGenerator]:
 def get_expected_generated_files(
     distro_loc: Path,
     project_files: t.Callable[[t.Union[str, Path]], RelativePathsGenerator],
-) -> t.Callable[[ConfigInterfaceGeneric[ConfigProtocol]], t.Set[Path]]:
+) -> t.Callable[[ConfigInterfaceProtocol], t.Set[Path]]:
     """Derive Expected Files, Pre-Generation, for sanity checks Post-Generation.
 
     Callable accepting a Config, User's Yaml or Default Json, and returning the
@@ -851,7 +861,10 @@ def get_expected_generated_files(
         from cookiecutter_python.hooks.post_gen_project import CICD_DELETE
 
         files_to_remove.update(
-            [os.path.join(*parts) for parts in CICD_DELETE[config.data.get('cicd', 'stable')]]
+            [
+                os.path.join(*parts)
+                for parts in CICD_DELETE[config.data.get('cicd', 'stable')]
+            ]
         )
 
         ## DERIVE expected files inside 'docs' gen dir
@@ -940,7 +953,11 @@ def get_expected_generated_files(
                 ), f"Sanity check fail: {file_path.relative_to(distro_loc / r'{{ cookiecutter.project_slug }}')}, {file_path.relative_to(distro_loc / r'{{ cookiecutter.project_slug }}').parts[0]}"
 
                 files_to_remove.add(
-                    str(file_path.relative_to(distro_loc / r'{{ cookiecutter.project_slug }}'))
+                    str(
+                        file_path.relative_to(
+                            distro_loc / r'{{ cookiecutter.project_slug }}'
+                        )
+                    )
                 )
 
         assert all(
@@ -948,7 +965,9 @@ def get_expected_generated_files(
         ), f"Temporary Requirement of Test Code: files_to_remove must be a list of strings, not {files_to_remove}"
 
         # FIND WHAT is actually in GEN ProJ DIR
-        all_template_files = project_files(distro_loc / r'{{ cookiecutter.project_slug }}')
+        all_template_files = project_files(
+            distro_loc / r'{{ cookiecutter.project_slug }}'
+        )
 
         assert all(
             [isinstance(x, str) for x in files_to_remove]
@@ -1034,8 +1053,12 @@ def get_expected_generated_files(
             )
 
             expected_file_parts = b.split(SEP)
-            assert len(expected_file_parts) > 0, f"Sanity check fail: {expected_file_parts}"
-            assert expected_file_parts[-1] != '', f"Sanity check fail: {expected_file_parts}"
+            assert (
+                len(expected_file_parts) > 0
+            ), f"Sanity check fail: {expected_file_parts}"
+            assert (
+                expected_file_parts[-1] != ''
+            ), f"Sanity check fail: {expected_file_parts}"
             assert len(expected_file_parts) == len(
                 parts
             ), f"Sanity check fail: {expected_file_parts}, {parts}"
@@ -1051,7 +1074,9 @@ def get_expected_generated_files(
         assert len(set([type(x) for x in res])) == 1, f"Sanity check fail: {res}"
 
         # Filter again through predicted for removale since some of them already inject their value for distro name
-        return iter(set([x for x in res if x not in set([Path(_) for _ in files_to_remove])]))
+        return iter(
+            set([x for x in res if x not in set([Path(_) for _ in files_to_remove])])
+        )
 
     return _get_expected_generated_files
 

@@ -38,12 +38,14 @@ Template Variant
 
 You want `poetry`, but what if you want to develop a `pytest plugin`?
 
-- Generate `module`: a Python Distribution, with python API/sdk
+- Generate **Library**: a Python Distribution, offering modules: python API/sdk
+
+  - configured with **poetry** as built backend, and Package Manager
+
+- Generate **CLI**: a Python Distribution, offering modules and a CLI as entrypoint
+
+  - configured with **poetry** as built backend, and Package Manager
+
+- Generate **Pytest Plugin**: a Python Distribution, designed for a *pytest plugin*
   
-  - configured with `poetry` backend
-- Generate `module+cli`: a Python Distribution, with a CLI and a python API/sdk
-  
-  - configured with `poetry` backend
-- Generate `pytest-plugin`: a Python Distribution, designed for a *pytest plugin*
-  
-  - configured with `setuptools` backend, as Required by `pytest`!
+  - configured with **setuptools** backend, as Required by `pytest`!

@@ -16,7 +16,9 @@ def test_registering_multiple_exceptions_under_the_same_type_allows_catching_mul
 
     # Backend Code that declares and registers a new Sanitizer
     @Sanitize.register_sanitizer(SANITIZE_TASK_TYPE)
-    def verify_input_string_not_empty_and_only_lowercase_latin_chars(string: str) -> None:
+    def verify_input_string_not_empty_and_only_lowercase_latin_chars(
+        string: str,
+    ) -> None:
 
         if len(string) < 1:
             raise StringWithNoLengthError("String With No Length Error")
@@ -41,7 +43,7 @@ def test_registering_multiple_exceptions_under_the_same_type_allows_catching_mul
     from cookiecutter_python.backend import sanitize
 
     assert SANITIZE_TASK_TYPE in sanitize.sanitizers_map
-    assert sanitize.sanitizers_map[SANITIZE_TASK_TYPE]
+    assert sanitize.sanitizers_map[SANITIZE_TASK_TYPE]  # type:ignore[truthy-function]
 
     # SANITY Production Sanitizers automatically loaded!
     PRODUCTION_SANITIZERS = {
