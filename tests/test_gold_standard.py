@@ -1,5 +1,6 @@
 import typing as t
 from pathlib import Path
+import logging
 
 import pytest
 
@@ -102,51 +103,30 @@ def gen_gs_project(
 
     return gen_project_dir
 
+@pytest.fixture(scope='session')
+def validate_project():
+    def _validate_project(project_dir: Path) -> t.Set[Path]:
+        """Validate directory and clean up irrelevant paths."""
+        assert project_dir.exists() and project_dir.is_dir(), f"Project directory {project_dir} does not exist"
 
-def test_gs_matches_runtime(gen_gs_project, test_root):
-    ## GIVEN a Snapshot we maintain, reflecting the Gold Standard of Biskotaki
-    from pathlib import Path
+        # here we make the tests more reliables for local development, by excluding
+        return set(x for x in set(x.relative_to(project_dir) for x in project_dir.glob('**/*')) if not any(p in {'__pycache__', '.ruff_cache'} for p in x.parts))
+    return _validate_project
 
-    # Load Snapshot
+
+def test_gs_matches_runtime(gen_gs_project, validate_project, test_root):
+
+    ## GIVEN the Snapshot project files maintained for the Gold Standard of Biskotaki
     snapshot_dir: Path = test_root / 'data' / 'snapshots' / 'biskotaki-gold-standard'
-    assert snapshot_dir.exists()
-    assert snapshot_dir.is_dir()
-
-    ## GIVEN a Project Generated at runtime, with 'biskotaki-gold-standard' User Config
-    runtime_gs: Path = gen_gs_project
-
-    ## GIVEN we find the Snapshot files (paths to dirs and files), using glob
-    snap_relative_paths_set = set(
-        [x.relative_to(snapshot_dir) for x in snapshot_dir.glob('**/*')]
-    )
+    snap_relative_paths_set = validate_project(snapshot_dir)
 
     # if 'cookie-py.log' file found show warning
     if Path('cookie-py.log') in snap_relative_paths_set:
-        import logging
-
         logger = logging.getLogger(__name__)
         logger.warning("cookie-py.log file found in snapshot")
 
-    # GIVEN we find the Runtime files (paths to dirs and files), using glob
-    runtime_relative_paths_set = set(
-        [x.relative_to(runtime_gs) for x in runtime_gs.glob('**/*')]
-    )
-
-    # for all relative paths, if 'part' __pycache__ is in the path, remove it
-    snap_relative_paths_set = set(
-        [x for x in snap_relative_paths_set if '__pycache__' not in x.parts]
-    )
-    runtime_relative_paths_set = set(
-        [x for x in runtime_relative_paths_set if '__pycache__' not in x.parts]
-    )
-
-    # for all relative paths, if .ruff_cache/ is in the path, remove it
-    snap_relative_paths_set = set(
-        [x for x in snap_relative_paths_set if '.ruff_cache' not in x.parts]
-    )
-    runtime_relative_paths_set = set(
-        [x for x in runtime_relative_paths_set if '.ruff_cache' not in x.parts]
-    )
+    ## GIVEN project files generated at (test) runtime, with 'biskotaki-gold-standard' User Config
+    runtime_relative_paths_set = validate_project(gen_gs_project)
 
     # Sanity Check that tests/test_cli.py is part of the comparison below
     assert Path('tests/test_cli.py') in snap_relative_paths_set, (
@@ -184,21 +164,8 @@ def test_gs_matches_runtime(gen_gs_project, test_root):
         # just exclude pre-emptively '.vscode/' folder, and '.vscode/settings.json' file
         # also exclude .tox/ folder, and .tox/ folder contents
         # also exlude reqs.txt, in case developer ran command `tox -e pin-deps`
-        snap_relative_paths_set = set(
-            [
-                x
-                for x in snap_relative_paths_set
-                if 'poetry.lock'
-                not in x.parts  # in case we run poetry install inside biskotaki
-                if '.vscode' not in x.parts
-                and 'settings.json' not in x.parts
-                and '.tox' not in x.parts
-                # EXCLUDE .pytest_cache/ folder
-                if x.parts[0] != '.pytest_cache'
-                # EXCLUDE reqs.txt file
-                and x.name != 'reqs.txt'
-            ]
-        )
+        snap_relative_paths_set = set([x for x in snap_relative_paths_set if not(any([p in {'poetry.lock', '.vscode', 'settings.json', '.tox', '.pytest_cache'} for p in x.parts]))])
+        snap_relative_paths_set = set([x for x in snap_relative_paths_set if x.name != 'reqs.txt'])
 
     if has_developer_fixed_windows_mishap:
         assert runtime_relative_paths_set == snap_relative_paths_set
