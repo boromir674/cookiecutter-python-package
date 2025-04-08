@@ -4,7 +4,9 @@ import os
 import sys
 
 import click
-from biskotakigold import __version__
+
+from . import __version__
+
 
 this_file_location = os.path.dirname(os.path.realpath(os.path.abspath(__file__)))
 
@@ -28,13 +30,6 @@ def main(
     # verbose,
 ):
     """TODO Write this content that gets renders when invoking with --help flag!
-
-    Eg:
-    Create a Project from the project template.
-
-    Cookiecutter Python Package is Free/Libre Open Source Software. If you would
-    like to get in touch, please see
-    https://github.com/boromir674/cookiecutter-python-package.
     """
     try:
         pass
