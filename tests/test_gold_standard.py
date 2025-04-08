@@ -121,8 +121,25 @@ def validate_project():
 
     return _validate_project
 
+@pytest.fixture(scope='session')
+def compare_file_content():
+    def _compare_file_content(runtime_file: Path, snap_file: Path):
+        """Compare the content of two files line by line."""
+        runtime_file_content = runtime_file.read_text().splitlines()
+        snap_file_content = snap_file.read_text().splitlines()
 
-def test_gs_matches_runtime(gen_gs_project, validate_project, test_root):
+        for line_index, line_pair in enumerate(zip(runtime_file_content, snap_file_content)):
+            assert line_pair[0] == line_pair[1], (
+                f"File: {runtime_file.relative_to(runtime_file.parent)} has different content at Runtime than in Snapshot\n"
+                f"Line Index: {line_index}\n"
+                f"Line Runtime: {line_pair[0]}\n"
+                f"Line Snapshot: {line_pair[1]}\n"
+            )
+        assert len(runtime_file_content) == len(snap_file_content)
+    return _compare_file_content
+
+
+def test_gs_matches_runtime(gen_gs_project, validate_project, compare_file_content, test_root):
 
     ## GIVEN the Snapshot project files maintained for the Gold Standard of Biskotaki
     snapshot_dir: Path = test_root / 'data' / 'snapshots' / 'biskotaki-gold-standard'
@@ -270,19 +287,7 @@ def test_gs_matches_runtime(gen_gs_project, validate_project, test_root):
             if runtime_file.name == 'cookie-py.log':
                 continue
             # go line by line and assert each one for easier debugging
-            runtime_file_content = runtime_file.read_text().splitlines()
-            snap_file_content = snap_file.read_text().splitlines()
-
-            for line_index, line_pair in enumerate(
-                zip(runtime_file_content, snap_file_content)
-            ):
-                assert line_pair[0] == line_pair[1], (
-                    f"File: {runtime_file.relative_to(gen_gs_project)} has different content at Runtime than in Snapshot\n"
-                    f"Line Index: {line_index}\n"
-                    f"Line Runtime: {line_pair[0]}\n"
-                    f"Line Snapshot: {line_pair[1]}\n"
-                )
-            assert len(runtime_file_content) == len(snap_file_content)
+            compare_file_content(runtime_file, snap_file)
     else:
         for runtime_file, snap_file in ((x, y) for x, y in file_gen()):
 
