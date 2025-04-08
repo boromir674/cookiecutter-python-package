@@ -49,7 +49,7 @@ jobs:
     uses: ./.github/workflows/test-python.yml
     with:
       default_trigger: true
-      override: ${{ vars.OV_WHEEL }}
+      override: true
       installation_mode: 'wheel'
       upload_distro: true
       python_version: '3.10'
