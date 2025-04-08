@@ -103,14 +103,22 @@ def gen_gs_project(
 
     return gen_project_dir
 
+
 @pytest.fixture(scope='session')
 def validate_project():
     def _validate_project(project_dir: Path) -> t.Set[Path]:
         """Validate directory and clean up irrelevant paths."""
-        assert project_dir.exists() and project_dir.is_dir(), f"Project directory {project_dir} does not exist"
+        assert (
+            project_dir.exists() and project_dir.is_dir()
+        ), f"Project directory {project_dir} does not exist"
 
         # here we make the tests more reliables for local development, by excluding
-        return set(x for x in set(x.relative_to(project_dir) for x in project_dir.glob('**/*')) if not any(p in {'__pycache__', '.ruff_cache'} for p in x.parts))
+        return set(
+            x
+            for x in set(x.relative_to(project_dir) for x in project_dir.glob('**/*'))
+            if not any(p in {'__pycache__', '.ruff_cache'} for p in x.parts)
+        )
+
     return _validate_project
 
 
@@ -164,8 +172,30 @@ def test_gs_matches_runtime(gen_gs_project, validate_project, test_root):
         # just exclude pre-emptively '.vscode/' folder, and '.vscode/settings.json' file
         # also exclude .tox/ folder, and .tox/ folder contents
         # also exlude reqs.txt, in case developer ran command `tox -e pin-deps`
-        snap_relative_paths_set = set([x for x in snap_relative_paths_set if not(any([p in {'poetry.lock', '.vscode', 'settings.json', '.tox', '.pytest_cache'} for p in x.parts]))])
-        snap_relative_paths_set = set([x for x in snap_relative_paths_set if x.name != 'reqs.txt'])
+        snap_relative_paths_set = set(
+            [
+                x
+                for x in snap_relative_paths_set
+                if not (
+                    any(
+                        [
+                            p
+                            in {
+                                'poetry.lock',
+                                '.vscode',
+                                'settings.json',
+                                '.tox',
+                                '.pytest_cache',
+                            }
+                            for p in x.parts
+                        ]
+                    )
+                )
+            ]
+        )
+        snap_relative_paths_set = set(
+            [x for x in snap_relative_paths_set if x.name != 'reqs.txt']
+        )
 
     if has_developer_fixed_windows_mishap:
         assert runtime_relative_paths_set == snap_relative_paths_set
@@ -195,7 +225,7 @@ def test_gs_matches_runtime(gen_gs_project, validate_project, test_root):
 
     # first compare CHANGLOG files, then all other files
     snapshot_changelog = snapshot_dir / 'CHANGELOG.rst'  # the expectation
-    runtime_changelog = runtime_gs / 'CHANGELOG.rst'  # the reality
+    runtime_changelog = gen_gs_project / 'CHANGELOG.rst'  # the reality
 
     snap_file_content = snapshot_changelog.read_text().splitlines()
     runtime_file_content = runtime_changelog.read_text().splitlines()
@@ -222,7 +252,7 @@ def test_gs_matches_runtime(gen_gs_project, validate_project, test_root):
         for runtime_file, relative_path in (
             (rf, rel_path)
             for rf, rel_path in [
-                (runtime_gs / x, x)
+                (gen_gs_project / x, x)
                 for x in sorted(runtime_relative_paths_set - {Path('CHANGELOG.rst')})
             ]
             if rf.is_file()
@@ -247,7 +277,7 @@ def test_gs_matches_runtime(gen_gs_project, validate_project, test_root):
                 zip(runtime_file_content, snap_file_content)
             ):
                 assert line_pair[0] == line_pair[1], (
-                    f"File: {runtime_file.relative_to(runtime_gs)} has different content at Runtime than in Snapshot\n"
+                    f"File: {runtime_file.relative_to(gen_gs_project)} has different content at Runtime than in Snapshot\n"
                     f"Line Index: {line_index}\n"
                     f"Line Runtime: {line_pair[0]}\n"
                     f"Line Snapshot: {line_pair[1]}\n"
@@ -257,7 +287,7 @@ def test_gs_matches_runtime(gen_gs_project, validate_project, test_root):
         for runtime_file, snap_file in ((x, y) for x, y in file_gen()):
 
             assert runtime_file.read_text() == snap_file.read_text(), (
-                f"File: {runtime_file.relative_to(runtime_gs)} has different content at Runtime than in Snapshot\n"
+                f"File: {runtime_file.relative_to(gen_gs_project)} has different content at Runtime than in Snapshot\n"
                 "-------------------\n"
                 f"Runtime: {runtime_file}\n"
                 "-------------------\n"
