@@ -45,7 +45,7 @@ def get_context() -> OrderedDict:
     """Get the Context, that was used by the Templating Engine at render time"""
     # variable with an object of the same type that will be set in the next line
     COOKIECUTTER: OrderedDict = OrderedDict()
-    COOKIECUTTER = {{cookiecutter}}  # type: ignore    # pylint: disable=undefined-variable
+    COOKIECUTTER = {{cookiecutter}}  # type: ignore    # pylint: disable=undefined-variable  # noqa: F821
     return COOKIECUTTER
 
 
@@ -79,7 +79,8 @@ class PostFileRemovalError(Exception):
 # each set of files exists exclusively for a given 'project_type'
 
 # CLI have extra files for command-line entrypoint and unit testing them
-CLI_ONLY = lambda x: [
+def CLI_ONLY(x):
+    return [
     ('src', x.module_name, 'cli.py'),
     ('src', x.module_name, '__main__.py'),
     ('tests', 'test_cli.py'),
@@ -88,7 +89,8 @@ CLI_ONLY = lambda x: [
 # Pytest plugin must use the legacy setuptools backend (no poetry)
 # thus the setup.cfg and MANIFEST.in files are required
 # Pytest pluging usually declare their public API in fixtures.py
-PYTEST_PLUGIN_ONLY = lambda x: [
+def PYTEST_PLUGIN_ONLY(x):
+    return [
     ('src', x.module_name, 'fixtures.py'),
     ('tests', 'conftest.py'),
     ('tests', 'test_my_fixture.py'),
