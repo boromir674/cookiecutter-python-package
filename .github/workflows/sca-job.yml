@@ -65,7 +65,7 @@ jobs:
 
       ## Ruff ##
       - name: 'Ruff: Require Project to pass Ruff Checks'
-        run: uvx ruff check --extend-exclude '${{ env._TEMPLATE_DIR }}' ${{ env.LINT_ARGS }}
+        run: uvx ruff check --extend-exclude 'src/cookiecutter_python/\{\{\ cookiecutter.project_slug\ \}\}' ${{ env.LINT_ARGS }}
 
       ## Isort ##
       - name: 'Isort: Require Semantic and Alphabetic order of the Python Imports'
