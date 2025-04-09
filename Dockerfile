@@ -7,31 +7,26 @@ FROM python:${PY_VERSION}-slim-bullseye as python_slim
 
 FROM python_slim as builder
 
-COPY poetry.lock pyproject.toml ./
+COPY uv.lock pyproject.toml ./
 
-# Configure installation location, for 'install.python-poetry.org' script
-ENV POETRY_HOME=/opt/poetry
-
-# Install Poetry
-RUN python -c 'from urllib.request import urlopen; print(urlopen("https://install.python-poetry.org").read().decode())' | python
-# Install plugin for 'poetry export' command
-RUN "$POETRY_HOME/bin/poetry" self add poetry-plugin-export
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv@sha256:2381d6aa60c326b71fd40023f921a0a3b8f91b14d5db6b90402e65a635053709 /uv /uvx /bin/
 
 # Export Exact/Pinned Prod (install only) dependencies, into pip format
 FROM builder AS prod_builder
-RUN "$POETRY_HOME/bin/poetry" export -f requirements.txt > requirements.txt
+RUN uv export --no-dev --frozen --no-emit-project -f requirements-txt -o requirements.txt
 
 # Export Exact/Pinned Prod + Test dependencies, into pip format
 FROM builder AS test_builder
-RUN "$POETRY_HOME/bin/poetry" export -f requirements.txt -E test > requirements-test.txt
+RUN uv export --no-dev --frozen --no-emit-project -f requirements-txt -o requirements-test.txt --extra test
 
 # Export Exact/Pinned Prod + Docs dependencies, into pip format
 FROM builder AS docs_builder
-RUN "$POETRY_HOME/bin/poetry" export -f requirements.txt -E docs > requirements.txt
+RUN uv export --no-dev --frozen --no-emit-project -f requirements-txt -o requirements.txt --extra docs
 
 # Export Exact/Pinned Prod + Docs + Live Dev Server dependencies, into pip format
 FROM builder AS docs_live_builder
-RUN "$POETRY_HOME/bin/poetry" export -f requirements.txt -E docslive > requirements.txt
+RUN uv export --no-dev --frozen --no-emit-project -f requirements-txt -o requirements.txt --extra docslive
 
 
 FROM scratch as source
@@ -43,7 +38,7 @@ COPY --from=prod_builder requirements.txt .
 # COPY . .
 COPY src src
 COPY pyproject.toml .
-COPY poetry.lock .
+COPY uv.lock .
 COPY LICENSE .
 COPY README.rst .
 
@@ -53,19 +48,22 @@ FROM python_slim as base_env
 # Wheels Directory for Distro and its Dependencies (aka requirements)
 ENV DISTRO_WHEELS=/app/dist
 
+
+###### BUILD WHEELS STAGE ######
 FROM base_env AS build_wheels
 
 # Essential build tools
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends build-essential && \
-    pip install -U pip && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+apt-get install -y --no-install-recommends build-essential && \
+pip install -U pip && \
+apt-get clean && \
+rm -rf /var/lib/apt/lists/*
 
 # Essential build-time dependencies
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir poetry-core && \
-    pip install --no-cache-dir build
+COPY --from=ghcr.io/astral-sh/uv@sha256:2381d6aa60c326b71fd40023f921a0a3b8f91b14d5db6b90402e65a635053709 /uv /uvx /bin/
+# RUN pip install --no-cache-dir --upgrade pip && \
+#     pip install --no-cache-dir poetry-core && \
+#     pip install --no-cache-dir build
 
 WORKDIR /app
 COPY --from=source /app .
@@ -74,10 +72,11 @@ COPY --from=source /app .
 RUN pip wheel --wheel-dir "${DISTRO_WHEELS}" -r ./requirements.txt
 
 # Build Wheels for Distro's Package
-RUN python -m build --outdir "/tmp/build-wheels" && \
+RUN uv build --wheel --out-dir "/tmp/build-wheels" && \
     mv /tmp/build-wheels/*.whl "${DISTRO_WHEELS}"
 
 # Now all wheels are in DISTRO_WHEELS folder
+
 
 FROM base_env AS install
 
@@ -94,19 +93,22 @@ COPY --from=build_wheels ${DISTRO_WHEELS} dist
 
 # Install wheels for our Distro and its Install/Runtime Dependencies
 # in user site-packages (ie /root/.local/lib/python3.11/site-packages)
-RUN pip install --no-cache-dir --user ./dist/*.whl
+RUN pip install --no-deps --no-cache-dir --user ./dist/*.whl
 
 
-## TEST ##
+##### TEST #####
 
-# EDIT MODE TEST
+## EDIT MODE TEST
 FROM python_slim AS test_dev
 WORKDIR /app
 
 COPY --from=test_builder requirements-test.txt .
+# Install uv for faster test dependencies installation than 'pip install'
+COPY --from=ghcr.io/astral-sh/uv@sha256:2381d6aa60c326b71fd40023f921a0a3b8f91b14d5db6b90402e65a635053709 /uv /uvx /bin/
 
 # Install test dependencies
-RUN pip install --no-cache-dir --user -r requirements-test.txt
+RUN uv venv
+RUN uv pip install --no-cache-dir --no-deps -r requirements-test.txt
 
 # Copy Source Code
 COPY src src
@@ -117,15 +119,47 @@ COPY README.rst .
 # COPY tests tests
 
 # Install in Editable Mode
-RUN pip install --no-cache-dir --user -e .
+RUN uv pip install --no-deps --no-cache-dir -e .
 
-# Add Pytest, installed in user's bin folder, to PATH
-ENV PATH="/root/.local/bin:$PATH"
+# Add Pytest, installed in uv controlled venv to PATH
+ENV PATH="/app/.venv/bin:$PATH"
 
-CMD [ "pytest", "-vvs", "-ra", "tests" ]
+CMD [ "pytest", "-ra", "tests" ]
+# CMD [ "uv", "run", "--locked", "--no-sync", "pytest", "-ra", "tests" ]
 
 # docker build --target test_dev -t ela-test-dev .
 # docker run --rm -v /data/repos/cookiecutter-python-package/.github/biskotaki.yaml:/app/.github/biskotaki.yaml -v /data/repos/cookiecutter-python-package/tests:/app/tests -it ela-test-dev
+
+
+## TEST Prod Wheels
+FROM base_env AS test_wheels
+WORKDIR /app
+
+# Install uv for faster test dependencies installation than 'pip install'
+COPY --from=ghcr.io/astral-sh/uv@sha256:2381d6aa60c326b71fd40023f921a0a3b8f91b14d5db6b90402e65a635053709 /uv /uvx /bin/
+RUN uv venv
+
+# Install Wheel of Package and Wheels its Prod dependencies
+COPY --from=build_wheels ${DISTRO_WHEELS} dist
+RUN uv pip install --no-deps --no-cache-dir ./dist/*.whl
+# RUN pip install --no-deps --no-cache-dir "./dist/"
+
+
+# Install test dependencies (pytest, pytest-object-getter, etc) from pypi
+COPY --from=test_builder requirements-test.txt .
+RUN uv pip install --no-deps -r requirements-test.txt
+
+# Add Pytest, installed in uv controlled venv to PATH
+ENV PATH="/app/.venv/bin:$PATH"
+
+# Configure Pytest: runner, test discovery, etc
+COPY pyproject.toml .
+
+CMD [ "pytest", "-ra", "tests" ]
+# docker build --target test_wheels -t ela-test-wheels-dev .
+# docker run --rm -v /data/repos/cookiecutter-python-package/.github/biskotaki.yaml:/app/.github/biskotaki.yaml -v /data/repos/cookiecutter-python-package/tests:/app/tests -it ela-test-wheels-dev
+
+
 
 
 ###### DOCS BASE ######
@@ -183,26 +217,6 @@ RUN pip install --no-cache-dir --user -e .[docslive]
 
 # docker run --rm -v ${PWD}/docs:/app/docs -v ${PWD}/docs-build:/app/docs-build -p 8000:8000 -it docs_live sphinx-autobuild --port 8000 --host 0.0.0.0 docs docs-build/html
 
-
-
-### WHEEL TEST
-FROM install AS test
-
-COPY --from=test_builder requirements-test.txt .
-
-# Install test dependencies
-RUN pip install --no-cache-dir --user -r requirements-test.txt
-
-# Add Pytest, installed in user's bin folder, to PATH
-ENV PATH="/root/.local/bin:$PATH"
-
-# Copy Test Suite, aka Unit Tests
-COPY tests tests
-
-# Copy Pytest Configuration
-COPY pyproject.toml .
-
-CMD [ "pytest", "-vvs", "-ra", "tests" ]
 
 
 ## PROD ##
