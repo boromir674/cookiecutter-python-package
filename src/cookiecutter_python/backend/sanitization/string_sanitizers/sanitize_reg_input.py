@@ -32,7 +32,6 @@ class RegExSanitizer:
         return json.dumps(data, indent=4, sort_keys=True)
 
     def __init__(self):
-
         def _log_message(error, input_data):
             raw_log_args: Tuple = type(self).log_message(error, input_data)
             return tuple(

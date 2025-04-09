@@ -345,7 +345,6 @@ def test_main(
 def test_post_file_removal_deletes_empty_logfile_if_found(
     get_post_gen_main, create_request_from_emulated_project, tmp_path
 ):
-
     # GIVEN a temporary directory, to store the emulated generated project
     project_dir: Path = tmp_path
 
@@ -378,7 +377,6 @@ def test_post_file_removal_deletes_empty_logfile_if_found(
 def test_post_file_removal_keeps_logfile_if_found_non_empty(
     get_post_gen_main, create_request_from_emulated_project, tmp_path
 ):
-
     # GIVEN a temporary directory, to store the emulated generated project
     project_dir: Path = tmp_path
 

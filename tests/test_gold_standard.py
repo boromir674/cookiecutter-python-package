@@ -146,7 +146,6 @@ def compare_file_content():
 def test_gs_matches_runtime(
     gen_gs_project, validate_project, compare_file_content, test_root
 ):
-
     ## GIVEN the Snapshot project files maintained for the Gold Standard of Biskotaki
     snapshot_dir: Path = test_root / 'data' / 'snapshots' / 'biskotaki-gold-standard'
     snap_relative_paths_set = validate_project(snapshot_dir)
@@ -296,7 +295,6 @@ def test_gs_matches_runtime(
             compare_file_content(runtime_file, snap_file)
     else:
         for runtime_file, snap_file in ((x, y) for x, y in file_gen()):
-
             assert runtime_file.read_text() == snap_file.read_text(), (
                 f"File: {runtime_file.relative_to(gen_gs_project)} has different content at Runtime than in Snapshot\n"
                 "-------------------\n"

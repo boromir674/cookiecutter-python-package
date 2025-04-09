@@ -521,15 +521,16 @@ def test_sdist_tar_gz_file_size_is_within_acceptable_lower_and_upper_limits_when
         442,
     )
     AVG = sum(observations) / len(observations)
-    tar_gz_file_size_within_acceptable_limits, assertion_error_message = (
-        verify_file_size_within_acceptable_limits(
-            sdist_built_at_runtime_with_uv,
-            {
-                # Observed: [380KB, 442KB]
-                "expected_size": AVG * 1024,  # average of observed sizes
-                "allowed_margin": 100 * 1024,  # 10KB
-            },
-        )
+    (
+        tar_gz_file_size_within_acceptable_limits,
+        assertion_error_message,
+    ) = verify_file_size_within_acceptable_limits(
+        sdist_built_at_runtime_with_uv,
+        {
+            # Observed: [380KB, 442KB]
+            "expected_size": AVG * 1024,  # average of observed sizes
+            "allowed_margin": 100 * 1024,  # 10KB
+        },
     )
     assert tar_gz_file_size_within_acceptable_limits, assertion_error_message
 
@@ -612,14 +613,15 @@ def test_sdist_tar_gz_file_size_is_within_acceptable_lower_and_upper_limits_when
     )
     AVG = sum(observations) / len(observations)
 
-    tar_gz_file_size_within_acceptable_limits, assertion_error_message = (
-        verify_file_size_within_acceptable_limits(
-            sdist_built_at_runtime_with_build,
-            {
-                "expected_size": AVG * 1024,  # Bytes
-                "allowed_margin": 100 * 1024,  # 100KB
-            },
-        )
+    (
+        tar_gz_file_size_within_acceptable_limits,
+        assertion_error_message,
+    ) = verify_file_size_within_acceptable_limits(
+        sdist_built_at_runtime_with_build,
+        {
+            "expected_size": AVG * 1024,  # Bytes
+            "allowed_margin": 100 * 1024,  # 100KB
+        },
     )
     assert tar_gz_file_size_within_acceptable_limits, assertion_error_message
 

@@ -11,7 +11,6 @@ def test_calling_cookiecutter_on_prod_template_with_mkdocs_builder(
     distro_loc: Path,
     tmp_path: Path,
 ):
-
     # GIVEN the cookiecutter callable
     from cookiecutter.main import cookiecutter as _cookiecutter
 
@@ -98,7 +97,6 @@ def test_calling_cookiecutter_on_prod_template_with_mkdocs_builder(
 def test_calling_cookiecutter_on_simple_template_with_choice_var(
     tmp_path: Path,
 ):
-
     # GIVEN the cookiecutter callable
     from cookiecutter.main import cookiecutter as _cookiecutter
 
