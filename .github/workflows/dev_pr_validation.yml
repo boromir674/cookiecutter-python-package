@@ -171,7 +171,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: dist-${{ inputs.platform }}-${{ inputs.python_version }}
+          name: dist-${{ matrix.platform }}-${{ matrix.python-version }}
           path: dist
           if-no-files-found: error
 
@@ -250,6 +250,7 @@ jobs:
     with:
       acceptance_policy: '1'
       image_slug: "generate-python"
+      image_tag: "latest"
       # target_stage: "some_stage_alias"  # no stage, means no `--target` flag, on build
       tests_pass: true
       tests_run: true

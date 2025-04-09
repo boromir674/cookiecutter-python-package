@@ -71,6 +71,8 @@ jobs:
           PYDEPS_DIR="pydeps"
           echo "PYDEPS_DIR=${PYDEPS_DIR}" >> $GITHUB_ENV
 
+          . .venv/bin/activate
+
           # Draw only the source code package inner dependencies
           pydeps ${PKG} --only ${PKG_NAME} --noshow -o "${PWD}/${PYDEPS_DIR}/deps_inner.svg"
           
