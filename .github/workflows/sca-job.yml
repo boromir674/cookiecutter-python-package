@@ -52,6 +52,7 @@ jobs:
     env:
       LINT_ARGS: "tests src/cookiecutter_python/backend src/cookiecutter_python/handle scripts"
       LINT_EXCLUDES: 'tests/data/snapshots'
+      _TEMPLATE_DIR: 'src/cookiecutter_python/{{ cookiecutter.project_slug }}'
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python ${{ inputs.python_version }}
@@ -64,17 +65,30 @@ jobs:
 
       ## Ruff ##
       - name: 'Ruff: Require Project to pass Ruff Checks'
-        run: uvx ruff check ${{ env.LINT_ARGS }}
+        run: uvx ruff check --extend-exclude '${{ env._TEMPLATE_DIR }}' ${{ env.LINT_ARGS }}
 
       ## Isort ##
       - name: 'Isort: Require Semantic and Alphabetic order of the Python Imports'
         if: always()
-        run: uvx isort --skip ${{ env.LINT_EXCLUDES }} --check ${{ env.LINT_ARGS }}
+        shell: bash
+        run: |
+          uvx --with 'isort>=5.12.0, <6.0.0' isort --check \
+            --skip ${{ env.LINT_EXCLUDES }} \
+            --skip '${{ env._TEMPLATE_DIR }}' \
+            src tests scripts
 
       ## Black ##
       - name: 'Black: Require Project Style to be followed by the Python Code'
         if: always()
-        run: uvx black --check --skip-string-normalization --exclude ${{ env.LINT_EXCLUDES }} --config pyproject.toml ${{ env.LINT_ARGS }}
+        shell: bash
+        run: |
+          uvx --with 'black>=23.3.0, <24.0.0' black --check \
+            --skip-string-normalization \
+            --exclude ${{ env.LINT_EXCLUDES }} \
+            --extend-exclude '${{ env._TEMPLATE_DIR }}' \
+            --config pyproject.toml src tests scripts
+
+        # run: uvx black --check --skip-string-normalization --exclude ${{ env.LINT_EXCLUDES }} --config pyproject.toml ${{ env.LINT_ARGS }}
 
       ## Pyflakes, Pyroma, McCabe, DodgyRun, Profile Validator ##
       - name: Run prospector on application source code 
