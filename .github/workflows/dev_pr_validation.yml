@@ -85,6 +85,7 @@ jobs:
       # Build Package Wheel
       - name: Build Package Wheel and Sdist Distributions
         id: build
+        shell: bash
         run: |
           uv build --out-dir dist
 
@@ -98,15 +99,23 @@ jobs:
       - name: 'Export pinned Prod + Test dependencies'
         run: uv export --no-emit-project --no-dev --extra test --frozen --format requirements-txt -o requirements.txt
 
-      - name: Install dependencies
+      - name: Install exact 'Prod + Test' Dependencies
+        shell: bash
         run: |
           uv venv
+          if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
+            . .venv/Scripts/activate
+          fi
           uv pip install --no-deps -r requirements.txt
 
       # Install the Package Wheel
-      - name: Install our Package Wheel
-        shell: bash
-        run: uv pip install --no-deps dist/*.whl
+      - name: Install Package Wheel
+        shell: bash  # to solve issue on windows ci
+        run: |
+          if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
+            . .venv/Scripts/activate
+          fi
+          uv pip install --no-deps dist/cookiecutter_python-*.whl
 
       #### Run Test Suite against the package and measure Coverage ####
       - name: Run Tests and measure Coverage

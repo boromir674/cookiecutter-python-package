@@ -211,7 +211,7 @@ jobs:
           echo "[INFO] Running twine check on the sdist and wheel"
           uv run --active python -m twine check ../dist/*
 
-      ## UV Build WHEEL - TESTS ##
+      ## Install WHEEL and Run TESTS ##
       - name: Install Wheel and Run Test Suite
         shell: bash  # to solve issue on windows ci
         run: |
