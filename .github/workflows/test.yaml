@@ -198,8 +198,8 @@ jobs:
           echo "Sent to Codecov: $file !"
         done
 
-## DOCKER BUILD and PUBLISH ON DOCKERHUB ##
-# Ref Page: https://automated-workflows.readthedocs.io/en/main/ref_docker/
+  ## DOCKER BUILD and PUBLISH ON DOCKERHUB ##
+  # Ref Page: https://automated-workflows.readthedocs.io/en/main/ref_docker/
   docker_build:
     needs: [set_github_outputs, test]
     uses: boromir674/automated-workflows/.github/workflows/docker.yml@v1.14.0
@@ -274,7 +274,7 @@ jobs:
     secrets:
       TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
 
-### STATIC CODE ANALYSIS & LINTING ###
+  ### STATIC CODE ANALYSIS & LINTING ###
   lint:
     name: Static Code Analysis
     if: false
@@ -287,7 +287,7 @@ jobs:
       python_version: ${{ needs.set_github_outputs.outputs.PIPE_SQA_PY }}
       pylint_threshold: ${{ needs.set_github_outputs.outputs.PIPE_SQA_PYLINT_PASS_SCORE }}
 
-### DOCS BUILD/TEST - DOCUMENTATION SITE ###
+  ### DOCS BUILD/TEST - DOCUMENTATION SITE ###
   docs:
     if: false
     name: Build Documentation
@@ -300,7 +300,7 @@ jobs:
       command: "tox -e docs --sitepackages -vv -s false"
       # command: "tox -e pin-deps -- -E docs && tox -e docs --sitepackages -vv -s false"
 
-### DRAW PYTHON DEPENDENCY GRAPHS ###
+  ### DRAW PYTHON DEPENDENCY GRAPHS ###
   code_visualization:
     if: false
     needs: set_github_outputs
@@ -313,7 +313,7 @@ jobs:
       python_version: '3.10'
       artifacts_dir: 'dependency-graphs'
 
-### Make a Github Release ###
+  ### Make a Github Release ###
   gh_release:
     needs: [test, check_which_git_branch_we_are_on]
     if: ${{ needs.check_which_git_branch_we_are_on.outputs.AUTOMATED_DEPLOY == 'true' }}

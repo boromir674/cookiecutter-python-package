@@ -3,6 +3,7 @@ on:
   pull_request:
     branches:
       - dev
+      - release
     paths-ignore:
       - .github/workflows/**
 
@@ -82,21 +83,39 @@ jobs:
       - uses: actions/checkout@v4
 
       # Build Package Wheel
-      - run: uv build --wheel --out-dir dist
+      - name: Build Package Wheel and Sdist Distributions
+        id: build
+        shell: bash
+        run: |
+          uv build --out-dir dist
+
+          WHEEL_FILE=$(ls dist/cookiecutter_python-*.whl)
+          WHEEL_NAME="$(basename $WHEEL_FILE)"
+
+          PEP_VERSION=$(echo $WHEEL_NAME | cut -d'-' -f2 | sed 's/-/./g')
+          echo "PEP_VERSION=$PEP_VERSION" >> $GITHUB_OUTPUT
 
       # Install exact Prod + Test dependencies
       - name: 'Export pinned Prod + Test dependencies'
         run: uv export --no-emit-project --no-dev --extra test --frozen --format requirements-txt -o requirements.txt
 
-      - name: Install dependencies
+      - name: Install exact 'Prod + Test' Dependencies
+        shell: bash
         run: |
           uv venv
+          if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
+            . .venv/Scripts/activate
+          fi
           uv pip install --no-deps -r requirements.txt
 
       # Install the Package Wheel
-      - name: Install our Package Wheel
-        shell: bash
-        run: uv pip install --no-deps dist/*.whl
+      - name: Install Package Wheel
+        shell: bash  # to solve issue on windows ci
+        run: |
+          if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
+            . .venv/Scripts/activate
+          fi
+          uv pip install --no-deps dist/cookiecutter_python-*.whl
 
       #### Run Test Suite against the package and measure Coverage ####
       - name: Run Tests and measure Coverage
@@ -122,6 +141,7 @@ jobs:
 
       ## Code Coverage ## TODO; enable combine by moving each .coverage file to other dir to avoid override of subsequent coverage invocations with pytest
       - name: "Discover and Combine Coverage data into XML Reports"
+        if: always()
         env:
           COVERAGE_FILE: .coverage
           OUTPUT_XML: coverage-${{ matrix.platform }}-${{ matrix.python-version }}-wheel.xml
@@ -148,12 +168,24 @@ jobs:
         id: coverage
 
       - name: "Upload Test Coverage as Artifacts"
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           overwrite: false
           name: '${{ steps.coverage.outputs.OUTPUT_XML }}'
           path: '${{ steps.coverage.outputs.OUTPUT_XML }}'
           if-no-files-found: error
+
+      - name: Upload Source & Wheel distributions as Artefacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.platform }}-${{ matrix.python-version }}
+          path: dist
+          if-no-files-found: error
+
+    outputs:
+      PEP_VERSION: ${{ steps.build.outputs.PEP_VERSION }}
 
   # STATIC CODE ANALYSIS: mypy, ruff, isort, black, bandit, mccabe, prospector, etc
   sca:
@@ -164,8 +196,89 @@ jobs:
       force_styles: ${{ github.event_name == 'pull_request' && github.base_ref == 'dev' }}
       bandit: '{"h": 1, "m": 2, "l": 4}'  # Automated Acceptance Criteria for Bandit
 
-## PYDEPS
+  # PYDEPS
+  pydeps:
+    uses: ./.github/workflows/pydeps-job.yml
+    with:
+      default_trigger: true
+      override: '${{ vars.OV_PYDEPS }}'
+      python_version: '3.10'
 
-## TYPE CHECK
+  # TYPE CHECK
+  type_check:
+    uses: ./.github/workflows/type-check-job.yml
+    with:
+      default_trigger: true
+      override: '${{ vars.OV_TYPE_CHECK }}'
+      python_version: '3.10'
 
-## DOCS
+  # DOCS
+  docs:
+    uses: ./.github/workflows/docs-job.yml
+    with:
+      default_trigger: true
+      override: '${{ vars.OV_DOCS }}'
+      python_version: '3.11'
+
+
+  # CODECOV Upload of COVERAGE reports
+  codecov_coverage_host:
+    if: always() && github.event_name == 'pull_request' && github.base_ref == 'release'
+    runs-on: ubuntu-latest
+    needs: cross_platform_tests
+    steps:
+      - uses: actions/checkout@v4
+      - name: Get Codecov binary
+        run: |
+          curl -Os https://uploader.codecov.io/latest/linux/codecov
+          chmod +x codecov
+
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: coverage
+          pattern: coverage-*
+          merge-multiple: true
+
+      - run: ls -R coverage
+
+      - name: Upload Coverage Reports to Codecov
+        run: |
+          for file in coverage/coverage*.xml; do
+            OS_NAME=$(echo $file | sed -E "s/coverage-(\w\+)-/\1/")
+            PY_VERSION=$(echo $file | sed -E "s/coverage-\w\+-(\d\.)\+/\1/")
+            ./codecov -f $file -e "OS=$OS_NAME,PYTHON=$PY_VERSION" --flags unittests --verbose
+            echo "Sent to Codecov: $file !"
+          done
+
+  ## DOCKER BUILD and PUBLISH ON DOCKERHUB ##
+  # Ref Page: https://automated-workflows.readthedocs.io/en/main/ref_docker/
+  docker_build:
+    uses: boromir674/automated-workflows/.github/workflows/docker.yml@v1.14.0
+    if: github.event_name == 'pull_request' && github.base_ref == 'release'
+    with:
+      acceptance_policy: '1'
+      image_slug: "generate-python"
+      image_tag: "latest"
+      # target_stage: "some_stage_alias"  # no stage, means no `--target` flag, on build
+      tests_pass: true
+      tests_run: true
+      DOCKER_USER: ${{ vars.DOCKER_USER }}
+    secrets:
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+  ## JOB: PYPI UPLOAD ##
+  pypi_publish:
+    needs: cross_platform_tests
+    uses: boromir674/automated-workflows/.github/workflows/pypi_env.yml@test
+    # Automatic .tar.gz and .whl discovery but with performance trade-off
+    # also with risk of uploading the wrong file
+    with:
+      should_trigger: ${{ github.event_name == 'pull_request' && github.base_ref == 'release' }}
+      distro_name: cookiecutter_python
+      distro_version: '${{ needs.cross_platform_tests.outputs.PEP_VERSION }}'
+      pypi_env: TEST_DEPLOYMENT
+      require_wheel: true
+      allow_existing: true
+    secrets:
+      TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
