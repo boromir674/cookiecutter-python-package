@@ -78,25 +78,30 @@ class PostFileRemovalError(Exception):
 # (ie 'module' or 'module+cli')
 # each set of files exists exclusively for a given 'project_type'
 
+
 # CLI have extra files for command-line entrypoint and unit testing them
 def CLI_ONLY(x):
     return [
-    ('src', x.module_name, 'cli.py'),
-    ('src', x.module_name, '__main__.py'),
-    ('tests', 'test_cli.py'),
-    ('tests', 'test_invoking_cli.py'),
-]
+        ('src', x.module_name, 'cli.py'),
+        ('src', x.module_name, '__main__.py'),
+        ('tests', 'test_cli.py'),
+        ('tests', 'test_invoking_cli.py'),
+    ]
+
+
 # Pytest plugin must use the legacy setuptools backend (no poetry)
 # thus the setup.cfg and MANIFEST.in files are required
 # Pytest pluging usually declare their public API in fixtures.py
 def PYTEST_PLUGIN_ONLY(x):
     return [
-    ('src', x.module_name, 'fixtures.py'),
-    ('tests', 'conftest.py'),
-    ('tests', 'test_my_fixture.py'),
-    ('setup.cfg',),
-    ('MANIFEST.in',),
-]
+        ('src', x.module_name, 'fixtures.py'),
+        ('tests', 'conftest.py'),
+        ('tests', 'test_my_fixture.py'),
+        ('setup.cfg',),
+        ('MANIFEST.in',),
+    ]
+
+
 # Specify the files to be deleted, in post-process, for each project type
 delete_files = {
     'pytest-plugin': lambda x: CLI_ONLY(x),

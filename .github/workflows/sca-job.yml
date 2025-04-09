@@ -65,7 +65,11 @@ jobs:
 
       ## Ruff ##
       - name: 'Ruff: Require Project to pass Ruff Checks'
-        run: uvx ruff check --extend-exclude 'src/cookiecutter_python/\{\{\ cookiecutter.project_slug\ \}\}' ${{ env.LINT_ARGS }}
+        shell: bash
+        run: |
+          uvx ruff check \
+            --extend-exclude 'src/cookiecutter_python/\{\{\ cookiecutter.project_slug\ \}\}' \
+            src tests scripts
 
       ## Isort ##
       - name: 'Isort: Require Semantic and Alphabetic order of the Python Imports'
@@ -86,7 +90,8 @@ jobs:
             --skip-string-normalization \
             --exclude ${{ env.LINT_EXCLUDES }} \
             --extend-exclude '${{ env._TEMPLATE_DIR }}' \
-            --config pyproject.toml src tests scripts
+            --config pyproject.toml \
+            src tests scripts
 
         # run: uvx black --check --skip-string-normalization --exclude ${{ env.LINT_EXCLUDES }} --config pyproject.toml ${{ env.LINT_ARGS }}
 
