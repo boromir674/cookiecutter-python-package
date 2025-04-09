@@ -29,8 +29,7 @@ def version_msg():
 def main(
     # verbose,
 ):
-    """TODO Write this content that gets renders when invoking with --help flag!
-    """
+    """TODO Write this content that gets renders when invoking with --help flag!"""
     try:
         pass
     except Exception as error:  # pylint: disable=broad-except
