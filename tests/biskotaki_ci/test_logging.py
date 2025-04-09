@@ -5,7 +5,6 @@ import pytest
 
 @pytest.fixture
 def biskotaki_ci_like_gen_proj(tmp_path):
-
     from cookiecutter_python.backend.main import generate
 
     # GIVEN any existing valid config file to use in generation

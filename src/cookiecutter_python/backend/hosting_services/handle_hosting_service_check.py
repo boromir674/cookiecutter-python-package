@@ -4,6 +4,7 @@ import typing as t
 import attr
 from requests.exceptions import ConnectionError as RequestsConnectionError
 
+
 HostingServiceChecker = t.Callable[[str], bool]
 
 

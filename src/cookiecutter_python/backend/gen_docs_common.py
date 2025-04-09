@@ -3,6 +3,7 @@
 import typing as t
 from pathlib import Path
 
+
 # Runtime folder path of {{ cookiecutter.project_slug }}
 PROJ_TEMPLATE_DIR: Path = (
     Path(__file__).parent.parent / '{{ cookiecutter.project_slug }}'

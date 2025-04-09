@@ -7,6 +7,7 @@ from software_patterns import ProxySubject, Singleton
 
 from .proxy import BaseProxy
 
+
 __all__ = ['get_user_config']
 
 

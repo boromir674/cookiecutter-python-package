@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+
 # @pytest.fixture(params=["gold-standard", "biskotaki-no-input", "biskotaki-interactive"])
 # def snapshot_project_data(request, test_root: Path) -> Path:
 #     return test_root / 'data' / 'snapshots' / request.param, request.param

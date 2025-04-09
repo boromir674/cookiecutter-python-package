@@ -1,6 +1,7 @@
 import logging
 import typing as t
 
+
 logger = logging.getLogger(__name__)
 
 SanitizerLike = t.Callable[[t.Any], None]

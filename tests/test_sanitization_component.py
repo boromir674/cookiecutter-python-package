@@ -2,7 +2,6 @@ import pytest
 
 
 def test_registering_multiple_exceptions_under_the_same_type_allows_catching_multiple_errors():
-
     import json
     import logging
 
@@ -19,7 +18,6 @@ def test_registering_multiple_exceptions_under_the_same_type_allows_catching_mul
     def verify_input_string_not_empty_and_only_lowercase_latin_chars(
         string: str,
     ) -> None:
-
         if len(string) < 1:
             raise StringWithNoLengthError("String With No Length Error")
 

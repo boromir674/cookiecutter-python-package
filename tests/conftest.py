@@ -2,6 +2,7 @@ import os
 import sys
 import typing as t
 
+
 if sys.version_info >= (3, 8):
     from typing import Protocol
 else:
@@ -11,6 +12,7 @@ from pathlib import Path
 
 import attr
 import pytest
+
 
 my_dir: str = os.path.dirname(os.path.realpath(__file__))
 
@@ -118,7 +120,6 @@ def project_dir(generate_project, distro_loc, tmpdir):
 
 
 class EmulatedRequest(t.Protocol):
-
     project_dir: t.Union[str, None]
     cookiecutter: t.Optional[t.Dict]
     author: t.Optional[str]
@@ -131,8 +132,11 @@ class EmulatedRequest(t.Protocol):
 
 
 class EmulatedRequestFactory(t.Protocol):
-    def pre(**kwargs: t.Any) -> EmulatedRequest: ...
-    def post(**kwargs: t.Any) -> EmulatedRequest: ...
+    def pre(**kwargs: t.Any) -> EmulatedRequest:
+        ...
+
+    def post(**kwargs: t.Any) -> EmulatedRequest:
+        ...
 
 
 @pytest.fixture
@@ -565,7 +569,8 @@ class ConfigProtocol(Protocol):
 
 
 class ConfigInterfaceProtocol(t.Protocol):
-    def __getitem__(self, file_path_str: t.Union[str, None]) -> ConfigProtocol: ...
+    def __getitem__(self, file_path_str: t.Union[str, None]) -> ConfigProtocol:
+        ...
 
 
 @pytest.fixture
@@ -724,7 +729,8 @@ def user_config(distro_loc: Path) -> ConfigInterfaceProtocol:
 class RelativePathsGenerator(Protocol):
     """Generate relative paths from a given root folder."""
 
-    def relative_file_paths(self) -> t.Iterator[Path]: ...
+    def relative_file_paths(self) -> t.Iterator[Path]:
+        ...
 
 
 @pytest.fixture
@@ -871,9 +877,9 @@ def get_expected_generated_files(
         from cookiecutter_python.backend import get_docs_gen_internal_config
 
         # Find where each Docs Builder 'stores' its Template Files (ie source docs)
-        _doc_builder_id_2_template_docs_dir_name: t.Dict[str, str] = (
-            get_docs_gen_internal_config()
-        )
+        _doc_builder_id_2_template_docs_dir_name: t.Dict[
+            str, str
+        ] = get_docs_gen_internal_config()
         builder_docs_folder_name: str = _doc_builder_id_2_template_docs_dir_name[
             user_docs_builder_id
         ]

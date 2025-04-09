@@ -116,7 +116,7 @@ jobs:
   ## Unless override, default trigger is (only) on PR to dev
   sca:
     # Unless override, default trigger is (only) on PR to dev
-    if: vars.OV_SCA == 'true' || (vars.OV_SCA != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')
+    if: always() || vars.OV_SCA == 'true' || (vars.OV_SCA != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')
     uses: ./.github/workflows/sca-job.yml
     with:
       python_version: '3.10'
@@ -127,7 +127,7 @@ jobs:
   # RUN INTEGRATION TESTS: slower due to automated installations involved via pip
   ## Unless override, default trigger is (only) on PR to dev
   test_integration:
-    if: vars.OV_TEST_INTEGRATION == 'true' || (vars.OV_SCA != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')
+    if: always() || vars.OV_TEST_INTEGRATION == 'true' || (vars.OV_SCA != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

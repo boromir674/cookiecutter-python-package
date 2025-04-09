@@ -1,1 +1,2 @@
-class InvalidGitRepositoryError(Exception): pass
+class InvalidGitRepositoryError(Exception):
+    pass
