@@ -7,31 +7,26 @@ FROM python:${PY_VERSION}-slim-bullseye as python_slim
 
 FROM python_slim as builder
 
-COPY poetry.lock pyproject.toml ./
+COPY uv.lock pyproject.toml ./
 
-# Configure installation location, for 'install.python-poetry.org' script
-ENV POETRY_HOME=/opt/poetry
-
-# Install Poetry
-RUN python -c 'from urllib.request import urlopen; print(urlopen("https://install.python-poetry.org").read().decode())' | python
-# Install plugin for 'poetry export' command
-RUN "$POETRY_HOME/bin/poetry" self add poetry-plugin-export
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv@sha256:2381d6aa60c326b71fd40023f921a0a3b8f91b14d5db6b90402e65a635053709 /uv /uvx /bin/
 
 # Export Exact/Pinned Prod (install only) dependencies, into pip format
 FROM builder AS prod_builder
-RUN "$POETRY_HOME/bin/poetry" export -f requirements.txt > requirements.txt
+RUN uv export --no-dev --frozen --no-emit-project -f requirements-txt -o requirements.txt
 
 # Export Exact/Pinned Prod + Test dependencies, into pip format
 FROM builder AS test_builder
-RUN "$POETRY_HOME/bin/poetry" export -f requirements.txt -E test > requirements-test.txt
+RUN uv export --no-dev --frozen --no-emit-project -f requirements-txt -o requirements-test.txt --extra test
 
 # Export Exact/Pinned Prod + Docs dependencies, into pip format
 FROM builder AS docs_builder
-RUN "$POETRY_HOME/bin/poetry" export -f requirements.txt -E docs > requirements.txt
+RUN uv export --no-dev --frozen --no-emit-project -f requirements-txt -o requirements.txt --extra docs
 
 # Export Exact/Pinned Prod + Docs + Live Dev Server dependencies, into pip format
 FROM builder AS docs_live_builder
-RUN "$POETRY_HOME/bin/poetry" export -f requirements.txt -E docslive > requirements.txt
+RUN uv export --no-dev --frozen --no-emit-project -f requirements-txt -o requirements.txt --extra docslive
 
 
 FROM scratch as source
@@ -43,7 +38,7 @@ COPY --from=prod_builder requirements.txt .
 # COPY . .
 COPY src src
 COPY pyproject.toml .
-COPY poetry.lock .
+COPY uv.lock .
 COPY LICENSE .
 COPY README.rst .
 
@@ -57,15 +52,16 @@ FROM base_env AS build_wheels
 
 # Essential build tools
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends build-essential && \
-    pip install -U pip && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+apt-get install -y --no-install-recommends build-essential && \
+pip install -U pip && \
+apt-get clean && \
+rm -rf /var/lib/apt/lists/*
 
 # Essential build-time dependencies
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir poetry-core && \
-    pip install --no-cache-dir build
+COPY --from=ghcr.io/astral-sh/uv@sha256:2381d6aa60c326b71fd40023f921a0a3b8f91b14d5db6b90402e65a635053709 /uv /uvx /bin/
+# RUN pip install --no-cache-dir --upgrade pip && \
+#     pip install --no-cache-dir poetry-core && \
+#     pip install --no-cache-dir build
 
 WORKDIR /app
 COPY --from=source /app .
@@ -74,7 +70,7 @@ COPY --from=source /app .
 RUN pip wheel --wheel-dir "${DISTRO_WHEELS}" -r ./requirements.txt
 
 # Build Wheels for Distro's Package
-RUN python -m build --outdir "/tmp/build-wheels" && \
+RUN uv build --wheel --out-dir "/tmp/build-wheels" && \
     mv /tmp/build-wheels/*.whl "${DISTRO_WHEELS}"
 
 # Now all wheels are in DISTRO_WHEELS folder
