@@ -164,8 +164,26 @@ jobs:
       force_styles: ${{ github.event_name == 'pull_request' && github.base_ref == 'dev' }}
       bandit: '{"h": 1, "m": 2, "l": 4}'  # Automated Acceptance Criteria for Bandit
 
-## PYDEPS
+  # PYDEPS
+  pydeps:
+    uses: ./.github/workflows/pydeps-job.yml
+    with:
+      default_trigger: true
+      override: '${{ vars.OV_PYDEPS }}'
+      python_version: '3.10'
 
-## TYPE CHECK
+  # TYPE CHECK
+  type_check:
+    uses: ./.github/workflows/type-check-job.yml
+    with:
+      default_trigger: true
+      override: '${{ vars.OV_TYPE_CHECK }}'
+      python_version: '3.10'
 
-## DOCS
+  # DOCS
+  docs:
+    uses: ./.github/workflows/docs-job.yml
+    with:
+      default_trigger: true
+      override: '${{ vars.OV_DOCS }}'
+      python_version: '3.11'

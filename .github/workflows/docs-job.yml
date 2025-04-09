@@ -1,0 +1,90 @@
+# Reusable Job for Documentation Static Site Building
+
+name: Docs Build
+on:
+  workflow_call:
+    inputs:
+      # App Installation Settings #
+
+      # Upload build to CI Artifacts
+      upload_distro:
+        required: false
+        default: false
+        type: boolean
+        description: "Whether to upload built docs distro to CI Artifacts"
+
+      # Trigger Behavior Settings #
+      default_trigger:
+        required: false
+        default: true
+        description: "Default trigger for the workflow. If true the 'default behavior' is to run on call. If false, the 'default behavior' is to be skipped."
+        type: boolean
+
+      override:
+        required: false
+        description: "Override the default trigger, 'true' gurantees run, 'false' not run"
+        type: string  # IMPORTANT: must be string, to model 3 states {true, false, none}
+
+      # Environment Settings #
+      python_version:
+        required: false
+        default: '3.11'
+        description: "Python version to use for the job. Default is 3.11"
+        type: string
+
+jobs:
+  test:
+    if: inputs.override == 'true' || (inputs.override != 'false' && inputs.default_trigger == true)
+    runs-on: 'ubuntu-latest'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${ inputs.python_version }
+        uses: actions/setup-python@v5
+        with:
+          python-version: '${{ inputs.python_version }}'
+
+      # Install uv
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: 'Export pinned Prod + Docs dependencies'
+        run: uv export --no-emit-project --no-dev --extra docs --frozen --format requirements-txt -o requirements.txt
+
+      # Install dependencies in virtualenv
+      - name: 'Install "Prod + Docs" dependencies'
+        run: |
+          uv venv
+          uv pip install --no-deps -r requirements.txt
+
+      # here the .venv is built with the exact dependencies
+
+      ## Install Package in 'edit' mode ##
+      - name: 'Install Package in Edit mode'
+        run: uv pip install --no-deps -e .
+
+      #### Build Documentation HTML/CSS/JS from docs sources ####
+      - name: Run Docs Build Process and perform Tests during build
+        run: |
+          . .venv/bin/activate
+
+          echo "[INFO] Running Doc Tests!"
+          sphinx-build -E -b doctest docs dist/docs
+
+          echo "[INFO] Building docs" 
+          sphinx-build -E -b html docs dist/docs
+
+          echo "[INFO] Building docs with spelling check"
+          sphinx-build -b spelling docs dist/docs
+          
+          echo "[INFO] Building docs with url link check"
+          sphinx-build -b linkcheck docs dist/docs || 'true'
+
+      - name: "Upload Docs HTML/CSS/JS bundle to CI Artifacts"
+        if: inputs.upload_distro
+        uses: actions/upload-artifact@v4
+        with:
+          overwrite: false
+          name: docs
+          path: dist/docs
+          if-no-files-found: error
