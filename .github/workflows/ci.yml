@@ -116,7 +116,7 @@ jobs:
   ## Unless override, default trigger is (only) on PR to dev
   sca:
     # Unless override, default trigger is (only) on PR to dev
-    if: vars.OV_SCA == 'true' || (vars.OV_SCA != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')
+    if: always() || vars.OV_SCA == 'true' || (vars.OV_SCA != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')
     uses: ./.github/workflows/sca-job.yml
     with:
       python_version: '3.10'
