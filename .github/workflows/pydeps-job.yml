@@ -67,6 +67,12 @@ jobs:
           sudo apt-get update -y --allow-releaseinfo-change
           sudo apt-get install -y graphviz
 
+      # Install pydeps in virtualenv
+      - name: Install pydeps
+        run: |
+          . .venv/bin/activate
+          uv pip install 'pydeps==1.11.0'
+
       ## Run PYDEPS on src code ##
       - name: Run Pydeps to draw Dependency Graphs
         env:
@@ -79,17 +85,17 @@ jobs:
           . .venv/bin/activate
 
           # Draw only the source code package inner dependencies
-          uvx pydeps ${PKG} --only ${PKG_NAME} --noshow -o "${PWD}/${PYDEPS_DIR}/deps_inner.svg"
+          pydeps ${PKG} --only ${PKG_NAME} --noshow -o "${PWD}/${PYDEPS_DIR}/deps_inner.svg"
           
           # Draw the source code package inner and external dependencies
-          uvx pydeps ${PKG} --cluster --noshow -o "${PWD}/${PYDEPS_DIR}/deps_all.svg"
+          pydeps ${PKG} --cluster --noshow -o "${PWD}/${PYDEPS_DIR}/deps_all.svg"
 
           # Visualize the package inner dependencies and abstract the external (eg with numpy, pandas, etc) ones
           # Draw the source code package inner and minimum external dependencies
-          uvx pydeps ${PKG} --max-cluster-size=2 --keep-target-cluster --noshow -o "${PWD}/${PYDEPS_DIR}/deps_ktc-mcs_2.svg"
+          pydeps ${PKG} --max-cluster-size=2 --keep-target-cluster --noshow -o "${PWD}/${PYDEPS_DIR}/deps_ktc-mcs_2.svg"
 
           # Draw the source code package inner and all external dependencies
-          uvx pydeps ${PKG} --keep-target-cluster --noshow -o "${PWD}/${PYDEPS_DIR}/deps_ktc.svg"
+          pydeps ${PKG} --keep-target-cluster --noshow -o "${PWD}/${PYDEPS_DIR}/deps_ktc.svg"
 
       # Upload to CI Artifacts #
       - name: Upload Generated svg files to CI Artifacts
