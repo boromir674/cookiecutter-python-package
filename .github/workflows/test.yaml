@@ -40,7 +40,7 @@ env:
   ##### JOB ON/OFF SWITCHES - Top/1st level overrides #####
   RUN_UNIT_TESTS: "true"
   RUN_LINT_CHECKS: "true"
-  DOCKER_JOB_ON: "false"
+  DOCKER_JOB_ON: "true"
   PUBLISH_ON_PYPI: "true"
   DOCS_JOB_ON: "true"
   DRAW_DEPENDENCIES: "true"
@@ -200,7 +200,7 @@ jobs:
   ## DOCKER BUILD and PUBLISH ON DOCKERHUB ##
   # Ref Page: https://automated-workflows.readthedocs.io/en/main/ref_docker/
   docker_build:
-    needs: [set_github_outputs, test]
+    needs: [set_github_outputs, test, docs, lint, code_visualization]
     uses: boromir674/automated-workflows/.github/workflows/docker.yml@v1.14.0
     if: always()
     with:
@@ -288,7 +288,6 @@ jobs:
 
   ### DOCS BUILD/TEST - DOCUMENTATION SITE ###
   docs:
-    if: false
     name: Build Documentation
     needs: set_github_outputs
     # bafaa2c2a014758a4421fe9b5c02ba66dbfdbef6
@@ -314,7 +313,7 @@ jobs:
 
   ### Make a Github Release ###
   gh_release:
-    needs: [test, check_which_git_branch_we_are_on]
+    needs: [test, code_visualization, docs, lint, check_which_git_branch_we_are_on]
     if: ${{ needs.check_which_git_branch_we_are_on.outputs.AUTOMATED_DEPLOY == 'true' }}
     uses: boromir674/automated-workflows/.github/workflows/gh-release.yml@v1.14.0
     name: 'GH Release'
