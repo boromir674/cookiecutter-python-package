@@ -31,7 +31,7 @@ env:
   ### STRESS TEST Job MATRIX ###
   # slowest: windows 3.12 (8 mins), slowest python: 3.12 !
   # TODO: add python 3.11 !!!
-  FULL_MATRIX_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.8\", \"3.9\", \"3.10\", \"3.12\"]}"
+  FULL_MATRIX_STRATEGY: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.8\", \"3.9\", \"3.10\", \"3.11\", \"3.12\"]}"
   # Python 3.7 has reached End of Life (EOL) on June 27th, 2023
   # Python 3.12 is in bugfix mode, same as 3.11 -> can start supporting 3.12 it
   UBUNTU_PY310_STRATEGY: "{\"platform\": [\"ubuntu-latest\"], \"python-version\": [\"3.10\"]}"
@@ -166,7 +166,7 @@ jobs:
     uses: ./.github/workflows/test-job.yml
     with:
       # job_matrix: ${{ needs.set_github_outputs.outputs.matrix }}
-      job_matrix: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.11\"]}"
+      job_matrix: "${{ env.FULL_MATRIX_STRATEGY }}"
       # job_matrix: "{\"platform\": [\"windows-latest\"], \"python-version\": [\"3.11\"]}"
       # artifact_name: 'dist'
 
