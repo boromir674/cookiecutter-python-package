@@ -203,7 +203,6 @@ jobs:
             . check-env/Scripts/activate
           fi
           uv pip install poetry-core pyroma 'twine >=5.0.0, <6.0.0'
-          # --active
 
           # Check .tar.gz file using 'pyroma' command
           echo "[INFO] Running pyroma on the sdist"
@@ -259,21 +258,16 @@ jobs:
           ls -l "${WHEEL_FILE}"
 
       #### Build All Wheels, install and Test
-      - name: Build All Wheels
-        run: pip wheel --wheel-dir dist-wheels .
+      - name: Build Wheels for 'Prod + Test' Dependencies
+        shell: bash
+        run: |
+          uv export --frozen --no-dev --no-emit-project --extra test --format requirements-txt -o requirements.txt
+          pip wheel --wheel-dir dist-wheels -r requirements.txt
 
       - name: Show Wheels, produced using 'pip', for Distro and its Requirements
         run: ls -l dist-wheels/
 
-      - name: Derive Module Wheel distro file path
-        id: module_wheel_path
-        shell: bash
-        run: |
-          mkdir module_wheel/
-          mv dist-wheels/cookiecutter_python*.whl module_wheel/
-          echo "MODULE_WHEEL_PATH=$(ls module_wheel/*.whl)" >> $GITHUB_OUTPUT
-
-      - name: Install Wheels of Dependencies
+      - name: Install Wheels of 'Prod + Test' Dependencies
         shell: bash
         run: |
           rm -rf .venv
@@ -284,9 +278,17 @@ jobs:
           fi
           uv pip install --no-deps dist-wheels/*.whl
 
+      - name: Derive Module Wheel distro file path
+        id: module_wheel_path
+        shell: bash
+        run: |
+          mkdir module_wheel/
+          mv dist/cookiecutter_python-*.whl module_wheel/
+          echo "MODULE_WHEEL_PATH=$(ls module_wheel/*.whl)" >> $GITHUB_OUTPUT
+
       - name: Install module wheel with test extras downloaded at runtime from pypi
         if: matrix.platform != 'windows-latest'
-        run: uv pip install "${{ steps.module_wheel_path.outputs.MODULE_WHEEL_PATH }}[test]"
+        run: uv pip install "${{ steps.module_wheel_path.outputs.MODULE_WHEEL_PATH }}"
       
       - if: matrix.platform == 'windows-latest'
         name: Install module wheel with test extras downloaded at runtime from pypi
@@ -296,7 +298,7 @@ jobs:
             echo "[INFO] Activating virtual environment for Windows"
             . .venv/Scripts/activate
           fi
-          uv pip install "${{ steps.module_wheel_path.outputs.MODULE_WHEEL_PATH }}[test]"
+          uv pip install "${{ steps.module_wheel_path.outputs.MODULE_WHEEL_PATH }}"
 
       # Run tests
       - name: 'Run tests'
