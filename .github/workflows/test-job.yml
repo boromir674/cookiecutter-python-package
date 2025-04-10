@@ -92,8 +92,6 @@ jobs:
         with:
           version: "latest"
 
-      - uses: actions/checkout@v4
-
       # ### Sanity Check that folder is Compatible for Python Distro / Build ###
       # - run: uvx pyroma --directory .
 
@@ -139,7 +137,11 @@ jobs:
         shell: bash
         run: |
           # Extract PROD Sem Ver
-          SEMVER="$(grep -E -o '^version\s*=\s*\".*\"' pyproject.toml | cut -d'"' -f2)"
+          VERSION_SOURCE_OF_TRUTH='src/cookiecutter_python/__init__.py'
+
+          REGEX='^[[:space:]]*__version__[[:space:]]*=[[:space:]]*["'\'']([0-9]+)\.([0-9]+)\.([0-9]+)["'\'']'
+
+          SEMVER="$(grep -E -o "${REGEX}" "${VERSION_SOURCE_OF_TRUTH}" | sed -E "s/${REGEX}/\1.\2.\3/")"
 
           # Derive RC Sem Ver
           RC_SEMVER="${SEMVER}-rc"
