@@ -9,6 +9,7 @@ build-backend = "poetry.core.masonry.api"
 ### ... ###
 
 ### OLD ###
+# this integrates with 'pip install', 'python -m build' and 'poetry <CMD>'
 [tool.poetry]
 name = "cookiecutter_python"
 ### ... ###
@@ -62,7 +63,7 @@ exclude = [
 [tool.poetry.scripts]
 generate-python = 'cookiecutter_python.cli:main'
 
-
+# this integrates ONLY with uv
 [project]
 authors = [
     {name = "Konstantinos Lampridis", email = "k.lampridis@hotmail.com"},
@@ -73,7 +74,7 @@ maintainers = [
 license = {text = "AGPL-3.0-only"}
 
 name = "cookiecutter_python"
-version = "2.5.0"
+version = "2.5.1"
 description = "1-click Generator of Python Project, from Template with streamlined \"DevOps\" using a powerful CI/CD Pipeline."
 readme = "README.rst"
 # keywords = []
