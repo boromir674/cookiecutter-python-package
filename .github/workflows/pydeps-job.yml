@@ -83,19 +83,27 @@ jobs:
           echo "PYDEPS_DIR=${PYDEPS_DIR}" >> $GITHUB_ENV
 
           . .venv/bin/activate
+          echo
+          echo PWD = $PWD
+          ls -la
+          echo ====
 
           # Draw only the source code package inner dependencies
-          pydeps ${PKG} --only ${PKG_NAME} --noshow -o "${PWD}/${PYDEPS_DIR}/deps_inner.svg"
-          
+          pydeps ${PKG} --only ${PKG_NAME} --noshow -o "${PYDEPS_DIR}/deps_inner.svg"
+          echo DONE
+
           # Draw the source code package inner and external dependencies
           pydeps ${PKG} --cluster --noshow -o "${PWD}/${PYDEPS_DIR}/deps_all.svg"
+          echo DONE
 
           # Visualize the package inner dependencies and abstract the external (eg with numpy, pandas, etc) ones
           # Draw the source code package inner and minimum external dependencies
           pydeps ${PKG} --max-cluster-size=2 --keep-target-cluster --noshow -o "${PWD}/${PYDEPS_DIR}/deps_ktc-mcs_2.svg"
+          echo DONE
 
           # Draw the source code package inner and all external dependencies
           pydeps ${PKG} --keep-target-cluster --noshow -o "${PWD}/${PYDEPS_DIR}/deps_ktc.svg"
+          echo DONE
 
       # Upload to CI Artifacts #
       - name: Upload Generated svg files to CI Artifacts
