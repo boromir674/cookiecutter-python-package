@@ -5,13 +5,15 @@ from pathlib import Path
 
 import pytest
 
+
 # @pytest.fixture(params=["gold-standard", "biskotaki-no-input", "biskotaki-interactive"])
 # def snapshot_project_data(request, test_root: Path) -> Path:
 #     return test_root / 'data' / 'snapshots' / request.param, request.param
 
 
 @pytest.mark.parametrize(
-    'snapshot', ["biskotaki-gold-standard", "biskotaki-no-input", "biskotaki-interactive"]
+    'snapshot',
+    ["biskotaki-gold-standard", "biskotaki-no-input", "biskotaki-interactive"],
 )
 def test_referenced_job_output_vars_correspond_to_existing_jobs(
     # GIVEN a Snapshot from calling the Generator
@@ -37,11 +39,9 @@ def test_referenced_job_output_vars_correspond_to_existing_jobs(
     # GIVEN the EXPECTED paths to the generated Github Workflows per CICD Option
     from cookiecutter_python.hooks.post_gen_project import CICD_DELETE
 
-    d: t.Dict[str, t.List[t.Tuple[str, ...]]] = CICD_DELETE
-
     all_rendered_yaml_workflows: t.Set[t.Tuple[str, ...]] = {
         tuple_of_strings
-        for list_of_tuples in d.values()
+        for list_of_tuples in CICD_DELETE.values()
         for tuple_of_strings in list_of_tuples
     }
 
@@ -77,7 +77,9 @@ def test_referenced_job_output_vars_correspond_to_existing_jobs(
         'biskotaki-interactive': 'experimental',
     }
     # GIVEN we identify the Snapshot's project cicd option used at generation time
-    snapshot_cicd_value: CICDDesignOption = snapshot_name_2_cicd_option_value[SNAPSHOT_NAME]
+    snapshot_cicd_value: CICDDesignOption = snapshot_name_2_cicd_option_value[
+        SNAPSHOT_NAME
+    ]
 
     # WHEN we iterate over the expected generated workflows for this Snapshot
     import yaml
@@ -90,7 +92,8 @@ def test_referenced_job_output_vars_correspond_to_existing_jobs(
             # except poyo.exceptions.PoyoException as error:
             except yaml.YAMLError as error:
                 raise RuntimeError(
-                    'Unable to parse YAML file {}. Error: {}' ''.format(yaml_workflow, error)
+                    'Unable to parse YAML file {}. Error: {}'
+                    ''.format(yaml_workflow, error)
                 ) from error
             # THEN we check the yaml_dict that all jobs that reference variables from other jobs also depend on those jobs
 

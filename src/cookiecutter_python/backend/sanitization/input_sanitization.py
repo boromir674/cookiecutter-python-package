@@ -1,6 +1,7 @@
 import logging
 import typing as t
 
+
 logger = logging.getLogger(__name__)
 
 SanitizerLike = t.Callable[[t.Any], None]
@@ -22,7 +23,9 @@ class Sanitize:
     def __iter_exceptions(self) -> t.Iterator[t.Tuple[str, ExceptionValue]]:
         for key, exceptions_list in self.exceptions_map.items():
             exception: ExceptionValue = (
-                exceptions_list[0] if len(exceptions_list) == 1 else tuple(exceptions_list)
+                exceptions_list[0]
+                if len(exceptions_list) == 1
+                else tuple(exceptions_list)
             )
             yield key, exception
 

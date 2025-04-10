@@ -1,3 +1,4 @@
+import logging
 import typing as t
 from pathlib import Path
 
@@ -103,43 +104,59 @@ def gen_gs_project(
     return gen_project_dir
 
 
-def test_gs_matches_runtime(gen_gs_project, test_root):
-    ## GIVEN a Snapshot we maintain, reflecting the Gold Standard of Biskotaki
-    from pathlib import Path
+@pytest.fixture(scope='session')
+def validate_project():
+    def _validate_project(project_dir: Path) -> t.Set[Path]:
+        """Validate directory and clean up irrelevant paths."""
+        assert (
+            project_dir.exists() and project_dir.is_dir()
+        ), f"Project directory {project_dir} does not exist"
 
-    # Load Snapshot
+        # here we make the tests more reliables for local development, by excluding
+        return set(
+            x
+            for x in set(x.relative_to(project_dir) for x in project_dir.glob('**/*'))
+            if not any(p in {'__pycache__', '.ruff_cache'} for p in x.parts)
+        )
+
+    return _validate_project
+
+
+@pytest.fixture(scope='session')
+def compare_file_content():
+    def _compare_file_content(runtime_file: Path, snap_file: Path):
+        """Compare the content of two files line by line."""
+        runtime_file_content = runtime_file.read_text().splitlines()
+        snap_file_content = snap_file.read_text().splitlines()
+
+        for line_index, line_pair in enumerate(
+            zip(runtime_file_content, snap_file_content)
+        ):
+            assert line_pair[0] == line_pair[1], (
+                f"File: {runtime_file.relative_to(runtime_file.parent)} has different content at Runtime than in Snapshot\n"
+                f"Line Index: {line_index}\n"
+                f"Line Runtime: {line_pair[0]}\n"
+                f"Line Snapshot: {line_pair[1]}\n"
+            )
+        assert len(runtime_file_content) == len(snap_file_content)
+
+    return _compare_file_content
+
+
+def test_gs_matches_runtime(
+    gen_gs_project, validate_project, compare_file_content, test_root
+):
+    ## GIVEN the Snapshot project files maintained for the Gold Standard of Biskotaki
     snapshot_dir: Path = test_root / 'data' / 'snapshots' / 'biskotaki-gold-standard'
-    assert snapshot_dir.exists()
-    assert snapshot_dir.is_dir()
+    snap_relative_paths_set = validate_project(snapshot_dir)
 
-    ## GIVEN a Project Generated at runtime, with 'biskotaki-gold-standard' User Config
-    runtime_gs: Path = gen_gs_project
+    # if 'cookie-py.log' file found show warning
+    if Path('cookie-py.log') in snap_relative_paths_set:
+        logger = logging.getLogger(__name__)
+        logger.warning("cookie-py.log file found in snapshot")
 
-    ## GIVEN we find the Snapshot files (paths to dirs and files), using glob
-    snap_relative_paths_set = set(
-        [x.relative_to(snapshot_dir) for x in snapshot_dir.glob('**/*')]
-    )
-
-    # GIVEN we find the Runtime files (paths to dirs and files), using glob
-    runtime_relative_paths_set = set(
-        [x.relative_to(runtime_gs) for x in runtime_gs.glob('**/*')]
-    )
-
-    # for all relative paths, if 'part' __pycache__ is in the path, remove it
-    snap_relative_paths_set = set(
-        [x for x in snap_relative_paths_set if '__pycache__' not in x.parts]
-    )
-    runtime_relative_paths_set = set(
-        [x for x in runtime_relative_paths_set if '__pycache__' not in x.parts]
-    )
-
-    # for all relative paths, if .ruff_cache/ is in the path, remove it
-    snap_relative_paths_set = set(
-        [x for x in snap_relative_paths_set if '.ruff_cache' not in x.parts]
-    )
-    runtime_relative_paths_set = set(
-        [x for x in runtime_relative_paths_set if '.ruff_cache' not in x.parts]
-    )
+    ## GIVEN project files generated at (test) runtime, with 'biskotaki-gold-standard' User Config
+    runtime_relative_paths_set = validate_project(gen_gs_project)
 
     # Sanity Check that tests/test_cli.py is part of the comparison below
     assert Path('tests/test_cli.py') in snap_relative_paths_set, (
@@ -181,16 +198,25 @@ def test_gs_matches_runtime(gen_gs_project, test_root):
             [
                 x
                 for x in snap_relative_paths_set
-                if 'poetry.lock'
-                not in x.parts  # in case we run poetry install inside biskotaki
-                if '.vscode' not in x.parts
-                and 'settings.json' not in x.parts
-                and '.tox' not in x.parts
-                # EXCLUDE .pytest_cache/ folder
-                if x.parts[0] != '.pytest_cache'
-                # EXCLUDE reqs.txt file
-                and x.name != 'reqs.txt'
+                if not (
+                    any(
+                        [
+                            p
+                            in {
+                                'poetry.lock',
+                                '.vscode',
+                                'settings.json',
+                                '.tox',
+                                '.pytest_cache',
+                            }
+                            for p in x.parts
+                        ]
+                    )
+                )
             ]
+        )
+        snap_relative_paths_set = set(
+            [x for x in snap_relative_paths_set if x.name != 'reqs.txt']
         )
 
     if has_developer_fixed_windows_mishap:
@@ -221,7 +247,7 @@ def test_gs_matches_runtime(gen_gs_project, test_root):
 
     # first compare CHANGLOG files, then all other files
     snapshot_changelog = snapshot_dir / 'CHANGELOG.rst'  # the expectation
-    runtime_changelog = runtime_gs / 'CHANGELOG.rst'  # the reality
+    runtime_changelog = gen_gs_project / 'CHANGELOG.rst'  # the reality
 
     snap_file_content = snapshot_changelog.read_text().splitlines()
     runtime_file_content = runtime_changelog.read_text().splitlines()
@@ -248,7 +274,7 @@ def test_gs_matches_runtime(gen_gs_project, test_root):
         for runtime_file, relative_path in (
             (rf, rel_path)
             for rf, rel_path in [
-                (runtime_gs / x, x)
+                (gen_gs_project / x, x)
                 for x in sorted(runtime_relative_paths_set - {Path('CHANGELOG.rst')})
             ]
             if rf.is_file()
@@ -266,24 +292,11 @@ def test_gs_matches_runtime(gen_gs_project, test_root):
             if runtime_file.name == 'cookie-py.log':
                 continue
             # go line by line and assert each one for easier debugging
-            runtime_file_content = runtime_file.read_text().splitlines()
-            snap_file_content = snap_file.read_text().splitlines()
-
-            for line_index, line_pair in enumerate(
-                zip(runtime_file_content, snap_file_content)
-            ):
-                assert line_pair[0] == line_pair[1], (
-                    f"File: {runtime_file.relative_to(runtime_gs)} has different content at Runtime than in Snapshot\n"
-                    f"Line Index: {line_index}\n"
-                    f"Line Runtime: {line_pair[0]}\n"
-                    f"Line Snapshot: {line_pair[1]}\n"
-                )
-            assert len(runtime_file_content) == len(snap_file_content)
+            compare_file_content(runtime_file, snap_file)
     else:
         for runtime_file, snap_file in ((x, y) for x, y in file_gen()):
-
             assert runtime_file.read_text() == snap_file.read_text(), (
-                f"File: {runtime_file.relative_to(runtime_gs)} has different content at Runtime than in Snapshot\n"
+                f"File: {runtime_file.relative_to(gen_gs_project)} has different content at Runtime than in Snapshot\n"
                 "-------------------\n"
                 f"Runtime: {runtime_file}\n"
                 "-------------------\n"

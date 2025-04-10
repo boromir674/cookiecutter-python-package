@@ -1,6 +1,7 @@
 from pathlib import Path
 from unittest.mock import patch
 
+
 my_dir = Path(__file__).parent
 
 
@@ -10,7 +11,6 @@ def test_calling_cookiecutter_on_prod_template_with_mkdocs_builder(
     distro_loc: Path,
     tmp_path: Path,
 ):
-
     # GIVEN the cookiecutter callable
     from cookiecutter.main import cookiecutter as _cookiecutter
 
@@ -37,7 +37,9 @@ def test_calling_cookiecutter_on_prod_template_with_mkdocs_builder(
     # assert expected_default_context_passed['docs_builder'] == 'mkdocs'
     expected_extra_context_passed = None
     if 'interpreters' in user_config_dict:
-        expected_extra_context_passed = {'interpreters': user_config_dict['interpreters']}
+        expected_extra_context_passed = {
+            'interpreters': user_config_dict['interpreters']
+        }
 
     # Track the Jinja Context for SANITY Check
     from cookiecutter.generate import generate_context
@@ -95,7 +97,6 @@ def test_calling_cookiecutter_on_prod_template_with_mkdocs_builder(
 def test_calling_cookiecutter_on_simple_template_with_choice_var(
     tmp_path: Path,
 ):
-
     # GIVEN the cookiecutter callable
     from cookiecutter.main import cookiecutter as _cookiecutter
 

@@ -1,0 +1,284 @@
+name: PR Validate
+on:
+  pull_request:
+    branches:
+      - dev
+      - release
+    paths-ignore:
+      - .github/workflows/**
+
+jobs:
+  # RUN INTEGRATION TESTS
+  integration_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      # Install uv to manage pinned versions
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      # Export "pinned" (exact) dependencies' versions in requirements.txt format
+      - name: 'Export pinned Prod + Test dependencies'
+        run: uv export --no-emit-project --no-dev --extra test --frozen --format requirements-txt -o requirements.txt
+
+      - run: uv venv
+
+      # Install dependencies in virtualenv
+      - name: 'Install "Prod + Test" dependencies'
+        run: uv pip install -r requirements.txt
+
+      # here the .venv is built with the exact dependencies
+
+      # Install Package (without dependencies)
+      - name: 'Install Package without dependencies'
+        run: uv pip install --no-deps -e .
+
+      # Run Integration tests
+      - name: 'Run Integration tests'
+        run: |
+          # leverage uv to install other runtime test dependencies in the system site-packages!
+
+          uv pip install 'tox<4.0'  # integration tests dependency
+
+          # Isolate flaky tests
+          uv run pytest -ra -vvs --run-slow -k via_build_module
+          uv run pytest -ra -vvs --run-slow -k test_build_creates_artifacts
+
+          # Run eveything once again for sanity
+          uv run pytest -ra -n auto --run-requires_uv --run-slow --run-network_bound -vvs -k 'test_cli or build_backend_sdist or test_build_creates_artifacts or test_lint_passes'
+
+  # CROSS PLATFORM TESTING: 15s on Ubuntu, 25 on mac, 35 on windows
+  cross_platform_tests:
+    runs-on: ${{ matrix.platform }}
+    # trigger if event is pr to dev
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ubuntu-latest, macos-latest, windows-latest]
+        # platform: [windows-latest]
+        python-version: ['3.10']
+    steps:
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install uv
+        if: matrix.platform != 'windows-latest'
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: Install the latest version of uv
+        if: matrix.platform == 'windows-latest'
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      - uses: actions/checkout@v4
+
+      # Build Package Wheel
+      - name: Build Package Wheel and Sdist Distributions
+        id: build
+        shell: bash
+        run: |
+          uv build --out-dir dist
+
+          WHEEL_FILE=$(ls dist/cookiecutter_python-*.whl)
+          WHEEL_NAME="$(basename $WHEEL_FILE)"
+
+          PEP_VERSION=$(echo $WHEEL_NAME | cut -d'-' -f2 | sed 's/-/./g')
+          echo "PEP_VERSION=$PEP_VERSION" >> $GITHUB_OUTPUT
+
+      # Install exact Prod + Test dependencies
+      - name: 'Export pinned Prod + Test dependencies'
+        run: uv export --no-emit-project --no-dev --extra test --frozen --format requirements-txt -o requirements.txt
+
+      - name: Install exact 'Prod + Test' Dependencies
+        shell: bash
+        run: |
+          uv venv
+          if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
+            . .venv/Scripts/activate
+          fi
+          uv pip install --no-deps -r requirements.txt
+
+      # Install the Package Wheel
+      - name: Install Package Wheel
+        shell: bash  # to solve issue on windows ci
+        run: |
+          if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
+            . .venv/Scripts/activate
+          fi
+          uv pip install --no-deps dist/cookiecutter_python-*.whl
+
+      #### Run Test Suite against the package and measure Coverage ####
+      - name: Run Tests and measure Coverage
+        shell: bash
+        env:
+          # log deletion post hook fails on windows, due to permission error! (other process is using the file, so removing is denied)
+          # windows spawn multiple processes, so log deletion is not possible, even when running 1 Single Unit Test
+          BUG_LOG_DEL_WIN: 'permission_error'  # required on Windows Job
+          PY_WHEEL: 1 # required on Windows Job
+          COVERAGE_FILE: '.coverage.wheel'
+        run: |
+          if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
+            . .venv/Scripts/activate
+          else
+            # Linux and MacOS
+            . .venv/bin/activate
+          fi
+
+          pytest -ra --run-requires_uv --run-network_bound -vvs --cov --cov-report=term-missing \
+            --cov-report=html:test-wheel/htmlcov --cov-context=test \
+            --cov-report=xml:coverage.test-wheel.xml \
+            -n auto tests
+
+      ## Code Coverage ## TODO; enable combine by moving each .coverage file to other dir to avoid override of subsequent coverage invocations with pytest
+      - name: "Discover and Combine Coverage data into XML Reports"
+        if: always()
+        env:
+          COVERAGE_FILE: .coverage
+          OUTPUT_XML: coverage-${{ matrix.platform }}-${{ matrix.python-version }}-wheel.xml
+        shell: bash
+        run: |
+          uv venv cov-env
+          if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
+            . cov-env/Scripts/activate
+          else
+            # Linux and MacOS
+            . cov-env/bin/activate
+          fi
+
+          uv pip install 'coverage[toml] >= 5.1' 'diff_cover >=6'
+
+          echo '[INFO] Running coverage'
+          uv run --active coverage combine --keep
+          uv run --active coverage report --skip-covered --show-missing -i
+
+          uv run --active coverage xml -o ./${{ env.OUTPUT_XML }} -i
+          # uv run --active coverage html -d ./htmlcov -i
+
+          echo "OUTPUT_XML=${{ env.OUTPUT_XML }}" >> $GITHUB_OUTPUT
+        id: coverage
+
+      - name: "Upload Test Coverage as Artifacts"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          overwrite: false
+          name: '${{ steps.coverage.outputs.OUTPUT_XML }}'
+          path: '${{ steps.coverage.outputs.OUTPUT_XML }}'
+          if-no-files-found: error
+
+      - name: Upload Source & Wheel distributions as Artefacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.platform }}-${{ matrix.python-version }}
+          path: dist
+          if-no-files-found: error
+
+    outputs:
+      PEP_VERSION: ${{ steps.build.outputs.PEP_VERSION }}
+
+  # STATIC CODE ANALYSIS: mypy, ruff, isort, black, bandit, mccabe, prospector, etc
+  sca:
+    uses: ./.github/workflows/sca-job.yml
+    with:
+      python_version: '3.10'
+      allow_failure: ${{ github.event_name != 'pull_request' || github.base_ref != 'dev' }}
+      force_styles: ${{ github.event_name == 'pull_request' && github.base_ref == 'dev' }}
+      bandit: '{"h": 1, "m": 2, "l": 4}'  # Automated Acceptance Criteria for Bandit
+
+  # PYDEPS
+  pydeps:
+    uses: ./.github/workflows/pydeps-job.yml
+    with:
+      default_trigger: true
+      override: '${{ vars.OV_PYDEPS }}'
+      python_version: '3.10'
+
+  # TYPE CHECK
+  type_check:
+    uses: ./.github/workflows/type-check-job.yml
+    with:
+      default_trigger: true
+      override: '${{ vars.OV_TYPE_CHECK }}'
+      python_version: '3.10'
+
+  # DOCS
+  docs:
+    uses: ./.github/workflows/docs-job.yml
+    with:
+      default_trigger: true
+      override: '${{ vars.OV_DOCS }}'
+      python_version: '3.11'
+
+
+  # CODECOV Upload of COVERAGE reports
+  codecov_coverage_host:
+    if: always() && github.event_name == 'pull_request' && github.base_ref == 'release'
+    runs-on: ubuntu-latest
+    needs: cross_platform_tests
+    steps:
+      - uses: actions/checkout@v4
+      - name: Get Codecov binary
+        run: |
+          curl -Os https://uploader.codecov.io/latest/linux/codecov
+          chmod +x codecov
+
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: coverage
+          pattern: coverage-*
+          merge-multiple: true
+
+      - run: ls -R coverage
+
+      - name: Upload Coverage Reports to Codecov
+        run: |
+          for file in coverage/coverage*.xml; do
+            OS_NAME=$(echo $file | sed -E "s/coverage-(\w\+)-/\1/")
+            PY_VERSION=$(echo $file | sed -E "s/coverage-\w\+-(\d\.)\+/\1/")
+            ./codecov -f $file -e "OS=$OS_NAME,PYTHON=$PY_VERSION" --flags unittests --verbose
+            echo "Sent to Codecov: $file !"
+          done
+
+  ## DOCKER BUILD and PUBLISH ON DOCKERHUB ##
+  # Ref Page: https://automated-workflows.readthedocs.io/en/main/ref_docker/
+  docker_build:
+    uses: boromir674/automated-workflows/.github/workflows/docker.yml@v1.14.0
+    if: github.event_name == 'pull_request' && github.base_ref == 'release'
+    with:
+      acceptance_policy: '1'
+      image_slug: "generate-python"
+      image_tag: "latest"
+      # target_stage: "some_stage_alias"  # no stage, means no `--target` flag, on build
+      tests_pass: true
+      tests_run: true
+      DOCKER_USER: ${{ vars.DOCKER_USER }}
+    secrets:
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+  ## JOB: PYPI UPLOAD ##
+  pypi_publish:
+    needs: cross_platform_tests
+    uses: boromir674/automated-workflows/.github/workflows/pypi_env.yml@test
+    # Automatic .tar.gz and .whl discovery but with performance trade-off
+    # also with risk of uploading the wrong file
+    with:
+      should_trigger: ${{ github.event_name == 'pull_request' && github.base_ref == 'release' }}
+      distro_name: cookiecutter_python
+      distro_version: '${{ needs.cross_platform_tests.outputs.PEP_VERSION }}'
+      pypi_env: TEST_DEPLOYMENT
+      require_wheel: true
+      allow_existing: true
+    secrets:
+      TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}

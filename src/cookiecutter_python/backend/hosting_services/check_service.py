@@ -7,6 +7,7 @@ from .check_web_hosting_service import WebHostingServiceChecker
 from .exceptions import ContextVariableDoesNotExist
 from .extract_name import NameExtractor
 
+
 logger = logging.getLogger(__name__)
 
 

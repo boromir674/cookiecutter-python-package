@@ -1,4 +1,5 @@
 import typing as t
+from pathlib import Path
 
 import pytest
 
@@ -9,15 +10,29 @@ def assert_scaffolded_without_cli(module_file) -> t.Callable[[str], None]:
 
     def assert_project_generated_without_cli(project_dir: str) -> None:
         get_file: t.Callable[[str], str] = module_file(project_dir)
-        assert all(not path.isfile(get_file(file_name)) for file_name in CLI_RELATED_FILES)
+        assert all(
+            not path.isfile(get_file(file_name)) for file_name in CLI_RELATED_FILES
+        )
 
     return assert_project_generated_without_cli
+
+
+# dynamic param 'marks' argument
+tests_root: Path = Path(__file__).parent
+RUNNING_FROM_LOCAL_CHECKOUT: bool = (tests_root.parent / '.github').exists()
 
 
 @pytest.mark.parametrize(
     'config_file, expected_interpreters',
     [
-        ('.github/biskotaki.yaml', ['3.7', '3.8', '3.9', '3.10', '3.11']),
+        pytest.param(
+            '.github/biskotaki.yaml',
+            ['3.7', '3.8', '3.9', '3.10', '3.11'],
+            marks=pytest.mark.skipif(
+                not RUNNING_FROM_LOCAL_CHECKOUT,
+                reason=f"'Running tests from within local checkout is required to test this feature. Current path: {tests_root}'",
+            ),
+        ),
         (None, ['3.6', '3.7', '3.8', '3.9', '3.10', '3.11']),
         (
             'tests/data/biskotaki-without-interpreters.yaml',
@@ -60,7 +75,9 @@ def test_supported_python_interpreters(
 
 
 @pytest.fixture
-def assert_interpreters_array_in_build_matrix() -> t.Callable[[str, t.Sequence[str]], None]:
+def assert_interpreters_array_in_build_matrix() -> (
+    t.Callable[[str, t.Sequence[str]], None]
+):
     """Test that Job Matrix is generated correctly and stored as Workflow env var.
 
     Test proper generation of github workflow config yaml for lines such as:
@@ -88,11 +105,11 @@ def assert_interpreters_array_in_build_matrix() -> t.Callable[[str, t.Sequence[s
     return _assert_interpreters_array_in_build_matrix
 
 
-CLI_RELATED_FILES = {
+CLI_RELATED_FILES = (
     'cli.py',
     '__main__.py',
-}
-"Files, only expected to be generated for cli type of Projects"
+)
+"""Files, only expected to be generated for cli type of Projects"""
 
 
 @pytest.fixture
@@ -101,18 +118,19 @@ def module_file():
     from os import listdir
     from pathlib import Path
 
-    SRC_DIR_NAME = 'src'
+    SRC_DIR_NAME: str = 'src'
 
     def build_get_file_path(project_dir: str) -> t.Callable[[str], str]:
-        p = Path(project_dir)
+        p: Path = Path(project_dir)
         src_dir_files = listdir(p / SRC_DIR_NAME)
         # sanity check that Generator produces only 1 python module/package
-        [python_module] = src_dir_files
+        assert len(src_dir_files) == 1
+        python_module: str = src_dir_files[0]
 
-        def _get_file_path(*file_path):
-            return reduce(
-                lambda i, j: i / j, [p, SRC_DIR_NAME, python_module] + [_ for _ in file_path]
-            )
+        def _get_file_path(*file_path: t.Union[str, Path]):
+            l1: t.List[t.Union[str, Path]] = [p, SRC_DIR_NAME, python_module]
+
+            return reduce(lambda i, j: Path(i) / Path(j), l1 + [_ for _ in file_path])
 
         return _get_file_path
 
