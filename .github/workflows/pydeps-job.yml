@@ -73,15 +73,18 @@ jobs:
           . .venv/bin/activate
           uv pip install 'pydeps==1.11.0'
 
+      # Set environment variable for pydeps output directory
+      - run: echo "PYDEPS_DIR=pydeps" >> $GITHUB_ENV
+
+      # Create directory for pydeps output
+      - run: mkdir -p ${{ env.PYDEPS_DIR }}
+
       ## Run PYDEPS on src code ##
       - name: Run Pydeps to draw Dependency Graphs
         env:
           PKG: src/cookiecutter_python  # for DRYness
           PKG_NAME: cookiecutter_python
         run: |
-          PYDEPS_DIR="pydeps"
-          echo "PYDEPS_DIR=${PYDEPS_DIR}" >> $GITHUB_ENV
-
           . .venv/bin/activate
           echo
           echo PWD = $PWD
@@ -105,7 +108,7 @@ jobs:
           pydeps ${PKG} --keep-target-cluster --noshow -o "${PWD}/${PYDEPS_DIR}/deps_ktc.svg"
           echo DONE
 
-      # Upload to CI Artifacts #
+      # Upload to CI Artifacts - same name as folder #
       - name: Upload Generated svg files to CI Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -113,6 +116,8 @@ jobs:
           path: ${{ env.PYDEPS_DIR }}
           if-no-files-found: error
 
+      # OUTPUTS #
+      # - ARTIFACT_NAME
       - name: Set output artifact name
         id: expose_artifact_name
         run: echo "ARTIFACT_NAME=${{ env.PYDEPS_DIR }}" >> $GITHUB_OUTPUT
