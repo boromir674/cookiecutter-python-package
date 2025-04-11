@@ -263,12 +263,13 @@ jobs:
 
           uv pip install --no-deps dist-wheels/*.whl
           uv pip install --no-deps dist/*.whl
-      
+
       # 3. Run Tests
       - name: 'Run Test Suite against the Package Wheel and prod+test wheels'
         shell: bash
         env:
           COVERAGE_FILE: '.coverage.wheels'
+          PY_WHEEL: 1 # required on Windows Job when app is installed via wheel
         run: |
           . venv-wheels/${{ env.VENV_ACTIVATE }}
           pytest -ra --cov --cov-report=term-missing \
