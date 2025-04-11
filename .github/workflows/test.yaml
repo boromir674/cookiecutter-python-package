@@ -155,7 +155,7 @@ jobs:
     ## Code Visualization - Pipeline Settings ##
       PIPE_CODE_VIZ_POLICY: ${{ steps.derive_code_viz_policy.outputs.POL }}
 
-# RUN TEST SUITE ON ALL PLATFORMS
+  # RUN TEST SUITE ON ALL PLATFORMS
   test:
     needs: set_github_outputs
     if: ${{ needs.set_github_outputs.outputs.TESTS_ENABLED == 'true' }}
@@ -192,6 +192,46 @@ jobs:
           ./codecov -f $file -e "OS=$OS_NAME,PYTHON=$PY_VERSION" --flags unittests --verbose
           echo "Sent to Codecov: $file !"
         done
+
+  ### STATIC CODE ANALYSIS & LINTING ###
+  lint:
+    name: Static Code Analysis
+    needs: set_github_outputs
+    uses: ./.github/workflows/policy_lint.yml
+    with:
+      run_policy: ${{ needs.set_github_outputs.outputs.PIPE_SQA_POLICY }}
+      dedicated_branches: 'master, main, dev'
+      source_code_targets: 'src,tests,scripts'
+      python_version: ${{ needs.set_github_outputs.outputs.PIPE_SQA_PY }}
+      pylint_threshold: ${{ needs.set_github_outputs.outputs.PIPE_SQA_PYLINT_PASS_SCORE }}
+
+  ### DOCS BUILD/TEST - DOCUMENTATION SITE ###
+  docs:
+    name: Build Documentation
+    needs: set_github_outputs
+    # bafaa2c2a014758a4421fe9b5c02ba66dbfdbef6
+    uses: boromir674/automated-workflows/.github/workflows/policy_docs.yml@v1.14.0
+    with:
+      run_policy: '${{ needs.set_github_outputs.outputs.PIPE_DOCS_POLICY }}'
+      python_version: ${{ needs.set_github_outputs.outputs.PIPE_DOCS_PY }}
+      command: "tox -e docs --sitepackages -vv -s false"
+      # command: "tox -e pin-deps -- -E docs && tox -e docs --sitepackages -vv -s false"
+
+  ### DRAW PYTHON DEPENDENCY GRAPHS ###
+  code_visualization:
+    needs: set_github_outputs
+    name: Code Visualization of Python Imports as Graphs, in .svg
+    uses: boromir674/automated-workflows/.github/workflows/python_imports.yml@v1.14.0
+    with:
+      run_policy: '${{ needs.set_github_outputs.outputs.PIPE_CODE_VIZ_POLICY }}'
+      branches: 'main, master, dev'
+      source_code_targets: 'src'
+      python_version: '3.10'
+      artifacts_dir: 'dependency-graphs'
+
+
+############# Continuous Delivery -> PyPI, Docker, Github Release #############
+
 
   ## DOCKER BUILD and PUBLISH ON DOCKERHUB ##
   # Ref Page: https://automated-workflows.readthedocs.io/en/main/ref_docker/
@@ -255,10 +295,10 @@ jobs:
 
   ## JOB: PYPI UPLOAD ##
   pypi_publish:
-    needs: [set_github_outputs, test, check_which_git_branch_we_are_on]
+    needs: [test, docs, lint, code_visualization, check_which_git_branch_we_are_on]
     uses: boromir674/automated-workflows/.github/workflows/pypi_env.yml@test
     with:
-      should_trigger: ${{ needs.set_github_outputs.outputs.PUBLISH_ON_PYPI == 'true' && needs.check_which_git_branch_we_are_on.outputs.AUTOMATED_DEPLOY == 'true' }}
+      should_trigger: ${{ needs.check_which_git_branch_we_are_on.outputs.AUTOMATED_DEPLOY == 'true' }}
       distro_name: cookiecutter_python
       distro_version: ${{ needs.test.outputs.PEP_VERSION }}
       pypi_env: '${{ needs.check_which_git_branch_we_are_on.outputs.ENVIRONMENT_NAME }}'
@@ -269,47 +309,9 @@ jobs:
     secrets:
       TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
 
-  ### STATIC CODE ANALYSIS & LINTING ###
-  lint:
-    name: Static Code Analysis
-    if: false
-    needs: set_github_outputs
-    uses: ./.github/workflows/policy_lint.yml
-    with:
-      run_policy: ${{ needs.set_github_outputs.outputs.PIPE_SQA_POLICY }}
-      dedicated_branches: 'master, main, dev'
-      source_code_targets: 'src,tests,scripts'
-      python_version: ${{ needs.set_github_outputs.outputs.PIPE_SQA_PY }}
-      pylint_threshold: ${{ needs.set_github_outputs.outputs.PIPE_SQA_PYLINT_PASS_SCORE }}
-
-  ### DOCS BUILD/TEST - DOCUMENTATION SITE ###
-  docs:
-    name: Build Documentation
-    needs: set_github_outputs
-    # bafaa2c2a014758a4421fe9b5c02ba66dbfdbef6
-    uses: boromir674/automated-workflows/.github/workflows/policy_docs.yml@v1.14.0
-    with:
-      run_policy: '${{ needs.set_github_outputs.outputs.PIPE_DOCS_POLICY }}'
-      python_version: ${{ needs.set_github_outputs.outputs.PIPE_DOCS_PY }}
-      command: "tox -e docs --sitepackages -vv -s false"
-      # command: "tox -e pin-deps -- -E docs && tox -e docs --sitepackages -vv -s false"
-
-  ### DRAW PYTHON DEPENDENCY GRAPHS ###
-  code_visualization:
-    if: false
-    needs: set_github_outputs
-    name: Code Visualization of Python Imports as Graphs, in .svg
-    uses: boromir674/automated-workflows/.github/workflows/python_imports.yml@v1.14.0
-    with:
-      run_policy: '${{ needs.set_github_outputs.outputs.PIPE_CODE_VIZ_POLICY }}'
-      branches: 'main, master, dev'
-      source_code_targets: 'src'
-      python_version: '3.10'
-      artifacts_dir: 'dependency-graphs'
-
   ### Make a Github Release ###
   gh_release:
-    needs: [test, code_visualization, docs, lint, check_which_git_branch_we_are_on]
+    needs: [test, docs, lint, code_visualization, check_which_git_branch_we_are_on]
     if: ${{ needs.check_which_git_branch_we_are_on.outputs.AUTOMATED_DEPLOY == 'true' }}
     uses: boromir674/automated-workflows/.github/workflows/gh-release.yml@v1.14.0
     name: 'GH Release'
