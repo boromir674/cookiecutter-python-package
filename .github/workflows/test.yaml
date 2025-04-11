@@ -161,7 +161,8 @@ jobs:
     if: ${{ needs.set_github_outputs.outputs.TESTS_ENABLED == 'true' }}
     uses: ./.github/workflows/test-job.yml
     with:
-      job_matrix: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.8\", \"3.9\", \"3.10\", \"3.11\", \"3.12\"]}"
+      # job_matrix: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.8\", \"3.9\", \"3.10\", \"3.11\", \"3.12\"]}"
+      job_matrix: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.11\"]}"
       # job_matrix: "{\"platform\": [\"windows-latest\"], \"python-version\": [\"3.11\"]}"
       # artifact_name: 'dist'
 
@@ -195,14 +196,12 @@ jobs:
 
   ## STATIC CODE ANALYSIS: mypy, ruff, isort, black, bandit, mccabe, prospector, etc
   sca:
-    if: always() || vars.OV_SCA == 'true' || (vars.OV_SCA != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')
     uses: ./.github/workflows/sca-job.yml
     with:
       python_version: '3.10'
       allow_failure: false
       force_styles: true
       bandit: '{"h": 1, "m": 2, "l": 4}'  # Automated Acceptance Criteria for Bandit
-
 
   ### DOCS BUILD/TEST - DOCUMENTATION SITE ###
   docs:
@@ -212,17 +211,13 @@ jobs:
       override: '${{ vars.OV_DOCS }}'
       python_version: '3.11'
 
-  ### DRAW PYTHON DEPENDENCY GRAPHS ###
-  code_visualization:
-    needs: set_github_outputs
-    name: Code Visualization of Python Imports as Graphs, in .svg
-    uses: boromir674/automated-workflows/.github/workflows/python_imports.yml@v1.14.0
+  ### DRAW CODE DEPENDENCY GRAPHS ###
+  pydeps:
+    uses: ./.github/workflows/pydeps-job.yml
     with:
-      run_policy: '${{ needs.set_github_outputs.outputs.PIPE_CODE_VIZ_POLICY }}'
-      branches: 'main, master, dev'
-      source_code_targets: 'src'
+      default_trigger: true
+      override: '${{ vars.OV_PYDEPS }}'
       python_version: '3.10'
-      artifacts_dir: 'dependency-graphs'
 
 
 ############# Continuous Delivery -> PyPI, Docker, Github Release #############
@@ -231,7 +226,7 @@ jobs:
   ## DOCKER BUILD and PUBLISH ON DOCKERHUB ##
   # Ref Page: https://automated-workflows.readthedocs.io/en/main/ref_docker/
   docker_build:
-    needs: check_which_git_branch_we_are_on
+    needs: [test, set_github_outputs]
     uses: boromir674/automated-workflows/.github/workflows/docker.yml@v1.14.0
     if: always()
     with:
@@ -301,7 +296,7 @@ jobs:
       artifacts_path: downloaded-artifacts
 
       require_wheel: true
-      allow_existing: true
+      allow_existing: ${{ needs.check_which_git_branch_we_are_on.outputs.ENVIRONMENT_NAME == 'TEST_DEPLOYMENT' }}
     secrets:
       TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
 
