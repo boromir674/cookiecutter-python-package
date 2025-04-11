@@ -291,7 +291,7 @@ jobs:
     with:
       should_trigger: ${{ needs.check_which_git_branch_we_are_on.outputs.AUTOMATED_DEPLOY == 'true' }}
       distro_name: cookiecutter_python
-      distro_version: ${{ needs.test.outputs.PEP_VERSION }}
+      distro_version: ${{ needs.test.outputs.PEP_VERSION }}  # TODO remove this
       pypi_env: '${{ needs.check_which_git_branch_we_are_on.outputs.ENVIRONMENT_NAME }}'
       artifacts_path: downloaded-artifacts
 
