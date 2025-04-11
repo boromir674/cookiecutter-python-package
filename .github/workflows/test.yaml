@@ -193,29 +193,24 @@ jobs:
           echo "Sent to Codecov: $file !"
         done
 
-  ### STATIC CODE ANALYSIS & LINTING ###
-  lint:
-    name: Static Code Analysis
-    needs: set_github_outputs
-    uses: ./.github/workflows/policy_lint.yml
+  ## STATIC CODE ANALYSIS: mypy, ruff, isort, black, bandit, mccabe, prospector, etc
+  sca:
+    if: always() || vars.OV_SCA == 'true' || (vars.OV_SCA != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')
+    uses: ./.github/workflows/sca-job.yml
     with:
-      run_policy: ${{ needs.set_github_outputs.outputs.PIPE_SQA_POLICY }}
-      dedicated_branches: 'master, main, dev'
-      source_code_targets: 'src,tests,scripts'
-      python_version: ${{ needs.set_github_outputs.outputs.PIPE_SQA_PY }}
-      pylint_threshold: ${{ needs.set_github_outputs.outputs.PIPE_SQA_PYLINT_PASS_SCORE }}
+      python_version: '3.10'
+      allow_failure: false
+      force_styles: true
+      bandit: '{"h": 1, "m": 2, "l": 4}'  # Automated Acceptance Criteria for Bandit
+
 
   ### DOCS BUILD/TEST - DOCUMENTATION SITE ###
   docs:
-    name: Build Documentation
-    needs: set_github_outputs
-    # bafaa2c2a014758a4421fe9b5c02ba66dbfdbef6
-    uses: boromir674/automated-workflows/.github/workflows/policy_docs.yml@v1.14.0
+    uses: ./.github/workflows/docs-job.yml
     with:
-      run_policy: '${{ needs.set_github_outputs.outputs.PIPE_DOCS_POLICY }}'
-      python_version: ${{ needs.set_github_outputs.outputs.PIPE_DOCS_PY }}
-      command: "tox -e docs --sitepackages -vv -s false"
-      # command: "tox -e pin-deps -- -E docs && tox -e docs --sitepackages -vv -s false"
+      default_trigger: true
+      override: '${{ vars.OV_DOCS }}'
+      python_version: '3.11'
 
   ### DRAW PYTHON DEPENDENCY GRAPHS ###
   code_visualization:
