@@ -2,6 +2,7 @@ import sys
 import typing as t
 from pathlib import Path
 
+
 if sys.version_info >= (3, 8):
     from typing import Literal, Protocol
 else:
@@ -154,7 +155,9 @@ def create_request_from_emulated_project(request_factory):
         # theoritically, it should suffice for us to create 'emulated' files, as:
         # Excluding the Docs Builder defined in the Request, create file for all
         # builders in the map
-        requested_docs_builder_id: str = emulated_post_gen_request.docs_website['builder']
+        requested_docs_builder_id: str = emulated_post_gen_request.docs_website[
+            'builder'
+        ]
 
         assert requested_docs_builder_id == 'sphinx'
         assert builder_id_2_extra_files_map == {
@@ -204,7 +207,9 @@ def get_post_gen_main(get_object):
         add_cli: bool,
         project_dir: Path,
         extra_files: t.Optional[t.List[t.Union[str, t.Tuple[str, ...]]]] = None,
-        extra_non_empty_files: t.Optional[t.List[t.Union[str, t.Tuple[str, ...]]]] = None,
+        extra_non_empty_files: t.Optional[
+            t.List[t.Union[str, t.Tuple[str, ...]]]
+        ] = None,
         **kwargs,
     ):
         """"""
@@ -304,7 +309,9 @@ def test_main(
     from pathlib import Path
 
     # GIVEN a temporary directory, for the emulated generated project
-    tmp_target_gen_dir = tmpdir.mkdir('cookiecutter_python.unit-tests.proj-targetr-gen-dir')
+    tmp_target_gen_dir = tmpdir.mkdir(
+        'cookiecutter_python.unit-tests.proj-targetr-gen-dir'
+    )
 
     post_hook_main = get_post_gen_main(
         create_request_from_emulated_project,
@@ -338,7 +345,6 @@ def test_main(
 def test_post_file_removal_deletes_empty_logfile_if_found(
     get_post_gen_main, create_request_from_emulated_project, tmp_path
 ):
-
     # GIVEN a temporary directory, to store the emulated generated project
     project_dir: Path = tmp_path
 
@@ -371,7 +377,6 @@ def test_post_file_removal_deletes_empty_logfile_if_found(
 def test_post_file_removal_keeps_logfile_if_found_non_empty(
     get_post_gen_main, create_request_from_emulated_project, tmp_path
 ):
-
     # GIVEN a temporary directory, to store the emulated generated project
     project_dir: Path = tmp_path
 
@@ -406,7 +411,9 @@ def test_stable_cicd_was_selected_and_worked(
     from pathlib import Path
 
     # GIVEN a temporary directory, for the emulated generated project
-    tmp_target_gen_dir = tmpdir.mkdir('cookiecutter_python.unit-tests.proj-targetr-gen-dir')
+    tmp_target_gen_dir = tmpdir.mkdir(
+        'cookiecutter_python.unit-tests.proj-targetr-gen-dir'
+    )
 
     post_hook_main = get_post_gen_main(
         create_request_from_emulated_project,
@@ -426,8 +433,12 @@ def test_stable_cicd_was_selected_and_worked(
 
     # AND the files for 'experimental' cicd optoin are missing
     assert not (Path(tmp_target_gen_dir) / '.github/workflows/cicd.yml').exists()
-    assert not (Path(tmp_target_gen_dir) / '.github/workflows/codecov-upload.yml').exists()
-    assert not (Path(tmp_target_gen_dir) / '.github/workflows/signal-deploy.yml').exists()
+    assert not (
+        Path(tmp_target_gen_dir) / '.github/workflows/codecov-upload.yml'
+    ).exists()
+    assert not (
+        Path(tmp_target_gen_dir) / '.github/workflows/signal-deploy.yml'
+    ).exists()
 
 
 def test_experimental_cicd_was_selected_and_worked(
@@ -436,7 +447,9 @@ def test_experimental_cicd_was_selected_and_worked(
     from pathlib import Path
 
     # GIVEN a temporary directory, for the emulated generated project
-    tmp_target_gen_dir = tmpdir.mkdir('cookiecutter_python.unit-tests.proj-targetr-gen-dir')
+    tmp_target_gen_dir = tmpdir.mkdir(
+        'cookiecutter_python.unit-tests.proj-targetr-gen-dir'
+    )
 
     post_hook_main = get_post_gen_main(
         create_request_from_emulated_project,

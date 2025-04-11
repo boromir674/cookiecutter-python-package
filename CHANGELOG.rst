@@ -3,6 +3,49 @@ Changelog
 =========
 
 
+2.5.1 (2024-04-10)
+==================
+
+| **Migrating** to `uv` !
+| New **PR Validation** dedicated `CI` Workflows
+
+
+Changes
+^^^^^^^
+
+fix
+"""
+- improve placeholder text for CLI `--help` response
+
+ci
+"""
+- migrate Dockerfile `prod` and `test_wheels` stages to `uv` (from pip)
+- add docs, type, and pydeps Jobs in PR validation workflows, callable from 3 reusable workflows
+- hard-enable the Static Code Analysis (SCA) Job in `ci.yml`
+- enable integration tests in `ci.yml`
+- fix ruff quirks in CI pipeline
+- pin black in `sca-job.yml` and apply linters to all codebase with properly excluded files
+- document job triggers in `ci.yml` for better clarity
+- exclude the `ci-redesign` branch from `test.yaml` triggers
+
+refactor
+""""""""
+- apply `black` formatting across the codebase
+- apply `ruff` linting fixes across the codebase
+- apply `isort` with the new policy of 2 lines after the last import statement
+- generate `lines_after_imports = 2` in `isort` configuration inside `pyproject.toml`
+
+test
+""""
+- update snapshots to reflect the latest changes
+- fix and update tests to account for Windows-specific quirks
+- enable integration tests in CI pipeline
+
+build
+"""""
+- migrate Dockerfile to `uv` (from pip) for better dependency management
+
+
 2.5.0 (2024-03-27)
 ==================
 

@@ -1,8 +1,14 @@
+import typing as t
+
 import click
 from software_patterns import SubclassRegistry
 
 
-class HandlerBuilder(metaclass=SubclassRegistry):
+class HandlerBuilderRegistry(SubclassRegistry[t.Callable]):
+    pass
+
+
+class HandlerBuilder(metaclass=HandlerBuilderRegistry):
     pass
 
 

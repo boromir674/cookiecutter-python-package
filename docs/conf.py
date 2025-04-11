@@ -30,7 +30,7 @@ copyright = '2022, Konstantinos Lampridis'
 author = 'Konstantinos Lampridis'
 
 # The full version, including alpha/beta/rc tags
-release = '2.5.0'
+release = '2.5.1'
 
 # -- General configuration ---------------------------------------------------
 
@@ -56,7 +56,7 @@ extensions = [
     'sphinx_inline_tabs',  # pip install sphinx-inline-tabs ^2023.4.21
 
     ## MERMAID directive ##
-    'sphinxcontrib.mermaid',  # pip install sphinxcontrib-mermaid
+    'sphinxcontrib.mermaid',  # pip install sphinxcontrib-mermaid==1.0.0
 
     ## Render MARKDOWN Files ##
     'myst_parser',  # pip install myst-parser

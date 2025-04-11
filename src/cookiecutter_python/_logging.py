@@ -28,11 +28,13 @@ Usage:
 import logging
 from pathlib import Path
 
+
 LOGS_FILE_NAME: str
 """File name, to write, captured runtime Log records, in disk (filesystem)."""
 
 try:
     from ._logging_config import FILE_TARGET_LOGS
+
     LOGS_FILE_NAME = FILE_TARGET_LOGS
 except ImportError:
     LOGS_FILE_NAME = 'cookie-py.log'
