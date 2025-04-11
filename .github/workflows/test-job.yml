@@ -224,6 +224,7 @@ jobs:
           ls -l "${WHEEL_FILE}"
 
       - name: Show dist folder
+        shell: bash
         run: ls -la dist/
 
 
@@ -234,20 +235,17 @@ jobs:
         working-directory: verification
         run: |
           uv venv check-env
-          if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
-            echo "[INFO] Activating virtual environment for Windows"
-            . check-env/Scripts/activate
-          fi
+          . check-env/${{ env.VENV_ACTIVATE }}
           uv pip install poetry-core pyroma 'twine >=5.0.0, <6.0.0'
           # --active
 
           # Check .tar.gz file using 'pyroma' command
           echo "[INFO] Running pyroma on the sdist"
-          uv run --active pyroma --file "$(ls ../dist/*.tar.gz)"
+          pyroma --file "$(ls ../dist/*.tar.gz)"
 
           # Check both .whl and .tar.gz files using 'twine check' command
           echo "[INFO] Running twine check on the sdist and wheel"
-          uv run --active python -m twine check ../dist/*
+          python -m twine check ../dist/*
 
 
       ######## PHASE 4: INSTALL WHEELS AND RUN SANITY CHECKS ########
@@ -294,14 +292,14 @@ jobs:
           OUTPUT_XML: coverage-${{ matrix.platform }}-${{ matrix.python-version }}.xml
         shell: bash
         run: |
-          rm -rf .venv
-          uv venv
+          uv venv cov-env
+          . cov-env/${{ env.VENV_ACTIVATE }}
           uv pip install 'coverage[toml] >= 5.1' 'diff_cover >=6'
 
           echo '[INFO] Running coverage'
-          uv run coverage combine --keep
-          uv run coverage report --skip-covered --show-missing -i
-          uv run coverage xml -o ./${{ env.OUTPUT_XML }} -i
+          coverage combine --keep
+          coverage report --skip-covered --show-missing -i
+          coverage xml -o ./${{ env.OUTPUT_XML }} -i
           # uv run coverage html -d ./htmlcov -i
 
       - name: "Upload Test Coverage as Artifacts"
