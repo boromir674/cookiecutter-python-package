@@ -71,6 +71,8 @@ jobs:
       # windows spawn multiple processes, so log deletion is not possible, even when running 1 Single Unit Test
       BUG_LOG_DEL_WIN: 'permission_error'
 
+      # Dynamic command for 'Virtualenv activation' script
+      VENV_ACTIVATE: ${{ matrix.platform == 'windows-latest' && '.venv/Scripts/activate' || '.venv/bin/activate' }}
     steps:
       - run: 'echo "OS: ${{ matrix.platform }}, Python: ${{ matrix.python-version }}"'
 
@@ -158,10 +160,7 @@ jobs:
         shell: bash
         run: |
           uv venv
-          if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
-            echo "[INFO] Activating virtual environment for Windows"
-            . .venv/Scripts/activate
-          fi
+          . ${{ env.VENV_ACTIVATE }}
           echo "[INFO] Installing exact 'Prod + Test' Dependencies"
           uv pip install --no-deps -r requirements.txt
       
@@ -169,11 +168,7 @@ jobs:
       - name: Install Package in 'edit' mode inside virtual environment
         shell: bash
         run: |
-          uv venv
-          if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
-            echo "[INFO] Activating virtual environment for Windows"
-            . .venv/Scripts/activate
-          fi
+          . ${{ env.VENV_ACTIVATE }}
           echo "[INFO] Installing package in 'edit' mode"
           uv pip install --no-deps -e .
 
@@ -181,16 +176,10 @@ jobs:
       - name: 'Run Test Suite against the Package code'
         shell: bash
         run: |
-          if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
-            echo "[INFO] Activating virtual environment for Windows"
-            . .venv/Scripts/activate
-          fi
+          . ${{ env.VENV_ACTIVATE }}
 
-          # DEBUG
-          # uv run --active pytest -ra -vvs -k test_gs_matches_runtime
-
-          # uv run pytest ${{ env.PYTEST_ARGS }}
-          uv run pytest -ra --cov --cov-report=term-missing \
+          # pytest ${{ env.PYTEST_ARGS }}
+          pytest -ra --cov --cov-report=term-missing \
             --cov-context=test \
             --cov-report=xml:coverage.test-edit.xml \
             -n auto tests
@@ -201,6 +190,9 @@ jobs:
         run: |
           set -o pipefail
           uv build --out-dir dist . 2>&1 | tee test_output.log
+
+      - name: Show dist folder
+        run: ls -la dist/
 
       # Verify that the distros are valid
       - run: mkdir verification
@@ -224,24 +216,24 @@ jobs:
           echo "[INFO] Running twine check on the sdist and wheel"
           uv run --active python -m twine check ../dist/*
 
-      ## Install WHEEL and Run TESTS ##
+      #### Test Mode 2: Run Test Suite against wheel ####
       - name: Install Wheel and Run Test Suite
         shell: bash  # to solve issue on windows ci
         run: |
-          if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
-            echo "[INFO] Activating virtual environment for Windows"
-            . .venv/Scripts/activate
-          fi
+          . ${{ env.VENV_ACTIVATE }}
 
-          uv pip uninstall cookiecutter_python
-          uv pip install --no-deps dist/cookiecutter_python-*.whl
+          # uv pip uninstall cookiecutter_python
+          uv pip install --reinstall --no-deps dist/cookiecutter_python-*.whl
 
           # uv run pytest ${{ env.PYTEST_ARGS }}
 
-          uv run --active pytest -ra --cov --cov-report=term-missing \
+          pytest -ra --cov --cov-report=term-missing \
             --cov-context=test \
             --cov-report=xml:coverage.test-wheel.xml \
             -n auto tests
+
+      - name: Show dist folder
+        run: ls -la dist/
 
       - name: Extract PEP Version
         id: extract_wheel_info
@@ -287,15 +279,16 @@ jobs:
           mv dist-wheels/cookiecutter_python*.whl module_wheel/
           echo "MODULE_WHEEL_PATH=$(ls module_wheel/*.whl)" >> $GITHUB_OUTPUT
 
+      - name: Show dist folder
+        run: ls -la dist/
+
+      # NEW VENV from scratch
       - name: Install Wheels of Dependencies
         shell: bash
         run: |
           rm -rf .venv
           uv venv
-          if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
-            echo "[INFO] Activating virtual environment for Windows"
-            . .venv/Scripts/activate
-          fi
+          . ${{ env.VENV_ACTIVATE }}
           uv pip install --no-deps dist-wheels/*.whl
 
       - name: Install module wheel with test extras downloaded at runtime from pypi
@@ -306,22 +299,16 @@ jobs:
         name: Install module wheel with test extras downloaded at runtime from pypi
         shell: bash
         run: |
-          if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
-            echo "[INFO] Activating virtual environment for Windows"
-            . .venv/Scripts/activate
-          fi
+          . ${{ env.VENV_ACTIVATE }}
           uv pip install "${{ steps.module_wheel_path.outputs.MODULE_WHEEL_PATH }}[test]"
 
-      # Run tests
-      - name: 'Run tests'
+      #### Test Mode 3: Run Test Suite against wheel in env with built wheels ####
+      - name: 'Test Package Wheel in env where installed prod deps are explicitly built as wheels'
         # run: uv run pytest ${{ env.PYTEST_ARGS }}
         shell: bash  # to solve issue on windows ci
         run: |
-          if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
-            echo "[INFO] Activating virtual environment for Windows"
-            . .venv/Scripts/activate
-          fi
-          uv run --active pytest -ra --cov --cov-report=term-missing \
+          . ${{ env.VENV_ACTIVATE }}
+          pytest -ra --cov --cov-report=term-missing \
             --cov-report=html:test-wheels/htmlcov --cov-context=test \
             --cov-report=xml:coverage.test-wheels.xml \
             -n auto tests
