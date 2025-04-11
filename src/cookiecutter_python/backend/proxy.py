@@ -4,6 +4,7 @@ from typing import Generic, Tuple, TypeVar
 
 from software_patterns import Proxy
 
+
 logger = logging.getLogger(__name__)
 
 T = TypeVar('T')

@@ -30,7 +30,9 @@ def test_gen_ci_biskotaki_has_expected_files(
     ## AND a file, that we expect to be generated
     # supplied by the 'biskotaki_file_expected' fixture, passed in this test
     expected_file: str = biskotaki_file_expected
-    assert isinstance(expected_file, str), f"expected_file: {expected_file} is not a string"
+    assert isinstance(
+        expected_file, str
+    ), f"expected_file: {expected_file} is not a string"
     expected_file_path: Path = Path(expected_file)
     # sanity that path is relative, so that we can use it to check for existence
     assert (

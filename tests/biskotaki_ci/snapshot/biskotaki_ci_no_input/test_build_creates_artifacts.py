@@ -6,6 +6,7 @@ import pytest
 @pytest.mark.slow
 def test_running_build_creates_source_and_wheel_distros(
     test_root,
+    run_subprocess,
 ):
     """Build wheel of biskotaki-no-input Snapshot Project and run tox -e check."""
     import subprocess
@@ -17,8 +18,8 @@ def test_running_build_creates_source_and_wheel_distros(
     assert snapshot_dir.is_dir()
 
     ## Programmatically run Build, with the entrypoint we suggest, for a Dev to run
-    res = subprocess.run(  # tox -e build
-        [sys.executable, '-m', 'tox', '-r', '-vv', '-e', 'build'],
+    res = run_subprocess(  # tox -e build
+        *[sys.executable, '-m', 'tox', '-r', '-vv', '-e', 'build'],
         cwd=snapshot_dir,
         check=False,  # prevent raising exception, so we can do clean up
         shell=False,  # prevent execution of untrusted input
@@ -38,10 +39,18 @@ def test_running_build_creates_source_and_wheel_distros(
     # CLEAN UP: Remove .tox/build folder, created by tox
     import shutil
 
-    shutil.rmtree(snapshot_dir / '.tox' / 'build')
+    try:
+        shutil.rmtree(snapshot_dir / '.tox' / 'build')
+    except FileNotFoundError:
+        import logging
+
+        logger = logging.getLogger(__name__)
+        logger.warning("No .tox/build folder found to clean up")
 
     # Check that Code passes Build out of the box
-    assert res.returncode == 0
+    assert (
+        res.exit_code == 0
+    ), f"Build failed with return code {res.exit_code}\nSTDOUT: {res.stdout}\nSTDERR: {res.stderr}\n"
 
     # Check that Source and Wheel distros are created
     dist_dir: Path = snapshot_dir / 'dist'

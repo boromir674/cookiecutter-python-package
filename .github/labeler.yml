@@ -99,12 +99,13 @@ docker:
         - '.dockerignore'
 
 ### POETRY ###
-poetry:
+pyproject:
   - any:
     - changed-files:
       - any-glob-to-any-file: 
         - 'pyproject.toml'
         - 'poetry.lock'
+        - 'uv.lock'
 
 ### TOX ###
 tox:

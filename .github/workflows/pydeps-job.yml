@@ -1,0 +1,123 @@
+# Reusable Job for running Pydeps
+
+name: Pydeps
+on:
+  workflow_call:
+    inputs:
+      # App Installation Settings #
+
+      # Trigger Behavior Settings #
+      default_trigger:
+        required: false
+        default: true
+        description: "Default trigger for the workflow. If true the 'default behavior' is to run on call. If false, the 'default behavior' is to be skipped."
+        type: boolean
+
+      override:
+        required: false
+        description: "Override the default trigger, 'true' gurantees run, 'false' not run"
+        type: string  # IMPORTANT: must be string, to model 3 states {true, false, none}
+
+      # Environment Settings #
+      python_version:
+        required: false
+        default: '3.11'
+        description: "Python version to use for the job. Default is 3.11"
+        type: string
+
+    outputs:
+      # CI Artifact name with pydeps Upload
+      artifact:
+        description: "Name of the CI Artifact with pydeps"
+        value: ${{ jobs.pydeps.outputs.ARTIFACT_NAME }}
+
+jobs:
+  pydeps:
+    if: inputs.override == 'true' || (inputs.override != 'false' && inputs.default_trigger == true)
+    runs-on: 'ubuntu-latest'
+    outputs:
+      ARTIFACT_NAME: ${{ steps.expose_artifact_name.outputs.ARTIFACT_NAME }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${ inputs.python_version }
+        uses: actions/setup-python@v5
+        with:
+          python-version: '${{ inputs.python_version }}'
+
+      # Install uv
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: 'Export pinned Prod + TypeCheck dependencies'
+        run: uv export --no-emit-project --no-dev --frozen --format requirements-txt -o requirements.txt
+
+      # Install dependencies in virtualenv
+      - name: 'Install "Prod" dependencies'
+        run: |
+          uv venv
+          uv pip install --no-deps -r requirements.txt
+
+      # Install Package in 'edit' mode ##
+      - name: 'Install Package in Edit mode'
+        run: uv pip install --no-deps -e .
+
+      # Install graphviz, which ships the 'dot' binary required by pydeps
+      - name: Install graphviz
+        run: |
+          sudo apt-get update -y --allow-releaseinfo-change
+          sudo apt-get install -y graphviz
+
+      # Install pydeps in virtualenv
+      - name: Install pydeps
+        run: |
+          . .venv/bin/activate
+          uv pip install 'pydeps==1.11.0'
+
+      # Set environment variable for pydeps output directory
+      - run: echo "PYDEPS_DIR=pydeps" >> $GITHUB_ENV
+
+      # Create directory for pydeps output
+      - run: mkdir -p ${{ env.PYDEPS_DIR }}
+
+      ## Run PYDEPS on src code ##
+      - name: Run Pydeps to draw Dependency Graphs
+        env:
+          PKG: src/cookiecutter_python  # for DRYness
+          PKG_NAME: cookiecutter_python
+        run: |
+          . .venv/bin/activate
+          echo
+          echo PWD = $PWD
+          ls -la
+          echo ====
+
+          # Draw only the source code package inner dependencies
+          pydeps ${PKG} --only ${PKG_NAME} --noshow -o "${PYDEPS_DIR}/deps_inner.svg"
+          echo DONE
+
+          # Draw the source code package inner and external dependencies
+          pydeps ${PKG} --cluster --noshow -o "${PWD}/${PYDEPS_DIR}/deps_all.svg"
+          echo DONE
+
+          # Visualize the package inner dependencies and abstract the external (eg with numpy, pandas, etc) ones
+          # Draw the source code package inner and minimum external dependencies
+          pydeps ${PKG} --max-cluster-size=2 --keep-target-cluster --noshow -o "${PWD}/${PYDEPS_DIR}/deps_ktc-mcs_2.svg"
+          echo DONE
+
+          # Draw the source code package inner and all external dependencies
+          pydeps ${PKG} --keep-target-cluster --noshow -o "${PWD}/${PYDEPS_DIR}/deps_ktc.svg"
+          echo DONE
+
+      # Upload to CI Artifacts - same name as folder #
+      - name: Upload Generated svg files to CI Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PYDEPS_DIR }}
+          path: ${{ env.PYDEPS_DIR }}
+          if-no-files-found: error
+
+      # OUTPUTS #
+      # - ARTIFACT_NAME
+      - name: Set output artifact name
+        id: expose_artifact_name
+        run: echo "ARTIFACT_NAME=${{ env.PYDEPS_DIR }}" >> $GITHUB_OUTPUT

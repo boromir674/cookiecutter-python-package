@@ -191,6 +191,7 @@ extend-exclude = '''
 
 [tool.isort]
 profile = 'black'
+lines_after_imports = 2
 
 [tool.bandit]
 tests = []

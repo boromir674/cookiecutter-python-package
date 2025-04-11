@@ -7,6 +7,7 @@ from software_patterns import ProxySubject, Singleton
 
 from .proxy import BaseProxy
 
+
 __all__ = ['get_user_config']
 
 
@@ -26,7 +27,9 @@ class GetUserConfigSubject(ProxySubject[ReturnValueType]):
 class GetUserConfigProxy(BaseProxy[ReturnValueType]):
     def request(self, *args, **kwargs):
         logger.info(
-            *BaseProxy.log_info_args('Get User Config Proxy Request: %s', *args, **kwargs)
+            *BaseProxy.log_info_args(
+                'Get User Config Proxy Request: %s', *args, **kwargs
+            )
         )
         return super().request(*args, **kwargs)
 

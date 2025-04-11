@@ -2,6 +2,7 @@ import json
 import logging
 import typing as t
 
+
 GivenInterpreters = t.Mapping[str, t.Sequence[str]]
 
 logger = logging.getLogger(__name__)
@@ -83,7 +84,9 @@ def parse_context(config_file: str):
                 "full_name": context_defaults['full_name'],
                 "author_email": context_defaults['author_email'],
                 "github_username": context_defaults['github_username'],
-                "project_short_description": context_defaults['project_short_description'],
+                "project_short_description": context_defaults[
+                    'project_short_description'
+                ],
                 # "release_date": context_defaults['release_date'],
                 # "year": context_defaults['year'],
                 "version": context_defaults['version'],

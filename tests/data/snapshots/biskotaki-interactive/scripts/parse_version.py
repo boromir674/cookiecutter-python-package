@@ -5,6 +5,7 @@ import re
 import sys
 import typing as t
 
+
 # TODO Improve: try using the semantic_version_checker package for semver regex
 
 ExceptionFactory = t.Callable[[str, str, str], Exception]

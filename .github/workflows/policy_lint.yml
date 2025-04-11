@@ -153,6 +153,8 @@ jobs:
         if: ${{ matrix.platform != 'windows-latest' }}
         run: tox -e prospector -vv -s false
 
+
+  # TODO: extract a reusable workflow that uses bandit to host security analysis on github!
   bandit:
     name: "Bandit: Security Analysis"
     runs-on: ubuntu-latest

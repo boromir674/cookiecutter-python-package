@@ -37,7 +37,9 @@ class ProjectNameDialog:
                     'type': 'input',
                     'name': 'pkg_name',
                     'message': 'Enter the Package Name (ie lowercase text, no spaces):',
-                    'default': lambda answers: answers['project_slug'].replace('-', '_'),
+                    'default': lambda answers: answers['project_slug'].replace(
+                        '-', '_'
+                    ),
                 },
                 {
                     'type': 'input',

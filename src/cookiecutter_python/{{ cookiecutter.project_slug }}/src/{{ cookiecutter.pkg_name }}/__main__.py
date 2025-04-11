@@ -13,5 +13,6 @@ from __future__ import absolute_import
 
 from {{ cookiecutter.pkg_name }}.cli import main
 
+
 if __name__ == "__main__":  # pragma: no cover
     main(prog_name="{{ cookiecutter.pkg_name|replace('_', '-') }}")  # pylint: disable=unexpected-keyword-arg

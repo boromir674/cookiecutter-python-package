@@ -6,9 +6,11 @@ import sys
 import click
 
 from cookiecutter_python import __version__
+
 from .backend import generate
 from .cli_handlers import handle_error
 from .exceptions import exceptions
+
 
 this_file_location = os.path.dirname(os.path.realpath(os.path.abspath(__file__)))
 
@@ -26,7 +28,8 @@ def version_msg():
 @click.option(
     u'--no-input',
     is_flag=True,
-    help=u'Do not prompt for parameters and only use cookiecutter.json ' u'file content',
+    help=u'Do not prompt for parameters and only use cookiecutter.json '
+    u'file content',
 )
 @click.option(
     u'--offline',
@@ -46,7 +49,8 @@ def version_msg():
 @click.option(
     u'--replay',
     is_flag=True,
-    help=u'Do not prompt for parameters and only use information entered ' u'previously',
+    help=u'Do not prompt for parameters and only use information entered '
+    u'previously',
 )
 @click.option(
     u'-f',

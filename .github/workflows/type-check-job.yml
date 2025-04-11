@@ -1,0 +1,71 @@
+# Reusable Job for Static Type Checking with mypy
+
+name: Type Checking
+on:
+  workflow_call:
+    inputs:
+      # App Installation Settings #
+
+      # Trigger Behavior Settings #
+      default_trigger:
+        required: false
+        default: true
+        description: "Default trigger for the workflow. If true the 'default behavior' is to run on call. If false, the 'default behavior' is to be skipped."
+        type: boolean
+
+      override:
+        required: false
+        description: "Override the default trigger, 'true' gurantees run, 'false' not run"
+        type: string  # IMPORTANT: must be string, to model 3 states {true, false, none}
+
+      # Environment Settings #
+      python_version:
+        required: false
+        default: '3.10'
+        description: "Python version to use for the job. Default is 3.10"
+        type: string
+
+jobs:
+  test:
+    if: inputs.override == 'true' || (inputs.override != 'false' && inputs.default_trigger == true)
+    runs-on: 'ubuntu-latest'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${ inputs.python_version }
+        uses: actions/setup-python@v5
+        with:
+          python-version: '${{ inputs.python_version }}'
+
+      # Install uv
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: 'Export pinned Prod + TypeCheck dependencies'
+        run: uv export --no-emit-project --no-dev --extra typing --frozen --format requirements-txt -o requirements.txt
+
+      # Install dependencies in virtualenv
+      - name: 'Install "Prod + TypeCheck" dependencies'
+        run: |
+          uv venv
+          uv pip install --no-deps -r requirements.txt
+
+      # TYPE CHECKING with MYPY
+      - name: Do Type Checking
+        env:
+          PKG: src/cookiecutter_python  # for DRYness
+          MYPYPATH: src/stubs/  # REQUIRED for mypy to find our custom stubs
+        # create __init__.py in tests/, temporarily. to avoid mypy error due to multiple conftest.py files inside tests/
+        run: |
+          touch tests/__init__.py
+
+          echo "[INFO] Running mypy for type checking"
+
+          uv run mypy --show-error-codes \
+            --exclude tests/data \
+            --exclude "${PKG}/{{ cookiecutter.project_slug }}" \
+            src
+
+      # delete temporarily created empty __init__.py in tests
+      - if: always()
+        run: rm tests/__init__.py

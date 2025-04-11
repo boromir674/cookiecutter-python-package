@@ -3,7 +3,7 @@
 # Update the Snashot Biskotaki (ci) Test Data maintained for Regression Tests
 
 set -e
-export TOXPYTHON=python3.10
+
 # From 'edit' mode installation:
 echo
 tox -e dev -vv --notest

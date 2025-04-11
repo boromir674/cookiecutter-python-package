@@ -7,6 +7,7 @@ from ..user_config_proxy import get_user_config
 from .exceptions import ContextVariableDoesNotExist
 from .value_extractor import BaseValueExtractor
 
+
 # The Dict Schema expected to be parsed
 # class GeneratorYamlData(TypedDict):
 #     default_context: Dict[str, Any]

@@ -7,6 +7,7 @@ from pathlib import Path
 
 import yaml
 
+
 # TYPES of Data as Read from Yaml Config
 
 ## job names are yaml keys

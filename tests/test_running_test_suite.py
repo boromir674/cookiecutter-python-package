@@ -23,14 +23,20 @@ def environment():
         if sys.platform == 'win32':  # ie we are on a Windows OS
             return dict(
                 environment_variables,
-                **{'LC_ALL': 'C.UTF-8', 'LANG': 'C.UTF-8', 'PYTHONHASHSEED': '2577074909'},
+                **{
+                    'LC_ALL': 'C.UTF-8',
+                    'LANG': 'C.UTF-8',
+                    'PYTHONHASHSEED': '2577074909',
+                },
             )
         raise RuntimeError(f'Unexpected System Found: {sys.platform}')
 
     return get_environment_variables
 
 
-@pytest.mark.skipif(sys.platform == 'win32', reason="not working out-of-the-box for Windows")
+@pytest.mark.skipif(
+    sys.platform == 'win32', reason="not working out-of-the-box for Windows"
+)
 def test_running_pytest(environment, run_subprocess, project_dir):
     result = run_subprocess(
         sys.executable,

@@ -70,13 +70,15 @@ def test_running_ruff_passes(snapshot_name, test_root):
         check=False,  # prevent raising exception, so we can do clean up
     )
 
+    if (snapshot_dir / '.tox' / 'ruff').exists():
+        # Remove .tox/ruff folder, created by tox 3.x
+        import shutil
+
+        shutil.rmtree(snapshot_dir / '.tox' / 'ruff')
+
     # SANITY verify .tox/ruff exists, when using tox 3.x
-    assert (snapshot_dir / '.tox' / 'ruff').exists()
+    assert (
+        res.returncode == 0
+    ), f"Failed to run `tox -e ruff` for {snapshot_name}\nSTDOUT:\n{res.stdout.decode(encoding='utf-8')}\nSTDERR:\n{res.stderr.decode(encoding='utf-8')}"
 
-    # Remove .tox/ruff folder, created by tox 3.x
-    import shutil
-
-    shutil.rmtree(snapshot_dir / '.tox' / 'ruff')
-
-    # Check that Code passes Lint out of the box
-    assert res.returncode == 0
+    # VERIFIED that Generator emits python code that pass Ruff out of the box !!

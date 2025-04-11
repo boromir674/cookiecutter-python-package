@@ -26,10 +26,54 @@ def biskotaki_ci_project(
     assert test_root.name == 'tests'
     assert test_root.is_absolute()
 
-    biskotaki_yaml: Path = test_root.parent / '.github' / 'biskotaki.yaml'
-    assert biskotaki_yaml.exists()
-    assert biskotaki_yaml.is_file()
-    assert biskotaki_yaml.name == 'biskotaki.yaml'
+    #### if running OUTSIDE of local checkout ####
+
+    TEST_TIME_BISKOTAKI_CONFIG = None
+    biskotaki_yaml: Path
+
+    if not (test_root.parent / '.github' / 'biskotaki.yaml').exists():
+        import tempfile
+
+        # Create a temporary file to use as a test config and PRESERVE it on close!
+        with tempfile.NamedTemporaryFile(mode='w+b', delete=False) as fp:
+            fp.write(
+                b"""
+default_context:
+    project_name: Biskotaki
+    project_type: module
+    project_slug: biskotaki
+    pkg_name: biskotaki
+    repo_name: biskotaki
+    readthedocs_project_slug: biskotaki
+    docker_image: biskotaki
+    full_name: Konstantinos Lampridis
+    author: Konstantinos Lampridis
+    email: k.lampridis@hotmail.com
+    author_email: k.lampridis@hotmail.com
+    github_username: boromir674
+    project_short_description: Project generated using https://github.com/boromir674/cookiecutter-python-package
+    initialize_git_repo: 'no'
+    interpreters: {"supported-interpreters": ["3.7", "3.8", "3.9", "3.10", "3.11"]}
+    ## Documentation Config ##
+    docs_builder: "sphinx"
+    ## READ THE DOCS CI Config ##
+    rtd_python_version: "3.10"
+    cicd: 'experimental'
+
+"""
+            )
+            fp.close()
+            TEST_TIME_BISKOTAKI_CONFIG = Path(fp.name)
+        biskotaki_yaml = TEST_TIME_BISKOTAKI_CONFIG
+    else:
+        #### else RUNNING_FROM_LOCAL_CHECKOUT ####
+
+        biskotaki_yaml = test_root.parent / '.github' / 'biskotaki.yaml'
+        assert biskotaki_yaml.exists()
+        assert biskotaki_yaml.is_file()
+        assert biskotaki_yaml.name == 'biskotaki.yaml'
+
+    ### END ###
 
     # Mock Network Code, in case http (Future) requests are made
     mock_check.config = user_config[biskotaki_yaml]

@@ -10,7 +10,9 @@ def test_simple_invocation(run_subprocess):
         '--help',
     )
     assert result.exit_code == 0
-    assert re.match(r'Usage: generate\-python \[OPTIONS\]', result.stdout.split('\n')[0])
+    assert re.match(
+        r'Usage: generate\-python \[OPTIONS\]', result.stdout.split('\n')[0]
+    )
     assert result.stderr == ''
 
 

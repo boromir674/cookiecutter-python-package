@@ -1032,116 +1032,116 @@
 <title>jinja2&#45;&gt;cookiecutter_python_backend_helpers</title><style>.edge>path:hover{stroke-width:8}</style>
 <path fill="none" stroke="black" d="M3055.06,-958.42C3062.07,-928.53 3071.39,-866.66 3040.39,-830.29 2948.63,-722.67 2800.95,-881.08 2730.39,-758.52"/>
 </g>
-<!-- poyo -->
-<g id="node60" class="node">
-<title>poyo</title><style>.edge>path:hover{stroke-width:8}</style>
-<polygon fill="#47a1c2" stroke="black" points="2760.39,-1833.51 2757.39,-1837.51 2736.39,-1837.51 2733.39,-1833.51 2706.39,-1833.51 2706.39,-1797.51 2760.39,-1797.51 2760.39,-1833.51"/>
-<text text-anchor="middle" x="2733.39" y="-1813.01" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#000000">poyo</text>
-</g>
-<!-- poyo&#45;&gt;cookiecutter_python_backend_load_config -->
-<g id="edge91" class="edge">
-<title>poyo&#45;&gt;cookiecutter_python_backend_load_config</title><style>.edge>path:hover{stroke-width:8}</style>
-<path fill="none" stroke="black" d="M2760.44,-1810.22C2846.04,-1795.89 3105.39,-1746.39 3105.39,-1672.51 3105.39,-1672.51 3105.39,-1672.51 3105.39,-866.06 3105.39,-779.79 3015.39,-717.09 2952.67,-683.86"/>
-<polygon fill="#47a1c2" stroke="black" points="2954.12,-680.67 2943.63,-679.18 2950.9,-686.88 2954.12,-680.67"/>
-</g>
-<!-- poyo&#45;&gt;cookiecutter -->
-<g id="edge90" class="edge">
-<title>poyo&#45;&gt;cookiecutter</title><style>.edge>path:hover{stroke-width:8}</style>
-<path fill="none" stroke="black" d="M2706.28,-1813.45C2631.83,-1810.11 2426.03,-1797.73 2370.39,-1761.51 2347.9,-1746.87 2332.78,-1719.71 2323.98,-1699.23"/>
-<polygon fill="#47a1c2" stroke="black" points="2327.15,-1697.75 2320.16,-1689.79 2320.66,-1700.38 2327.15,-1697.75"/>
-</g>
 <!-- questionary -->
-<g id="node61" class="node">
+<g id="node60" class="node">
 <title>questionary</title><style>.edge>path:hover{stroke-width:8}</style>
-<polygon fill="#314bc4" stroke="black" points="2220.39,-1617.51 2217.39,-1621.51 2196.39,-1621.51 2193.39,-1617.51 2146.39,-1617.51 2146.39,-1581.51 2220.39,-1581.51 2220.39,-1617.51"/>
-<text text-anchor="middle" x="2183.39" y="-1597.01" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#ffffff">questionary</text>
+<polygon fill="#319cc4" stroke="black" points="2220.39,-1617.51 2217.39,-1621.51 2196.39,-1621.51 2193.39,-1617.51 2146.39,-1617.51 2146.39,-1581.51 2220.39,-1581.51 2220.39,-1617.51"/>
+<text text-anchor="middle" x="2183.39" y="-1597.01" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#000000">questionary</text>
 </g>
 <!-- questionary&#45;&gt;cookiecutter_python_handle_dialogs_lib_project_name -->
-<g id="edge92" class="edge">
+<g id="edge90" class="edge">
 <title>questionary&#45;&gt;cookiecutter_python_handle_dialogs_lib_project_name</title><style>.edge>path:hover{stroke-width:8}</style>
 <path fill="none" stroke="black" d="M2185.04,-1581.32C2190.42,-1525.62 2207.5,-1348.48 2216.19,-1258.3"/>
-<polygon fill="#314bc4" stroke="black" points="2219.69,-1258.57 2217.16,-1248.28 2212.72,-1257.89 2219.69,-1258.57"/>
+<polygon fill="#319cc4" stroke="black" points="2219.69,-1258.57 2217.16,-1248.28 2212.72,-1257.89 2219.69,-1258.57"/>
 </g>
 <!-- requests -->
-<g id="node62" class="node">
+<g id="node61" class="node">
 <title>requests</title><style>.edge>path:hover{stroke-width:8}</style>
-<polygon fill="#6324d0" stroke="black" points="106.89,-1761.51 103.89,-1765.51 82.89,-1765.51 79.89,-1761.51 47.89,-1761.51 47.89,-1725.51 106.89,-1725.51 106.89,-1761.51"/>
+<polygon fill="#2444d0" stroke="black" points="106.89,-1761.51 103.89,-1765.51 82.89,-1765.51 79.89,-1761.51 47.89,-1761.51 47.89,-1725.51 106.89,-1725.51 106.89,-1761.51"/>
 <text text-anchor="middle" x="77.39" y="-1741.01" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#ffffff">requests</text>
 </g>
 <!-- requests&#45;&gt;cookiecutter_python_backend_hosting_services_handle_hosting_service_check -->
-<g id="edge93" class="edge">
+<g id="edge91" class="edge">
 <title>requests&#45;&gt;cookiecutter_python_backend_hosting_services_handle_hosting_service_check</title><style>.edge>path:hover{stroke-width:8}</style>
 <path fill="none" stroke="black" d="M77.39,-1670.51C77.39,-1636.56 114.65,-1646.45 132.39,-1617.51 181.42,-1537.48 205.46,-1428.78 215.77,-1367.93"/>
-<polygon fill="#6324d0" stroke="black" points="219.26,-1368.3 217.43,-1357.86 212.35,-1367.16 219.26,-1368.3"/>
+<polygon fill="#2444d0" stroke="black" points="219.26,-1368.3 217.43,-1357.86 212.35,-1367.16 219.26,-1368.3"/>
 </g>
 <!-- requests&#45;&gt;cookiecutter_python_backend_post_main -->
-<g id="edge94" class="edge">
+<g id="edge92" class="edge">
 <title>requests&#45;&gt;cookiecutter_python_backend_post_main</title><style>.edge>path:hover{stroke-width:8}</style>
 <path fill="none" stroke="black" d="M77.63,-1725.24C77.77,-1711.07 77.85,-1690.49 77.39,-1672.51"/>
 <path fill="none" stroke="black" d="M77.39,-1670.51C76.52,-1636.25 34.94,-1648.98 21.39,-1617.51 15.06,-1602.81 20.95,-1597.5 21.39,-1581.51 27.86,-1343.38 -61.35,-1237.01 85.39,-1049.37 155.79,-959.34 219.56,-987.52 297.39,-903.83 323.17,-876.1 310.53,-853.57 340.39,-830.29 385.65,-795.01 415.37,-824.13 464.39,-794.29 521.73,-759.37 525.2,-736.15 568.39,-684.75 589.03,-660.19 584.06,-643.58 611.39,-626.77 657.23,-598.56 797.4,-580.21 891.98,-570.67"/>
-<polygon fill="#6324d0" stroke="black" points="892.52,-574.14 902.13,-569.67 891.83,-567.17 892.52,-574.14"/>
+<polygon fill="#2444d0" stroke="black" points="892.52,-574.14 902.13,-569.67 891.83,-567.17 892.52,-574.14"/>
 </g>
 <!-- requestsfutures -->
-<g id="node63" class="node">
+<g id="node62" class="node">
 <title>requestsfutures</title><style>.edge>path:hover{stroke-width:8}</style>
-<polygon fill="#ad53b6" stroke="black" points="123.89,-1617.51 120.89,-1621.51 99.89,-1621.51 96.89,-1617.51 30.89,-1617.51 30.89,-1581.51 123.89,-1581.51 123.89,-1617.51"/>
+<polygon fill="#7753b6" stroke="black" points="123.89,-1617.51 120.89,-1621.51 99.89,-1621.51 96.89,-1617.51 30.89,-1617.51 30.89,-1581.51 123.89,-1581.51 123.89,-1617.51"/>
 <text text-anchor="middle" x="77.39" y="-1597.01" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#ffffff">requestsfutures</text>
 </g>
 <!-- requests&#45;&gt;requestsfutures -->
-<g id="edge95" class="edge">
+<g id="edge93" class="edge">
 <title>requests&#45;&gt;requestsfutures</title><style>.edge>path:hover{stroke-width:8}</style>
 <path fill="none" stroke="black" d="M77.39,-1670.51C77.39,-1656.45 77.39,-1640.82 77.39,-1627.89"/>
-<polygon fill="#6324d0" stroke="black" points="80.89,-1627.77 77.39,-1617.77 73.89,-1627.77 80.89,-1627.77"/>
+<polygon fill="#2444d0" stroke="black" points="80.89,-1627.77 77.39,-1617.77 73.89,-1627.77 80.89,-1627.77"/>
 </g>
 <!-- requestsfutures&#45;&gt;cookiecutter_python_backend_hosting_services_check_web_hosting_service -->
-<g id="edge96" class="edge">
+<g id="edge94" class="edge">
 <title>requestsfutures&#45;&gt;cookiecutter_python_backend_hosting_services_check_web_hosting_service</title><style>.edge>path:hover{stroke-width:8}</style>
 <path fill="none" stroke="black" d="M72.18,-1581.35C57.62,-1529.53 22.19,-1372.77 96.39,-1284 139.8,-1232.06 178.92,-1265.21 244.39,-1248 265.03,-1242.57 287.16,-1236.48 308.01,-1230.61"/>
-<polygon fill="#ad53b6" stroke="black" points="309.14,-1233.93 317.82,-1227.84 307.24,-1227.19 309.14,-1233.93"/>
+<polygon fill="#7753b6" stroke="black" points="309.14,-1233.93 317.82,-1227.84 307.24,-1227.19 309.14,-1233.93"/>
 </g>
 <!-- softwarepatterns -->
-<g id="node64" class="node">
+<g id="node63" class="node">
 <title>softwarepatterns</title><style>.edge>path:hover{stroke-width:8}</style>
-<polygon fill="#f3168f" stroke="black" points="2477.89,-1761.51 2474.89,-1765.51 2453.89,-1765.51 2450.89,-1761.51 2378.89,-1761.51 2378.89,-1725.51 2477.89,-1725.51 2477.89,-1761.51"/>
+<polygon fill="#df16f3" stroke="black" points="2477.89,-1761.51 2474.89,-1765.51 2453.89,-1765.51 2450.89,-1761.51 2378.89,-1761.51 2378.89,-1725.51 2477.89,-1725.51 2477.89,-1761.51"/>
 <text text-anchor="middle" x="2428.39" y="-1741.01" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#ffffff">softwarepatterns</text>
 </g>
 <!-- softwarepatterns&#45;&gt;cookiecutter_python_backend_error_handling_handler_builder -->
-<g id="edge97" class="edge">
+<g id="edge95" class="edge">
 <title>softwarepatterns&#45;&gt;cookiecutter_python_backend_error_handling_handler_builder</title><style>.edge>path:hover{stroke-width:8}</style>
 <path fill="none" stroke="black" d="M2378.62,-1730.17C2315.76,-1714.93 2204.1,-1689 2107.39,-1672.51"/>
 <path fill="none" stroke="black" d="M2107.39,-1670.51C1978.23,-1648.47 1030.43,-1700.92 929.39,-1617.51 894.14,-1588.41 905.39,-1563.22 905.39,-1517.51 905.39,-1517.51 905.39,-1517.51 905.39,-1421.53 905.39,-1359.48 901.99,-1339.67 929.39,-1284 938.97,-1264.53 954.52,-1268.23 962.39,-1248 976.74,-1211.1 968.32,-1198.06 962.39,-1158.91 925.3,-914.08 952.72,-819.6 797.39,-626.77 761.18,-581.82 666.83,-617.76 684.39,-562.78"/>
 </g>
 <!-- softwarepatterns&#45;&gt;cookiecutter_python_backend_generator_generator -->
-<g id="edge98" class="edge">
+<g id="edge96" class="edge">
 <title>softwarepatterns&#45;&gt;cookiecutter_python_backend_generator_generator</title><style>.edge>path:hover{stroke-width:8}</style>
 <path fill="none" stroke="black" d="M2464.39,-1598.51C2468.79,-1551.14 2523.29,-1578.68 2557.39,-1545.51 2602.83,-1501.29 2638.06,-1486.59 2631.39,-1423.53"/>
 <path fill="none" stroke="black" d="M2631.39,-1421.53C2629.37,-1407.88 2565.27,-1375.73 2512.88,-1351.59"/>
-<polygon fill="#f3168f" stroke="black" points="2514.14,-1348.31 2503.59,-1347.33 2511.22,-1354.68 2514.14,-1348.31"/>
+<polygon fill="#df16f3" stroke="black" points="2514.14,-1348.31 2503.59,-1347.33 2511.22,-1354.68 2514.14,-1348.31"/>
 </g>
 <!-- softwarepatterns&#45;&gt;cookiecutter_python_backend_hosting_services_web_hosting_service -->
-<g id="edge99" class="edge">
+<g id="edge97" class="edge">
 <title>softwarepatterns&#45;&gt;cookiecutter_python_backend_hosting_services_web_hosting_service</title><style>.edge>path:hover{stroke-width:8}</style>
 <path fill="none" stroke="black" d="M2107.39,-1670.51C2040.37,-1659.01 2107.39,-1585.51 2107.39,-1517.51 2107.39,-1517.51 2107.39,-1517.51 2107.39,-1421.53 2107.39,-1363.05 2128.7,-1203.09 2090.39,-1158.91 1919.66,-961.99 1081.15,-891.75 797.99,-873.43"/>
-<polygon fill="#f3168f" stroke="black" points="797.96,-869.92 787.75,-872.77 797.51,-876.9 797.96,-869.92"/>
+<polygon fill="#df16f3" stroke="black" points="797.96,-869.92 787.75,-872.77 797.51,-876.9 797.96,-869.92"/>
 </g>
 <!-- softwarepatterns&#45;&gt;cookiecutter_python_backend_proxy -->
-<g id="edge100" class="edge">
+<g id="edge98" class="edge">
 <title>softwarepatterns&#45;&gt;cookiecutter_python_backend_proxy</title><style>.edge>path:hover{stroke-width:8}</style>
 <path fill="none" stroke="black" d="M2464.39,-1598.51C2464.39,-1584.64 2464.39,-1569.43 2464.39,-1555.98"/>
-<polygon fill="#f3168f" stroke="black" points="2467.89,-1555.63 2464.39,-1545.63 2460.89,-1555.63 2467.89,-1555.63"/>
+<polygon fill="#df16f3" stroke="black" points="2467.89,-1555.63 2464.39,-1545.63 2460.89,-1555.63 2467.89,-1555.63"/>
 </g>
 <!-- softwarepatterns&#45;&gt;cookiecutter_python_backend_user_config_proxy -->
-<g id="edge101" class="edge">
+<g id="edge99" class="edge">
 <title>softwarepatterns&#45;&gt;cookiecutter_python_backend_user_config_proxy</title><style>.edge>path:hover{stroke-width:8}</style>
 <path fill="none" stroke="black" d="M2435.67,-1725.37C2446.19,-1699.04 2464.39,-1646.79 2464.39,-1600.51"/>
 <path fill="none" stroke="black" d="M2464.39,-1598.51C2468.31,-1551.09 2401.21,-1582.58 2371.39,-1545.51 2352.06,-1521.48 2342.52,-1487.57 2337.83,-1461.6"/>
-<polygon fill="#f3168f" stroke="black" points="2341.28,-1461.02 2336.21,-1451.72 2334.38,-1462.15 2341.28,-1461.02"/>
+<polygon fill="#df16f3" stroke="black" points="2341.28,-1461.02 2336.21,-1451.72 2334.38,-1462.15 2341.28,-1461.02"/>
 </g>
 <!-- softwarepatterns&#45;&gt;cookiecutter_python_handle_dialogs_dialog -->
-<g id="edge102" class="edge">
+<g id="edge100" class="edge">
 <title>softwarepatterns&#45;&gt;cookiecutter_python_handle_dialogs_dialog</title><style>.edge>path:hover{stroke-width:8}</style>
 <path fill="none" stroke="black" d="M2631.39,-1421.53C2628.83,-1404.22 2628.29,-1385.04 2628.57,-1368.15"/>
-<polygon fill="#f3168f" stroke="black" points="2632.07,-1368.07 2628.84,-1357.98 2625.08,-1367.88 2632.07,-1368.07"/>
+<polygon fill="#df16f3" stroke="black" points="2632.07,-1368.07 2628.84,-1357.98 2625.08,-1367.88 2632.07,-1368.07"/>
+</g>
+<!-- yaml -->
+<g id="node64" class="node">
+<title>yaml</title><style>.edge>path:hover{stroke-width:8}</style>
+<polygon fill="#c2478a" stroke="black" points="2760.39,-1833.51 2757.39,-1837.51 2736.39,-1837.51 2733.39,-1833.51 2706.39,-1833.51 2706.39,-1797.51 2760.39,-1797.51 2760.39,-1833.51"/>
+<text text-anchor="middle" x="2733.39" y="-1813.01" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#ffffff">yaml</text>
+</g>
+<!-- yaml&#45;&gt;cookiecutter_python_backend_load_config -->
+<g id="edge102" class="edge">
+<title>yaml&#45;&gt;cookiecutter_python_backend_load_config</title><style>.edge>path:hover{stroke-width:8}</style>
+<path fill="none" stroke="black" d="M2760.44,-1810.22C2846.04,-1795.89 3105.39,-1746.39 3105.39,-1672.51 3105.39,-1672.51 3105.39,-1672.51 3105.39,-866.06 3105.39,-779.79 3015.39,-717.09 2952.67,-683.86"/>
+<polygon fill="#c2478a" stroke="black" points="2954.12,-680.67 2943.63,-679.18 2950.9,-686.88 2954.12,-680.67"/>
+</g>
+<!-- yaml&#45;&gt;cookiecutter -->
+<g id="edge101" class="edge">
+<title>yaml&#45;&gt;cookiecutter</title><style>.edge>path:hover{stroke-width:8}</style>
+<path fill="none" stroke="black" d="M2706.28,-1813.45C2631.83,-1810.11 2426.03,-1797.73 2370.39,-1761.51 2347.9,-1746.87 2332.78,-1719.71 2323.98,-1699.23"/>
+<polygon fill="#c2478a" stroke="black" points="2327.15,-1697.75 2320.16,-1689.79 2320.66,-1700.38 2327.15,-1697.75"/>
 </g>
 </g>
 </svg>

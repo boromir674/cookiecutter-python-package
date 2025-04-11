@@ -14,10 +14,12 @@ def get_request():
     # Templated Variables should be centralized here for easier inspection
     # Also, this makes static code analyzers to avoid issues with syntax errors
     # due to the templated (dynamically injected) code in this file
-    cookiecutter = OrderedDict()
-    cookiecutter: OrderedDict = {{cookiecutter}}
+    cookiecutter: OrderedDict = OrderedDict()
+    cookiecutter: OrderedDict = {{cookiecutter}}  # type:ignore[no-redef]
 
-    logger.info("Cookiecutter Data: %s", json.dumps(cookiecutter, sort_keys=True, indent=4))
+    logger.info(
+        "Cookiecutter Data: %s", json.dumps(cookiecutter, sort_keys=True, indent=4)
+    )
 
     interpreters = cookiecutter['interpreters']
     if isinstance(interpreters, str):  # we assume it is json
@@ -64,10 +66,17 @@ def input_sanitization(request):
         # verify_input_interpreters(request.interpreters)
         sanitize['interpreters'](request.interpreters)
     except sanitize.exceptions['interpreters'] as error:
-        logger.warning("Interpreters Data Error: %s", json.dumps({
-            'error': str(error),
-            'interpreters_data': request.interpreters,
-        }, sort_keys=True, indent=4))
+        logger.warning(
+            "Interpreters Data Error: %s",
+            json.dumps(
+                {
+                    'error': str(error),
+                    'interpreters_data': request.interpreters,
+                },
+                sort_keys=True,
+                indent=4,
+            ),
+        )
         raise InputSanitizationError(
             f"ERROR: {request.interpreters} are not valid 'supported interpreters'!"
         ) from error

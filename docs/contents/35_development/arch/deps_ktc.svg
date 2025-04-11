@@ -1027,113 +1027,113 @@
 <path fill="none" stroke="black" d="M273.37,-1020.94C277.77,-1014.96 283.27,-1007.64 289.76,-999.28"/>
 <polygon fill="#53b69b" stroke="black" points="292.59,-1001.35 296,-991.32 287.08,-997.03 292.59,-1001.35"/>
 </g>
-<!-- poyo -->
-<g id="node60" class="node">
-<title>poyo</title><style>.edge>path:hover{stroke-width:8}</style>
-<polygon fill="#47a1c2" stroke="black" points="303,-1899.17 300,-1903.17 279,-1903.17 276,-1899.17 249,-1899.17 249,-1863.17 303,-1863.17 303,-1899.17"/>
-<text text-anchor="middle" x="276" y="-1878.67" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#000000">poyo</text>
-</g>
-<!-- poyo&#45;&gt;cookiecutter_python_backend_load_config -->
-<g id="edge91" class="edge">
-<title>poyo&#45;&gt;cookiecutter_python_backend_load_config</title><style>.edge>path:hover{stroke-width:8}</style>
-<path fill="none" stroke="black" d="M260.65,-1863.02C223.17,-1819.27 130,-1698.63 130,-1580.18 130,-1580.18 130,-1580.18 130,-928.73 130,-861.5 125.41,-831.88 172,-783.42 201.96,-752.25 245.76,-734.62 286.11,-724.64"/>
-<polygon fill="#47a1c2" stroke="black" points="287.06,-728.01 296,-722.32 285.47,-721.19 287.06,-728.01"/>
-</g>
-<!-- poyo&#45;&gt;cookiecutter -->
-<g id="edge90" class="edge">
-<title>poyo&#45;&gt;cookiecutter</title><style>.edge>path:hover{stroke-width:8}</style>
-<path fill="none" stroke="black" d="M303.28,-1877.99C411.95,-1868.93 824.13,-1831.19 1155,-1755.17 1156.47,-1754.84 1157.96,-1754.48 1159.46,-1754.1"/>
-<polygon fill="#47a1c2" stroke="black" points="1160.7,-1757.39 1169.42,-1751.38 1158.85,-1750.64 1160.7,-1757.39"/>
-</g>
 <!-- questionary -->
-<g id="node61" class="node">
+<g id="node60" class="node">
 <title>questionary</title><style>.edge>path:hover{stroke-width:8}</style>
-<polygon fill="#314bc4" stroke="black" points="531,-1683.17 528,-1687.17 507,-1687.17 504,-1683.17 457,-1683.17 457,-1647.17 531,-1647.17 531,-1683.17"/>
-<text text-anchor="middle" x="494" y="-1662.67" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#ffffff">questionary</text>
+<polygon fill="#319cc4" stroke="black" points="531,-1683.17 528,-1687.17 507,-1687.17 504,-1683.17 457,-1683.17 457,-1647.17 531,-1647.17 531,-1683.17"/>
+<text text-anchor="middle" x="494" y="-1662.67" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#000000">questionary</text>
 </g>
 <!-- questionary&#45;&gt;cookiecutter_python_handle_dialogs_lib_project_name -->
-<g id="edge92" class="edge">
+<g id="edge90" class="edge">
 <title>questionary&#45;&gt;cookiecutter_python_handle_dialogs_lib_project_name</title><style>.edge>path:hover{stroke-width:8}</style>
 <path fill="none" stroke="black" d="M494,-1647.11C494,-1646.96 494,-1646.81 494,-1646.66"/>
-<polygon fill="#314bc4" stroke="black" points="497.5,-1649.17 494,-1639.17 490.5,-1649.17 497.5,-1649.17"/>
+<polygon fill="#319cc4" stroke="black" points="497.5,-1649.17 494,-1639.17 490.5,-1649.17 497.5,-1649.17"/>
 </g>
 <!-- requests -->
-<g id="node62" class="node">
+<g id="node61" class="node">
 <title>requests</title><style>.edge>path:hover{stroke-width:8}</style>
-<polygon fill="#6324d0" stroke="black" points="1638.5,-1827.17 1635.5,-1831.17 1614.5,-1831.17 1611.5,-1827.17 1579.5,-1827.17 1579.5,-1791.17 1638.5,-1791.17 1638.5,-1827.17"/>
+<polygon fill="#2444d0" stroke="black" points="1638.5,-1827.17 1635.5,-1831.17 1614.5,-1831.17 1611.5,-1827.17 1579.5,-1827.17 1579.5,-1791.17 1638.5,-1791.17 1638.5,-1827.17"/>
 <text text-anchor="middle" x="1609" y="-1806.67" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#ffffff">requests</text>
 </g>
 <!-- requests&#45;&gt;cookiecutter_python_backend_hosting_services_handle_hosting_service_check -->
-<g id="edge93" class="edge">
+<g id="edge91" class="edge">
 <title>requests&#45;&gt;cookiecutter_python_backend_hosting_services_handle_hosting_service_check</title><style>.edge>path:hover{stroke-width:8}</style>
 <path fill="none" stroke="black" d="M1609,-1791.13C1609,-1764.47 1609,-1711.29 1609,-1666.17 1609,-1666.17 1609,-1666.17 1609,-1649.5"/>
-<polygon fill="#6324d0" stroke="black" points="1612.5,-1649.17 1609,-1639.17 1605.5,-1649.17 1612.5,-1649.17"/>
+<polygon fill="#2444d0" stroke="black" points="1612.5,-1649.17 1609,-1639.17 1605.5,-1649.17 1612.5,-1649.17"/>
 </g>
 <!-- requests&#45;&gt;cookiecutter_python_backend_post_main -->
-<g id="edge94" class="edge">
+<g id="edge92" class="edge">
 <title>requests&#45;&gt;cookiecutter_python_backend_post_main</title><style>.edge>path:hover{stroke-width:8}</style>
 <path fill="none" stroke="black" d="M1638.79,-1808.34C1769.03,-1808.29 2282,-1799.62 2282,-1666.17 2282,-1666.17 2282,-1666.17 2282,-1649.5"/>
-<polygon fill="#6324d0" stroke="black" points="2285.5,-1649.17 2282,-1639.17 2278.5,-1649.17 2285.5,-1649.17"/>
+<polygon fill="#2444d0" stroke="black" points="2285.5,-1649.17 2282,-1639.17 2278.5,-1649.17 2285.5,-1649.17"/>
 </g>
 <!-- requestsfutures -->
-<g id="node63" class="node">
+<g id="node62" class="node">
 <title>requestsfutures</title><style>.edge>path:hover{stroke-width:8}</style>
-<polygon fill="#ad53b6" stroke="black" points="1580.5,-1683.17 1577.5,-1687.17 1556.5,-1687.17 1553.5,-1683.17 1487.5,-1683.17 1487.5,-1647.17 1580.5,-1647.17 1580.5,-1683.17"/>
+<polygon fill="#7753b6" stroke="black" points="1580.5,-1683.17 1577.5,-1687.17 1556.5,-1687.17 1553.5,-1683.17 1487.5,-1683.17 1487.5,-1647.17 1580.5,-1647.17 1580.5,-1683.17"/>
 <text text-anchor="middle" x="1534" y="-1662.67" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#ffffff">requestsfutures</text>
 </g>
 <!-- requests&#45;&gt;requestsfutures -->
-<g id="edge95" class="edge">
+<g id="edge93" class="edge">
 <title>requests&#45;&gt;requestsfutures</title><style>.edge>path:hover{stroke-width:8}</style>
 <path fill="none" stroke="black" d="M1599.95,-1791.05C1587,-1766.53 1563.07,-1721.21 1547.87,-1692.43"/>
-<polygon fill="#6324d0" stroke="black" points="1550.84,-1690.57 1543.08,-1683.36 1544.65,-1693.84 1550.84,-1690.57"/>
+<polygon fill="#2444d0" stroke="black" points="1550.84,-1690.57 1543.08,-1683.36 1544.65,-1693.84 1550.84,-1690.57"/>
 </g>
 <!-- requestsfutures&#45;&gt;cookiecutter_python_backend_hosting_services_check_web_hosting_service -->
-<g id="edge96" class="edge">
+<g id="edge94" class="edge">
 <title>requestsfutures&#45;&gt;cookiecutter_python_backend_hosting_services_check_web_hosting_service</title><style>.edge>path:hover{stroke-width:8}</style>
 <path fill="none" stroke="black" d="M1534.69,-1647.11C1534.69,-1646.96 1534.7,-1646.81 1534.71,-1646.66"/>
-<polygon fill="#ad53b6" stroke="black" points="1538.1,-1649.3 1535.01,-1639.17 1531.11,-1649.02 1538.1,-1649.3"/>
+<polygon fill="#7753b6" stroke="black" points="1538.1,-1649.3 1535.01,-1639.17 1531.11,-1649.02 1538.1,-1649.3"/>
 </g>
 <!-- softwarepatterns -->
-<g id="node64" class="node">
+<g id="node63" class="node">
 <title>softwarepatterns</title><style>.edge>path:hover{stroke-width:8}</style>
-<polygon fill="#f3168f" stroke="black" points="562.5,-1827.17 559.5,-1831.17 538.5,-1831.17 535.5,-1827.17 463.5,-1827.17 463.5,-1791.17 562.5,-1791.17 562.5,-1827.17"/>
+<polygon fill="#df16f3" stroke="black" points="562.5,-1827.17 559.5,-1831.17 538.5,-1831.17 535.5,-1827.17 463.5,-1827.17 463.5,-1791.17 562.5,-1791.17 562.5,-1827.17"/>
 <text text-anchor="middle" x="513" y="-1806.67" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#ffffff">softwarepatterns</text>
 </g>
 <!-- softwarepatterns&#45;&gt;cookiecutter_python_backend_error_handling_handler_builder -->
-<g id="edge97" class="edge">
+<g id="edge95" class="edge">
 <title>softwarepatterns&#45;&gt;cookiecutter_python_backend_error_handling_handler_builder</title><style>.edge>path:hover{stroke-width:8}</style>
 <path fill="none" stroke="black" d="M463.42,-1803.93C389.7,-1796.86 255.49,-1780.86 215,-1755.17 197.9,-1744.33 92,-1596.91 92,-1580.18 92,-1580.18 92,-1580.18 92,-709.65 92,-583.62 175.7,-559.11 285.95,-545.42"/>
-<polygon fill="#f3168f" stroke="black" points="286.49,-548.88 296,-544.2 285.65,-541.93 286.49,-548.88"/>
+<polygon fill="#df16f3" stroke="black" points="286.49,-548.88 296,-544.2 285.65,-541.93 286.49,-548.88"/>
 </g>
 <!-- softwarepatterns&#45;&gt;cookiecutter_python_backend_generator_generator -->
-<g id="edge98" class="edge">
+<g id="edge96" class="edge">
 <title>softwarepatterns&#45;&gt;cookiecutter_python_backend_generator_generator</title><style>.edge>path:hover{stroke-width:8}</style>
 <path fill="none" stroke="black" d="M463.2,-1798.51C367.66,-1778.53 168,-1729.25 168,-1666.17 168,-1666.17 168,-1666.17 168,-928.73 168,-857.8 177.3,-826.04 234,-783.42 252.71,-769.35 269.75,-760.87 285.99,-755.98"/>
-<polygon fill="#f3168f" stroke="black" points="287.2,-759.28 296,-753.38 285.44,-752.5 287.2,-759.28"/>
+<polygon fill="#df16f3" stroke="black" points="287.2,-759.28 296,-753.38 285.44,-752.5 287.2,-759.28"/>
 </g>
 <!-- softwarepatterns&#45;&gt;cookiecutter_python_backend_hosting_services_web_hosting_service -->
-<g id="edge99" class="edge">
+<g id="edge97" class="edge">
 <title>softwarepatterns&#45;&gt;cookiecutter_python_backend_hosting_services_web_hosting_service</title><style>.edge>path:hover{stroke-width:8}</style>
 <path fill="none" stroke="black" d="M479.94,-1790.98C441.14,-1768.14 382,-1723.87 382,-1666.17 382,-1666.17 382,-1666.17 382,-1649.5"/>
-<polygon fill="#f3168f" stroke="black" points="385.5,-1649.17 382,-1639.17 378.5,-1649.17 385.5,-1649.17"/>
+<polygon fill="#df16f3" stroke="black" points="385.5,-1649.17 382,-1639.17 378.5,-1649.17 385.5,-1649.17"/>
 </g>
 <!-- softwarepatterns&#45;&gt;cookiecutter_python_backend_proxy -->
-<g id="edge100" class="edge">
+<g id="edge98" class="edge">
 <title>softwarepatterns&#45;&gt;cookiecutter_python_backend_proxy</title><style>.edge>path:hover{stroke-width:8}</style>
 <path fill="none" stroke="black" d="M562.63,-1792C641.26,-1765.61 798.69,-1709.56 926.83,-1643.92"/>
-<polygon fill="#f3168f" stroke="black" points="928.72,-1646.88 936,-1639.17 925.51,-1640.66 928.72,-1646.88"/>
+<polygon fill="#df16f3" stroke="black" points="928.72,-1646.88 936,-1639.17 925.51,-1640.66 928.72,-1646.88"/>
 </g>
 <!-- softwarepatterns&#45;&gt;cookiecutter_python_backend_user_config_proxy -->
-<g id="edge101" class="edge">
+<g id="edge99" class="edge">
 <title>softwarepatterns&#45;&gt;cookiecutter_python_backend_user_config_proxy</title><style>.edge>path:hover{stroke-width:8}</style>
 <path fill="none" stroke="black" d="M562.63,-1801.85C691.2,-1784.39 1030.89,-1731.19 1115.28,-1646.65"/>
-<polygon fill="#f3168f" stroke="black" points="1117.92,-1648.95 1122,-1639.17 1112.71,-1644.27 1117.92,-1648.95"/>
+<polygon fill="#df16f3" stroke="black" points="1117.92,-1648.95 1122,-1639.17 1112.71,-1644.27 1117.92,-1648.95"/>
 </g>
 <!-- softwarepatterns&#45;&gt;cookiecutter_python_handle_dialogs_dialog -->
-<g id="edge102" class="edge">
+<g id="edge100" class="edge">
 <title>softwarepatterns&#45;&gt;cookiecutter_python_handle_dialogs_dialog</title><style>.edge>path:hover{stroke-width:8}</style>
 <path fill="none" stroke="black" d="M546.31,-1791.04C585.41,-1768.27 645,-1724.07 645,-1666.17 645,-1666.17 645,-1666.17 645,-1649.5"/>
-<polygon fill="#f3168f" stroke="black" points="648.5,-1649.17 645,-1639.17 641.5,-1649.17 648.5,-1649.17"/>
+<polygon fill="#df16f3" stroke="black" points="648.5,-1649.17 645,-1639.17 641.5,-1649.17 648.5,-1649.17"/>
+</g>
+<!-- yaml -->
+<g id="node64" class="node">
+<title>yaml</title><style>.edge>path:hover{stroke-width:8}</style>
+<polygon fill="#c2478a" stroke="black" points="303,-1899.17 300,-1903.17 279,-1903.17 276,-1899.17 249,-1899.17 249,-1863.17 303,-1863.17 303,-1899.17"/>
+<text text-anchor="middle" x="276" y="-1878.67" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#ffffff">yaml</text>
+</g>
+<!-- yaml&#45;&gt;cookiecutter_python_backend_load_config -->
+<g id="edge102" class="edge">
+<title>yaml&#45;&gt;cookiecutter_python_backend_load_config</title><style>.edge>path:hover{stroke-width:8}</style>
+<path fill="none" stroke="black" d="M260.65,-1863.02C223.17,-1819.27 130,-1698.63 130,-1580.18 130,-1580.18 130,-1580.18 130,-928.73 130,-861.5 125.41,-831.88 172,-783.42 201.96,-752.25 245.76,-734.62 286.11,-724.64"/>
+<polygon fill="#c2478a" stroke="black" points="287.06,-728.01 296,-722.32 285.47,-721.19 287.06,-728.01"/>
+</g>
+<!-- yaml&#45;&gt;cookiecutter -->
+<g id="edge101" class="edge">
+<title>yaml&#45;&gt;cookiecutter</title><style>.edge>path:hover{stroke-width:8}</style>
+<path fill="none" stroke="black" d="M303.28,-1877.99C411.95,-1868.93 824.13,-1831.19 1155,-1755.17 1156.47,-1754.84 1157.96,-1754.48 1159.46,-1754.1"/>
+<polygon fill="#c2478a" stroke="black" points="1160.7,-1757.39 1169.42,-1751.38 1158.85,-1750.64 1160.7,-1757.39"/>
 </g>
 </g>
 </svg>

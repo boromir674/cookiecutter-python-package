@@ -1,9 +1,9 @@
-from os import path
 import sys
-from typing import List, Optional, Type, TypeVar
-from inspect import isclass
-from pkgutil import iter_modules
 from importlib import import_module
+from inspect import isclass
+from os import path
+from pkgutil import iter_modules
+from typing import List, Optional, Type, TypeVar
 
 
 T = TypeVar('T')
@@ -32,7 +32,8 @@ def load(interface: Type[T], module: Optional[str] = None) -> List[Type[T]]:
             code resides.
     """
     project_package_location = path.dirname(
-        path.realpath(path.dirname(path.realpath(__file__))))
+        path.realpath(path.dirname(path.realpath(__file__)))
+    )
     if module is None:  # set path as the dir where the invoking code is
         namespace = sys._getframe(1).f_globals  # caller's globals
         directory: str = path.dirname(path.realpath(namespace['__file__']))
@@ -45,22 +46,26 @@ def load(interface: Type[T], module: Optional[str] = None) -> List[Type[T]]:
         # if top-level init is at '/site-packages/some_python_package/__init__.py'
         # then distro_path is '/site-packages/some_python_package'
         from pathlib import Path
+
         distro_path: Path = Path(str(module_object.__file__)).parent
-        directory = str(distro_path) 
+        directory = str(distro_path)
         _module = module
 
     objects = []
     # iterate through the modules inside the directory
-    for (_, module_name, _) in iter_modules([directory]):
-        module_object = import_module('{package}.{module}'.format(
-            package=_module,
-            module=module_name
-        ))
+    for _, module_name, _ in iter_modules([directory]):
+        module_object = import_module(
+            '{package}.{module}'.format(package=_module, module=module_name)
+        )
 
         for attribute_name in dir(module_object):
             attribute = getattr(module_object, attribute_name)
 
-            if attribute != interface and isclass(attribute) and issubclass(attribute, interface):
+            if (
+                attribute != interface
+                and isclass(attribute)
+                and issubclass(attribute, interface)
+            ):
                 # Add the class to this package's variables
                 globals()[attribute_name] = attribute
                 objects.append(attribute)
