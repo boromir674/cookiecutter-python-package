@@ -253,6 +253,7 @@ jobs:
         with:
           fetch-depth: 0
       - run: git branch --track "${{ env.RELEASE_BR }}" "origin/${{ env.RELEASE_BR }}"
+      - run: git branch --track "${{ env.MAIN_BR }}" "origin/${{ env.MAIN_BR }}"
 
       - name: "Check if '${{ github.ref }}' tag is on '${{ env.MAIN_BR }}' branch"
         uses: rickstaa/action-contains-tag@v1
