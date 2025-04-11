@@ -9,7 +9,7 @@ Git Ops Framework facilitating (semi) automated flows:
 | Expression | Description | Example | Idea |
 | ---------- | ----------- | ------- | ---- |
 | `alias git-tag="${PWD}/scripts/git-tag.sh"` | **Tag HEAD**, *local* and *remote* | `git-tag auto-release` | Facilitates Git-Ops, given input tag |
-| `function git-tag { git tag -d "$1"; git tag "$1" && git tag push origin -d "$1"; git push origin "$1"; }` | **Tag HEAD**, *local* and *remote* | `git-tag auto-release` | Facilitates Git-Ops, given input tag |
+| `function git-tag { git tag -d "$1"; git tag "$1" && git push origin -d "$1"; git push origin "$1"; }` | **Tag HEAD**, *local* and *remote* | `git-tag auto-release` | Facilitates Git-Ops, given input tag |
 | `function parse-version { grep -E -o '^version\s*=\s*\".*\"' pyproject.toml \| cut -d'"' -f2; }` | **Parse Version** from pyproject.toml | `parse-version` | Query Single Source of Truth |
 
 ### Github - setup

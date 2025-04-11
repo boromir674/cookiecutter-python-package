@@ -250,17 +250,9 @@ jobs:
 
       ######## PHASE 4: INSTALL WHEELS AND RUN SANITY CHECKS ########
 
-      # 1. Build All Wheels, install and Test
+      # 1. Build 'Prod + Test' Wheels
       - name: Build Wheels of 'Prod + Test' Dependencies
         run: pip wheel --wheel-dir dist-wheels -r prod+test.txt
-
-      - name: Remove Package Wheel from dist-wheels
-        # NOTE: this assumes only one Universal Wheel (ie pure python code) is produced by the build
-        id: module_wheel_path
-        shell: bash
-        run: |
-          MODULE_WHEEL_PATH="$(ls dist-wheels/cookiecutter_python-${PEP_VERSION}*.whl)"
-          rm "${MODULE_WHEEL_PATH}"
 
       # 2. 
       - name: Install Package and prod+test Wheels
