@@ -34,31 +34,35 @@ def load(interface: Type[T], module: Optional[str] = None) -> List[Type[T]]:
             same module (directory) as the one where the module of the invoking
             code resides.
     """
+    lib_dir: str
+    _module: str
     if module is None:  # set path as the dir where the invoking code is
         namespace = sys._getframe(1).f_globals  # caller's globals
         # Set as Lib the directory where the invoker module is located at runtime
-        directory: str = path.dirname(path.realpath(namespace['__file__']))
-        relative_path = Path(directory).relative_to(SRC_DIR)
+        lib_dir = path.dirname(path.realpath(namespace['__file__']))
+        relative_path = Path(lib_dir).relative_to(SRC_DIR)
         _module = str(relative_path).replace('/', '.')
+        if sys.platform == 'win32':
+            _module = _module.replace('\\', '/')
     else:
         # Import input module
         # module_object = import_module(module.replace('/', '.'))
         module_object = import_module(module)
 
         # Set as Lib the directory where the INPUT module is located at runtime
-        directory: str = str(Path(str(module_object.__file__)).parent)
+        lib_dir = str(Path(str(module_object.__file__)).parent)
         # if top-level init is at '/site-packages/some_python_package/__init__.py'
         # then distro_path is '/site-packages/some_python_package'
 
         _module = module
 
-    if not Path(directory).exists():
+    if not Path(lib_dir).exists():
         raise FileNotFoundError
 
     objects = []
 
-    # iterate through the modules inside the directory
-    for _, module_name, _ in iter_modules([directory]):
+    # iterate through the modules inside the LIB directory
+    for _, module_name, _ in iter_modules([lib_dir]):
         module_object = import_module(
             '{package}.{module}'.format(package=_module, module=module_name)
         )
