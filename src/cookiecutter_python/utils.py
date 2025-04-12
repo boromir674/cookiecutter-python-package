@@ -2,8 +2,8 @@ import sys
 from importlib import import_module
 from inspect import isclass
 from os import path
-from pkgutil import iter_modules
 from pathlib import Path
+from pkgutil import iter_modules
 from typing import List, Optional, Type, TypeVar
 
 
@@ -56,6 +56,7 @@ def load(interface: Type[T], module: Optional[str] = None) -> List[Type[T]]:
         raise FileNotFoundError
 
     objects = []
+
     # iterate through the modules inside the directory
     for _, module_name, _ in iter_modules([directory]):
         module_object = import_module(

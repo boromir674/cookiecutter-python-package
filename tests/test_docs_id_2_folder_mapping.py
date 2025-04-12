@@ -33,6 +33,7 @@ def mock_wrong_proj_template_dir(tmp_path: Path) -> Path:
 def test_get_docs_gen_internal_config_valid(mock_correct_proj_template_dir: Path):
     """Test that valid docs folders are correctly mapped."""
     from cookiecutter_python.backend.gen_docs_common import get_docs_gen_internal_config
+
     with patch(
         "cookiecutter_python.backend.gen_docs_common.PROJ_TEMPLATE_DIR",
         mock_correct_proj_template_dir,
@@ -53,6 +54,7 @@ def test_get_docs_gen_internal_config_invalid_folder_name(
 ):
     """Test that invalid folder names raise a ValueError."""
     from cookiecutter_python.backend.gen_docs_common import get_docs_gen_internal_config
+
     _invalid_folder = mock_wrong_proj_template_dir / "docs-invalid-folder"  # noqa: F841
     # invalid_folder.rename(mock_proj_template_dir / "docs_invalid")
     with patch(
@@ -71,8 +73,8 @@ def test_get_docs_gen_internal_config_invalid_folder_name(
 def test_get_docs_gen_internal_config_empty_directory(tmp_path: Path):
     """Test that an empty directory raises an assertion error."""
     from cookiecutter_python.backend.gen_docs_common import (  # type: ignore[attr-defined]
-        get_docs_gen_internal_config,
         NoDocsTemplateFolderError,
+        get_docs_gen_internal_config,
     )
 
     with patch(
