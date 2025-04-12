@@ -214,6 +214,7 @@ def sdist_expected_correct_file_structure():
     )
     TESTS = (
         'tests/biskotaki_ci/conftest.py',
+        'tests/test_load_util.py',
         'tests/biskotaki_ci/snapshot/biskotaki_ci_no_input/test_build_creates_artifacts.py',
         'tests/biskotaki_ci/snapshot/biskotaki_ci_no_input/test_lint_passes.py',
         'tests/biskotaki_ci/snapshot/test_matches_biskotaki_runtime_gen.py',
@@ -422,7 +423,11 @@ def assert_sdist_exact_file_structure(tmp_path: Path):
 
         from cookiecutter_python import __version__
 
-        DISTRO_NAME_AS_IN_SITE_PACKAGES = f'cookiecutter_python-{__version__}'
+        # if verion includes metadata (ie 1.2.5-dev) then we must match 1.2.5.dev0 !
+        if '-' in __version__:
+            DISTRO_NAME_AS_IN_SITE_PACKAGES = f'cookiecutter_python-{__version__.split("-")[0]}.{__version__.split("-")[1]}0'
+        else:
+            DISTRO_NAME_AS_IN_SITE_PACKAGES = f'cookiecutter_python-{__version__}'
 
         # Relative Paths extracted from tar.gz
         runtime_files = [
