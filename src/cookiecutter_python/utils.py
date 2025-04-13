@@ -41,9 +41,11 @@ def load(interface: Type[T], module: Optional[str] = None) -> List[Type[T]]:
         # Set as Lib the directory where the invoker module is located at runtime
         lib_dir = path.dirname(path.realpath(namespace['__file__']))
         relative_path = Path(lib_dir).relative_to(SRC_DIR)
-        _module = str(relative_path).replace('/', '.')
-        if sys.platform == 'win32':
-            _module = _module.replace('\\', '/')
+
+        _module = str(relative_path)
+        if sys.platform == 'win32':  # pragma: no mutate
+            _module = _module.replace('\\', '/')  # pragma: no mutate
+        _module = _module.replace('/', '.')
     else:
         # Import input module
         # module_object = import_module(module.replace('/', '.'))
