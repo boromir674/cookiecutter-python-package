@@ -6,72 +6,6 @@ from pathlib import Path
 import pytest
 
 
-@pytest.fixture(scope="session")
-def run_subprocess():
-    import subprocess
-    import sys
-    import typing as t
-
-    class CLIResult:
-        def __init__(self, completed_process: subprocess.CompletedProcess):
-            self._exit_code = int(completed_process.returncode)
-            self._stdout = str(completed_process.stdout, encoding='utf-8')
-            self._stderr = str(completed_process.stderr, encoding='utf-8')
-
-        @property
-        def exit_code(self) -> int:
-            return self._exit_code
-
-        @property
-        def stdout(self) -> str:
-            return self._stdout
-
-        @property
-        def stderr(self) -> str:
-            return self._stderr
-
-    def python37_n_above_kwargs():
-        return dict(
-            capture_output=True,  # capture stdout and stderr separately
-            # cwd=project_directory,
-            check=True,
-        )
-
-    def python36_n_below_kwargs():
-        return dict(
-            stdout=subprocess.PIPE,  # capture stdout and stderr separately
-            stderr=subprocess.PIPE,
-            check=True,
-        )
-
-    subprocess_run_map = {
-        True: python36_n_below_kwargs,
-        False: python37_n_above_kwargs,
-    }
-
-    def get_callable(cli_args: t.List[str], **kwargs) -> t.Callable[[], CLIResult]:
-        def subprocess_run() -> CLIResult:
-            kwargs_dict = subprocess_run_map[sys.version_info < (3, 7)]()
-            completed_process = subprocess.run(  # pylint: disable=W1510
-                cli_args, **dict(dict(kwargs_dict, **kwargs))
-            )
-            return CLIResult(completed_process)
-
-        return subprocess_run
-
-    def execute_command_in_subprocess(executable: str, *args, **kwargs):
-        """Run command with python subprocess, given optional runtime arguments.
-
-        Use kwargs to override subprocess flags, such as 'check'
-
-        Flag 'check' defaults to True.
-        """
-        execute_subprocess = get_callable([executable] + list(args), **kwargs)
-        return execute_subprocess()
-
-    return execute_command_in_subprocess
-
-
 # EXPECTATIONS as fixture
 @pytest.fixture(scope="session")
 def sdist_expected_correct_file_structure():
@@ -529,7 +463,7 @@ def assert_sdist_exact_file_structure(safe_extract, tmp_path: Path):
 
 ######## uv + poetry as build backend ########
 @pytest.fixture(scope="module")
-def sdist_built_at_runtime_with_uv(run_subprocess) -> Path:
+def sdist_built_at_runtime_with_uv(my_run_subprocess) -> Path:
     """Build project (at runtime) with 'uv', and return SDist tar.gz file."""
     import typing as t
 
@@ -557,7 +491,7 @@ def sdist_built_at_runtime_with_uv(run_subprocess) -> Path:
         str(OUT_DIR),
         str(project_path),
     ]
-    result = run_subprocess(*COMMAND_LINE_ARGS, check=False)
+    result = my_run_subprocess(*COMMAND_LINE_ARGS, check=False)
 
     import re
 
@@ -626,7 +560,7 @@ def test_sdist_includes_dirs_and_files_exactly_as_expected_when_produced_via_uv_
 
 ######## Build + poetry as build backend ########
 @pytest.fixture(scope="module")
-def sdist_built_at_runtime_with_build(run_subprocess) -> Path:
+def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
     """Build project (at runtime) with 'build module', and return SDist tar.gz file."""
     import typing as t
     # Create a temporary directory
@@ -652,7 +586,7 @@ def sdist_built_at_runtime_with_build(run_subprocess) -> Path:
         str(OUT_DIR),
         str(project_path),
     ]
-    result = run_subprocess(*COMMAND_LINE_ARGS, check=False)
+    result = my_run_subprocess(*COMMAND_LINE_ARGS, check=False)
 
     print()
     print("==========")
