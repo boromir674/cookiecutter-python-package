@@ -408,9 +408,46 @@ def verify_file_size_within_acceptable_limits():
 
     return _verify_file_size_within_acceptable_limits
 
+import tarfile
+@pytest.fixture
+def safe_extract():
+    """
+    Safely extract tarfile members to the specified path.
+    Ensures no file escapes the target directory.
+    """
+    from typing import Iterable
+
+    def validate_tar_members(tar: tarfile.TarFile, path: Path) -> Iterable[tarfile.TarInfo]:
+        """
+        Validate tarfile members to ensure no file escapes the target directory.
+        """
+        path = Path(path).resolve()
+
+        def is_within_directory(directory: Path, target: Path) -> bool:
+            return target.resolve().is_relative_to(directory)
+
+        for member in tar.getmembers():
+            member_path = path / member.name
+            if not is_within_directory(path, member_path):
+                raise ValueError(f"Unsafe path detected: {member.name}")
+            yield member  # Only yield safe members
+    
+    def _safe_extract(tar: tarfile.TarFile, path: Path, *, members=None):
+        """
+        Safely extract tarfile members to the specified path.
+        """
+        path = Path(path).resolve()
+        def _validate_members(_tar):
+            return validate_tar_members(_tar, path)
+        # Extract only validated members
+        tar.extractall(path=path, members=_validate_members)
+        # tar.extractall(path=path, members=lambda _tar: validate_tar_members(_tar, path))
+
+    return _safe_extract
+
 
 @pytest.fixture
-def assert_sdist_exact_file_structure(tmp_path: Path):
+def assert_sdist_exact_file_structure(safe_extract, tmp_path: Path):
     def _verify_sdist_file_structure(
         sdist_built_at_runtime: Path, expected_file_structure: t.Tuple[str]
     ):
@@ -419,7 +456,8 @@ def assert_sdist_exact_file_structure(tmp_path: Path):
         import tarfile
 
         with tarfile.open(sdist_built_at_runtime, "r:gz") as tar:
-            tar.extractall(path=extracted_from_tar_gz)
+            safe_extract(tar, extracted_from_tar_gz)
+            # tar.extractall(path=extracted_from_tar_gz)
 
         from cookiecutter_python import __version__
 
@@ -463,7 +501,9 @@ def sdist_built_at_runtime_with_uv(run_subprocess) -> Path:
     """Build project (at runtime) with 'uv', and return SDist tar.gz file."""
     import typing as t
 
-    tmp_path = Path("/tmp")
+    # Create a temporary directory
+    import tempfile
+    tmp_path = Path(tempfile.mkdtemp())
     OUT_DIR = tmp_path / "dist-unit-test-sdist_built_at_runtime"
     # Get distro_path: ie '/site-packages/cookiecutter_python'
     # import cookiecutter_python
@@ -557,9 +597,11 @@ def test_sdist_includes_dirs_and_files_exactly_as_expected_when_produced_via_uv_
 def sdist_built_at_runtime_with_build(run_subprocess) -> Path:
     """Build project (at runtime) with 'build module', and return SDist tar.gz file."""
     import typing as t
+    # Create a temporary directory
+    import tempfile
+    temp_dir: str = tempfile.mkdtemp()
 
-    tmp_path = Path("/tmp")
-    OUT_DIR = tmp_path / "unit-test-sdist_built_at_runtime_with_build"
+    OUT_DIR = Path(temp_dir) / "unit-test-sdist_built_at_runtime_with_build"
     # Get distro_path: ie '/site-packages/cookiecutter_python'
     # import cookiecutter_python
     # distro_path = Path(cookiecutter_python.__file__).parent.absolute()
