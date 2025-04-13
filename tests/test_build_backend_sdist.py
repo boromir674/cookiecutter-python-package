@@ -408,40 +408,73 @@ def verify_file_size_within_acceptable_limits():
 
     return _verify_file_size_within_acceptable_limits
 
-import tarfile
+
 @pytest.fixture
 def safe_extract():
     """
     Safely extract tarfile members to the specified path.
     Ensures no file escapes the target directory.
     """
-    from typing import Iterable
+    import tarfile
+    from pathlib import Path
 
-    def validate_tar_members(tar: tarfile.TarFile, path: Path) -> Iterable[tarfile.TarInfo]:
-        """
-        Validate tarfile members to ensure no file escapes the target directory.
-        """
-        path = Path(path).resolve()
+    import re
 
-        def is_within_directory(directory: Path, target: Path) -> bool:
-            return target.resolve().is_relative_to(directory)
+
+    def is_path_traversal_safe(base: Path, target: Path) -> bool:
+        """
+        Canonicalizes both paths and ensures `target` is strictly inside `base`.
+        """
+        try:
+            base_resolved = base.resolve(strict=False)
+            target_resolved = target.resolve(strict=False)
+        except FileNotFoundError:
+            return False
+
+        return str(target_resolved).startswith(str(base_resolved))
+
+
+    def validate_tar_members(tar: tarfile.TarFile, base_path: Path) -> t.Iterator[tarfile.TarInfo]:
+        # Location to extract to
+        base_path = base_path.resolve(strict=False)
 
         for member in tar.getmembers():
-            member_path = path / member.name
-            if not is_within_directory(path, member_path):
-                raise ValueError(f"Unsafe path detected: {member.name}")
-            yield member  # Only yield safe members
-    
-    def _safe_extract(tar: tarfile.TarFile, path: Path, *, members=None):
+            # File Path after extraction
+            member_path = (base_path / member.name)
+
+            # Normalize and reject absolute paths and traversal
+            if not is_path_traversal_safe(base_path, member_path):
+                raise ValueError(f"Unsafe path detected in tar file: {member.name}")
+
+            # Optional: block symlinks inside tar to ensure secure extraction
+            if member.issym() or member.islnk():
+                raise ValueError(f"Symlink not allowed: {member.name}")
+
+            # Optional: sanitize explicitly (fails fast on traversal hints)
+            if (
+                # 1. Detect invalid characters or sequences commonly used in traversal attacks.
+                member.name is None or
+                any([x in member.name for x in {
+                    "..",
+                    "\\"
+                }]) or
+                # 2. Enforce strict whitelist pattern. Adjust pattern as necessary.
+                any([re.fullmatch(
+                    r"[a-zA-Z0-9_.\- {}]+",
+                x) is None for x in member.name.split("/")])
+            ):
+                # Extra: Use only allowed filenames if applicable
+                raise ValueError(f"Invalid file name '{member.name}'")
+
+            yield member
+
+
+    def _safe_extract(tar: tarfile.TarFile, path: Path):
         """
-        Safely extract tarfile members to the specified path.
+        Safely extract tar file into the given path using validated members.
         """
-        path = Path(path).resolve()
-        def _validate_members(_tar):
-            return validate_tar_members(_tar, path)
-        # Extract only validated members
-        tar.extractall(path=path, members=_validate_members)
-        # tar.extractall(path=path, members=lambda _tar: validate_tar_members(_tar, path))
+        path = path.resolve(strict=False)
+        tar.extractall(path=path, members=validate_tar_members(tar, path))
 
     return _safe_extract
 
@@ -457,7 +490,6 @@ def assert_sdist_exact_file_structure(safe_extract, tmp_path: Path):
 
         with tarfile.open(sdist_built_at_runtime, "r:gz") as tar:
             safe_extract(tar, extracted_from_tar_gz)
-            # tar.extractall(path=extracted_from_tar_gz)
 
         from cookiecutter_python import __version__
 
