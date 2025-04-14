@@ -42,10 +42,7 @@ def load(interface: Type[T], module: Optional[str] = None) -> List[Type[T]]:
         lib_dir = path.dirname(path.realpath(namespace['__file__']))
         relative_path = Path(lib_dir).relative_to(SRC_DIR)
 
-        _module = str(relative_path)
-        if sys.platform == 'win32':  # pragma: no mutate
-            _module = _module.replace('\\', '/')  # pragma: no mutate
-        _module = _module.replace('/', '.')
+        _module = str(relative_path).replace('\\', '/').replace('/', '.')  # pragma: no mutate
     else:
         # Import input module
         # module_object = import_module(module.replace('/', '.'))
