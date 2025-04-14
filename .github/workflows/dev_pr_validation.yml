@@ -194,7 +194,7 @@ jobs:
       python_version: '3.10'
       allow_failure: ${{ github.event_name != 'pull_request' || github.base_ref != 'dev' }}
       force_styles: ${{ github.event_name == 'pull_request' && github.base_ref == 'dev' }}
-      bandit: '{"h": 1, "m": 2, "l": 4}'  # Automated Acceptance Criteria for Bandit
+      bandit: '{"h": "0", "m": "0", "l": "4"}'  # Automated Acceptance Criteria for Bandit
 
   # PYDEPS
   pydeps:
