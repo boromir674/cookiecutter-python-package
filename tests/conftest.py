@@ -1252,7 +1252,7 @@ def my_run_subprocess():
         def subprocess_run() -> CLIResult:
             kwargs_dict = subprocess_run_map[sys.version_info < (3, 7)]()
             completed_process = subprocess.run(  # pylint: disable=W1510
-                cli_args, shell=False, **dict(dict(kwargs_dict, check=True) **kwargs)
+                cli_args, shell=False, **dict(dict(kwargs_dict, check=True), **kwargs)
             )
             return CLIResult(completed_process)
 
