@@ -6,72 +6,6 @@ from pathlib import Path
 import pytest
 
 
-@pytest.fixture(scope="session")
-def run_subprocess():
-    import subprocess
-    import sys
-    import typing as t
-
-    class CLIResult:
-        def __init__(self, completed_process: subprocess.CompletedProcess):
-            self._exit_code = int(completed_process.returncode)
-            self._stdout = str(completed_process.stdout, encoding='utf-8')
-            self._stderr = str(completed_process.stderr, encoding='utf-8')
-
-        @property
-        def exit_code(self) -> int:
-            return self._exit_code
-
-        @property
-        def stdout(self) -> str:
-            return self._stdout
-
-        @property
-        def stderr(self) -> str:
-            return self._stderr
-
-    def python37_n_above_kwargs():
-        return dict(
-            capture_output=True,  # capture stdout and stderr separately
-            # cwd=project_directory,
-            check=True,
-        )
-
-    def python36_n_below_kwargs():
-        return dict(
-            stdout=subprocess.PIPE,  # capture stdout and stderr separately
-            stderr=subprocess.PIPE,
-            check=True,
-        )
-
-    subprocess_run_map = {
-        True: python36_n_below_kwargs,
-        False: python37_n_above_kwargs,
-    }
-
-    def get_callable(cli_args: t.List[str], **kwargs) -> t.Callable[[], CLIResult]:
-        def subprocess_run() -> CLIResult:
-            kwargs_dict = subprocess_run_map[sys.version_info < (3, 7)]()
-            completed_process = subprocess.run(  # pylint: disable=W1510
-                cli_args, **dict(dict(kwargs_dict, **kwargs))
-            )
-            return CLIResult(completed_process)
-
-        return subprocess_run
-
-    def execute_command_in_subprocess(executable: str, *args, **kwargs):
-        """Run command with python subprocess, given optional runtime arguments.
-
-        Use kwargs to override subprocess flags, such as 'check'
-
-        Flag 'check' defaults to True.
-        """
-        execute_subprocess = get_callable([executable] + list(args), **kwargs)
-        return execute_subprocess()
-
-    return execute_command_in_subprocess
-
-
 # EXPECTATIONS as fixture
 @pytest.fixture(scope="session")
 def sdist_expected_correct_file_structure():
@@ -214,6 +148,7 @@ def sdist_expected_correct_file_structure():
     )
     TESTS = (
         'tests/biskotaki_ci/conftest.py',
+        'tests/test_load_util.py',
         'tests/biskotaki_ci/snapshot/biskotaki_ci_no_input/test_build_creates_artifacts.py',
         'tests/biskotaki_ci/snapshot/biskotaki_ci_no_input/test_lint_passes.py',
         'tests/biskotaki_ci/snapshot/test_matches_biskotaki_runtime_gen.py',
@@ -409,7 +344,76 @@ def verify_file_size_within_acceptable_limits():
 
 
 @pytest.fixture
-def assert_sdist_exact_file_structure(tmp_path: Path):
+def safe_extract():
+    """
+    Safely extract tarfile members to the specified path.
+    Ensures no file escapes the target directory.
+    """
+    import re
+    import tarfile
+    from pathlib import Path
+
+    def is_path_traversal_safe(base: Path, target: Path) -> bool:
+        """
+        Canonicalizes both paths and ensures `target` is strictly inside `base`.
+        """
+        try:
+            base_resolved = base.resolve(strict=False)
+            target_resolved = target.resolve(strict=False)
+        except FileNotFoundError:
+            return False
+
+        return str(target_resolved).startswith(str(base_resolved))
+
+    def validate_tar_members(
+        tar: tarfile.TarFile, base_path: Path
+    ) -> t.Iterator[tarfile.TarInfo]:
+        # Location to extract to
+        base_path = base_path.resolve(strict=False)
+
+        for member in tar.getmembers():
+            # File Path after extraction
+            member_path = base_path / member.name
+
+            # Normalize and reject absolute paths and traversal
+            if not is_path_traversal_safe(base_path, member_path):
+                raise ValueError(f"Unsafe path detected in tar file: {member.name}")
+
+            # Optional: block symlinks inside tar to ensure secure extraction
+            if member.issym() or member.islnk():
+                raise ValueError(f"Symlink not allowed: {member.name}")
+
+            # Optional: sanitize explicitly (fails fast on traversal hints)
+            if (
+                # 1. Detect invalid characters or sequences commonly used in traversal attacks.
+                member.name is None
+                or any([x in member.name for x in {"..", "\\"}])
+                or
+                # 2. Enforce strict whitelist pattern. Adjust pattern as necessary.
+                any(
+                    [
+                        re.fullmatch(r"[a-zA-Z0-9_.\- {}]+", x) is None
+                        for x in member.name.split("/")
+                    ]
+                )
+            ):
+                # Extra: Use only allowed filenames if applicable
+                raise ValueError(f"Invalid file name '{member.name}'")
+
+            yield member
+
+    def _safe_extract(tar: tarfile.TarFile, path: Path):
+        """
+        Safely extract tar file into the given path using validated members.
+        """
+        path = path.resolve(strict=False)
+        tar.extractall(path=path, members=validate_tar_members(tar, path))
+
+    return _safe_extract
+
+
+@pytest.fixture
+def assert_sdist_exact_file_structure(safe_extract, tmp_path: Path):
     def _verify_sdist_file_structure(
         sdist_built_at_runtime: Path, expected_file_structure: t.Tuple[str]
     ):
@@ -418,11 +422,15 @@ def assert_sdist_exact_file_structure(tmp_path: Path):
         import tarfile
 
         with tarfile.open(sdist_built_at_runtime, "r:gz") as tar:
-            tar.extractall(path=extracted_from_tar_gz)
+            safe_extract(tar, extracted_from_tar_gz)
 
         from cookiecutter_python import __version__
 
-        DISTRO_NAME_AS_IN_SITE_PACKAGES = f'cookiecutter_python-{__version__}'
+        # if verion includes metadata (ie 1.2.5-dev) then we must match 1.2.5.dev0 !
+        if '-' in __version__:
+            DISTRO_NAME_AS_IN_SITE_PACKAGES = f'cookiecutter_python-{__version__.split("-")[0]}.{__version__.split("-")[1]}0'
+        else:
+            DISTRO_NAME_AS_IN_SITE_PACKAGES = f'cookiecutter_python-{__version__}'
 
         # Relative Paths extracted from tar.gz
         runtime_files = [
@@ -454,11 +462,13 @@ def assert_sdist_exact_file_structure(tmp_path: Path):
 
 ######## uv + poetry as build backend ########
 @pytest.fixture(scope="module")
-def sdist_built_at_runtime_with_uv(run_subprocess) -> Path:
+def sdist_built_at_runtime_with_uv(my_run_subprocess) -> Path:
     """Build project (at runtime) with 'uv', and return SDist tar.gz file."""
+    # Create a temporary directory
+    import tempfile
     import typing as t
 
-    tmp_path = Path("/tmp")
+    tmp_path = Path(tempfile.mkdtemp())
     OUT_DIR = tmp_path / "dist-unit-test-sdist_built_at_runtime"
     # Get distro_path: ie '/site-packages/cookiecutter_python'
     # import cookiecutter_python
@@ -480,7 +490,7 @@ def sdist_built_at_runtime_with_uv(run_subprocess) -> Path:
         str(OUT_DIR),
         str(project_path),
     ]
-    result = run_subprocess(*COMMAND_LINE_ARGS, check=False)
+    result = my_run_subprocess(*COMMAND_LINE_ARGS, check=False)
 
     import re
 
@@ -549,12 +559,15 @@ def test_sdist_includes_dirs_and_files_exactly_as_expected_when_produced_via_uv_
 
 ######## Build + poetry as build backend ########
 @pytest.fixture(scope="module")
-def sdist_built_at_runtime_with_build(run_subprocess) -> Path:
+def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
     """Build project (at runtime) with 'build module', and return SDist tar.gz file."""
+    # Create a temporary directory
+    import tempfile
     import typing as t
 
-    tmp_path = Path("/tmp")
-    OUT_DIR = tmp_path / "unit-test-sdist_built_at_runtime_with_build"
+    temp_dir: str = tempfile.mkdtemp()
+
+    OUT_DIR = Path(temp_dir) / "unit-test-sdist_built_at_runtime_with_build"
     # Get distro_path: ie '/site-packages/cookiecutter_python'
     # import cookiecutter_python
     # distro_path = Path(cookiecutter_python.__file__).parent.absolute()
@@ -573,7 +586,7 @@ def sdist_built_at_runtime_with_build(run_subprocess) -> Path:
         str(OUT_DIR),
         str(project_path),
     ]
-    result = run_subprocess(*COMMAND_LINE_ARGS, check=False)
+    result = my_run_subprocess(*COMMAND_LINE_ARGS, check=False)
 
     print()
     print("==========")

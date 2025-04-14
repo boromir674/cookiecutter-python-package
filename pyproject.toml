@@ -179,7 +179,27 @@ explicit-only = [
 ]
 
 
+### BANDIT
+
+[tool.bandit]
+exclude_dirs = ["tests/data", "path/to/file"]
+tests = []
+skips = [
+    "B101",
+]
+
+
 
 [tool.isort]
 profile = 'black'
 lines_after_imports = 2
+
+
+
+### MUTATION TESTS ###
+[tool.mutmut]
+tests_dir = "tests/"
+runner = "python -m pytest -n auto"
+
+paths_to_mutate = "src/cookiecutter_python/utils.py"
+
