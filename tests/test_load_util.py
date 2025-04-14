@@ -122,7 +122,7 @@ def test_calling_load_successfully_registers_implementations_in_factory(
 
     # import the Facility (Registry Metaclass) Module
     simple_interface_module = import_module(
-        str(Path(DISTRO_NAME) / "simple_interface").replace('/', '.')
+        '.'.join((Path(DISTRO_NAME) / "simple_interface").parts)
     )
 
     if load_arg == 'AnyRandomClass':
@@ -136,7 +136,7 @@ def test_calling_load_successfully_registers_implementations_in_factory(
 
     # WHEN 'load' is called
     objects: t.List[str] = load(
-        interface, module=str(Path(DISTRO_NAME) / "lib").replace('/', '.')
+        interface, module='.'.join((Path(DISTRO_NAME) / "lib").parts)
     )
     # Sanity check (this is tested in the next test)
     assert objects if load_arg == 'Simple' else objects == []
@@ -164,7 +164,7 @@ def test_calling_load_with_input_arg_Simple(
 
     # WHEN 'load' is called
     objects: t.List[str] = load(
-        interface, module='.'.join((Path(DISTRO_NAME) / "lib"))
+        interface, module='.'.join((Path(DISTRO_NAME) / "lib").parts)
     )
 
     # THEN the function returns a list of classes that implement the interface
