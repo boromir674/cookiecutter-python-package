@@ -236,7 +236,7 @@ jobs:
             echo "[INFO] Activating virtual environment for Linux/MacOS"
             . .venv/bin/activate
           fi
-          pytest -ra --run-requires_uv --run-network_bound -vvs -k test_load_util
+          pytest -ra --run-requires_uv --run-network_bound -vvs -k test_calling_load_with_input_arg_Simple
 
 ## PYDEPS
 
