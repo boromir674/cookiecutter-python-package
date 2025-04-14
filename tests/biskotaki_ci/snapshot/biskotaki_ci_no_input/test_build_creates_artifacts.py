@@ -99,7 +99,7 @@ def test_running_build_creates_source_and_wheel_distros(
     shutil.rmtree(snapshot_dir / '.tox' / 'check')
 
     # Check that Code passes Metadata Checks out of the box
-    assert res.returncode == 0
+    assert res.exit_code == 0
 
     # TODO Improve by parsing the expected stdout from tox
     # we can see that Pyroma is expected to run against Source but no Wheel distros
