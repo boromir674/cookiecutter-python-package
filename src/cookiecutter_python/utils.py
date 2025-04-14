@@ -35,25 +35,23 @@ def load(interface: Type[T], module: Optional[str] = None) -> List[Type[T]]:
             code resides.
     """
     lib_dir: str
-    _module: str
+    dotted_lib_path: str  # 
     if module is None:  # set path as the dir where the invoking code is
         namespace = sys._getframe(1).f_globals  # caller's globals
         # Set as Lib the directory where the invoker module is located at runtime
         lib_dir = path.dirname(path.realpath(namespace['__file__']))
-        relative_path = Path(lib_dir).relative_to(SRC_DIR)
-
-        _module = str(relative_path).replace('\\', '/').replace('/', '.')  # pragma: no mutate
+        dotted_lib_path = '.'.join(Path(lib_dir).relative_to(SRC_DIR).parts)  # pragma: no mutate
     else:
         # Import input module
         # module_object = import_module(module.replace('/', '.'))
-        module_object = import_module(module)
+        module_object = import_module(module)  # TODO: read __file__ without importing
 
         # Set as Lib the directory where the INPUT module is located at runtime
         lib_dir = str(Path(str(module_object.__file__)).parent)
         # if top-level init is at '/site-packages/some_python_package/__init__.py'
         # then distro_path is '/site-packages/some_python_package'
 
-        _module = module
+        dotted_lib_path = module
 
     if not Path(lib_dir).exists():
         raise FileNotFoundError
@@ -62,8 +60,10 @@ def load(interface: Type[T], module: Optional[str] = None) -> List[Type[T]]:
 
     # iterate through the modules inside the LIB directory
     for _, module_name, _ in iter_modules([lib_dir]):
+        # if module has a register_as_subclass decorator then the below import
+        # will cause the class to be registered in the Facility/Factory Registry
         module_object = import_module(
-            '{package}.{module}'.format(package=_module, module=module_name)
+            '{package}.{module}'.format(package=dotted_lib_path, module=module_name)
         )
 
         for attribute_name in dir(module_object):
