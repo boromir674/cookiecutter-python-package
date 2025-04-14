@@ -349,10 +349,9 @@ def safe_extract():
     Safely extract tarfile members to the specified path.
     Ensures no file escapes the target directory.
     """
+    import re
     import tarfile
     from pathlib import Path
-
-    import re
 
 
     def is_path_traversal_safe(base: Path, target: Path) -> bool:
@@ -465,10 +464,9 @@ def assert_sdist_exact_file_structure(safe_extract, tmp_path: Path):
 @pytest.fixture(scope="module")
 def sdist_built_at_runtime_with_uv(my_run_subprocess) -> Path:
     """Build project (at runtime) with 'uv', and return SDist tar.gz file."""
-    import typing as t
-
     # Create a temporary directory
     import tempfile
+    import typing as t
     tmp_path = Path(tempfile.mkdtemp())
     OUT_DIR = tmp_path / "dist-unit-test-sdist_built_at_runtime"
     # Get distro_path: ie '/site-packages/cookiecutter_python'
@@ -562,9 +560,9 @@ def test_sdist_includes_dirs_and_files_exactly_as_expected_when_produced_via_uv_
 @pytest.fixture(scope="module")
 def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
     """Build project (at runtime) with 'build module', and return SDist tar.gz file."""
-    import typing as t
     # Create a temporary directory
     import tempfile
+    import typing as t
     temp_dir: str = tempfile.mkdtemp()
 
     OUT_DIR = Path(temp_dir) / "unit-test-sdist_built_at_runtime_with_build"
