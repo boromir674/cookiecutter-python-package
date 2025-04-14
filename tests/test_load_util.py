@@ -164,7 +164,7 @@ def test_calling_load_with_input_arg_Simple(
 
     # WHEN 'load' is called
     objects: t.List[str] = load(
-        interface, module=str(Path(DISTRO_NAME) / "lib").replace('/', '.')
+        interface, module='.'.join((Path(DISTRO_NAME) / "lib"))
     )
 
     # THEN the function returns a list of classes that implement the interface
