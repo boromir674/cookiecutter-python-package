@@ -35,12 +35,14 @@ def load(interface: Type[T], module: Optional[str] = None) -> List[Type[T]]:
             code resides.
     """
     lib_dir: str
-    dotted_lib_path: str  # 
+    dotted_lib_path: str  #
     if module is None:  # set path as the dir where the invoking code is
         namespace = sys._getframe(1).f_globals  # caller's globals
         # Set as Lib the directory where the invoker module is located at runtime
         lib_dir = path.dirname(path.realpath(namespace['__file__']))
-        dotted_lib_path = '.'.join(Path(lib_dir).relative_to(SRC_DIR).parts)  # pragma: no mutate
+        dotted_lib_path = '.'.join(
+            Path(lib_dir).relative_to(SRC_DIR).parts
+        )  # pragma: no mutate
     else:
         # Import input module
         # module_object = import_module(module.replace('/', '.'))

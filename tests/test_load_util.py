@@ -159,7 +159,9 @@ def test_calling_load_with_input_arg_Simple(
 
     DISTRO_NAME: str = interface_and_implementations_lib
 
-    simple_interface_module = import_module('.'.join((Path(DISTRO_NAME) / "simple_interface").parts))
+    simple_interface_module = import_module(
+        '.'.join((Path(DISTRO_NAME) / "simple_interface").parts)
+    )
     interface = simple_interface_module.Simple
 
     # WHEN 'load' is called
