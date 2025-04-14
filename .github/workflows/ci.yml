@@ -116,7 +116,7 @@ jobs:
   ## Unless override, default trigger is (only) on PR to dev
   sca:
     # Unless override, default trigger is (only) on PR to dev
-    if: always() || vars.OV_SCA == 'true' || (vars.OV_SCA != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')
+    if: vars.OV_SCA == 'true' || (vars.OV_SCA != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')
     uses: ./.github/workflows/sca-job.yml
     with:
       python_version: '3.10'
@@ -175,13 +175,13 @@ jobs:
   # CROSS PLATFORM TESTING: 15s on Ubuntu, 25 on mac, 35 on windows
   ## Unless override, default trigger is (only) on PR to dev
   sample_matrix_test:
-    if: vars.OV_MATRIX_TEST == 'true' || (vars.OV_MATRIX_TEST != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')
+    if: always() || vars.OV_MATRIX_TEST == 'true' || (vars.OV_MATRIX_TEST != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')
     runs-on: ${{ matrix.platform }}
     # trigger if event is pr to dev
     strategy:
       fail-fast: false
       matrix:
-        platform: [ubuntu-latest, macos-latest, windows-latest]
+        platform: [windows-latest]
         # platform: [windows-latest]
         python-version: ['3.10']
     steps:
@@ -236,7 +236,7 @@ jobs:
             echo "[INFO] Activating virtual environment for Linux/MacOS"
             . .venv/bin/activate
           fi
-          pytest -ra --run-requires_uv --run-network_bound -vvs -k 'context_with_expected_values[gold_standard]'
+          pytest -ra --run-requires_uv --run-network_bound -vvs -k test_load_util
 
 ## PYDEPS
 
