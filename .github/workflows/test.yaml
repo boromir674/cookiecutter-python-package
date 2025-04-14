@@ -201,7 +201,7 @@ jobs:
       python_version: '3.10'
       allow_failure: false
       force_styles: true
-      bandit: '{"h": 1, "m": 2, "l": 4}'  # Automated Acceptance Criteria for Bandit
+      bandit: '{"h": "0", "m": "2", "l": "4"}'  # Automated Acceptance Criteria for Bandit
 
   ### DOCS BUILD/TEST - DOCUMENTATION SITE ###
   docs:

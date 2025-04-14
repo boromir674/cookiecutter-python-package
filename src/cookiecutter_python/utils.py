@@ -2,9 +2,12 @@ import sys
 from importlib import import_module
 from inspect import isclass
 from os import path
+from pathlib import Path
 from pkgutil import iter_modules
 from typing import List, Optional, Type, TypeVar
 
+
+SRC_DIR = Path(__file__).parent.parent.resolve()
 
 T = TypeVar('T')
 
@@ -27,35 +30,42 @@ def load(interface: Type[T], module: Optional[str] = None) -> List[Type[T]]:
     Args:
         interface (Type[T]): the type (ie class) that the imported classes
             should 'inherit' (subclass) from
-        module (str): module containing the modules to inspect. Defaults to the
+        module (str): module dotted-path containing the modules to inspect. Defaults to the
             same module (directory) as the one where the module of the invoking
             code resides.
     """
-    project_package_location = path.dirname(
-        path.realpath(path.dirname(path.realpath(__file__)))
-    )
+    lib_dir: str
+    dotted_lib_path: str  #
     if module is None:  # set path as the dir where the invoking code is
         namespace = sys._getframe(1).f_globals  # caller's globals
-        directory: str = path.dirname(path.realpath(namespace['__file__']))
-        relative_path = path.relpath(directory, start=project_package_location)
-        _module = relative_path.replace('\\', '/').replace('/', '.')
+        # Set as Lib the directory where the invoker module is located at runtime
+        lib_dir = path.dirname(path.realpath(namespace['__file__']))
+        dotted_lib_path = '.'.join(
+            Path(lib_dir).relative_to(SRC_DIR).parts
+        )  # pragma: no mutate
     else:
-        directory = str(module).replace('/', '.')
-        # find the distro path as installed at runtime
-        module_object = import_module(directory)
+        # Import input module
+        # module_object = import_module(module.replace('/', '.'))
+        module_object = import_module(module)  # TODO: read __file__ without importing
+
+        # Set as Lib the directory where the INPUT module is located at runtime
+        lib_dir = str(Path(str(module_object.__file__)).parent)
         # if top-level init is at '/site-packages/some_python_package/__init__.py'
         # then distro_path is '/site-packages/some_python_package'
-        from pathlib import Path
 
-        distro_path: Path = Path(str(module_object.__file__)).parent
-        directory = str(distro_path)
-        _module = module
+        dotted_lib_path = module
+
+    if not Path(lib_dir).exists():
+        raise FileNotFoundError
 
     objects = []
-    # iterate through the modules inside the directory
-    for _, module_name, _ in iter_modules([directory]):
+
+    # iterate through the modules inside the LIB directory
+    for _, module_name, _ in iter_modules([lib_dir]):
+        # if module has a register_as_subclass decorator then the below import
+        # will cause the class to be registered in the Facility/Factory Registry
         module_object = import_module(
-            '{package}.{module}'.format(package=_module, module=module_name)
+            '{package}.{module}'.format(package=dotted_lib_path, module=module_name)
         )
 
         for attribute_name in dir(module_object):
@@ -66,7 +76,5 @@ def load(interface: Type[T], module: Optional[str] = None) -> List[Type[T]]:
                 and isclass(attribute)
                 and issubclass(attribute, interface)
             ):
-                # Add the class to this package's variables
-                globals()[attribute_name] = attribute
                 objects.append(attribute)
     return objects

@@ -6,10 +6,9 @@ import pytest
 @pytest.mark.slow
 def test_running_build_creates_source_and_wheel_distros(
     test_root,
-    run_subprocess,
+    my_run_subprocess,
 ):
     """Build wheel of biskotaki-no-input Snapshot Project and run tox -e check."""
-    import subprocess
     from pathlib import Path
 
     # Load Snapshot
@@ -18,7 +17,7 @@ def test_running_build_creates_source_and_wheel_distros(
     assert snapshot_dir.is_dir()
 
     ## Programmatically run Build, with the entrypoint we suggest, for a Dev to run
-    res = run_subprocess(  # tox -e build
+    res = my_run_subprocess(  # tox -e build
         *[sys.executable, '-m', 'tox', '-r', '-vv', '-e', 'build'],
         cwd=snapshot_dir,
         check=False,  # prevent raising exception, so we can do clean up
@@ -81,11 +80,11 @@ def test_running_build_creates_source_and_wheel_distros(
 
     # Check that Code passes Metadata Checks out of the box
     # run `tox -e check` and make sure we first do clean up before throwing an error
-    res = subprocess.run(  # tox -e check
-        [sys.executable, '-m', 'tox', '-r', '-vv', '-e', 'check'],
+    res = my_run_subprocess(  # tox -e check
+        *[sys.executable, '-m', 'tox', '-r', '-vv', '-e', 'check'],
         cwd=snapshot_dir,
         check=False,  # prevent raising exception, so we can do clean up
-        # pass the PKG_VERSION env var with value '0.0.1'
+        shell=False,  # prevent execution of untrusted input
         env={
             # required by Check environment
             'PKG_VERSION': '0.0.1',
@@ -100,7 +99,7 @@ def test_running_build_creates_source_and_wheel_distros(
     shutil.rmtree(snapshot_dir / '.tox' / 'check')
 
     # Check that Code passes Metadata Checks out of the box
-    assert res.returncode == 0
+    assert res.exit_code == 0
 
     # TODO Improve by parsing the expected stdout from tox
     # we can see that Pyroma is expected to run against Source but no Wheel distros
