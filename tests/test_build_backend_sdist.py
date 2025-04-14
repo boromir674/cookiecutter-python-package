@@ -353,7 +353,6 @@ def safe_extract():
     import tarfile
     from pathlib import Path
 
-
     def is_path_traversal_safe(base: Path, target: Path) -> bool:
         """
         Canonicalizes both paths and ensures `target` is strictly inside `base`.
@@ -366,14 +365,15 @@ def safe_extract():
 
         return str(target_resolved).startswith(str(base_resolved))
 
-
-    def validate_tar_members(tar: tarfile.TarFile, base_path: Path) -> t.Iterator[tarfile.TarInfo]:
+    def validate_tar_members(
+        tar: tarfile.TarFile, base_path: Path
+    ) -> t.Iterator[tarfile.TarInfo]:
         # Location to extract to
         base_path = base_path.resolve(strict=False)
 
         for member in tar.getmembers():
             # File Path after extraction
-            member_path = (base_path / member.name)
+            member_path = base_path / member.name
 
             # Normalize and reject absolute paths and traversal
             if not is_path_traversal_safe(base_path, member_path):
@@ -386,21 +386,21 @@ def safe_extract():
             # Optional: sanitize explicitly (fails fast on traversal hints)
             if (
                 # 1. Detect invalid characters or sequences commonly used in traversal attacks.
-                member.name is None or
-                any([x in member.name for x in {
-                    "..",
-                    "\\"
-                }]) or
+                member.name is None
+                or any([x in member.name for x in {"..", "\\"}])
+                or
                 # 2. Enforce strict whitelist pattern. Adjust pattern as necessary.
-                any([re.fullmatch(
-                    r"[a-zA-Z0-9_.\- {}]+",
-                x) is None for x in member.name.split("/")])
+                any(
+                    [
+                        re.fullmatch(r"[a-zA-Z0-9_.\- {}]+", x) is None
+                        for x in member.name.split("/")
+                    ]
+                )
             ):
                 # Extra: Use only allowed filenames if applicable
                 raise ValueError(f"Invalid file name '{member.name}'")
 
             yield member
-
 
     def _safe_extract(tar: tarfile.TarFile, path: Path):
         """
@@ -467,6 +467,7 @@ def sdist_built_at_runtime_with_uv(my_run_subprocess) -> Path:
     # Create a temporary directory
     import tempfile
     import typing as t
+
     tmp_path = Path(tempfile.mkdtemp())
     OUT_DIR = tmp_path / "dist-unit-test-sdist_built_at_runtime"
     # Get distro_path: ie '/site-packages/cookiecutter_python'
@@ -563,6 +564,7 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
     # Create a temporary directory
     import tempfile
     import typing as t
+
     temp_dir: str = tempfile.mkdtemp()
 
     OUT_DIR = Path(temp_dir) / "unit-test-sdist_built_at_runtime_with_build"

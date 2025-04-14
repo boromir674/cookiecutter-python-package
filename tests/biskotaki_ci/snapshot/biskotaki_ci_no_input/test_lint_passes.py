@@ -45,7 +45,6 @@ def test_running_lint_passes(snapshot_name, my_run_subprocess, test_root):
     ), f"Failed to run `tox -e lint` for {snapshot_name}\nSTDOUT:\n{res.stdout}\nSTDERR:\n{res.stderr}"
 
 
-
 @pytest.mark.slow
 @pytest.mark.parametrize(
     'snapshot_name',
@@ -82,6 +81,5 @@ def test_running_ruff_passes(snapshot_name, my_run_subprocess, test_root):
         import shutil
 
         shutil.rmtree(snapshot_dir / '.tox' / 'ruff')
-
 
     # VERIFIED that Generator emits python code that pass Ruff out of the box !!

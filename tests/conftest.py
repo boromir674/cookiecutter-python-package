@@ -1206,7 +1206,6 @@ def assert_files_committed_if_flag_is_on(
     return _assert_files_commited
 
 
-
 @pytest.fixture(scope="session")
 def my_run_subprocess():
     import subprocess
