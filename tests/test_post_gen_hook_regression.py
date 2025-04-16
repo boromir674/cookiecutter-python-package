@@ -1,8 +1,8 @@
 # verify that post_gen_hook knows the docs builder initial docs location
-# this will make sure the PostGenProject hook can the necessary file removals
-# and replacements for Docs. If Gneration docs features get update, but ie we forget to
+# this will make sure the PostGenProject hook can do the necessary file removals
+# and replacements for Docs. If Generator's "docs features" get update, but ie we forget to
 # update the post_gen_hook, this test will fail and remind us to update the hook
-# Regressoin Test, if you will
+# so this is a Regression Test, if you will
 def test_post_gen_hook_docs_builder_initial_docs_location():
     # GIVEN a callback to retrieve the 'docs internal config' (dic), as computed by post_gen_hook
     from cookiecutter_python.hooks.post_gen_project import DOCS

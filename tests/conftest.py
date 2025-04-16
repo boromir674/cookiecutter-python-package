@@ -116,232 +116,6 @@ def project_dir(generate_project, distro_loc, tmpdir):
     return proj_dir
 
 
-## NEW REQUEST FACTORY
-
-
-class EmulatedRequest(t.Protocol):
-    project_dir: t.Union[str, None]
-    cookiecutter: t.Optional[t.Dict]
-    author: t.Optional[str]
-    author_email: t.Optional[str]
-    initialize_git_repo: t.Optional[bool]
-    interpreters: t.Optional[t.Dict]
-    project_type: t.Optional[str]
-    module_name: t.Optional[str]
-    cicd: t.Optional[str]
-
-
-class EmulatedRequestFactory(t.Protocol):
-    def pre(**kwargs: t.Any) -> EmulatedRequest:
-        ...
-
-    def post(**kwargs: t.Any) -> EmulatedRequest:
-        ...
-
-
-@pytest.fixture
-def request_factory(distro_loc) -> t.Type[EmulatedRequestFactory]:
-    """Emulate the templated data used in the 'pre' and 'post' hooks scripts.
-
-    MUST be kept in SYNC with the 'pre' and 'post' hook scripts, and their
-    interface.
-
-    Before and after the actual generation process (ie read the termplate files,
-    generate the output files, etc), there 2 scripts that run. The 'pre' script
-    (implemented as src/cookiecutter/hooks/pre_gen_project.py) and the 'post'
-    script (implemented as src/cookiecutter/hooks/post_gen_project.py) run
-    before and after the generation process respectively.
-
-    These scripts are also templated! Consequently, similarly to the how the
-    templated package depends on the 'templated variables', the 'pre' and 'post'
-    scripts need a 'templating engine'.
-
-    In our unit tests we do not run a 'templating engine' and thus it is
-    required to mock the templated variables, when testing the 'pre' or 'post'
-    script.
-
-    This fixture provides an easily modified/extended infrastructure to mock all
-    the necessary 'template variables' mentioned above.
-
-    Thus, when writing (unit) test cases for testing code in the 'pre' or 'post'
-    scripts (python modules) it is recommended to use this fixture to mock any
-    'templated variables', according to your needs.
-
-    Tip:
-        Templated variables typically appear in double curly braces:
-        ie {{ ... }}).
-        If the 'code under test' depends on any 'template variable', (ie if you
-        see code inside double curly braces), such as for example the common
-        '{{ cookiecutter }}', then it is recommended to use this fixture to mock
-        any required 'templated variable'.
-
-    Returns:
-        [type]: [description]
-    """
-    import json
-    from collections import OrderedDict
-
-    from software_patterns import SubclassRegistry
-
-    # Read JSON data from 'tests/data/test_cookiecutter.json'
-    # The JSON schema and values MUST reflect a valid internal state of the
-    # Generator's Template Engine.
-    # at the moment, we exclusively use cookiecutter (and jinja2) for templating
-    # GIVEN data that reflect a state, which the Templating Engine is possible
-    # to arrive at, when the Generator CLI is invoked.
-    ### We want to skip running the templating engine, so we mock the state
-    ### that the templating engine would have produced.
-    engine_state: OrderedDict = json.loads(
-        (Path(my_dir) / 'data' / 'test_cookiecutter.json').read_text(),
-        object_pairs_hook=OrderedDict,
-    )
-
-    # THEN the state must be a valid Context for the Template Engine
-    assert set(engine_state.keys()) == {'cookiecutter'}
-    intended_template_path: str = engine_state['cookiecutter'].pop('_template')
-    assert intended_template_path == '.'
-
-    assert '_template' not in engine_state['cookiecutter'].keys()
-
-    # GIVEN the Generator's Templated Variables Configuration file (ie cookiecutter.json)
-    # which is used at runtime, when the Generator CLI is invoked, and thus if
-    # file changes, the Generator's behaviour changes.
-    td_cookiecutter_json_data = json.loads(
-        (distro_loc / 'cookiecutter.json').read_text(), object_pairs_hook=OrderedDict
-    )
-
-    # ΤΗΕΝ engine_state (excluding _template) must be supported TD cookiecutter.json
-    intended_templated_variables: t.Set[str] = set(engine_state['cookiecutter'].keys())
-    supported_template_variables: t.Set[str] = set(td_cookiecutter_json_data.keys())
-    engine_state_vars_supported_by_td: bool = intended_templated_variables.issubset(
-        supported_template_variables
-    )
-    assert engine_state_vars_supported_by_td
-
-    # WHEN we define a way to create a valid input for pre and post hooks
-
-    @attr.s(auto_attribs=True, kw_only=True)
-    class EmulatedHookRequest:
-        """Hook Request Data Class.
-
-        This class is used to mock the 'templated variables' that are used in
-        the 'pre' and 'post' scripts.
-
-        The 'pre' and 'post' scripts are also templated! Consequently, similarly
-        to the how the templated package depends on the 'templated variables',
-        the 'pre' and 'post' scripts need a 'templating engine'.
-
-        In our unit tests we do not run a 'templating engine' and thus it is
-        required to mock the templated variables, when testing the 'pre' or
-        'post' script.
-
-        This class provides an easily modified/extended infrastructure to mock
-        all the necessary 'template variables' mentioned above.
-
-        Thus, when writing (unit) test cases for testing code in the 'pre' or
-        'post' scripts (python modules) it is recommended to use this class to
-        mock any 'templated variables', according to your needs.
-
-        Args:
-            project_dir (t.Optional[str]): [description]
-            cookiecutter (t.Optional[t.Dict]): [description]
-            author (t.Optional[str]): [description]
-            author_email (t.Optional[str]): [description]
-            initialize_git_repo (t.Optional[bool]): [description]
-            interpreters (t.Optional[t.Dict]): [description]
-            project_type (t.Optional[str]): [description]
-            module_name (t.Optional[str]): [description]
-            cicd (t.Optional[str]): [description]
-        """
-
-        project_dir: t.Optional[str]
-        # TODO improvement: add key/value types
-        ### We want to skip running the templating engine, so we mock the state
-        ### that the templating engine would have produced.
-
-        # Templated Vars (cookiecutter) use in Context for Jinja Rendering
-        vars: t.Dict[str, t.Any] = attr.ib(
-            # IMPORTANT: emulates jinja context vars (ie from list of choices to 1st choice)
-            default=OrderedDict(
-                td_cookiecutter_json_data, **engine_state['cookiecutter']
-            )
-        )
-        initialize_git_repo: t.Optional[bool] = attr.ib(default=True)
-        interpreters: t.Optional[t.List[str]] = attr.ib(
-            default=[
-                '3.6',
-                '3.7',
-                '3.8',
-                '3.9',
-                '3.10',
-                '3.11',
-            ]
-        )
-        project_type: t.Optional[str] = attr.ib(default='module')
-        module_name: t.Optional[str] = attr.ib(default='awesome_novelty_python_library')
-        pypi_package: t.Optional[str] = attr.ib(
-            default=attr.Factory(
-                lambda self: self.module_name.replace('_', '-'), takes_self=True
-            )
-        )
-        package_version_string: t.Optional[str] = attr.ib(default='0.0.1')
-        docs_extra_info: t.Optional[t.Dict[str, str]] = attr.ib(
-            default=dict(
-                **{'mkdocs': 'docs-mkdocs', 'sphinx': 'docs-sphinx'},
-            )
-        )
-        docs_website: t.Optional[t.Dict[str, str]] = attr.ib(
-            default={
-                'builder': 'sphinx',
-                'python_runtime': '3.10',
-            }
-        )
-        cicd: t.Optional[str] = attr.ib(default='stable')
-
-        # add entries to this to fix tests/test_post_hook.py after prod code advances
-        def __attrs_post_init__(self):
-            """IMPORTANT: emulate jinja context vars (ie from list of choices to 1st choice)"""
-            # self.vars is available at Generator runtime.
-            # so populate values here to allow control per test case
-            self.vars['project_type'] = self.project_type
-            self.vars['cicd'] = self.cicd
-
-    class HookRequestFacility(SubclassRegistry[EmulatedHookRequest]):
-        pass
-
-    class HookRequest(metaclass=HookRequestFacility):
-        pass
-
-    @attr.s(auto_attribs=True, kw_only=True)
-    @HookRequest.register_as_subclass('pre')
-    class PreGenProjectRequest(EmulatedHookRequest):
-        project_dir: str = attr.ib(default=None)
-
-    @HookRequest.register_as_subclass('post')
-    class PostGenProjectRequest(EmulatedHookRequest):
-        pass
-
-    # Adapting exposed interface
-    def get_create_request_func(type_id: str) -> t.Callable[..., EmulatedHookRequest]:
-        def _create_request(**kwargs):
-            ret: EmulatedHookRequest = HookRequest.create(type_id, **kwargs)
-            return ret
-
-        return _create_request
-
-    return type(
-        'RequestFactory',
-        (),
-        {
-            'pre': get_create_request_func('pre'),
-            'post': get_create_request_func('post'),
-        },
-    )
-
-
-### END
-
-
 @pytest.fixture
 def mock_hosting_services(future_session_mock):
     """Mock the FuturesSession class given urls and http status codes.
@@ -1270,3 +1044,51 @@ def my_run_subprocess():
         return execute_subprocess()
 
     return execute_command_in_subprocess
+
+
+
+
+@pytest.fixture
+def dat(distro_loc: Path):
+    import json
+    from collections import OrderedDict
+
+    from software_patterns import SubclassRegistry
+
+    my_dir: str = Path(__file__).resolve().parent
+
+
+    # Read JSON data from 'tests/data/test_cookiecutter.json'
+    # The JSON schema and values MUST reflect a valid internal state of the
+    # Generator's Template Engine.
+    # at the moment, we exclusively use cookiecutter (and jinja2) for templating
+    # GIVEN data that reflect a state, which the Templating Engine is possible
+    # to arrive at, when the Generator CLI is invoked.
+    ### We want to skip running the templating engine, so we mock the state
+    ### that the templating engine would have produced.
+    engine_state: OrderedDict = json.loads(
+        (my_dir / 'data' / 'test_cookiecutter.json').read_text(),
+        object_pairs_hook=OrderedDict,
+    )
+
+    # THEN the state must be a valid Context for the Template Engine
+    assert set(engine_state.keys()) == {'cookiecutter'}
+    intended_template_path: str = engine_state['cookiecutter'].pop('_template')
+    assert intended_template_path == '.'
+
+    assert '_template' not in engine_state['cookiecutter'].keys()
+
+    # GIVEN the Generator's Templated Variables Configuration file (ie cookiecutter.json)
+    # which is used at runtime, when the Generator CLI is invoked, and thus if
+    # file changes, the Generator's behaviour changes.
+    td_cookiecutter_json_data = json.loads(
+        (distro_loc / 'cookiecutter.json').read_text(), object_pairs_hook=OrderedDict
+    )
+
+    # ΤΗΕΝ engine_state (excluding _template) must be supported TD cookiecutter.json
+    state_keys = set(engine_state['cookiecutter'].keys())
+    assert state_keys and state_keys.issubset(set(td_cookiecutter_json_data.keys()))
+
+    # Templated Vars (cookiecutter) use in Context for Jinja Rendering
+
+    return OrderedDict(td_cookiecutter_json_data, **engine_state['cookiecutter'])
