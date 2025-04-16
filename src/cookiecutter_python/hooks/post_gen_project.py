@@ -8,7 +8,6 @@ template project is used to generate a target project.
 import json
 import os
 import shutil
-import subprocess
 import sys
 import typing as t
 from collections import OrderedDict
@@ -167,12 +166,7 @@ def post_file_removal(request):
         for path_components in IRELEVANT_CI_CD_FILES
     ]
     for file in files_to_remove:
-        try:
-            os.remove(file)
-        except FileNotFoundError as error:
-            print(f"** Could not remove '{file}'")
-            print('Exception: ' + str(error))
-            raise PostFileRemovalError(error)
+        Path(file).unlink(missing_ok=True)  # remove file if exists
 
     ## Remove gen 'docs' folders, given 'Docs Website Builder' (DWB) ##
     for builder_id, gen_docs_folder_name in request.docs_extra_info.items():
@@ -229,42 +223,20 @@ def _take_care_of_logs(logs_file: Path):
             print(f"[INFO]: Captured Logs were written in {logs_file}")
 
 
-def run_process_python37_n_above(*args, **kwargs):
-    return [args], dict(capture_output=True, check=True, **kwargs)
-
-
-def run_process_python36_n_below(*args, **kwargs):
-    return [args], dict(
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, **kwargs
-    )
-
-
-def subprocess_run(*args, **kwargs):
-    def _subprocess_run(get_params):
-        def run1(*args, **kwargs):
-            args_list, kwargs_dict = get_params(*args, **kwargs)
-            return subprocess.run(
-                *args_list, **dict(kwargs_dict, check=True)
-            )  # pylint: disable=W1510 #nosec
-
-        return run1
-
-    d = {
-        'legacy': _subprocess_run(run_process_python36_n_below),
-        'new': _subprocess_run(run_process_python37_n_above),
-    }[
-        {True: 'legacy', False: 'new'}[
-            sys.version_info.minor < 7  # is legacy Python 3.x version (ie 3.5 or 3.6) ?
-        ]
-    ]
-    return d(*args, **kwargs)
-
-
 def initialize_git_repo(project_dir: str):
     """
     Initialize the Git repository in the generated project.
     """
-    subprocess_run('git', 'init', cwd=project_dir)
+    try:
+        from git import Repo
+    except ImportError as error:
+        print(
+            "Please do 'pip install gitpython' and/or install git binary on host (ie machine, docker)"
+        )
+        print("Error: ", error)
+        raise ImportError(error) from error
+
+    return Repo.init(project_dir)  
 
 
 def iter_files(request):
@@ -309,26 +281,6 @@ def git_commit(request):
     request.repo.index.commit(commit_message, author=author, committer=copy(author))
 
 
-def is_git_repo_clean(project_directory: str) -> bool:
-    """
-    Check to confirm if the Git repository is clean and has no uncommitted
-    changes. If its clean return True otherwise False.
-    """
-    try:
-        git_status = subprocess_run(
-            'git', 'status', '--porcelain', cwd=project_directory
-        )
-    except subprocess.CalledProcessError as error:
-        print(f"** Git repository in {project_directory} cannot get status")
-        print('Exception: ' + str(error))
-        raise error
-
-    if git_status.stdout == b"" and git_status.stderr == b"":
-        return True
-
-    return False
-
-
 def post_hook():
     """Delete irrelevant to Project Type files and optionally do git commit."""
     request = get_request()
@@ -357,16 +309,17 @@ def post_hook():
         raise error
 
     # Git commit
+    print(f"\n------------------------\n - {request.project_dir}")
     if request.initialize_git_repo:
         try:
-            initialize_git_repo(request.project_dir)
-            request.repo = Repo(request.project_dir)
-            if not is_git_repo_clean(request.project_dir):
+            repo = initialize_git_repo(request.project_dir)
+            if not repo.is_dirty():
+                request.repo = repo
                 git_commit(request)
             else:
                 print('No changes to commit.')
         except Exception as error:
-            print('Exception: ' + str(error))
+            print('Exception AAAAA: ' + str(error))
     return 0
 
 
