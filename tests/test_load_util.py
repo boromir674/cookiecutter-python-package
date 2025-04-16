@@ -4,8 +4,8 @@ import pytest
 
 
 # GIVEN the Interface and Implementations modules are placed "correctly"
-@pytest.fixture
-def interface_and_implementations_lib(scope='function'):
+@pytest.fixture(scope='function')
+def interface_and_implementations_lib():
     """
 
     filesystem
@@ -125,6 +125,7 @@ def test_calling_load_successfully_registers_implementations_in_factory(
         '.'.join((Path(DISTRO_NAME) / "simple_interface").parts)
     )
 
+    interface: t.Type
     if load_arg == 'AnyRandomClass':
         # if passed as an extra effect the load returns the 2 class.__name__ from the implementations
         interface = type('AnyRandomClass', (object,), {})
@@ -135,7 +136,7 @@ def test_calling_load_successfully_registers_implementations_in_factory(
         interface = getattr(simple_interface_module, load_arg)
 
     # WHEN 'load' is called
-    objects: t.List[str] = load(
+    objects: t.List[t.Type] = load(
         interface, module='.'.join((Path(DISTRO_NAME) / "lib").parts)
     )
     # Sanity check (this is tested in the next test)
@@ -165,7 +166,7 @@ def test_calling_load_with_input_arg_Simple(
     interface = simple_interface_module.Simple
 
     # WHEN 'load' is called
-    objects: t.List[str] = load(
+    objects = load(
         interface, module='.'.join((Path(DISTRO_NAME) / "lib").parts)
     )
 

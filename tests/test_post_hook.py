@@ -321,17 +321,8 @@ def test_main(
     # THEN the Emulated Generated Project, contains all the necessary files
     # that are required for the post_gen_project to run successfully
 
-    # Verify emulated files, which are going to be removed in Post gen Hook, exist
     expexpected_gen_dir = Path(tmp_target_gen_dir).absolute()
-    # check for mkdocs.yml file
-    # assert (expexpected_gen_dir / 'src').exists()
-    # assert (expexpected_gen_dir / 'src').is_dir()
-    # assert (expexpected_gen_dir / 'mkdocs.yml').exists()
-    # assert (expexpected_gen_dir / 'mkdocs.yml').is_file()
 
-    # Run the Post Gen Hook, with a custom Request, and make sure
-    # there is an Emulated Generated Project, with all the necessary files
-    # that are required for the post_gen_project to run successfully
     # WHEN the post_gen_project.main is called
     result = post_hook_main()  # raises error, if post gen exit code != 0
 
