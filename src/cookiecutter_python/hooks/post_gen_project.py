@@ -50,6 +50,7 @@ def get_context() -> OrderedDict:
 
 def get_request():
     cookie_dict: OrderedDict = get_context()
+
     data: t.Dict[str, t.Any] = {
         'vars': cookie_dict,
         'project_dir': GEN_PROJ_LOC,
@@ -229,14 +230,13 @@ def initialize_git_repo(project_dir: str):
     """
     try:
         from git import Repo
-    except ImportError as error:
-        print(
-            "Please do 'pip install gitpython' and/or install git binary on host (ie machine, docker)"
-        )
-        print("Error: ", error)
-        raise ImportError(error) from error
+    except ImportError as error:  # git binary missing
+        raise GitBinaryNotFoundError(error) from error
+    return Repo.init(project_dir)
 
-    return Repo.init(project_dir)  
+
+class GitBinaryNotFoundError(Exception):
+    pass
 
 
 def iter_files(request):
@@ -291,35 +291,109 @@ def post_hook():
     # remove "unintentional logs" file, if it exists and it is empty
     _take_care_of_logs(Path(request.project_dir) / FILE_TARGET_LOGS)
 
+    # "destructure" data
+    docs_builder: str = request.docs_extra_info[request.docs_website['builder']]
+    
+    generated_docs_folder: Path = Path(request.project_dir) / docs_builder
+    dest_docs_folder = Path(request.project_dir) / 'docs'
+
+    # V2: supports -f flag, tests pass, but somehow i don't trust it
+    # # create if not exists (it might exist if generator invoked with same output path twice)
+    # dest_docs_folder.mkdir(parents=True, exist_ok=True)
+
+    # # do a `mv source/* docs/` equivalent operation in python
+    # def loop(root_dir: Path):
+    #     for file in root_dir.iterdir():
+    #         logger.error(f"File: {file}, is file: {file.is_file()}")
+    #         if file.is_file():
+    #             # Overwrite the file if it exists
+    #             shutil.move(str(file), str(dest_docs_folder / file.name))
+    #         elif file.is_dir() and str(file) != str(dest_docs_folder):
+    #             # Skip the folder if it already exists
+    #             target_folder = dest_docs_folder / file.name
+    #             if not target_folder.exists():
+    #                 shutil.move(str(file), str(target_folder))
+    #             loop(file)
+    # loop(generated_docs_folder)
+    # # remove the empty docs folder, if it exists
+    # try:
+    #     shutil.rmtree(str(generated_docs_folder))
+    #     # generated_docs_folder.rmdir()
+    # except OSError as error:
+    #     print(f"** Could not remove '{generated_docs_folder}'")
+    #     print('Exception: ' + str(error))
+    #     raise error    
+
+    # V1: Does not support -f flag, but has been battle-tested
     # move/rename docs-builder-specific docs folder to 'docs/'
     try:
         # ie for mkdocs: `mv docs-mkdocs docs`, ie for sphinx: `mv docs-sphinx docs`
         os.rename(
-            str(
-                Path(request.project_dir)
-                / request.docs_extra_info[request.docs_website['builder']]
-            ),
-            os.path.join(request.project_dir, 'docs'),
+            str(generated_docs_folder),
+            str(dest_docs_folder),
         )
-    except OSError as error:
+    except OSError as error:  # -f flag passed and -o folder already exists
+        # NO SUPPORTED YET
         print(
-            f"** Could not move/rename '{request.docs_extra_info[request.docs_website['builder']]}' to 'docs/'"
+            "\n"
+            f"** Could not move/rename '{docs_builder}' to 'docs/'"
+            f"\033[93m[Exception]\033[0m {error}.\n"
+            "\033[93m[WHAT HAPPENED]\033[0m An error occurred during the Docs Website generation process.\n"
+            "\033[94m[HOW IT HAPPENED]\033[0m The library '\033[92mshutil\033[0m' attempted to move/rename the docs folder but failed.\n"
+            "\033[95m[WHY IT HAPPENED]\033[0m The destination folder '\033[92mdocs/\033[0m' already exists.\n"
+            "\033[96m[HOW TO FIX]\033[0m Remove the '\033[92mdocs/\033[0m' folder and re-run the command.\n"
+            "\033[96m[WHAT HAPPENS NEXT]\033[0m Skipping 'git init and 'commit' process\n"
+            "\033[96m[INFO]\033[0m The docs folder was not moved/renamed.\n"
+            "\033[96m[INFO]\033[0m The docs folder is still located at: \033[92m{generated_docs_folder}\033[0m\n"
         )
-        print('Exception: ' + str(error))
         raise error
 
+
     # Git commit
-    print(f"\n------------------------\n - {request.project_dir}")
     if request.initialize_git_repo:
+        # start process for achieving git commit -m ".."
         try:
             repo = initialize_git_repo(request.project_dir)
-            if not repo.is_dirty():
-                request.repo = repo
-                git_commit(request)
-            else:
-                print('No changes to commit.')
-        except Exception as error:
-            print('Exception AAAAA: ' + str(error))
+        except GitBinaryNotFoundError as error:  # git binary missing
+            # print message and skip "git" process
+            print(
+                "\n"
+                "\033[93m[WHAT HAPPENED]\033[0m An error occurred during the Git Repo initialization process.\n"
+                "\033[94m[HOW IT HAPPENED]\033[0m The library '\033[92mgitpython\033[0m' attempted to invoke the Git binary but failed.\n"
+                "\033[95m[WHY IT HAPPENED]\033[0m The Git binary is missing or not accessible in your system's PATH.\n"
+                "\033[96m[HOW TO FIX]\033[0m Install the Git binary on your system:\n"
+                "  - For Linux: \033[92msudo apt install git\033[0m or \033[92msudo yum install git\033[0m\n"
+                "  - For macOS: \033[92mbrew install git\033[0m\n"
+                "  - For Windows: Download and install Git from \033[94mhttps://git-scm.com\033[0m\n"
+                "\033[96m[WHAT HAPPENS NEXT]\033[0m Skipping 'git init and 'commit' process\n"
+            )
+        else:  # run only if 'git init' succeeded
+            try:
+                is_dirty = repo.is_dirty()  # this raises error if no proper ownership
+            except Exception as error:  # git config --global --add safe.directory was not executed
+                # print message and skip "git" process
+                print(
+                    "\n"
+                    # Print "raw" exception
+                    f"\033[93m[Exception]\033[0m {error}.\n"
+                    "\033[93m[Git Diff failed]\033[0m An error occurred while running \033[94m'git diff'\033[0m.\n"
+                    "\033[94m[HOW IT HAPPENED]\033[0m The library '\033[92mgitpython\033[0m' attempted to invoke the Git binary but failed.\n"
+                    "\033[96m[How to fix]\033[0m Run 'git config --global --add safe.directory '\n"
+                    "\033[96m[WHAT HAPPENS NEXT]\033[0m Skipping 'git init and 'commit' process\n"
+                )
+            else:  # runs only if git diff was successful
+                # check if the repo is dirty (ie has uncommitted changes)
+                if not is_dirty:  # no uncommited changes
+                    print(f"\n - {request.project_dir} has no uncommitted changes.")
+                    request.repo = repo
+                    git_commit(request)
+                    print("\033[92m[INFO]\033[0m Git commit was successful.")
+                else:  # No changes to commit.
+                    # might happen if cli was called twice with same output directory (-o flag)
+                    # and with same gen parameters
+                    print(
+                        f"\n - {request.project_dir} is clean, no changes to commit."
+                    )
     return 0
 
 

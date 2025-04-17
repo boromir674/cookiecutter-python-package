@@ -1,4 +1,5 @@
 """Pre Cookie Hook: Templated File with jinja2 syntax"""
+import typing as t
 import json
 import logging
 import sys
@@ -10,23 +11,28 @@ from cookiecutter_python.backend import sanitize
 logger = logging.getLogger(__name__)
 
 
-def get_request():
+# Minimizes the jinja-controlled python syntax-incopatible surface
+# Also, this makes static code analyzers to avoid issues with syntax errors
+# due to the templated (dynamically injected) code in this file
+def get_context() -> OrderedDict:
+    """Get the Context, that was used by the Templating Engine at render time"""
     # Templated Variables should be centralized here for easier inspection
-    # Also, this makes static code analyzers to avoid issues with syntax errors
-    # due to the templated (dynamically injected) code in this file
-    cookiecutter: OrderedDict = OrderedDict()
-    cookiecutter: OrderedDict = {{cookiecutter}}  # type:ignore[no-redef]
+    COOKIECUTTER: OrderedDict = OrderedDict()
+    COOKIECUTTER = {{cookiecutter}}  # type: ignore    # pylint: disable=undefined-variable  # noqa: F821
+    return COOKIECUTTER
+
+
+def get_request():
+    cookie_dict: OrderedDict = get_context()
 
     logger.info(
-        "Cookiecutter Data: %s", json.dumps(cookiecutter, sort_keys=True, indent=4)
+        "Cookiecutter Data: %s", json.dumps(cookie_dict, sort_keys=True, indent=4)
     )
 
-    interpreters = cookiecutter['interpreters']
-    if isinstance(interpreters, str):  # we assume it is json
-        interpreters = json.loads(interpreters)
-        cookiecutter['interpreters'] = interpreters
+    interpreters = cookie_dict['interpreters']
+
     # the name the client code should use to import the generated package/module
-    module_name = '{{ cookiecutter.pkg_name }}'
+    module_name: str = cookie_dict['pkg_name']
 
     return type(
         'PreGenProjectRequest',
@@ -34,7 +40,7 @@ def get_request():
         {
             'module_name': module_name,
             'pypi_package': module_name.replace('_', '-'),
-            'package_version_string': '{{ cookiecutter.version }}',
+            'package_version_string': cookie_dict['version'],
             'interpreters': interpreters['supported-interpreters'],
         },
     )
@@ -56,14 +62,13 @@ def input_sanitization(request):
 
     # CHECK Version
     try:
-        # verify_templated_semantic_version(request.package_version_string)
         sanitize['semantic-version'](request.package_version_string)
     except sanitize.exceptions['semantic-version'] as error:
         raise InputSanitizationError(
             f'ERROR: {request.package_version_string} is not a valid Semantic Version!'
         ) from error
+
     try:
-        # verify_input_interpreters(request.interpreters)
         sanitize['interpreters'](request.interpreters)
     except sanitize.exceptions['interpreters'] as error:
         logger.warning(
