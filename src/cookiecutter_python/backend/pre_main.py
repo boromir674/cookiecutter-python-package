@@ -52,7 +52,9 @@ def pre_main(request):
                 **user_input,
             }
         )
-    elif request.config_file and bool(interpreters := get_interpreters_from_yaml(request.config_file)):
+    elif request.config_file and bool(
+        interpreters := get_interpreters_from_yaml(request.config_file)
+    ):
         # just update interpreters cookiecutter extra_context
         _context['interpreters'] = interpreters
 

@@ -136,6 +136,7 @@ builder_id_2_files = {
     'mkdocs': ['mkdocs.yml', 'scripts/gen_api_refs_pages.py'],
 }
 
+
 ###### V1 POST FILE REMOVAL
 def post_file_removal(request):
     """Preserve only files relevant to Project Type requested to Generate."""
@@ -167,7 +168,10 @@ def _remove_irrelevant_docs_folders(request):
     """Remove generated docs folders that are not relevant to the selected docs builder."""
     for builder_id, gen_docs_folder_name in request.docs_extra_info.items():
         if builder_id != request.docs_website['builder']:
-            shutil.rmtree(str(Path(request.project_dir) / gen_docs_folder_name), ignore_errors=True)
+            shutil.rmtree(
+                str(Path(request.project_dir) / gen_docs_folder_name),
+                ignore_errors=True,
+            )
 
 
 def _remove_irrelevant_top_level_files(request):
@@ -183,7 +187,9 @@ def _delete_files(files_to_remove):
     for file in files_to_remove:
         Path(file).unlink(missing_ok=True)
 
+
 ###################
+
 
 def _take_care_of_logs(logs_file: Path):
     """Remove accidental App Log file, if found inside the Generated Project.
@@ -299,6 +305,7 @@ def move_files_recursively(src_folder: Path, dest_folder: Path):
 
 ###### v2 POST HOOK
 
+
 def post_hook():
     """Delete irrelevant to Project Type files and optionally do git commit."""
     request = get_request()
@@ -395,7 +402,9 @@ def _process_commit(request, repo, is_dirty):
     else:  # No changes to commit
         print(f"\n - {request.project_dir} is clean, no changes to commit.")
 
+
 ########
+
 
 def main():
     """Delete irrelevant to Project Type files and optionally do git commit."""
