@@ -33,6 +33,13 @@ jobs:
       python_version: '3.10'
       platform: 'ubuntu-latest'
 
+  codecov:
+    needs: code
+    # allow both code success and fail (but not skip)
+    if: always() && contains(fromJSON('["success", "failure"]'), needs.code.result) && vars.OV_CODECOV != 'false'
+    uses: ./.github/workflows/codecov-job.yml
+
+
   # Build PACKAGE SDist and run Test Suite against it
   sdist:  ## Unless override, default trigger 'always'
     uses: ./.github/workflows/test-python.yml
@@ -175,7 +182,7 @@ jobs:
   # CROSS PLATFORM TESTING: 15s on Ubuntu, 25 on mac, 35 on windows
   ## Unless override, default trigger is (only) on PR to dev
   sample_matrix_test:
-    if: always() || vars.OV_MATRIX_TEST == 'true' || (vars.OV_MATRIX_TEST != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')
+    if: vars.OV_MATRIX_TEST == 'true' || (vars.OV_MATRIX_TEST != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')
     runs-on: ${{ matrix.platform }}
     # trigger if event is pr to dev
     strategy:
@@ -237,6 +244,7 @@ jobs:
             . .venv/bin/activate
           fi
           pytest -ra --run-requires_uv --run-network_bound -vvs
+
 
 ## PYDEPS
 
