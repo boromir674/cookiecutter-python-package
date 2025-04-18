@@ -198,30 +198,29 @@ def _take_care_of_logs(logs_file: Path):
     # Note: at Generator runtime, the user should still expect Captured Logs to
     # be written a File in their Shell's PWD, as designed and intented.
     """
-    # remove the log file, if it exists and it is empty
-    if logs_file.exists():
-        # unintentional behaviour, is still happening
-        if logs_file.stat().st_size == 0:  # at least expect empty log file
-            try:  # safely remove the empty log file
-                logs_file.unlink()
-            except PermissionError as e:  # has happened on Windows CI
-                # PermissionError: [WinError 32] The process cannot access the
-                # file because it is being used by another process
-                logger.debug(
-                    "Permission Error, when removing empty log file: %s",
-                    json.dumps(
-                        {
-                            'file': str(logs_file),
-                            'error': str(e),
-                            'platform': str(sys.platform),
-                        },
-                        indent=4,
-                        sort_keys=True,
-                    ),
-                )
-        else:  # captured logs were written in the file: shy from removing it
-            # Tell user about this, and let them decide what to do
-            print(f"[INFO]: Captured Logs were written in {logs_file}")
+    # remove the log file if it is empty
+    # unintentional behaviour, is still happening
+    if logs_file.stat().st_size == 0:  # at least expect empty log file
+        try:  # safely remove the empty log file
+            logs_file.unlink()
+        except PermissionError as e:  # has happened on Windows CI
+            # PermissionError: [WinError 32] The process cannot access the
+            # file because it is being used by another process
+            logger.debug(
+                "Permission Error, when removing empty log file: %s",
+                json.dumps(
+                    {
+                        'file': str(logs_file),
+                        'error': str(e),
+                        'platform': str(sys.platform),
+                    },
+                    indent=4,
+                    sort_keys=True,
+                ),
+            )
+    else:  # captured logs were written in the file: shy from removing it
+        # Tell user about this, and let them decide what to do
+        print(f"[INFO]: Captured Logs were written in {logs_file}")
 
 
 class GitBinaryNotFoundError(Exception):
@@ -306,8 +305,11 @@ def post_hook():
     #  - different Project Type
     #  - related to different documentation builder tool"""
     post_file_removal(request)
+
     # remove "unintentional logs" file, if it exists and it is empty
-    _take_care_of_logs(Path(request.project_dir) / FILE_TARGET_LOGS)
+    potentially_spawned_log_file = Path(request.project_dir) / FILE_TARGET_LOGS
+    if potentially_spawned_log_file.exists():
+        _take_care_of_logs(potentially_spawned_log_file)
 
     # "destructure" data
     docs_builder: str = request.docs_extra_info[request.docs_website['builder']]
