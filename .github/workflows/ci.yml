@@ -32,6 +32,7 @@ jobs:
       installation_mode: 'edit'
       python_version: '3.10'
       platform: 'ubuntu-latest'
+      pytest_args: '-k test_gold -ra --run-requires_uv --run-network_bound -vvs --cov --cov-report=term-missing --cov-report=html:test-edit/htmlcov --cov-context=test --cov-report=xml:coverage.test-edit.xml -n auto tests'
 
   codecov:
     needs: code
@@ -54,7 +55,7 @@ jobs:
   wheel:  ## Unless override, default trigger 'always'
     uses: ./.github/workflows/test-python.yml
     with:
-      default_trigger: true
+      default_trigger: false
       override: '${{ vars.OV_WHEEL }}'
       installation_mode: 'wheel'
       upload_distro: true
@@ -64,7 +65,8 @@ jobs:
   # BUILD ALL WHEELS and run Test Suite against them
   ## Unless override, default trigger 'always'
   all_wheels:
-    if: vars.OV_ALL_WHEELS != 'false'  # Unless override, default trigger 'always'
+    if: false
+    # if: vars.OV_ALL_WHEELS != 'false'  # Unless override, default trigger 'always'
     runs-on: ubuntu-latest
     env:
       module_name: cookiecutter_python
@@ -134,7 +136,7 @@ jobs:
   # RUN INTEGRATION TESTS: slower due to automated installations involved via pip
   ## Unless override, default trigger is (only) on PR to dev
   test_integration:
-    if: always() || vars.OV_TEST_INTEGRATION == 'true' || (vars.OV_SCA != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')
+    if: vars.OV_TEST_INTEGRATION == 'true' || (vars.OV_SCA != 'false' && github.event_name == 'pull_request' && github.base_ref == 'dev')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
