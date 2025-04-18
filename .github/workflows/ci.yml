@@ -39,7 +39,8 @@ jobs:
     # allow both code success and fail (but not skip)
     if: always() && contains(fromJSON('["success", "failure"]'), needs.code.result) && vars.OV_CODECOV != 'false'
     uses: ./.github/workflows/codecov-job.yml
-
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   # Build PACKAGE SDist and run Test Suite against it
   sdist:  ## Unless override, default trigger 'always'

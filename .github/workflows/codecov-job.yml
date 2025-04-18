@@ -2,7 +2,9 @@
 
 on:
   workflow_call:
-
+    secrets:
+      CODECOV_TOKEN:
+        required: true
 jobs:
   upload:
     runs-on: ubuntu-latest
@@ -25,6 +27,8 @@ jobs:
 
       # UPLOAD XML FILES TO CODECOV
       - name: Upload Coverage Reports to Codecov
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}  # this is "read" from inputs
         run: |
           for file in coverage/coverage*.xml; do
             OS_NAME=$(echo $file | sed -E "s/coverage-(\w\+)-/\1/")
