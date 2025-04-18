@@ -297,57 +297,36 @@ def post_hook():
     generated_docs_folder: Path = Path(request.project_dir) / docs_builder
     dest_docs_folder = Path(request.project_dir) / 'docs'
 
-    # V2: supports -f flag, tests pass, but somehow i don't trust it
-    # # create if not exists (it might exist if generator invoked with same output path twice)
-    # dest_docs_folder.mkdir(parents=True, exist_ok=True)
+    # V3: support -f flag
+    dest_docs_folder.mkdir(parents=True, exist_ok=True)
 
-    # # do a `mv source/* docs/` equivalent operation in python
-    # def loop(root_dir: Path):
-    #     for file in root_dir.iterdir():
-    #         logger.error(f"File: {file}, is file: {file.is_file()}")
-    #         if file.is_file():
-    #             # Overwrite the file if it exists
-    #             shutil.move(str(file), str(dest_docs_folder / file.name))
-    #         elif file.is_dir() and str(file) != str(dest_docs_folder):
-    #             # Skip the folder if it already exists
-    #             target_folder = dest_docs_folder / file.name
-    #             if not target_folder.exists():
-    #                 shutil.move(str(file), str(target_folder))
-    #             loop(file)
-    # loop(generated_docs_folder)
-    # # remove the empty docs folder, if it exists
-    # try:
-    #     shutil.rmtree(str(generated_docs_folder))
-    #     # generated_docs_folder.rmdir()
-    # except OSError as error:
-    #     print(f"** Could not remove '{generated_docs_folder}'")
-    #     print('Exception: ' + str(error))
-    #     raise error    
+    def move_files_recursively(src_folder: Path, dest_folder: Path):
+        """
+        Recursively move files from src_folder to dest_folder.
+        Overwrites files if they exist, skips directories if they already exist.
+        """
+        for item in src_folder.iterdir():
+            target_path = dest_folder / item.name
+            logger.info(f"Checking {item.relative_to(src_folder)} for Target: {target_path}")
+            if item.is_file():
+                # Overwrite the file if it exists
+                shutil.move(str(item), str(target_path))
+            elif item.is_dir():
+                # Skip the folder if it already exists
+                if not target_path.exists():
+                    target_path.mkdir(parents=True, exist_ok=True)
+                # Recursively process the contents of the directory
+                move_files_recursively(item, target_path)
 
-    # V1: Does not support -f flag, but has been battle-tested
-    # move/rename docs-builder-specific docs folder to 'docs/'
-    try:
-        # ie for mkdocs: `mv docs-mkdocs docs`, ie for sphinx: `mv docs-sphinx docs`
-        os.rename(
-            str(generated_docs_folder),
-            str(dest_docs_folder),
-        )
-    except OSError as error:  # -f flag passed and -o folder already exists
-        # NO SUPPORTED YET
-        print(
-            "\n"
-            f"** Could not move/rename '{docs_builder}' to 'docs/'"
-            f"\033[93m[Exception]\033[0m {error}.\n"
-            "\033[93m[WHAT HAPPENED]\033[0m An error occurred during the Docs Website generation process.\n"
-            "\033[94m[HOW IT HAPPENED]\033[0m The library '\033[92mshutil\033[0m' attempted to move/rename the docs folder but failed.\n"
-            "\033[95m[WHY IT HAPPENED]\033[0m The destination folder '\033[92mdocs/\033[0m' already exists.\n"
-            "\033[96m[HOW TO FIX]\033[0m Remove the '\033[92mdocs/\033[0m' folder and re-run the command.\n"
-            "\033[96m[WHAT HAPPENS NEXT]\033[0m Skipping 'git init and 'commit' process\n"
-            "\033[96m[INFO]\033[0m The docs folder was not moved/renamed.\n"
-            "\033[96m[INFO]\033[0m The docs folder is still located at: \033[92m{generated_docs_folder}\033[0m\n"
-        )
-        raise error
+        # Remove the empty source folder after processing
+        try:
+            src_folder.rmdir()
+        except OSError:
+            # Directory is not empty (e.g., due to permission issues or race conditions)
+            pass
 
+    # Move files from the generated docs folder to the destination docs folder
+    move_files_recursively(generated_docs_folder, dest_docs_folder)
 
     # Git commit
     if request.initialize_git_repo:
