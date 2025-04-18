@@ -137,52 +137,6 @@ builder_id_2_files = {
 }
 
 ###### V1 POST FILE REMOVAL
-
-# def post_file_removal(request):
-#     """Preserve only files relevant to Project Type requested to Generate.
-
-#     Delete files that are not relevant to the project type requested to
-#     generate.
-
-#     For example, if the user requested a 'module' project type,
-#     then delete the files that are only relevant to a 'module+cli' project.
-
-#     Deletes Files according to CI/CD Pipeline option [stable, experimental]
-
-#     Args:
-#         request ([type]): [description]
-#     """
-#     from pathlib import Path
-
-#     IRELEVANT_CI_CD_FILES: t.Iterable[t.Tuple[str, ...]] = CICD_DELETE[
-#         request.vars['cicd']
-#     ]
-
-#     files_to_remove = [
-#         ## Post-Gen File Removal, given 'Project Type',
-#         os.path.join(request.project_dir, *x)
-#         for x in delete_files[request.vars['project_type']](request)
-#     ] + [
-#         ## Remove test.tml or cicd.yml based on CI/CD Option ##
-#         os.path.join(request.project_dir, *path_components)
-#         for path_components in IRELEVANT_CI_CD_FILES
-#     ]
-#     for file in files_to_remove:
-#         Path(file).unlink(missing_ok=True)  # remove file if exists
-
-#     ## Remove gen 'docs' folders, given 'Docs Website Builder' (DWB) ##
-#     for builder_id, gen_docs_folder_name in request.docs_extra_info.items():
-#         if builder_id != request.docs_website['builder']:
-#             shutil.rmtree(str(Path(request.project_dir) / gen_docs_folder_name))
-
-#     ## Remove top level files (ie mkdocs.yml), defined in builder_id_2_files map ##
-#     for builder_id, files in builder_id_2_files.items():
-#         if builder_id != request.docs_website['builder']:
-#             for file in files:
-#                 os.remove(os.path.join(request.project_dir, file))
-
-
-###### V1 POST FILE REMOVAL
 def post_file_removal(request):
     """Preserve only files relevant to Project Type requested to Generate."""
     _remove_irrelevant_project_type_files(request)
@@ -342,79 +296,6 @@ def move_files_recursively(src_folder: Path, dest_folder: Path):
         # Directory is not empty (e.g., due to permission issues or race conditions)
         pass
 
-###### V1 POST HOOK
-
-# def post_hook():
-#     """Delete irrelevant to Project Type files and optionally do git commit."""
-#     request = get_request()
-#     # Delete gen Files related to
-#     #  - different Project Type
-#     #  - related to different documentation builder tool"""
-#     post_file_removal(request)
-
-#     # remove "unintentional logs" file, if it exists and it is empty
-#     potentially_spawned_log_file = Path(request.project_dir) / FILE_TARGET_LOGS
-#     if potentially_spawned_log_file.exists():
-#         _take_care_of_logs(potentially_spawned_log_file)
-
-#     # "destructure" data
-#     docs_builder: str = request.docs_extra_info[request.docs_website['builder']]
-
-#     generated_docs_folder: Path = Path(request.project_dir) / docs_builder
-#     dest_docs_folder = Path(request.project_dir) / 'docs'
-
-#     # V3: support -f flag
-#     dest_docs_folder.mkdir(parents=True, exist_ok=True)
-
-#     # Move files from the generated docs folder to the destination docs folder
-#     move_files_recursively(generated_docs_folder, dest_docs_folder)
-
-#     ### start process for achieving git commit -m ".." ###
-
-#     # if git binary not found we skip the "Git init and commit" process
-
-#     if not git_binary_found:
-#         print(
-#             "\n"
-#             "\033[93m[WHAT HAPPENED]\033[0m An error occurred during the Git Repo initialization process.\n"
-#             "\033[94m[HOW IT HAPPENED]\033[0m The library '\033[92mgitpython\033[0m' attempted to invoke the Git binary but failed.\n"
-#             "\033[95m[WHY IT HAPPENED]\033[0m The Git binary is missing or not accessible in your system's PATH.\n"
-#             "\033[96m[HOW TO FIX]\033[0m Install the Git binary on your system:\n"
-#             "  - For Linux: \033[92msudo apt install git\033[0m or \033[92msudo yum install git\033[0m\n"
-#             "  - For macOS: \033[92mbrew install git\033[0m\n"
-#             "  - For Windows: Download and install Git from \033[94mhttps://git-scm.com\033[0m\n"
-#             "\033[96m[WHAT HAPPENS NEXT]\033[0m Skipping 'git init and 'commit' process\n"
-#         )
-
-#     elif request.initialize_git_repo:  # Commit if init flag is True
-#         repo = Repo.init(request.project_dir)  # do 'git init'
-#         try:
-#             is_dirty = repo.is_dirty()  # this raises error if no proper ownership
-#         except (
-#             Exception
-#         ) as error:  # git config --global --add safe.directory was not executed
-#             # print message and skip "git" process
-#             print(
-#                 "\n"
-#                 # Print "raw" exception
-#                 f"\033[93m[Exception]\033[0m {error}.\n"
-#                 "\033[93m[Git Diff failed]\033[0m An error occurred while running \033[94m'git diff'\033[0m.\n"
-#                 "\033[94m[HOW IT HAPPENED]\033[0m The library '\033[92mgitpython\033[0m' attempted to invoke the Git binary but failed.\n"
-#                 "\033[96m[How to fix]\033[0m Run 'git config --global --add safe.directory '\n"
-#                 "\033[96m[WHAT HAPPENS NEXT]\033[0m Skipping 'git init and 'commit' process\n"
-#             )
-#         else:  # runs only if git diff was successful
-#             # check if the repo is dirty (ie has uncommitted changes)
-#             if not is_dirty:  # no uncommited changes
-#                 print(f"\n - {request.project_dir} has no uncommitted changes.")
-#                 request.repo = repo
-#                 git_commit(request)
-#                 print("\033[92m[INFO]\033[0m Git commit was successful.")
-#             else:  # No changes to commit.
-#                 # might happen if cli was called twice with same output directory (-o flag)
-#                 # and with same gen parameters
-#                 print(f"\n - {request.project_dir} is clean, no changes to commit.")
-#     return 0
 
 ###### v2 POST HOOK
 
@@ -464,26 +345,21 @@ def _move_generated_docs(request):
 def _initialize_and_commit_git_repo(request):
     """Initialize a Git repository and commit changes if required."""
     if not git_binary_found:
-        _handle_missing_git_binary()
+        print(
+            "\n"
+            "\033[93m[WHAT HAPPENED]\033[0m An error occurred during the Git Repo initialization process.\n"
+            "\033[94m[HOW IT HAPPENED]\033[0m The library '\033[92mgitpython\033[0m' attempted to invoke the Git binary but failed.\n"
+            "\033[95m[WHY IT HAPPENED]\033[0m The Git binary is missing or not accessible in your system's PATH.\n"
+            "\033[96m[HOW TO FIX]\033[0m Install the Git binary on your system:\n"
+            "  - For Linux: \033[92msudo apt install git\033[0m or \033[92msudo yum install git\033[0m\n"
+            "  - For macOS: \033[92mbrew install git\033[0m\n"
+            "  - For Windows: Download and install Git from \033[94mhttps://git-scm.com\033[0m\n"
+            "\033[96m[WHAT HAPPENS NEXT]\033[0m Skipping 'git init and 'commit' process\n"
+        )
         return
 
     if request.initialize_git_repo:
         _try_to_commit_changes(request)
-
-
-def _handle_missing_git_binary():
-    """Handle the case where the Git binary is not found."""
-    print(
-        "\n"
-        "\033[93m[WHAT HAPPENED]\033[0m An error occurred during the Git Repo initialization process.\n"
-        "\033[94m[HOW IT HAPPENED]\033[0m The library '\033[92mgitpython\033[0m' attempted to invoke the Git binary but failed.\n"
-        "\033[95m[WHY IT HAPPENED]\033[0m The Git binary is missing or not accessible in your system's PATH.\n"
-        "\033[96m[HOW TO FIX]\033[0m Install the Git binary on your system:\n"
-        "  - For Linux: \033[92msudo apt install git\033[0m or \033[92msudo yum install git\033[0m\n"
-        "  - For macOS: \033[92mbrew install git\033[0m\n"
-        "  - For Windows: Download and install Git from \033[94mhttps://git-scm.com\033[0m\n"
-        "\033[96m[WHAT HAPPENS NEXT]\033[0m Skipping 'git init and 'commit' process\n"
-    )
 
 
 def _try_to_commit_changes(request):
