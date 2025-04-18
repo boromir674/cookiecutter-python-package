@@ -12,6 +12,8 @@ __all__ = ['find_lib']
 T = t.TypeVar('T')
 
 lib_dir: str
+
+
 def find_lib(module: t.Optional[str] = None) -> t.Tuple[str, str]:
     if module is None:  # set path as the dir where the invoking code is
         namespace = sys._getframe(2).f_globals  # caller's globals
