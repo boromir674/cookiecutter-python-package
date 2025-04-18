@@ -61,10 +61,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [ubuntu-latest, macos-latest, windows-latest]
+        platform: [ubuntu-latest, macos-latest]
         # platform: [windows-latest]
         python-version: ['3.10']
     steps:
+
+      - uses: actions/checkout@v4
+      # windows cannot read new style docs template folders with exotic name, so maybe try sparse checkout to igore cloning those dirs
+      # until then windows CI is shut off.
+        # with:
+        #   sparse-checkout: |
+        #     .github
+        #     src
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
@@ -80,7 +89,6 @@ jobs:
         with:
           version: "latest"
 
-      - uses: actions/checkout@v4
 
       # Build Package Wheel
       - name: Build Package Wheel and Sdist Distributions
