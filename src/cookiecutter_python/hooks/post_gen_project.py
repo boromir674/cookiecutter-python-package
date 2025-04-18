@@ -26,7 +26,6 @@ else:
 import logging
 
 from cookiecutter_python._logging_config import FILE_TARGET_LOGS
-from cookiecutter_python.backend.gen_docs_common import get_docs_gen_internal_config
 
 
 logger = logging.getLogger(__name__)
@@ -37,7 +36,7 @@ logger = logging.getLogger(__name__)
 GEN_PROJ_LOC = os.path.realpath(os.path.curdir)
 
 # Doc Builders docs default location, after Generation
-DOCS: t.Dict[str, str] = get_docs_gen_internal_config()
+# DOCS: t.Dict[str, str] = get_docs_gen_internal_config()
 
 
 def get_context() -> OrderedDict:
@@ -65,7 +64,7 @@ def get_request():
             'python_runtime': cookie_dict['rtd_python_version'],
         },
         # internally used to get the template folder of each Doc Builder
-        'docs_extra_info': DOCS,
+        # 'docs_extra_info': DOCS,
     }
     return type('PostGenProjectRequest', (), data)
 
@@ -140,9 +139,13 @@ builder_id_2_files = {
 ###### V1 POST FILE REMOVAL
 def post_file_removal(request):
     """Preserve only files relevant to Project Type requested to Generate."""
+    # Remove special files only relevant to Project Type {module, cli+comule, pytest-plugin}
     _remove_irrelevant_project_type_files(request)
+    # Remove files depending on CI/CD Pipeline Design input
     _remove_irrelevant_ci_cd_files(request)
-    _remove_irrelevant_docs_folders(request)
+    # Remove generated docs folders, but the input builder (ie mkdocs/sphinx) selected
+    _remove_irrelevant_docs_folders(request.project_dir)
+    # Remove some top-level files depending on input (ie mkdocs.yml)
     _remove_irrelevant_top_level_files(request)
 
 
@@ -164,14 +167,12 @@ def _remove_irrelevant_ci_cd_files(request):
     _delete_files(irrelevant_ci_cd_files)
 
 
-def _remove_irrelevant_docs_folders(request):
+def _remove_irrelevant_docs_folders(gen_project_dir: str):
     """Remove generated docs folders that are not relevant to the selected docs builder."""
-    for builder_id, gen_docs_folder_name in request.docs_extra_info.items():
-        if builder_id != request.docs_website['builder']:
-            shutil.rmtree(
-                str(Path(request.project_dir) / gen_docs_folder_name),
-                ignore_errors=True,
-            )
+    # find top-level folders and delte the ones with name 'PyGen_TO_DELETE'
+    for folder in Path(gen_project_dir).iterdir():
+        if folder.is_dir() and folder.name == 'PyGen_TO_DELETE':
+            shutil.rmtree(folder, ignore_errors=True)
 
 
 def _remove_irrelevant_top_level_files(request):
@@ -279,54 +280,21 @@ def git_commit(request):
     request.repo.index.commit(commit_message, author=author, committer=copy(author))
 
 
-# TODO: retire this after implementing docs folders with jinja if/else template
-def move_files_recursively(src_folder: Path, dest_folder: Path):
-    """
-    Recursively move files from src_folder to dest_folder.
-    Overwrites files if they exist, skips directories if they already exist.
-    """
-    for item in src_folder.iterdir():
-        target_path = dest_folder / item.name
-        if item.is_file():
-            # Overwrite the file if it exists
-            shutil.move(str(item), str(target_path))
-        else:  # if item.is_dir():
-            target_path.mkdir(parents=True, exist_ok=True)
-            # Recursively process the contents of the directory
-            move_files_recursively(item, target_path)
-
-    # Remove the empty source folder after processing
-    try:
-        src_folder.rmdir()
-    except OSError:
-        # Directory is not empty (e.g., due to permission issues or race conditions)
-        pass
-
-
 ###### v2 POST HOOK
-
 
 def post_hook():
     """Delete irrelevant to Project Type files and optionally do git commit."""
     request = get_request()
 
     # Step 1: Remove irrelevant files
-    _remove_irrelevant_files(request)
+    post_file_removal(request)
 
     # Step 2: Handle accidental log files
     _handle_logs(request)
 
-    # Step 3: Move generated docs to the destination folder
-    _move_generated_docs(request)
-
-    # Step 4: Initialize Git repository and commit changes
+    # Step 3: Initialize Git repository and commit changes
     _initialize_and_commit_git_repo(request)
     return 0
-
-
-def _remove_irrelevant_files(request):
-    """Remove files and folders that are not relevant to the project type or configuration."""
-    post_file_removal(request)
 
 
 def _handle_logs(request):
@@ -334,19 +302,6 @@ def _handle_logs(request):
     potentially_spawned_log_file = Path(request.project_dir) / FILE_TARGET_LOGS
     if potentially_spawned_log_file.exists():
         _take_care_of_logs(potentially_spawned_log_file)
-
-
-def _move_generated_docs(request):
-    """Move generated documentation files to the destination folder."""
-    docs_builder: str = request.docs_extra_info[request.docs_website['builder']]
-    generated_docs_folder: Path = Path(request.project_dir) / docs_builder
-    dest_docs_folder = Path(request.project_dir) / 'docs'
-
-    # Ensure the destination folder exists
-    dest_docs_folder.mkdir(parents=True, exist_ok=True)
-
-    # Move files from the generated docs folder to the destination docs folder
-    move_files_recursively(generated_docs_folder, dest_docs_folder)
 
 
 def _initialize_and_commit_git_repo(request):
@@ -401,7 +356,6 @@ def _process_commit(request, repo, is_dirty):
         print("\033[92m[INFO]\033[0m Git commit was successful.")
     else:  # No changes to commit
         print(f"\n - {request.project_dir} is clean, no changes to commit.")
-
 
 ########
 

@@ -648,17 +648,16 @@ def get_expected_generated_files(
         )
 
         ## DERIVE expected files inside 'docs' gen dir
-        from cookiecutter_python.backend import get_docs_gen_internal_config
+
+        def b(docs_builder_id):
+            return '{% if cookiecutter.docs_builder == "' + docs_builder_id + '" %}docs{% else %}PyGen_TO_DELETE{% endif %}'
 
         # Find where each Docs Builder 'stores' its Template Files (ie source docs)
-        _doc_builder_id_2_template_docs_dir_name: t.Dict[
-            str, str
-        ] = get_docs_gen_internal_config()
-        builder_docs_folder_name: str = _doc_builder_id_2_template_docs_dir_name[
-            user_docs_builder_id
-        ]
+        selected_docs_template_dir: str = b(user_docs_builder_id)
+
+        builder_docs_folder_name: str = selected_docs_template_dir
         source_docs_template_content_dir: Path = (
-            distro_loc / r'{{ cookiecutter.project_slug }}' / builder_docs_folder_name
+            distro_loc / r'{{ cookiecutter.project_slug }}' / selected_docs_template_dir
         )
 
         # those docs template dir, are expected to be found under 'docs' folder
@@ -707,7 +706,10 @@ def get_expected_generated_files(
         for (
             docs_builder_id,
             builder_docs_folder_name,
-        ) in _doc_builder_id_2_template_docs_dir_name.items():
+        ) in [(
+            docs_builder_id,
+            b(docs_builder_id),
+        ) for docs_builder_id in {'mkdocs', 'sphinx'}]:  # TODO: centralize this
             for file_path in iter(
                 (
                     x
