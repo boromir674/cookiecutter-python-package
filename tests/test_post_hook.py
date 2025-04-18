@@ -56,19 +56,20 @@ def create_context_from_emulated_project(dat):
         mkdir(package_dir)
         mkdir(tests_dir)
 
-        # Emulate Docs Builder related files (ie mkdocs and sphinx)
-        mkdir(path.join(project_dir, 'docs-mkdocs'))
-        mkdir(path.join(project_dir, 'docs-mkdocs', 'dev_guides'))
-        Path(path.join(project_dir, 'docs-mkdocs', 'dev_guides', 'docker.md')).touch()
-
+        # Emulate mkdocs Docs Builder related files (as if selected by user)
+        mkdir(path.join(project_dir, 'docs'))
+        mkdir(path.join(project_dir, 'docs', 'dev_guides'))
+        Path(path.join(project_dir, 'docs', 'dev_guides', 'docker.md')).touch()
         # Path(path.join(project_dir, 'mkdocs.yml')).touch()
 
-        mkdir(path.join(project_dir, 'docs-sphinx'))
-        Path(path.join(project_dir, 'docs-sphinx', 'conf.py')).touch()
+        # Emulate sphinx Docs Builder related files for sphinx
+        TO_DELETE = 'PyGen_TO_DELETE'
+        mkdir(path.join(project_dir, TO_DELETE))
+        Path(path.join(project_dir, TO_DELETE, 'conf.py')).touch()
         # create at least one level of nest to make cover more post_removal code
-        mkdir(path.join(project_dir, 'docs-sphinx', 'contents'))
+        mkdir(path.join(project_dir, TO_DELETE, 'contents'))
         Path(
-            path.join(project_dir, 'docs-sphinx', 'contents', '10_introduction.rst')
+            path.join(project_dir, TO_DELETE, 'contents', '10_introduction.rst')
         ).touch()
 
         mkdir(path.join(project_dir, 'scripts'))

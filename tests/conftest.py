@@ -829,12 +829,12 @@ def get_expected_generated_files(
             parts = x.parts
             assert type(parts) is tuple, f"Sanity check fail: {parts}"
             assert len(parts) > 0, f"Sanity check fail: {parts}"
-            b = SEP.join(parts)
-            b = b.replace(r'{{ cookiecutter.pkg_name }}', pkg_name).replace(
+            joined_parts: str = SEP.join(parts)
+            joined_parts = joined_parts.replace(r'{{ cookiecutter.pkg_name }}', pkg_name).replace(
                 r'{{ cookiecutter.project_slug }}', config.data['project_slug']
             )
 
-            expected_file_parts = b.split(SEP)
+            expected_file_parts = joined_parts.split(SEP)
             assert (
                 len(expected_file_parts) > 0
             ), f"Sanity check fail: {expected_file_parts}"
