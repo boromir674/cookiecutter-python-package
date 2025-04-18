@@ -1,18 +1,15 @@
-import sys
 from importlib import import_module
 from inspect import isclass
-from os import path
 from pathlib import Path
 from pkgutil import iter_modules
-from typing import List, Optional, Type, TypeVar
+import typing as t
+from ._find_lib import find_lib
 
 
-SRC_DIR = Path(__file__).parent.parent.resolve()
-
-T = TypeVar('T')
+T = t.TypeVar('T')
 
 
-def load(interface: Type[T], module: Optional[str] = None) -> List[Type[T]]:
+def load(interface: t.Type[T], module: t.Optional[str] = None) -> t.List[t.Type[T]]:
     """Dynamically import all class objects that implement the given interface.
 
     The classes (class objects) are discovered and imported in the namespace, by
@@ -36,24 +33,7 @@ def load(interface: Type[T], module: Optional[str] = None) -> List[Type[T]]:
     """
     lib_dir: str
     dotted_lib_path: str  #
-    if module is None:  # set path as the dir where the invoking code is
-        namespace = sys._getframe(1).f_globals  # caller's globals
-        # Set as Lib the directory where the invoker module is located at runtime
-        lib_dir = path.dirname(path.realpath(namespace['__file__']))
-        dotted_lib_path = '.'.join(
-            Path(lib_dir).relative_to(SRC_DIR).parts
-        )  # pragma: no mutate
-    else:
-        # Import input module
-        # module_object = import_module(module.replace('/', '.'))
-        module_object = import_module(module)  # TODO: read __file__ without importing
-
-        # Set as Lib the directory where the INPUT module is located at runtime
-        lib_dir = str(Path(str(module_object.__file__)).parent)
-        # if top-level init is at '/site-packages/some_python_package/__init__.py'
-        # then distro_path is '/site-packages/some_python_package'
-
-        dotted_lib_path = module
+    lib_dir, dotted_lib_path = find_lib(module=module)
 
     if not Path(lib_dir).exists():
         raise FileNotFoundError
