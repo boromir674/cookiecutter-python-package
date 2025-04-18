@@ -12,7 +12,6 @@ __all__ = ['find_lib']
 T = t.TypeVar('T')
 
 
-
 def find_lib(module: t.Optional[str] = None) -> t.Tuple[str, str]:
     lib_dir: str
     if module is None:  # set path as the dir where the invoking code is
