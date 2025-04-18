@@ -136,50 +136,100 @@ builder_id_2_files = {
     'mkdocs': ['mkdocs.yml', 'scripts/gen_api_refs_pages.py'],
 }
 
+###### V1 POST FILE REMOVAL
 
+# def post_file_removal(request):
+#     """Preserve only files relevant to Project Type requested to Generate.
+
+#     Delete files that are not relevant to the project type requested to
+#     generate.
+
+#     For example, if the user requested a 'module' project type,
+#     then delete the files that are only relevant to a 'module+cli' project.
+
+#     Deletes Files according to CI/CD Pipeline option [stable, experimental]
+
+#     Args:
+#         request ([type]): [description]
+#     """
+#     from pathlib import Path
+
+#     IRELEVANT_CI_CD_FILES: t.Iterable[t.Tuple[str, ...]] = CICD_DELETE[
+#         request.vars['cicd']
+#     ]
+
+#     files_to_remove = [
+#         ## Post-Gen File Removal, given 'Project Type',
+#         os.path.join(request.project_dir, *x)
+#         for x in delete_files[request.vars['project_type']](request)
+#     ] + [
+#         ## Remove test.tml or cicd.yml based on CI/CD Option ##
+#         os.path.join(request.project_dir, *path_components)
+#         for path_components in IRELEVANT_CI_CD_FILES
+#     ]
+#     for file in files_to_remove:
+#         Path(file).unlink(missing_ok=True)  # remove file if exists
+
+#     ## Remove gen 'docs' folders, given 'Docs Website Builder' (DWB) ##
+#     for builder_id, gen_docs_folder_name in request.docs_extra_info.items():
+#         if builder_id != request.docs_website['builder']:
+#             shutil.rmtree(str(Path(request.project_dir) / gen_docs_folder_name))
+
+#     ## Remove top level files (ie mkdocs.yml), defined in builder_id_2_files map ##
+#     for builder_id, files in builder_id_2_files.items():
+#         if builder_id != request.docs_website['builder']:
+#             for file in files:
+#                 os.remove(os.path.join(request.project_dir, file))
+
+
+###### V1 POST FILE REMOVAL
 def post_file_removal(request):
-    """Preserve only files relevant to Project Type requested to Generate.
+    """Preserve only files relevant to Project Type requested to Generate."""
+    _remove_irrelevant_project_type_files(request)
+    _remove_irrelevant_ci_cd_files(request)
+    _remove_irrelevant_docs_folders(request)
+    _remove_irrelevant_top_level_files(request)
 
-    Delete files that are not relevant to the project type requested to
-    generate.
 
-    For example, if the user requested a 'module' project type,
-    then delete the files that are only relevant to a 'module+cli' project.
-
-    Deletes Files according to CI/CD Pipeline option [stable, experimental]
-
-    Args:
-        request ([type]): [description]
-    """
-    from pathlib import Path
-
-    IRELEVANT_CI_CD_FILES: t.Iterable[t.Tuple[str, ...]] = CICD_DELETE[
-        request.vars['cicd']
-    ]
-
+def _remove_irrelevant_project_type_files(request):
+    """Remove files that are not relevant to the selected project type."""
     files_to_remove = [
-        ## Post-Gen File Removal, given 'Project Type',
         os.path.join(request.project_dir, *x)
         for x in delete_files[request.vars['project_type']](request)
-    ] + [
-        ## Remove test.tml or cicd.yml based on CI/CD Option ##
-        os.path.join(request.project_dir, *path_components)
-        for path_components in IRELEVANT_CI_CD_FILES
     ]
-    for file in files_to_remove:
-        Path(file).unlink(missing_ok=True)  # remove file if exists
+    _delete_files(files_to_remove)
 
-    ## Remove gen 'docs' folders, given 'Docs Website Builder' (DWB) ##
+
+def _remove_irrelevant_ci_cd_files(request):
+    """Remove files that are not relevant to the selected CI/CD option."""
+    irrelevant_ci_cd_files = [
+        os.path.join(request.project_dir, *path_components)
+        for path_components in CICD_DELETE[request.vars['cicd']]
+    ]
+    _delete_files(irrelevant_ci_cd_files)
+
+
+def _remove_irrelevant_docs_folders(request):
+    """Remove generated docs folders that are not relevant to the selected docs builder."""
     for builder_id, gen_docs_folder_name in request.docs_extra_info.items():
         if builder_id != request.docs_website['builder']:
-            shutil.rmtree(str(Path(request.project_dir) / gen_docs_folder_name))
+            shutil.rmtree(str(Path(request.project_dir) / gen_docs_folder_name), ignore_errors=True)
 
-    ## Remove top level files (ie mkdocs.yml), defined in builder_id_2_files map ##
+
+def _remove_irrelevant_top_level_files(request):
+    """Remove top-level files that are not relevant to the selected docs builder."""
     for builder_id, files in builder_id_2_files.items():
         if builder_id != request.docs_website['builder']:
             for file in files:
                 os.remove(os.path.join(request.project_dir, file))
 
+
+def _delete_files(files_to_remove):
+    """Delete a list of files if they exist."""
+    for file in files_to_remove:
+        Path(file).unlink(missing_ok=True)
+
+###################
 
 def _take_care_of_logs(logs_file: Path):
     """Remove accidental App Log file, if found inside the Generated Project.
