@@ -85,58 +85,69 @@ def test_prehook_sanitization_passes_given_interpreters_supported_by_gen():
 
 
 @pytest.fixture
-def get_main_with_mocked_template(get_object, request_factory):
+def get_main_with_mocked_template(get_object):
     def get_pre_gen_hook_project_main(overrides={}):
         main_method = get_object(
             "_main",
             "cookiecutter_python.hooks.pre_gen_project",
-            overrides=dict(
-                {"get_request": lambda: lambda: request_factory.pre()}, **overrides
-            ),
+            overrides=dict({}, **overrides),
         )
         return main_method
 
     return get_pre_gen_hook_project_main
 
 
-def test_main_with_invalid_interpreters(get_main_with_mocked_template, request_factory):
+def test_main_with_invalid_interpreters(get_main_with_mocked_template, dat):
+    from collections import OrderedDict
+
     result = get_main_with_mocked_template(
         overrides={
-            "get_request": lambda: lambda: request_factory.pre(
-                interpreters=['3.5', '3.10']
+            "get_context": lambda: lambda: OrderedDict(
+                dat, **dict(interpreters={'supported-interpreters': ["3.5", "3.10"]})
             )
         }
     )()
     assert result == 1  # exit code of 1 indicates failed execution
 
 
-def test_main_with_invalid_module_name(get_main_with_mocked_template, request_factory):
+def test_main_with_invalid_module_name(get_main_with_mocked_template, dat):
+    from collections import OrderedDict
+
     result = get_main_with_mocked_template(
         overrides={
-            "get_request": lambda: lambda: request_factory.pre(module_name="121212")
+            "get_context": lambda: lambda: OrderedDict(dat, **{'pkg_name': '121212'})
         }
     )()
     assert result == 1  # exit code of 1 indicates failed execution
 
 
-def test_main_with_invalid_version(get_main_with_mocked_template, request_factory):
+def test_main_with_invalid_version(get_main_with_mocked_template, dat):
+    from collections import OrderedDict
+
     main = get_main_with_mocked_template(
         overrides={
-            "get_request": lambda: lambda: request_factory.pre(
-                package_version_string="gg0.0.1"
-            )
+            "get_context": lambda: lambda: OrderedDict(dat, **{'version': 'gg0.0.1'})
         }
     )
     result = main()
     assert result == 1  # exit code of 1 indicates failed execution
 
 
-def test_main_with_found_pre_existing_pypi_package(
-    get_main_with_mocked_template, request_factory
-):
+def test_main_with_found_pre_existing_pypi_package(get_main_with_mocked_template, dat):
+    from collections import OrderedDict
+
+    EXISTING_MODULE_NAME = 'so_magic'
+    EXISTING_PYPI_PKG_NAME = (EXISTING_MODULE_NAME.replace('_', '-'),)
+
     result = get_main_with_mocked_template(
         overrides={
-            "get_request": lambda: lambda: request_factory.pre(module_name="so_magic")
+            "get_context": lambda: lambda: OrderedDict(
+                dat,
+                **{
+                    'module_name': EXISTING_MODULE_NAME,
+                    'pypi_package': EXISTING_PYPI_PKG_NAME,
+                },
+            )
         }
     )()
     assert result == 0  # exit code of 1 indicates failed execution

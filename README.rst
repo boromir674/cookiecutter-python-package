@@ -312,9 +312,10 @@ Free/Libre and Open Source Software (FLOSS)
 .. Code Climate CI
 .. Code maintainability & Technical Debt
 
+
 .. |maintainability| image:: https://api.codeclimate.com/v1/badges/1d347d7dfaa134fd944e/maintainability
    :alt: Maintainability
-   :target: https://codeclimate.com/github/boromir674/cookiecutter-python-package/
+   :target: https://codeclimate.com/github/boromir674/cookiecutter-python-package/maintainability
 
 .. |tech-debt| image:: https://img.shields.io/codeclimate/tech-debt/boromir674/cookiecutter-python-package
     :alt: Code Climate technical debt

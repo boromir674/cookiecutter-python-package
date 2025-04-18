@@ -39,6 +39,14 @@ on:
         default: 'ubuntu-latest'
         description: "Platform to use for the job. Default is 'ubuntu-latest'"
         type: string
+
+      # Pytest Settings #
+      pytest_args:
+        required: false
+        description: "Arguments to pass to pytest. Pass value to override the default value"
+        type: string
+
+
 jobs:
   test:
     if: inputs.override == 'true' || (inputs.override != 'false' && inputs.default_trigger == true)
@@ -94,6 +102,9 @@ jobs:
 
           uv pip install --no-deps ${{ inputs.installation_mode == 'edit' && '-e .' || inputs.installation_mode == 'sdist' && 'dist/*.tar.gz' || inputs.installation_mode == 'wheel' && 'dist/*.whl' }}
 
+      - name: Compute Pytest default Arguments
+        id: pytest_args
+        run: echo DEFAULT_PYTEST_ARGS='-ra --run-requires_uv --run-network_bound -vvs --cov --cov-report=term-missing --cov-report=html:test-${{ inputs.installation_mode }}/htmlcov --cov-context=test --cov-report=xml:coverage.test-${{ inputs.installation_mode }}.xml -n auto tests' >> $GITHUB_OUTPUT
 
       #### Run Test Suite against the package and measure Coverage ####
       - name: Run Tests and measure Coverage
@@ -104,6 +115,7 @@ jobs:
           BUG_LOG_DEL_WIN: 'permission_error'  # required on Windows Job
           PY_WHEEL: 1 # required on Windows Job
           COVERAGE_FILE: '.coverage.${{ inputs.installation_mode }}'
+          PYTEST_ARGS: "${{ inputs.pytest_args || steps.pytest_args.outputs.DEFAULT_PYTEST_ARGS }}"
         run: |
           if [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
             echo "[INFO] Activating virtual environment for Windows"
@@ -114,10 +126,7 @@ jobs:
             . .venv/bin/activate
           fi
 
-          pytest -ra --run-requires_uv --run-network_bound -vvs --cov --cov-report=term-missing \
-            --cov-report=html:test-${{ inputs.installation_mode }}/htmlcov --cov-context=test \
-            --cov-report=xml:coverage.test-${{ inputs.installation_mode }}.xml \
-            -n auto tests
+          pytest ${{ env.PYTEST_ARGS }}
 
       ## Code Coverage ## TODO; enable combine by moving each .coverage file to other dir to avoid override of subsequent coverage invocations with pytest
       - name: "Discover and Combine Coverage data into XML Reports"

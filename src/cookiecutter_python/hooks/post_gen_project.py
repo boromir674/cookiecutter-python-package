@@ -8,7 +8,6 @@ template project is used to generate a target project.
 import json
 import os
 import shutil
-import subprocess
 import sys
 import typing as t
 from collections import OrderedDict
@@ -19,11 +18,11 @@ from pathlib import Path
 
 try:
     from git import Actor, Repo
-except ImportError as error:
-    print(error)
-    print(
-        "Please do 'pip install gitpython' and/or install git binary on host (ie machine, docker)"
-    )
+except ImportError:  # git binary not found
+    git_binary_found = False
+else:
+    git_binary_found = True
+
 import logging
 
 from cookiecutter_python._logging_config import FILE_TARGET_LOGS
@@ -51,6 +50,7 @@ def get_context() -> OrderedDict:
 
 def get_request():
     cookie_dict: OrderedDict = get_context()
+
     data: t.Dict[str, t.Any] = {
         'vars': cookie_dict,
         'project_dir': GEN_PROJ_LOC,
@@ -167,12 +167,7 @@ def post_file_removal(request):
         for path_components in IRELEVANT_CI_CD_FILES
     ]
     for file in files_to_remove:
-        try:
-            os.remove(file)
-        except FileNotFoundError as error:
-            print(f"** Could not remove '{file}'")
-            print('Exception: ' + str(error))
-            raise PostFileRemovalError(error)
+        Path(file).unlink(missing_ok=True)  # remove file if exists
 
     ## Remove gen 'docs' folders, given 'Docs Website Builder' (DWB) ##
     for builder_id, gen_docs_folder_name in request.docs_extra_info.items():
@@ -229,42 +224,8 @@ def _take_care_of_logs(logs_file: Path):
             print(f"[INFO]: Captured Logs were written in {logs_file}")
 
 
-def run_process_python37_n_above(*args, **kwargs):
-    return [args], dict(capture_output=True, check=True, **kwargs)
-
-
-def run_process_python36_n_below(*args, **kwargs):
-    return [args], dict(
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, **kwargs
-    )
-
-
-def subprocess_run(*args, **kwargs):
-    def _subprocess_run(get_params):
-        def run1(*args, **kwargs):
-            args_list, kwargs_dict = get_params(*args, **kwargs)
-            return subprocess.run(
-                *args_list, **dict(kwargs_dict, check=True)
-            )  # pylint: disable=W1510 #nosec
-
-        return run1
-
-    d = {
-        'legacy': _subprocess_run(run_process_python36_n_below),
-        'new': _subprocess_run(run_process_python37_n_above),
-    }[
-        {True: 'legacy', False: 'new'}[
-            sys.version_info.minor < 7  # is legacy Python 3.x version (ie 3.5 or 3.6) ?
-        ]
-    ]
-    return d(*args, **kwargs)
-
-
-def initialize_git_repo(project_dir: str):
-    """
-    Initialize the Git repository in the generated project.
-    """
-    subprocess_run('git', 'init', cwd=project_dir)
+class GitBinaryNotFoundError(Exception):
+    pass
 
 
 def iter_files(request):
@@ -309,24 +270,33 @@ def git_commit(request):
     request.repo.index.commit(commit_message, author=author, committer=copy(author))
 
 
-def is_git_repo_clean(project_directory: str) -> bool:
+# TODO: retire this after implementing docs folders with jinja if/else template
+def move_files_recursively(src_folder: Path, dest_folder: Path):
     """
-    Check to confirm if the Git repository is clean and has no uncommitted
-    changes. If its clean return True otherwise False.
+    Recursively move files from src_folder to dest_folder.
+    Overwrites files if they exist, skips directories if they already exist.
     """
-    try:
-        git_status = subprocess_run(
-            'git', 'status', '--porcelain', cwd=project_directory
+    for item in src_folder.iterdir():
+        target_path = dest_folder / item.name
+        logger.info(
+            f"Checking {item.relative_to(src_folder)} for Target: {target_path}"
         )
-    except subprocess.CalledProcessError as error:
-        print(f"** Git repository in {project_directory} cannot get status")
-        print('Exception: ' + str(error))
-        raise error
+        if item.is_file():
+            # Overwrite the file if it exists
+            shutil.move(str(item), str(target_path))
+        elif item.is_dir():
+            # Skip the folder if it already exists
+            if not target_path.exists():
+                target_path.mkdir(parents=True, exist_ok=True)
+            # Recursively process the contents of the directory
+            move_files_recursively(item, target_path)
 
-    if git_status.stdout == b"" and git_status.stderr == b"":
-        return True
-
-    return False
+    # Remove the empty source folder after processing
+    try:
+        src_folder.rmdir()
+    except OSError:
+        # Directory is not empty (e.g., due to permission issues or race conditions)
+        pass
 
 
 def post_hook():
@@ -339,34 +309,63 @@ def post_hook():
     # remove "unintentional logs" file, if it exists and it is empty
     _take_care_of_logs(Path(request.project_dir) / FILE_TARGET_LOGS)
 
-    # move/rename docs-builder-specific docs folder to 'docs/'
-    try:
-        # ie for mkdocs: `mv docs-mkdocs docs`, ie for sphinx: `mv docs-sphinx docs`
-        os.rename(
-            str(
-                Path(request.project_dir)
-                / request.docs_extra_info[request.docs_website['builder']]
-            ),
-            os.path.join(request.project_dir, 'docs'),
-        )
-    except OSError as error:
-        print(
-            f"** Could not move/rename '{request.docs_extra_info[request.docs_website['builder']]}' to 'docs/'"
-        )
-        print('Exception: ' + str(error))
-        raise error
+    # "destructure" data
+    docs_builder: str = request.docs_extra_info[request.docs_website['builder']]
 
-    # Git commit
-    if request.initialize_git_repo:
+    generated_docs_folder: Path = Path(request.project_dir) / docs_builder
+    dest_docs_folder = Path(request.project_dir) / 'docs'
+
+    # V3: support -f flag
+    dest_docs_folder.mkdir(parents=True, exist_ok=True)
+
+    # Move files from the generated docs folder to the destination docs folder
+    move_files_recursively(generated_docs_folder, dest_docs_folder)
+
+    ### start process for achieving git commit -m ".." ###
+
+    # if git binary not found we skip the "Git init and commit" process
+
+    if not git_binary_found:
+        print(
+            "\n"
+            "\033[93m[WHAT HAPPENED]\033[0m An error occurred during the Git Repo initialization process.\n"
+            "\033[94m[HOW IT HAPPENED]\033[0m The library '\033[92mgitpython\033[0m' attempted to invoke the Git binary but failed.\n"
+            "\033[95m[WHY IT HAPPENED]\033[0m The Git binary is missing or not accessible in your system's PATH.\n"
+            "\033[96m[HOW TO FIX]\033[0m Install the Git binary on your system:\n"
+            "  - For Linux: \033[92msudo apt install git\033[0m or \033[92msudo yum install git\033[0m\n"
+            "  - For macOS: \033[92mbrew install git\033[0m\n"
+            "  - For Windows: Download and install Git from \033[94mhttps://git-scm.com\033[0m\n"
+            "\033[96m[WHAT HAPPENS NEXT]\033[0m Skipping 'git init and 'commit' process\n"
+        )
+
+    elif request.initialize_git_repo:  # Commit if init flag is True
+        repo = Repo.init(request.project_dir)  # do 'git init'
         try:
-            initialize_git_repo(request.project_dir)
-            request.repo = Repo(request.project_dir)
-            if not is_git_repo_clean(request.project_dir):
+            is_dirty = repo.is_dirty()  # this raises error if no proper ownership
+        except (
+            Exception
+        ) as error:  # git config --global --add safe.directory was not executed
+            # print message and skip "git" process
+            print(
+                "\n"
+                # Print "raw" exception
+                f"\033[93m[Exception]\033[0m {error}.\n"
+                "\033[93m[Git Diff failed]\033[0m An error occurred while running \033[94m'git diff'\033[0m.\n"
+                "\033[94m[HOW IT HAPPENED]\033[0m The library '\033[92mgitpython\033[0m' attempted to invoke the Git binary but failed.\n"
+                "\033[96m[How to fix]\033[0m Run 'git config --global --add safe.directory '\n"
+                "\033[96m[WHAT HAPPENS NEXT]\033[0m Skipping 'git init and 'commit' process\n"
+            )
+        else:  # runs only if git diff was successful
+            # check if the repo is dirty (ie has uncommitted changes)
+            if not is_dirty:  # no uncommited changes
+                print(f"\n - {request.project_dir} has no uncommitted changes.")
+                request.repo = repo
                 git_commit(request)
-            else:
-                print('No changes to commit.')
-        except Exception as error:
-            print('Exception: ' + str(error))
+                print("\033[92m[INFO]\033[0m Git commit was successful.")
+            else:  # No changes to commit.
+                # might happen if cli was called twice with same output directory (-o flag)
+                # and with same gen parameters
+                print(f"\n - {request.project_dir} is clean, no changes to commit.")
     return 0
 
 

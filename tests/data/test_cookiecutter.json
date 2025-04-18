@@ -2,6 +2,7 @@
   "cookiecutter": {
     "project_name": "Pytest Object Getter",
     "project_slug": "pytest-object-getter",
+    "project_type": "module",
     "repo_name": "pytest-object-getter",
     "pkg_name": "pytest_object_getter",
     "full_name": "Konstantinos Lampridis",
@@ -16,12 +17,16 @@
     "initialize_git_repo": "yes",
     "interpreters": {
       "supported-interpreters": [
-        "py38",
-        "py39"
+        "3.6",
+        "3.7",
+        "3.8",
+        "3.9",
+        "3.10",
+        "3.11"
       ]
     },
-    "docs_builder": ["mkdocs", "sphinx"],
-    "rtd_python_version": ["3.8", "3.9", "3.10", "3.11", "3.12"],
+    "docs_builder": "sphinx",
+    "rtd_python_version": "3.10",
     "cicd": "stable",
     "_template": "."
   }

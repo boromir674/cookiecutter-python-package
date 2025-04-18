@@ -137,22 +137,6 @@ def test_cli_offline(
 
     project_dir: str = path.abspath(path.join(gen_proj_dir, config.project_slug))
 
-    # our code introduced WARNING logs due to git commit from issued to GEnerator
-    # assert config.data['initialize_git_repo'] is True and path.exists(
-    #     path.join(project_dir, 'cookie-py.log')
-    # )
-
-    # assert config.data['initialize_git_repo'] is False and not path.exists(
-    #     path.join(project_dir, 'cookie-py.log')
-    # )
-
-    # assert config.data['initialize_git_repo'] is False or path.exists(
-    #     path.join(project_dir, 'cookie-py.log')
-    # ), f"Gen Logs NOT Found in Gen Target Dir! File Contents as string:\n\n{open(path.join(project_dir, 'cookie-py.log')).read()}"
-
-    # assert cookie-py.log is not found in project_dir
-    # assert not path.exists(path.join(project_dir, 'cookie-py.log')), f"Gen Logs Found in Gen Target Dir! File Contents as string:\n\n{open(path.join(project_dir, 'cookie-py.log')).read()}"
-
     assert_files_committed_if_flag_is_on(gen_proj_dir, config)
 
     # Assert Files found at runtime in Generated Project Root Dir are the expected ones
