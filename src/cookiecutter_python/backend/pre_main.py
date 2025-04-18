@@ -1,5 +1,6 @@
 from .helpers import parse_context
 from .hosting_services import Engine
+from .load_config import get_interpreters_from_yaml
 
 
 def pre_main(request):
@@ -51,15 +52,9 @@ def pre_main(request):
                 **user_input,
             }
         )
-
-    else:
-        if request.config_file:
-            # just update interpreters cookiecutter extra_context
-            from .load_config import get_interpreters_from_yaml
-
-            interpreters = get_interpreters_from_yaml(request.config_file)
-            if interpreters:
-                _context['interpreters'] = interpreters
+    elif request.config_file and bool(interpreters := get_interpreters_from_yaml(request.config_file)):
+        # just update interpreters cookiecutter extra_context
+        _context['interpreters'] = interpreters
 
     request.extra_context = dict(_context)
     return request
