@@ -342,79 +342,184 @@ def move_files_recursively(src_folder: Path, dest_folder: Path):
         # Directory is not empty (e.g., due to permission issues or race conditions)
         pass
 
+###### V1 POST HOOK
+
+# def post_hook():
+#     """Delete irrelevant to Project Type files and optionally do git commit."""
+#     request = get_request()
+#     # Delete gen Files related to
+#     #  - different Project Type
+#     #  - related to different documentation builder tool"""
+#     post_file_removal(request)
+
+#     # remove "unintentional logs" file, if it exists and it is empty
+#     potentially_spawned_log_file = Path(request.project_dir) / FILE_TARGET_LOGS
+#     if potentially_spawned_log_file.exists():
+#         _take_care_of_logs(potentially_spawned_log_file)
+
+#     # "destructure" data
+#     docs_builder: str = request.docs_extra_info[request.docs_website['builder']]
+
+#     generated_docs_folder: Path = Path(request.project_dir) / docs_builder
+#     dest_docs_folder = Path(request.project_dir) / 'docs'
+
+#     # V3: support -f flag
+#     dest_docs_folder.mkdir(parents=True, exist_ok=True)
+
+#     # Move files from the generated docs folder to the destination docs folder
+#     move_files_recursively(generated_docs_folder, dest_docs_folder)
+
+#     ### start process for achieving git commit -m ".." ###
+
+#     # if git binary not found we skip the "Git init and commit" process
+
+#     if not git_binary_found:
+#         print(
+#             "\n"
+#             "\033[93m[WHAT HAPPENED]\033[0m An error occurred during the Git Repo initialization process.\n"
+#             "\033[94m[HOW IT HAPPENED]\033[0m The library '\033[92mgitpython\033[0m' attempted to invoke the Git binary but failed.\n"
+#             "\033[95m[WHY IT HAPPENED]\033[0m The Git binary is missing or not accessible in your system's PATH.\n"
+#             "\033[96m[HOW TO FIX]\033[0m Install the Git binary on your system:\n"
+#             "  - For Linux: \033[92msudo apt install git\033[0m or \033[92msudo yum install git\033[0m\n"
+#             "  - For macOS: \033[92mbrew install git\033[0m\n"
+#             "  - For Windows: Download and install Git from \033[94mhttps://git-scm.com\033[0m\n"
+#             "\033[96m[WHAT HAPPENS NEXT]\033[0m Skipping 'git init and 'commit' process\n"
+#         )
+
+#     elif request.initialize_git_repo:  # Commit if init flag is True
+#         repo = Repo.init(request.project_dir)  # do 'git init'
+#         try:
+#             is_dirty = repo.is_dirty()  # this raises error if no proper ownership
+#         except (
+#             Exception
+#         ) as error:  # git config --global --add safe.directory was not executed
+#             # print message and skip "git" process
+#             print(
+#                 "\n"
+#                 # Print "raw" exception
+#                 f"\033[93m[Exception]\033[0m {error}.\n"
+#                 "\033[93m[Git Diff failed]\033[0m An error occurred while running \033[94m'git diff'\033[0m.\n"
+#                 "\033[94m[HOW IT HAPPENED]\033[0m The library '\033[92mgitpython\033[0m' attempted to invoke the Git binary but failed.\n"
+#                 "\033[96m[How to fix]\033[0m Run 'git config --global --add safe.directory '\n"
+#                 "\033[96m[WHAT HAPPENS NEXT]\033[0m Skipping 'git init and 'commit' process\n"
+#             )
+#         else:  # runs only if git diff was successful
+#             # check if the repo is dirty (ie has uncommitted changes)
+#             if not is_dirty:  # no uncommited changes
+#                 print(f"\n - {request.project_dir} has no uncommitted changes.")
+#                 request.repo = repo
+#                 git_commit(request)
+#                 print("\033[92m[INFO]\033[0m Git commit was successful.")
+#             else:  # No changes to commit.
+#                 # might happen if cli was called twice with same output directory (-o flag)
+#                 # and with same gen parameters
+#                 print(f"\n - {request.project_dir} is clean, no changes to commit.")
+#     return 0
+
+###### v2 POST HOOK
 
 def post_hook():
     """Delete irrelevant to Project Type files and optionally do git commit."""
     request = get_request()
-    # Delete gen Files related to
-    #  - different Project Type
-    #  - related to different documentation builder tool"""
+
+    # Step 1: Remove irrelevant files
+    _remove_irrelevant_files(request)
+
+    # Step 2: Handle accidental log files
+    _handle_logs(request)
+
+    # Step 3: Move generated docs to the destination folder
+    _move_generated_docs(request)
+
+    # Step 4: Initialize Git repository and commit changes
+    _initialize_and_commit_git_repo(request)
+    return 0
+
+
+def _remove_irrelevant_files(request):
+    """Remove files and folders that are not relevant to the project type or configuration."""
     post_file_removal(request)
 
-    # remove "unintentional logs" file, if it exists and it is empty
+
+def _handle_logs(request):
+    """Handle accidental log files created during project generation."""
     potentially_spawned_log_file = Path(request.project_dir) / FILE_TARGET_LOGS
     if potentially_spawned_log_file.exists():
         _take_care_of_logs(potentially_spawned_log_file)
 
-    # "destructure" data
-    docs_builder: str = request.docs_extra_info[request.docs_website['builder']]
 
+def _move_generated_docs(request):
+    """Move generated documentation files to the destination folder."""
+    docs_builder: str = request.docs_extra_info[request.docs_website['builder']]
     generated_docs_folder: Path = Path(request.project_dir) / docs_builder
     dest_docs_folder = Path(request.project_dir) / 'docs'
 
-    # V3: support -f flag
+    # Ensure the destination folder exists
     dest_docs_folder.mkdir(parents=True, exist_ok=True)
 
     # Move files from the generated docs folder to the destination docs folder
     move_files_recursively(generated_docs_folder, dest_docs_folder)
 
-    ### start process for achieving git commit -m ".." ###
 
-    # if git binary not found we skip the "Git init and commit" process
-
+def _initialize_and_commit_git_repo(request):
+    """Initialize a Git repository and commit changes if required."""
     if not git_binary_found:
-        print(
-            "\n"
-            "\033[93m[WHAT HAPPENED]\033[0m An error occurred during the Git Repo initialization process.\n"
-            "\033[94m[HOW IT HAPPENED]\033[0m The library '\033[92mgitpython\033[0m' attempted to invoke the Git binary but failed.\n"
-            "\033[95m[WHY IT HAPPENED]\033[0m The Git binary is missing or not accessible in your system's PATH.\n"
-            "\033[96m[HOW TO FIX]\033[0m Install the Git binary on your system:\n"
-            "  - For Linux: \033[92msudo apt install git\033[0m or \033[92msudo yum install git\033[0m\n"
-            "  - For macOS: \033[92mbrew install git\033[0m\n"
-            "  - For Windows: Download and install Git from \033[94mhttps://git-scm.com\033[0m\n"
-            "\033[96m[WHAT HAPPENS NEXT]\033[0m Skipping 'git init and 'commit' process\n"
-        )
+        _handle_missing_git_binary()
+        return
 
-    elif request.initialize_git_repo:  # Commit if init flag is True
-        repo = Repo.init(request.project_dir)  # do 'git init'
-        try:
-            is_dirty = repo.is_dirty()  # this raises error if no proper ownership
-        except (
-            Exception
-        ) as error:  # git config --global --add safe.directory was not executed
-            # print message and skip "git" process
-            print(
-                "\n"
-                # Print "raw" exception
-                f"\033[93m[Exception]\033[0m {error}.\n"
-                "\033[93m[Git Diff failed]\033[0m An error occurred while running \033[94m'git diff'\033[0m.\n"
-                "\033[94m[HOW IT HAPPENED]\033[0m The library '\033[92mgitpython\033[0m' attempted to invoke the Git binary but failed.\n"
-                "\033[96m[How to fix]\033[0m Run 'git config --global --add safe.directory '\n"
-                "\033[96m[WHAT HAPPENS NEXT]\033[0m Skipping 'git init and 'commit' process\n"
-            )
-        else:  # runs only if git diff was successful
-            # check if the repo is dirty (ie has uncommitted changes)
-            if not is_dirty:  # no uncommited changes
-                print(f"\n - {request.project_dir} has no uncommitted changes.")
-                request.repo = repo
-                git_commit(request)
-                print("\033[92m[INFO]\033[0m Git commit was successful.")
-            else:  # No changes to commit.
-                # might happen if cli was called twice with same output directory (-o flag)
-                # and with same gen parameters
-                print(f"\n - {request.project_dir} is clean, no changes to commit.")
-    return 0
+    if request.initialize_git_repo:
+        _try_to_commit_changes(request)
 
+
+def _handle_missing_git_binary():
+    """Handle the case where the Git binary is not found."""
+    print(
+        "\n"
+        "\033[93m[WHAT HAPPENED]\033[0m An error occurred during the Git Repo initialization process.\n"
+        "\033[94m[HOW IT HAPPENED]\033[0m The library '\033[92mgitpython\033[0m' attempted to invoke the Git binary but failed.\n"
+        "\033[95m[WHY IT HAPPENED]\033[0m The Git binary is missing or not accessible in your system's PATH.\n"
+        "\033[96m[HOW TO FIX]\033[0m Install the Git binary on your system:\n"
+        "  - For Linux: \033[92msudo apt install git\033[0m or \033[92msudo yum install git\033[0m\n"
+        "  - For macOS: \033[92mbrew install git\033[0m\n"
+        "  - For Windows: Download and install Git from \033[94mhttps://git-scm.com\033[0m\n"
+        "\033[96m[WHAT HAPPENS NEXT]\033[0m Skipping 'git init and 'commit' process\n"
+    )
+
+
+def _try_to_commit_changes(request):
+    """Attempt to initialize a Git repository and commit changes."""
+    repo = Repo.init(request.project_dir)  # do 'git init'
+    try:
+        is_dirty = repo.is_dirty()  # this raises error if no proper ownership
+    except Exception as error:
+        _handle_git_error(error)
+    else:
+        _process_commit(request, repo, is_dirty)
+
+
+def _handle_git_error(error):
+    """Handle errors that occur during Git operations."""
+    print(
+        "\n"
+        f"\033[93m[Exception]\033[0m {error}.\n"
+        "\033[93m[Git Diff failed]\033[0m An error occurred while running \033[94m'git diff'\033[0m.\n"
+        "\033[94m[HOW IT HAPPENED]\033[0m The library '\033[92mgitpython\033[0m' attempted to invoke the Git binary but failed.\n"
+        "\033[96m[How to fix]\033[0m Run 'git config --global --add safe.directory '\n"
+        "\033[96m[WHAT HAPPENS NEXT]\033[0m Skipping 'git init and 'commit' process\n"
+    )
+
+
+def _process_commit(request, repo, is_dirty):
+    """Process the Git commit if the repository is initialized successfully."""
+    if not is_dirty:  # No uncommitted changes
+        print(f"\n - {request.project_dir} has no uncommitted changes.")
+        request.repo = repo
+        git_commit(request)
+        print("\033[92m[INFO]\033[0m Git commit was successful.")
+    else:  # No changes to commit
+        print(f"\n - {request.project_dir} is clean, no changes to commit.")
+
+########
 
 def main():
     """Delete irrelevant to Project Type files and optionally do git commit."""
