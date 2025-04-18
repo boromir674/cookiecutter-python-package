@@ -38,7 +38,7 @@ jobs:
     uses: ./.github/workflows/test-python.yml
     with:
       default_trigger: false
-      override: '${{ vars.OV_SDIST }}'
+      override: '${{ vars.OV_SDIST || "false" }}'
       installation_mode: 'sdist'
       python_version: '3.10'
       platform: 'ubuntu-latest'
@@ -48,7 +48,7 @@ jobs:
     uses: ./.github/workflows/test-python.yml
     with:
       default_trigger: true
-      override: '${{ vars.OV_WHEEL }}'
+      override: '${{ vars.OV_WHEEL || "false" }}'
       installation_mode: 'wheel'
       upload_distro: true
       python_version: '3.10'
