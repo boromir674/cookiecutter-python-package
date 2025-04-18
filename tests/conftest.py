@@ -650,7 +650,11 @@ def get_expected_generated_files(
         ## DERIVE expected files inside 'docs' gen dir
 
         def b(docs_builder_id):
-            return '{% if cookiecutter.docs_builder == "' + docs_builder_id + '" %}docs{% else %}PyGen_TO_DELETE{% endif %}'
+            return (
+                '{% if cookiecutter.docs_builder == "'
+                + docs_builder_id
+                + '" %}docs{% else %}PyGen_TO_DELETE{% endif %}'
+            )
 
         # Find where each Docs Builder 'stores' its Template Files (ie source docs)
         selected_docs_template_dir: str = b(user_docs_builder_id)
@@ -706,10 +710,13 @@ def get_expected_generated_files(
         for (
             docs_builder_id,
             builder_docs_folder_name,
-        ) in [(
-            docs_builder_id,
-            b(docs_builder_id),
-        ) for docs_builder_id in {'mkdocs', 'sphinx'}]:  # TODO: centralize this
+        ) in [
+            (
+                docs_builder_id,
+                b(docs_builder_id),
+            )
+            for docs_builder_id in {'mkdocs', 'sphinx'}
+        ]:  # TODO: centralize this
             for file_path in iter(
                 (
                     x
@@ -830,9 +837,9 @@ def get_expected_generated_files(
             assert type(parts) is tuple, f"Sanity check fail: {parts}"
             assert len(parts) > 0, f"Sanity check fail: {parts}"
             joined_parts: str = SEP.join(parts)
-            joined_parts = joined_parts.replace(r'{{ cookiecutter.pkg_name }}', pkg_name).replace(
-                r'{{ cookiecutter.project_slug }}', config.data['project_slug']
-            )
+            joined_parts = joined_parts.replace(
+                r'{{ cookiecutter.pkg_name }}', pkg_name
+            ).replace(r'{{ cookiecutter.project_slug }}', config.data['project_slug'])
 
             expected_file_parts = joined_parts.split(SEP)
             assert (

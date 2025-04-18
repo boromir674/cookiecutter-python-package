@@ -282,6 +282,7 @@ def git_commit(request):
 
 ###### v2 POST HOOK
 
+
 def post_hook():
     """Delete irrelevant to Project Type files and optionally do git commit."""
     request = get_request()
@@ -356,6 +357,7 @@ def _process_commit(request, repo, is_dirty):
         print("\033[92m[INFO]\033[0m Git commit was successful.")
     else:  # No changes to commit
         print(f"\n - {request.project_dir} is clean, no changes to commit.")
+
 
 ########
 

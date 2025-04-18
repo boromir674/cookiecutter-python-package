@@ -76,7 +76,6 @@ def sdist_expected_correct_file_structure():
         'src/cookiecutter_python/{{ cookiecutter.project_slug }}/scripts/visualize-ga-workflow.py',
         'src/cookiecutter_python/{{ cookiecutter.project_slug }}/setup.cfg',
         'src/cookiecutter_python/{{ cookiecutter.project_slug }}/tox.ini',
-
         'src/cookiecutter_python/_find_lib.py',
         'src/cookiecutter_python/__init__.py',
         'src/cookiecutter_python/__main__.py',
