@@ -1,8 +1,9 @@
+import typing as t
 from importlib import import_module
 from inspect import isclass
 from pathlib import Path
 from pkgutil import iter_modules
-import typing as t
+
 from ._find_lib import find_lib
 
 
