@@ -10,7 +10,7 @@ def test_git_sdk_init(tmp_path: Path):
     # sanity that no files exist
     assert not any(project_folder.iterdir())
     # WHEN we call the git_sdk_init function
-    repo = Repo.init(project_folder)
+    _ = Repo.init(project_folder)
     # THEN a .git folder should be created
     assert (project_folder / ".git").exists()
 
@@ -42,6 +42,5 @@ def test_git_sdk_is_dirty(tmp_path: Path):
     # with repo.config_writer(config_level='global') as cw:
     #     # Add the safe.directory entry
     #     cw.add_value('safe', 'directory', str(project_folder))
-    
-    
+
     # cr = repo.config_reader()  # use reader to assert writer effect

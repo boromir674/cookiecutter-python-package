@@ -982,6 +982,7 @@ def assert_files_committed_if_flag_is_on(
 
 # Proper SUBPROCESS wrapper
 
+
 @pytest.fixture(scope="session")
 def my_run_subprocess():
     import subprocess
@@ -1046,17 +1047,12 @@ def my_run_subprocess():
     return execute_command_in_subprocess
 
 
-
-
 @pytest.fixture
 def dat(distro_loc: Path):
     import json
     from collections import OrderedDict
 
-    from software_patterns import SubclassRegistry
-
-    my_dir: str = Path(__file__).resolve().parent
-
+    my_dir = Path(__file__).resolve().parent
 
     # Read JSON data from 'tests/data/test_cookiecutter.json'
     # The JSON schema and values MUST reflect a valid internal state of the

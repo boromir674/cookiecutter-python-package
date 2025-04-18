@@ -99,12 +99,12 @@ def get_main_with_mocked_template(get_object):
 
 def test_main_with_invalid_interpreters(get_main_with_mocked_template, dat):
     from collections import OrderedDict
-    import json
+
     result = get_main_with_mocked_template(
         overrides={
-            "get_context": lambda: lambda: OrderedDict(dat, **dict(
-                interpreters={'supported-interpreters': ["3.5", "3.10"]}
-            ))
+            "get_context": lambda: lambda: OrderedDict(
+                dat, **dict(interpreters={'supported-interpreters': ["3.5", "3.10"]})
+            )
         }
     )()
     assert result == 1  # exit code of 1 indicates failed execution
@@ -112,6 +112,7 @@ def test_main_with_invalid_interpreters(get_main_with_mocked_template, dat):
 
 def test_main_with_invalid_module_name(get_main_with_mocked_template, dat):
     from collections import OrderedDict
+
     result = get_main_with_mocked_template(
         overrides={
             "get_context": lambda: lambda: OrderedDict(dat, **{'pkg_name': '121212'})
@@ -122,6 +123,7 @@ def test_main_with_invalid_module_name(get_main_with_mocked_template, dat):
 
 def test_main_with_invalid_version(get_main_with_mocked_template, dat):
     from collections import OrderedDict
+
     main = get_main_with_mocked_template(
         overrides={
             "get_context": lambda: lambda: OrderedDict(dat, **{'version': 'gg0.0.1'})
@@ -131,19 +133,21 @@ def test_main_with_invalid_version(get_main_with_mocked_template, dat):
     assert result == 1  # exit code of 1 indicates failed execution
 
 
-def test_main_with_found_pre_existing_pypi_package(
-    get_main_with_mocked_template, dat
-):
+def test_main_with_found_pre_existing_pypi_package(get_main_with_mocked_template, dat):
     from collections import OrderedDict
+
     EXISTING_MODULE_NAME = 'so_magic'
-    EXISTING_PYPI_PKG_NAME = EXISTING_MODULE_NAME.replace('_', '-'),
+    EXISTING_PYPI_PKG_NAME = (EXISTING_MODULE_NAME.replace('_', '-'),)
 
     result = get_main_with_mocked_template(
         overrides={
-            "get_context": lambda: lambda: OrderedDict(dat, **{
-                'module_name': EXISTING_MODULE_NAME,
-                'pypi_package': EXISTING_PYPI_PKG_NAME
-            })
+            "get_context": lambda: lambda: OrderedDict(
+                dat,
+                **{
+                    'module_name': EXISTING_MODULE_NAME,
+                    'pypi_package': EXISTING_PYPI_PKG_NAME,
+                },
+            )
         }
     )()
     assert result == 0  # exit code of 1 indicates failed execution

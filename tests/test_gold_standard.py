@@ -111,7 +111,6 @@ def gen_gs_project(
         if sys.platform != 'win32':
             assert not UNINTENTIONALLY_PLACED_LOG_FILE.exists()
 
-
     return gen_project_dir
 
 

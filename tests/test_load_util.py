@@ -166,9 +166,7 @@ def test_calling_load_with_input_arg_Simple(
     interface = simple_interface_module.Simple
 
     # WHEN 'load' is called
-    objects = load(
-        interface, module='.'.join((Path(DISTRO_NAME) / "lib").parts)
-    )
+    objects = load(interface, module='.'.join((Path(DISTRO_NAME) / "lib").parts))
 
     # THEN the function returns a list of classes that implement the interface
     assert len(objects) == 2

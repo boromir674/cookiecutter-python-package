@@ -9,11 +9,14 @@ def test_is_git_repo_clean_returns_true_for_new_repo(my_run_subprocess, tmp_path
 
     # GIVEN it is initialized as a git repository
     from git import Repo
+
     repo = Repo.init(f"{git_folder}")
     assert (git_folder / '.git').exists()
     assert (git_folder / '.git').is_dir()
 
-    result = my_run_subprocess('git', *['status', '--porcelain'],
+    result = my_run_subprocess(
+        'git',
+        *['status', '--porcelain'],
         cwd=str(git_folder),
         check=False,  # prevent raising exception
     )

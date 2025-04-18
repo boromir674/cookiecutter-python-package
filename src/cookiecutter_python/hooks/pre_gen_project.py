@@ -1,5 +1,4 @@
 """Pre Cookie Hook: Templated File with jinja2 syntax"""
-import typing as t
 import json
 import logging
 import sys

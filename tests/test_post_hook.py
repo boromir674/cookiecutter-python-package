@@ -67,7 +67,9 @@ def create_context_from_emulated_project(dat):
         Path(path.join(project_dir, 'docs-sphinx', 'conf.py')).touch()
         # create at least one level of nest to make cover more post_removal code
         mkdir(path.join(project_dir, 'docs-sphinx', 'contents'))
-        Path(path.join(project_dir, 'docs-sphinx', 'contents', '10_introduction.rst')).touch()
+        Path(
+            path.join(project_dir, 'docs-sphinx', 'contents', '10_introduction.rst')
+        ).touch()
 
         mkdir(path.join(project_dir, 'scripts'))
         # Path(path.join(project_dir, 'scripts', 'gen_api_refs_pages.py')).touch()
@@ -78,16 +80,19 @@ def create_context_from_emulated_project(dat):
 
         # Generate, for given name and project_dir
         project_type: str = kwargs.pop('project_type', 'module+cli')
-        
+
         from collections import OrderedDict
-        emulated_context = OrderedDict(dat, **dict(
-            project_dir=project_dir,
-            initialize_git_repo='yes',  # affects post_gen_project.py
-            project_type=project_type,
-            pkg_name=name,
-            **kwargs,
-        ))
-        
+
+        emulated_context = OrderedDict(
+            dat,
+            **dict(
+                project_dir=project_dir,
+                initialize_git_repo='yes',  # affects post_gen_project.py
+                project_type=project_type,
+                pkg_name=name,
+                **kwargs,
+            ),
+        )
 
         # Automatically, discover what files to create for an accurate emulated project
         ## Project Type Dependend Files ##
@@ -125,7 +130,7 @@ def create_context_from_emulated_project(dat):
         ) -> t.Iterator[UniqueFile]:
             for proj_unique_files_from_request in project_types.values():
                 for file_path_parts_tuple in proj_unique_files_from_request(
-                    type('GG', (), {'module_name': emulated_context['pkg_name']})
+                    type('GG', (), {'module_name': emulated_context['pkg_name']})()
                 ):
                     assert type(file_path_parts_tuple) is tuple
                     yield file_path_parts_tuple
@@ -219,42 +224,6 @@ def get_post_gen_main(get_object):
     ):
         """"""
 
-        def mock_get_request():
-            # to avoid bugs we require empty project dir, before emulated generation
-            absolute_proj_dir = Path(project_dir).absolute()
-            assert len(list(absolute_proj_dir.iterdir())) == 0
-
-            project_type: str = kwargs.pop(
-                'project_type', 'module+cli' if add_cli else 'module'
-            )
-            # Create a dummy/minimal Project EMULATING file structure, before Post Gen Hook
-            emulated_context = context_from_emulated_project(
-                project_dir, name=name, project_type=project_type, **kwargs
-            )
-            # sanity check that sth got generated
-            assert len(list(absolute_proj_dir.iterdir())) > 0
-
-            # Create Extra Empty files, on-demand to support diverse test cases
-            if extra_files:
-                for _file_path in extra_files:
-                    if isinstance(_file_path, str):
-                        file_path = (_file_path,)
-                    absolute_proj_dir.joinpath(*file_path).touch()
-
-            # Create Extra files with dummy content, to Emulate, to support diverse test cases
-            if extra_non_empty_files:
-                for _file_path in extra_non_empty_files:
-                    if isinstance(_file_path, str):
-                        file_path = (_file_path,)
-                    with open(absolute_proj_dir.joinpath(*file_path), 'w') as _file:
-                        _file.write('print("Hello World!")\n')
-
-            # SANITY CHECK that request has cicd str value, otherwise the test cannot continue
-            assert isinstance(
-                emulated_context['cicd'], str
-            ), f"Mocked Reqeust is missing cicd str value: {emulated_context['cicd']}"
-            return emulated_context
-
         # Create Alternative custom Mock Objects to use in Monkeypatch
         from sys import version_info
 
@@ -273,13 +242,12 @@ def get_post_gen_main(get_object):
                 'project_type', 'module+cli' if add_cli else 'module'
             )
             # Create a dummy/minimal Project EMULATING file structure, before Post Gen Hook
-            
+
             emulated_context = context_from_emulated_project(
                 project_dir, name=name, project_type=project_type, **kwargs
             )
             assert type(emulated_context['initialize_git_repo']) is not bool
             assert emulated_context['initialize_git_repo'] in {'yes', 'no'}
-
 
             # sanity check that sth got generated
             assert len(list(absolute_proj_dir.iterdir())) > 0
@@ -304,7 +272,7 @@ def get_post_gen_main(get_object):
                 emulated_context['cicd'], str
             ), f"Mocked Request is missing cicd str value: {emulated_context['cicd']}"
             return emulated_context
-            
+
         # Monkeypatch with MOCKs the 'sys.exit' and 'sys.version_info' objects
         main_method = get_object(
             "main",
@@ -315,12 +283,20 @@ def get_post_gen_main(get_object):
                 'get_context': lambda: mock_get_context,
                 'GEN_PROJ_LOC': lambda: str(project_dir),
                 # Monkeypatch the 'sys' with alternative 'exit' and 'version_info' attributes
-                'sys': lambda: type('MockedSys', (), {
+                'sys': lambda: type(
+                    'MockedSys',
+                    (),
+                    {
                         'exit': _emulated_exit,
-                        'version_info': type('Mocked_version_info', (), {
+                        'version_info': type(
+                            'Mocked_version_info',
+                            (),
+                            {
                                 'minor': _PYTHON_MINOR_VERSION,
-                        }),
-                }),
+                            },
+                        ),
+                    },
+                ),
             },
         )
 
