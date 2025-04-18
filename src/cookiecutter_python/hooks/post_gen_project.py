@@ -327,16 +327,11 @@ def move_files_recursively(src_folder: Path, dest_folder: Path):
     """
     for item in src_folder.iterdir():
         target_path = dest_folder / item.name
-        logger.info(
-            f"Checking {item.relative_to(src_folder)} for Target: {target_path}"
-        )
         if item.is_file():
             # Overwrite the file if it exists
             shutil.move(str(item), str(target_path))
-        elif item.is_dir():
-            # Skip the folder if it already exists
-            if not target_path.exists():
-                target_path.mkdir(parents=True, exist_ok=True)
+        else:  # if item.is_dir():
+            target_path.mkdir(parents=True, exist_ok=True)
             # Recursively process the contents of the directory
             move_files_recursively(item, target_path)
 
