@@ -3,6 +3,18 @@ Changelog
 =========
 
 
+2.5.3 (2024-04-18)
+==================
+
+Initial goal was to simplify the tests.  
+In the process:
+
+- we did that
+- increased code coverage
+- fixed a bug with the -f flag when used with the same gen params and on the same output location folder
+- improved user experience on the cli.terminal with better messages
+
+
 2.5.2 (2024-04-14)
 ==================
 

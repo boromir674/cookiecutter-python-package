@@ -275,9 +275,9 @@ Free/Libre and Open Source Software (FLOSS)
 
 .. Github Releases & Tags
 
-.. |commits_since_specific_tag_on_master| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/v2.5.2/master?color=blue&logo=github
+.. |commits_since_specific_tag_on_master| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/v2.5.3/master?color=blue&logo=github
     :alt: GitHub commits since tagged version (branch)
-    :target: https://github.com/boromir674/cookiecutter-python-package/compare/v2.5.2..master
+    :target: https://github.com/boromir674/cookiecutter-python-package/compare/v2.5.3..master
 
 .. |commits_since_latest_github_release| image:: https://img.shields.io/github/commits-since/boromir674/cookiecutter-python-package/latest?color=blue&logo=semver&sort=semver
     :alt: GitHub commits since latest release (by SemVer)
@@ -312,9 +312,10 @@ Free/Libre and Open Source Software (FLOSS)
 .. Code Climate CI
 .. Code maintainability & Technical Debt
 
+
 .. |maintainability| image:: https://api.codeclimate.com/v1/badges/1d347d7dfaa134fd944e/maintainability
    :alt: Maintainability
-   :target: https://codeclimate.com/github/boromir674/cookiecutter-python-package/
+   :target: https://codeclimate.com/github/boromir674/cookiecutter-python-package/maintainability
 
 .. |tech-debt| image:: https://img.shields.io/codeclimate/tech-debt/boromir674/cookiecutter-python-package
     :alt: Code Climate technical debt
