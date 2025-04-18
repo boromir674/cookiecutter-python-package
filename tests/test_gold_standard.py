@@ -46,6 +46,16 @@ def gen_gs_project(
     assert gen_project_dir.exists()
     assert gen_project_dir.is_dir()
     assert (gen_project_dir / 'src').exists() and (gen_project_dir / 'src').is_dir()
+    # Ad-hoc sanity checks that docs folder contains all sub-dirs and nested files
+    assert (gen_project_dir / 'docs').exists()
+    assert not (gen_project_dir / 'docs-mkdocs').exists()
+    assert not (gen_project_dir / 'docs-sphinx').exists()
+    assert (gen_project_dir / 'docs').is_dir()
+    assert (gen_project_dir / 'docs' / 'assets').exists()
+    assert (gen_project_dir / 'docs' / 'assets').is_dir()
+    assert (gen_project_dir / 'docs' / 'dev_guides').exists()
+    assert (gen_project_dir / 'docs' / 'dev_guides' / 'docker.md').exists()
+    assert (gen_project_dir / 'docs' / 'dev_guides' / 'docker.md').is_file()
 
     ## Logging file created - Assertions ##
     from cookiecutter_python._logging_config import FILE_TARGET_LOGS

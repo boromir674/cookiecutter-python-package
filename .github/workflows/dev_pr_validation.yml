@@ -187,6 +187,15 @@ jobs:
     outputs:
       PEP_VERSION: ${{ steps.build.outputs.PEP_VERSION }}
 
+  # CODECOV Upload of COVERAGE reports
+  codecov:
+    if: always() && contains(fromJSON('["success", "failure"]'), needs.cross_platform_tests.result)
+    needs: cross_platform_tests
+    uses: ./.github/workflows/codecov-job.yml
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+
   # STATIC CODE ANALYSIS: mypy, ruff, isort, black, bandit, mccabe, prospector, etc
   sca:
     uses: ./.github/workflows/sca-job.yml
@@ -221,35 +230,6 @@ jobs:
       python_version: '3.11'
 
 
-  # CODECOV Upload of COVERAGE reports
-  codecov_coverage_host:
-    if: always() && github.event_name == 'pull_request' && github.base_ref == 'release'
-    runs-on: ubuntu-latest
-    needs: cross_platform_tests
-    steps:
-      - uses: actions/checkout@v4
-      - name: Get Codecov binary
-        run: |
-          curl -Os https://uploader.codecov.io/latest/linux/codecov
-          chmod +x codecov
-
-      - name: Download All Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: coverage
-          pattern: coverage-*
-          merge-multiple: true
-
-      - run: ls -R coverage
-
-      - name: Upload Coverage Reports to Codecov
-        run: |
-          for file in coverage/coverage*.xml; do
-            OS_NAME=$(echo $file | sed -E "s/coverage-(\w\+)-/\1/")
-            PY_VERSION=$(echo $file | sed -E "s/coverage-\w\+-(\d\.)\+/\1/")
-            ./codecov -f $file -e "OS=$OS_NAME,PYTHON=$PY_VERSION" --flags unittests --verbose
-            echo "Sent to Codecov: $file !"
-          done
 
   ## DOCKER BUILD and PUBLISH ON DOCKERHUB ##
   # Ref Page: https://automated-workflows.readthedocs.io/en/main/ref_docker/

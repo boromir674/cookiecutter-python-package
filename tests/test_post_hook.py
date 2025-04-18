@@ -16,7 +16,7 @@ import pytest
 # UPDATE every time a NEW Template File is added to the Generator
 # To increase control on test case behavior, see tests/conftest.py -> 'class HookRequest'
 @pytest.fixture
-def create_request_from_emulated_project(request_factory):
+def create_context_from_emulated_project(dat):
     """Create an emulated Gen Project and return a Request matching it.
 
     An minimal Project structure is automatically created to emulate the
@@ -28,6 +28,7 @@ def create_request_from_emulated_project(request_factory):
 
     #### EMULATED PROJECT STRUCTURE, state before Post Gen Hook
     from os import mkdir, path
+    from pathlib import Path
 
     from cookiecutter_python.hooks.post_gen_project import CLI_ONLY, PYTEST_PLUGIN_ONLY
 
@@ -57,12 +58,18 @@ def create_request_from_emulated_project(request_factory):
 
         # Emulate Docs Builder related files (ie mkdocs and sphinx)
         mkdir(path.join(project_dir, 'docs-mkdocs'))
-        from pathlib import Path
+        mkdir(path.join(project_dir, 'docs-mkdocs', 'dev_guides'))
+        Path(path.join(project_dir, 'docs-mkdocs', 'dev_guides', 'docker.md')).touch()
 
         # Path(path.join(project_dir, 'mkdocs.yml')).touch()
 
         mkdir(path.join(project_dir, 'docs-sphinx'))
         Path(path.join(project_dir, 'docs-sphinx', 'conf.py')).touch()
+        # create at least one level of nest to make cover more post_removal code
+        mkdir(path.join(project_dir, 'docs-sphinx', 'contents'))
+        Path(
+            path.join(project_dir, 'docs-sphinx', 'contents', '10_introduction.rst')
+        ).touch()
 
         mkdir(path.join(project_dir, 'scripts'))
         # Path(path.join(project_dir, 'scripts', 'gen_api_refs_pages.py')).touch()
@@ -73,13 +80,18 @@ def create_request_from_emulated_project(request_factory):
 
         # Generate, for given name and project_dir
         project_type: str = kwargs.pop('project_type', 'module+cli')
-        emulated_post_gen_request = request_factory.post(
-            project_dir=project_dir,
-            initialize_git_repo=True,  # affects post_gen_project.py
-            project_type=project_type,
-            module_name=name,
-            **kwargs,
-            # cicd=kwargs.get('cicd')
+
+        from collections import OrderedDict
+
+        emulated_context = OrderedDict(
+            dat,
+            **dict(
+                project_dir=project_dir,
+                initialize_git_repo='yes',  # affects post_gen_project.py
+                project_type=project_type,
+                pkg_name=name,
+                **kwargs,
+            ),
         )
 
         # Automatically, discover what files to create for an accurate emulated project
@@ -118,7 +130,7 @@ def create_request_from_emulated_project(request_factory):
         ) -> t.Iterator[UniqueFile]:
             for proj_unique_files_from_request in project_types.values():
                 for file_path_parts_tuple in proj_unique_files_from_request(
-                    emulated_post_gen_request
+                    type('GG', (), {'module_name': emulated_context['pkg_name']})()
                 ):
                     assert type(file_path_parts_tuple) is tuple
                     yield file_path_parts_tuple
@@ -155,9 +167,7 @@ def create_request_from_emulated_project(request_factory):
         # theoritically, it should suffice for us to create 'emulated' files, as:
         # Excluding the Docs Builder defined in the Request, create file for all
         # builders in the map
-        requested_docs_builder_id: str = emulated_post_gen_request.docs_website[
-            'builder'
-        ]
+        requested_docs_builder_id: str = emulated_context['docs_builder']
 
         assert requested_docs_builder_id == 'sphinx'
         assert builder_id_2_extra_files_map == {
@@ -180,7 +190,7 @@ def create_request_from_emulated_project(request_factory):
             with open(path.join(project_dir, *path_tuple), 'w') as _file:
                 _file.write('print("Hello World!")\n')
 
-        return emulated_post_gen_request
+        return emulated_context
 
     return emulate_project_before_post_gen_hook
 
@@ -203,7 +213,7 @@ def get_post_gen_main(get_object):
     name = 'gg'
 
     def get_post_gen_hook_project_main(
-        request_from_emulated_project,
+        context_from_emulated_project,
         add_cli: bool,
         project_dir: Path,
         extra_files: t.Optional[t.List[t.Union[str, t.Tuple[str, ...]]]] = None,
@@ -214,7 +224,16 @@ def get_post_gen_main(get_object):
     ):
         """"""
 
-        def mock_get_request():
+        # Create Alternative custom Mock Objects to use in Monkeypatch
+        from sys import version_info
+
+        _PYTHON_MINOR_VERSION = version_info.minor
+
+        def _emulated_exit(exit_code: int):
+            assert exit_code == 0
+            return exit_code
+
+        def mock_get_context():
             # to avoid bugs we require empty project dir, before emulated generation
             absolute_proj_dir = Path(project_dir).absolute()
             assert len(list(absolute_proj_dir.iterdir())) == 0
@@ -223,9 +242,13 @@ def get_post_gen_main(get_object):
                 'project_type', 'module+cli' if add_cli else 'module'
             )
             # Create a dummy/minimal Project EMULATING file structure, before Post Gen Hook
-            emulated_request = request_from_emulated_project(
+
+            emulated_context = context_from_emulated_project(
                 project_dir, name=name, project_type=project_type, **kwargs
             )
+            assert type(emulated_context['initialize_git_repo']) is not bool
+            assert emulated_context['initialize_git_repo'] in {'yes', 'no'}
+
             # sanity check that sth got generated
             assert len(list(absolute_proj_dir.iterdir())) > 0
 
@@ -246,18 +269,9 @@ def get_post_gen_main(get_object):
 
             # SANITY CHECK that request has cicd str value, otherwise the test cannot continue
             assert isinstance(
-                emulated_request.cicd, str
-            ), f"Mocked Reqeust is missing cicd str value: {emulated_request.cicd}"
-            return emulated_request
-
-        # Create Alternative custom Mock Objects to use in Monkeypatch
-        from sys import version_info
-
-        _PYTHON_MINOR_VERSION = version_info.minor
-
-        def _emulated_exit(exit_code: int):
-            assert exit_code == 0
-            return exit_code
+                emulated_context['cicd'], str
+            ), f"Mocked Request is missing cicd str value: {emulated_context['cicd']}"
+            return emulated_context
 
         # Monkeypatch with MOCKs the 'sys.exit' and 'sys.version_info' objects
         main_method = get_object(
@@ -265,7 +279,9 @@ def get_post_gen_main(get_object):
             "cookiecutter_python.hooks.post_gen_project",
             overrides={  # objects from above namespace to monkeypatch
                 # Monkeypatch the 'get_request' to defer from jinja2 rendering
-                'get_request': lambda: mock_get_request,
+                # 'get_request': lambda: mock_get_request,
+                'get_context': lambda: mock_get_context,
+                'GEN_PROJ_LOC': lambda: str(project_dir),
                 # Monkeypatch the 'sys' with alternative 'exit' and 'version_info' attributes
                 'sys': lambda: type(
                     'MockedSys',
@@ -299,10 +315,11 @@ def get_post_gen_main(get_object):
     ids=['add-cli', 'do-not-add-cli'],
 )
 def test_main(
-    add_cli,
-    get_post_gen_main,
-    create_request_from_emulated_project,
-    assert_initialized_git,
+    add_cli,  # Test Case
+    get_post_gen_main,  # CALLABLE to monkeypatch
+    # create_request_from_emulated_project,  # REQUEST
+    create_context_from_emulated_project,  # CONTEXT
+    assert_initialized_git,  # Assertion
     tmpdir,
 ):
     """Verify post_gen_project behaviour, with emulated generated project."""
@@ -314,24 +331,15 @@ def test_main(
     )
 
     post_hook_main = get_post_gen_main(
-        create_request_from_emulated_project,
+        create_context_from_emulated_project,
         add_cli,  # control whether to add CLI or not, via request
         tmp_target_gen_dir,
     )
     # THEN the Emulated Generated Project, contains all the necessary files
     # that are required for the post_gen_project to run successfully
 
-    # Verify emulated files, which are going to be removed in Post gen Hook, exist
     expexpected_gen_dir = Path(tmp_target_gen_dir).absolute()
-    # check for mkdocs.yml file
-    # assert (expexpected_gen_dir / 'src').exists()
-    # assert (expexpected_gen_dir / 'src').is_dir()
-    # assert (expexpected_gen_dir / 'mkdocs.yml').exists()
-    # assert (expexpected_gen_dir / 'mkdocs.yml').is_file()
 
-    # Run the Post Gen Hook, with a custom Request, and make sure
-    # there is an Emulated Generated Project, with all the necessary files
-    # that are required for the post_gen_project to run successfully
     # WHEN the post_gen_project.main is called
     result = post_hook_main()  # raises error, if post gen exit code != 0
 
@@ -343,7 +351,7 @@ def test_main(
 
 # REQUIRES well maintained emulated generated project (fixtures)
 def test_post_file_removal_deletes_empty_logfile_if_found(
-    get_post_gen_main, create_request_from_emulated_project, tmp_path
+    get_post_gen_main, create_context_from_emulated_project, tmp_path
 ):
     # GIVEN a temporary directory, to store the emulated generated project
     project_dir: Path = tmp_path
@@ -356,7 +364,7 @@ def test_post_file_removal_deletes_empty_logfile_if_found(
     extra_files: t.List[str] = [FILE_TARGET_LOGS]
 
     post_hook_main = get_post_gen_main(
-        create_request_from_emulated_project,
+        create_context_from_emulated_project,
         True,  # True -> with module+cli, else module
         # gen_output_dir,
         tmp_path,
@@ -375,7 +383,7 @@ def test_post_file_removal_deletes_empty_logfile_if_found(
 
 # REQUIRES well maintained emulated generated project (fixtures)
 def test_post_file_removal_keeps_logfile_if_found_non_empty(
-    get_post_gen_main, create_request_from_emulated_project, tmp_path
+    get_post_gen_main, create_context_from_emulated_project, tmp_path
 ):
     # GIVEN a temporary directory, to store the emulated generated project
     project_dir: Path = tmp_path
@@ -386,7 +394,7 @@ def test_post_file_removal_keeps_logfile_if_found_non_empty(
     from cookiecutter_python._logging_config import FILE_TARGET_LOGS
 
     post_hook_main = get_post_gen_main(
-        create_request_from_emulated_project,
+        create_context_from_emulated_project,
         True,  # True -> with module+cli, else module
         # gen_output_dir,
         tmp_path,
@@ -406,7 +414,7 @@ def test_post_file_removal_keeps_logfile_if_found_non_empty(
 
 
 def test_stable_cicd_was_selected_and_worked(
-    tmpdir, create_request_from_emulated_project, get_post_gen_main
+    tmpdir, create_context_from_emulated_project, get_post_gen_main
 ):
     from pathlib import Path
 
@@ -416,7 +424,7 @@ def test_stable_cicd_was_selected_and_worked(
     )
 
     post_hook_main = get_post_gen_main(
-        create_request_from_emulated_project,
+        create_context_from_emulated_project,
         False,  # control whether to add CLI or not, via request
         tmp_target_gen_dir,
         # cicd='experimental',
@@ -442,7 +450,7 @@ def test_stable_cicd_was_selected_and_worked(
 
 
 def test_experimental_cicd_was_selected_and_worked(
-    tmpdir, create_request_from_emulated_project, get_post_gen_main
+    tmpdir, create_context_from_emulated_project, get_post_gen_main
 ):
     from pathlib import Path
 
@@ -452,7 +460,7 @@ def test_experimental_cicd_was_selected_and_worked(
     )
 
     post_hook_main = get_post_gen_main(
-        create_request_from_emulated_project,
+        create_context_from_emulated_project,
         False,  # control whether to add CLI or not, via request
         tmp_target_gen_dir,
         cicd='experimental',
