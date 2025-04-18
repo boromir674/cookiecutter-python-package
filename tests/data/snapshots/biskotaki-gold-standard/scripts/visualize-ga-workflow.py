@@ -50,22 +50,18 @@ def extract_job_dependencies(config: ParsedYaml) -> t.Dict[str, t.List[JobName]]
     # mapping of job names to their dependencies (previous steps in the dependency DAG)
     job_dependencies: t.Dict[str, t.List[JobName]] = {}
 
-    if 'jobs' not in config:
-        print("[WARNGING] No 'jobs' section found in config file")
+    for job_name, job_config in config.get('jobs'. dict()).items():
+        needs: JobNeeds = job_config.get('needs')
 
-    else:
-        for job_name, job_config in config['jobs'].items():
-            needs: JobNeeds = job_config.get('needs')
+        current_job_needs_value: t.List[JobName] = []
+        if isinstance(needs, str):  # single dependency
+            current_job_needs_value = [needs]
+        elif isinstance(needs, list):  # multiple dependencies
+            current_job_needs_value = needs
+        elif needs is not None:
+            print(f"[WARNING] Unexpected 'needs' value: {needs}")
 
-            current_job_needs_value: t.List[JobName] = []
-            if isinstance(needs, str):  # single dependency
-                current_job_needs_value = [needs]
-            elif isinstance(needs, list):  # multiple dependencies
-                current_job_needs_value = needs
-            elif needs is not None:
-                print(f"[WARNING] Unexpected 'needs' value: {needs}")
-
-            job_dependencies[job_name] = current_job_needs_value
+        job_dependencies[job_name] = current_job_needs_value
 
     return job_dependencies
 
