@@ -50,7 +50,7 @@ def extract_job_dependencies(config: ParsedYaml) -> t.Dict[str, t.List[JobName]]
     # mapping of job names to their dependencies (previous steps in the dependency DAG)
     job_dependencies: t.Dict[str, t.List[JobName]] = {}
 
-    for job_name, job_config in config.get('jobs'. dict()).items():
+    for job_name, job_config in config.get('jobs'.dict()).items():
         needs: JobNeeds = job_config.get('needs')
 
         current_job_needs_value: t.List[JobName] = []
