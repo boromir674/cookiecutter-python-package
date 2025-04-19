@@ -188,6 +188,11 @@ skips = [
     "B101",
 ]
 
+[tool.black]
+line-length = 95
+include = '\.pyi?$'
+extend-exclude = '''
+'''
 
 
 [tool.isort]
