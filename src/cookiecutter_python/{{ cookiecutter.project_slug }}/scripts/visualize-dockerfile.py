@@ -47,7 +47,9 @@ def parse_dockerfile(dockerfile_path):
                 # Add instructions to current stage
                 if stage_alias:  # use FROM <a> AS <b>, to store a as previous to b
                     stages[stage_alias].append(from_stage)
-            elif match:= copy_from_reg.match(line):  # COPY --from=<a> <source_path> <target_path>
+            elif match := copy_from_reg.match(
+                line
+            ):  # COPY --from=<a> <source_path> <target_path>
                 copied_from_stage: str = match.group('prev_stage')
                 path_copied: str = match.group('path')
                 copies[stage_alias].append((copied_from_stage, path_copied))
@@ -65,9 +67,8 @@ def generate_mermaid_flow_chart(dockerfile_dag):
 
     # Each stage maps to a list of previous FROM stages
     # and a list of previous 'COPY --from' stages
-    
-    for stage, prev_stages in stages.items():
 
+    for stage, prev_stages in stages.items():
         # Connect 'FROM <a> AS <b>' Stages
         for prev_stage in prev_stages:
             chart += f"  {prev_stage} {thick_line_with_arrow} {stage}\n"
@@ -89,13 +90,12 @@ def generate_mermaid_flow_chart(dockerfile_dag):
 
 ## Embed Mermaid to MARKDOWN ##
 def generate_markdown(dockerfile_dag, flavor='normal'):
-
     flow_chart = generate_mermaid_flow_chart(dockerfile_dag)
 
     bar_symbol = '`'
     if flavor == 'az':  # in az the ':' is needed by markdown processor
         bar_symbol = ':'
-    
+
     markdown = (
         "## Dockerfile Flow Chart\n\n"
         f"**Dockerfile: {dockerfile_path}**\n\n"
@@ -106,7 +106,6 @@ def generate_markdown(dockerfile_dag, flavor='normal'):
 
 ## Embed Mermaid to RST ##
 def generate_rst(dockerfile_dag, **kwargs):
-
     flow_chart = generate_mermaid_flow_chart(dockerfile_dag)
 
     TAB = 3 * ' '
@@ -153,21 +152,27 @@ def parse_cli_args() -> t.Tuple[Path, t.Optional[str]]:
     return dockerfile, args
 
 
-def parse_dockerfile_handler(dockerfile_parser: t.Callable[[str], str], dockerfile_path: str) -> t.Optional[str]:
+def parse_dockerfile_handler(
+    dockerfile_parser: t.Callable[[str], str], dockerfile_path: str
+) -> t.Optional[str]:
     try:
         return dockerfile_parser(dockerfile_path)
     except AttributeError as error:
-        print("[ERROR] Error parsing Dockerfile\n"
+        print(
+            "[ERROR] Error parsing Dockerfile\n"
             f"[Exception] {error}\n"
             "Most probably the Dockefile has a syntax error!\n"
             "Or either the regex is wrong, but it unlikely.\n"
-            "Interupting and exiting...\n")
+            "Interupting and exiting...\n"
+        )
     except FileNotFoundError as error:
-        print("[ERROR] Error parsing Dockerfile\n"
+        print(
+            "[ERROR] Error parsing Dockerfile\n"
             f"[Exception] {error}\n"
             "Most probably the Dockerfile does not exist!\n"
-            "Interupting and exiting...\n")
-            
+            "Interupting and exiting...\n"
+        )
+
 
 if __name__ == '__main__':
     # Data
@@ -179,7 +184,9 @@ if __name__ == '__main__':
     if dockerfile_dag is None:
         sys.exit(1)
 
-    content: str = docs_format[args.rst](dockerfile_dag, flavour='normal' if not args.az else 'az')
+    content: str = docs_format[args.rst](
+        dockerfile_dag, flavour='normal' if not args.az else 'az'
+    )
     if output_path is None:
         print(content)
         sys.exit(0)
