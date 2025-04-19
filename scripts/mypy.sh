@@ -17,7 +17,7 @@ fi
 
 # . .lint-env/bin/activate
 
-# uv pip install -r prod+type.txt
+# uv pip install --no-deps -r prod+type.txt
 
 # set mypy environment
 export MYPYPATH=${MYPYPATH:-src/stubs}
@@ -27,6 +27,7 @@ PKG=${PGK:-src/cookiecutter_python}
 
 mypy --show-error-codes --check-untyped-defs \
     --exclude tests/data \
+    --check-untyped-defs \
     "${PKG}/hooks" \
     "${PKG}/backend" "${PKG}/handle" \
     "${PKG}/utils.py" "${PKG}/exceptions.py" \

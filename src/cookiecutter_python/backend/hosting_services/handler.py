@@ -17,9 +17,7 @@ class Handlers:
 
     @staticmethod
     def from_checkers(checkers):
-        return Handlers(
-            {str(x): CheckHostingServiceResultHandler(str(x)) for x in checkers}
-        )
+        return Handlers({str(x): CheckHostingServiceResultHandler(str(x)) for x in checkers})
 
 
 @attr.s(auto_attribs=True, slots=True, frozen=True)

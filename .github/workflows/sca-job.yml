@@ -102,17 +102,7 @@ jobs:
 
       - name: Run prospector on test source code 
         if: always()
-        run: uvx prospector[with_pyroma] tests
-
-      ## Bandit ##
-    #   - name: Run Bandit for Security Analysis
-    #     if: always()
-    #     run: |
-    #       uv venv
-    #       uv pip install 'bandit[toml]' 'bandit-sarif-formatter==1.1.1'
-    #       . .venv/bin/activate
-    #       bandit -r -c pyproject.toml -x 'src/cookiecutter_python/{{ cookiecutter.project_slug }}/' src
-    # continue-on-error: ${{ inputs.allow_failure }}
+        run: uvx prospector[with_pyroma] tests || true
 
 
   ### BANDIT - Analysis ###

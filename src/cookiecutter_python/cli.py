@@ -28,8 +28,7 @@ def version_msg():
 @click.option(
     u'--no-input',
     is_flag=True,
-    help=u'Do not prompt for parameters and only use cookiecutter.json '
-    u'file content',
+    help=u'Do not prompt for parameters and only use cookiecutter.json ' u'file content',
 )
 @click.option(
     u'--offline',
@@ -49,8 +48,7 @@ def version_msg():
 @click.option(
     u'--replay',
     is_flag=True,
-    help=u'Do not prompt for parameters and only use information entered '
-    u'previously',
+    help=u'Do not prompt for parameters and only use information entered ' u'previously',
 )
 @click.option(
     u'-f',
