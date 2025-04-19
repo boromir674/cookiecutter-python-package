@@ -25,3 +25,5 @@ pydoer-graphs/
 # LOGS
 
 cookie-py.log
+
+.fuse_hidden*

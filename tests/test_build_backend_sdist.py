@@ -18,10 +18,7 @@ def sdist_expected_correct_file_structure():
         'CONTRIBUTING.md',
     )
     SRC = tuple(
-        [
-            'src/cookiecutter_python/{{ cookiecutter.project_slug }}/' + x
-            for x in METADATA
-        ]
+        ['src/cookiecutter_python/{{ cookiecutter.project_slug }}/' + x for x in METADATA]
     ) + (
         # COOKIECUTTER TEMPLATE
         'src/cookiecutter_python/cookiecutter.json',
@@ -50,25 +47,25 @@ def sdist_expected_correct_file_structure():
         'src/cookiecutter_python/{{ cookiecutter.project_slug }}/.readthedocs.yml',
         'src/cookiecutter_python/{{ cookiecutter.project_slug }}/Dockerfile',
         'src/cookiecutter_python/{{ cookiecutter.project_slug }}/MANIFEST.in',
-        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/docs-mkdocs/assets/docker_off.png',
-        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/docs-mkdocs/build-process_DAG.md',
-        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/docs-mkdocs/cicd.md',
-        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/docs-mkdocs/cicd_mermaid.md',
-        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/docs-mkdocs/dev_guides/docker.md',
-        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/docs-mkdocs/dev_guides/index.md',
-        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/docs-mkdocs/dockerfile_mermaid.md',
-        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/docs-mkdocs/index.md',
-        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/docs-mkdocs/tags.md',
-        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/docs-sphinx/Makefile',
-        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/docs-sphinx/conf.py',
-        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/docs-sphinx/contents/10_introduction.rst',
-        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/docs-sphinx/contents/20_why_this_package.rst',
-        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/docs-sphinx/contents/30_usage.rst',
-        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/docs-sphinx/contents/40_modules.rst',
-        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/docs-sphinx/contents/{{ cookiecutter.pkg_name }}.rst',
-        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/docs-sphinx/index.rst',
-        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/docs-sphinx/make.bat',
-        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/docs-sphinx/spelling_wordlist.txt',
+        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/{% if cookiecutter.docs_builder == "mkdocs" %}docs{% else %}PyGen_TO_DELETE{% endif %}/assets/docker_off.png',
+        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/{% if cookiecutter.docs_builder == "mkdocs" %}docs{% else %}PyGen_TO_DELETE{% endif %}/build-process_DAG.md',
+        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/{% if cookiecutter.docs_builder == "mkdocs" %}docs{% else %}PyGen_TO_DELETE{% endif %}/cicd.md',
+        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/{% if cookiecutter.docs_builder == "mkdocs" %}docs{% else %}PyGen_TO_DELETE{% endif %}/cicd_mermaid.md',
+        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/{% if cookiecutter.docs_builder == "mkdocs" %}docs{% else %}PyGen_TO_DELETE{% endif %}/dev_guides/docker.md',
+        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/{% if cookiecutter.docs_builder == "mkdocs" %}docs{% else %}PyGen_TO_DELETE{% endif %}/dev_guides/index.md',
+        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/{% if cookiecutter.docs_builder == "mkdocs" %}docs{% else %}PyGen_TO_DELETE{% endif %}/dockerfile_mermaid.md',
+        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/{% if cookiecutter.docs_builder == "mkdocs" %}docs{% else %}PyGen_TO_DELETE{% endif %}/index.md',
+        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/{% if cookiecutter.docs_builder == "mkdocs" %}docs{% else %}PyGen_TO_DELETE{% endif %}/tags.md',
+        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/{% if cookiecutter.docs_builder == "sphinx" %}docs{% else %}PyGen_TO_DELETE{% endif %}/Makefile',
+        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/{% if cookiecutter.docs_builder == "sphinx" %}docs{% else %}PyGen_TO_DELETE{% endif %}/conf.py',
+        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/{% if cookiecutter.docs_builder == "sphinx" %}docs{% else %}PyGen_TO_DELETE{% endif %}/contents/10_introduction.rst',
+        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/{% if cookiecutter.docs_builder == "sphinx" %}docs{% else %}PyGen_TO_DELETE{% endif %}/contents/20_why_this_package.rst',
+        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/{% if cookiecutter.docs_builder == "sphinx" %}docs{% else %}PyGen_TO_DELETE{% endif %}/contents/30_usage.rst',
+        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/{% if cookiecutter.docs_builder == "sphinx" %}docs{% else %}PyGen_TO_DELETE{% endif %}/contents/40_modules.rst',
+        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/{% if cookiecutter.docs_builder == "sphinx" %}docs{% else %}PyGen_TO_DELETE{% endif %}/contents/{{ cookiecutter.pkg_name }}.rst',
+        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/{% if cookiecutter.docs_builder == "sphinx" %}docs{% else %}PyGen_TO_DELETE{% endif %}/index.rst',
+        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/{% if cookiecutter.docs_builder == "sphinx" %}docs{% else %}PyGen_TO_DELETE{% endif %}/make.bat',
+        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/{% if cookiecutter.docs_builder == "sphinx" %}docs{% else %}PyGen_TO_DELETE{% endif %}/spelling_wordlist.txt',
         'src/cookiecutter_python/{{ cookiecutter.project_slug }}/mkdocs.yml',
         'src/cookiecutter_python/{{ cookiecutter.project_slug }}/scripts/gen_api_refs_pages.py',
         'src/cookiecutter_python/{{ cookiecutter.project_slug }}/scripts/parse_version.py',
@@ -76,6 +73,7 @@ def sdist_expected_correct_file_structure():
         'src/cookiecutter_python/{{ cookiecutter.project_slug }}/scripts/visualize-ga-workflow.py',
         'src/cookiecutter_python/{{ cookiecutter.project_slug }}/setup.cfg',
         'src/cookiecutter_python/{{ cookiecutter.project_slug }}/tox.ini',
+        'src/cookiecutter_python/_find_lib.py',
         'src/cookiecutter_python/__init__.py',
         'src/cookiecutter_python/__main__.py',
         'src/cookiecutter_python/cli.py',
@@ -84,7 +82,6 @@ def sdist_expected_correct_file_structure():
         'src/cookiecutter_python/backend/check_server_result.py',
         'src/cookiecutter_python/backend/error_handling/handler_builder.py',
         'src/cookiecutter_python/backend/error_handling/__init__.py',
-        'src/cookiecutter_python/backend/gen_docs_common.py',
         'src/cookiecutter_python/backend/generator/generator.py',
         'src/cookiecutter_python/backend/generator/__init__.py',
         'src/cookiecutter_python/backend/helpers.py',
@@ -292,12 +289,10 @@ def sdist_expected_correct_file_structure():
         'tests/test_cookiecutter_context.py',
         'tests/test_dialog_system.py',
         'tests/test_docs_gen_feat_compatibillity.py',
-        'tests/test_docs_id_2_folder_mapping.py',
         'tests/test_error_classifier.py',
         'tests/test_generate.py',
         'tests/test_gold_standard.py',
         'tests/test_module.py',
-        'tests/test_post_gen_hook_regression.py',
         'tests/test_post_hook.py',
         'tests/test_prehook.py',
         'tests/test_running_test_suite.py',
@@ -395,7 +390,7 @@ def safe_extract():
                 # 2. Enforce strict whitelist pattern. Adjust pattern as necessary.
                 any(
                     [
-                        re.fullmatch(r"[a-zA-Z0-9_.\- {}]+", x) is None
+                        re.fullmatch(r"[a-zA-Z0-9_.\- {}%=\"]+", x) is None
                         for x in member.name.split("/")
                     ]
                 )
@@ -431,7 +426,9 @@ def assert_sdist_exact_file_structure(safe_extract, tmp_path: Path):
 
         # if verion includes metadata (ie 1.2.5-dev) then we must match 1.2.5.dev0 !
         if '-' in __version__:
-            DISTRO_NAME_AS_IN_SITE_PACKAGES = f'cookiecutter_python-{__version__.split("-")[0]}.{__version__.split("-")[1]}0'
+            DISTRO_NAME_AS_IN_SITE_PACKAGES = (
+                f'cookiecutter_python-{__version__.split("-")[0]}.{__version__.split("-")[1]}0'
+            )
         else:
             DISTRO_NAME_AS_IN_SITE_PACKAGES = f'cookiecutter_python-{__version__}'
 
@@ -450,9 +447,7 @@ def assert_sdist_exact_file_structure(safe_extract, tmp_path: Path):
         )
 
         # Verify no extra files are present
-        extra_runtime_files = set(runtime_files) - set(
-            map(Path, expected_file_structure)
-        )
+        extra_runtime_files = set(runtime_files) - set(map(Path, expected_file_structure))
         assert extra_runtime_files == set(), (
             "Expected no extra runtime files compared to expectations, "
             "got [" + '\n'.join(map(str, sorted(extra_runtime_files))) + "]"

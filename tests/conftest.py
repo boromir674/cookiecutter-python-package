@@ -459,9 +459,7 @@ def user_config(distro_loc: Path) -> ConfigInterfaceProtocol:
                 # Docs Building #
                 data['docs_builder'] = data['docs_builder'][0]  # choice variable
                 # RTD CI Python Version #
-                data['rtd_python_version'] = data['rtd_python_version'][
-                    0
-                ]  # choice variable
+                data['rtd_python_version'] = data['rtd_python_version'][0]  # choice variable
                 # CICD Pipeline Design old/new , stable/experimental
                 data['cicd'] = data['cicd'][0]  # choice variable
                 return data
@@ -641,24 +639,24 @@ def get_expected_generated_files(
         from cookiecutter_python.hooks.post_gen_project import CICD_DELETE
 
         files_to_remove.update(
-            [
-                os.path.join(*parts)
-                for parts in CICD_DELETE[config.data.get('cicd', 'stable')]
-            ]
+            [os.path.join(*parts) for parts in CICD_DELETE[config.data.get('cicd', 'stable')]]
         )
 
         ## DERIVE expected files inside 'docs' gen dir
-        from cookiecutter_python.backend import get_docs_gen_internal_config
+
+        def b(docs_builder_id):
+            return (
+                '{% if cookiecutter.docs_builder == "'
+                + docs_builder_id
+                + '" %}docs{% else %}PyGen_TO_DELETE{% endif %}'
+            )
 
         # Find where each Docs Builder 'stores' its Template Files (ie source docs)
-        _doc_builder_id_2_template_docs_dir_name: t.Dict[
-            str, str
-        ] = get_docs_gen_internal_config()
-        builder_docs_folder_name: str = _doc_builder_id_2_template_docs_dir_name[
-            user_docs_builder_id
-        ]
+        selected_docs_template_dir: str = b(user_docs_builder_id)
+
+        builder_docs_folder_name: str = selected_docs_template_dir
         source_docs_template_content_dir: Path = (
-            distro_loc / r'{{ cookiecutter.project_slug }}' / builder_docs_folder_name
+            distro_loc / r'{{ cookiecutter.project_slug }}' / selected_docs_template_dir
         )
 
         # those docs template dir, are expected to be found under 'docs' folder
@@ -707,7 +705,13 @@ def get_expected_generated_files(
         for (
             docs_builder_id,
             builder_docs_folder_name,
-        ) in _doc_builder_id_2_template_docs_dir_name.items():
+        ) in [
+            (
+                docs_builder_id,
+                b(docs_builder_id),
+            )
+            for docs_builder_id in {'mkdocs', 'sphinx'}
+        ]:  # TODO: centralize this
             for file_path in iter(
                 (
                     x
@@ -733,11 +737,7 @@ def get_expected_generated_files(
                 ), f"Sanity check fail: {file_path.relative_to(distro_loc / r'{{ cookiecutter.project_slug }}')}, {file_path.relative_to(distro_loc / r'{{ cookiecutter.project_slug }}').parts[0]}"
 
                 files_to_remove.add(
-                    str(
-                        file_path.relative_to(
-                            distro_loc / r'{{ cookiecutter.project_slug }}'
-                        )
-                    )
+                    str(file_path.relative_to(distro_loc / r'{{ cookiecutter.project_slug }}'))
                 )
 
         assert all(
@@ -745,9 +745,7 @@ def get_expected_generated_files(
         ), f"Temporary Requirement of Test Code: files_to_remove must be a list of strings, not {files_to_remove}"
 
         # FIND WHAT is actually in GEN ProJ DIR
-        all_template_files = project_files(
-            distro_loc / r'{{ cookiecutter.project_slug }}'
-        )
+        all_template_files = project_files(distro_loc / r'{{ cookiecutter.project_slug }}')
 
         assert all(
             [isinstance(x, str) for x in files_to_remove]
@@ -827,18 +825,14 @@ def get_expected_generated_files(
             parts = x.parts
             assert type(parts) is tuple, f"Sanity check fail: {parts}"
             assert len(parts) > 0, f"Sanity check fail: {parts}"
-            b = SEP.join(parts)
-            b = b.replace(r'{{ cookiecutter.pkg_name }}', pkg_name).replace(
-                r'{{ cookiecutter.project_slug }}', config.data['project_slug']
-            )
+            joined_parts: str = SEP.join(parts)
+            joined_parts = joined_parts.replace(
+                r'{{ cookiecutter.pkg_name }}', pkg_name
+            ).replace(r'{{ cookiecutter.project_slug }}', config.data['project_slug'])
 
-            expected_file_parts = b.split(SEP)
-            assert (
-                len(expected_file_parts) > 0
-            ), f"Sanity check fail: {expected_file_parts}"
-            assert (
-                expected_file_parts[-1] != ''
-            ), f"Sanity check fail: {expected_file_parts}"
+            expected_file_parts = joined_parts.split(SEP)
+            assert len(expected_file_parts) > 0, f"Sanity check fail: {expected_file_parts}"
+            assert expected_file_parts[-1] != '', f"Sanity check fail: {expected_file_parts}"
             assert len(expected_file_parts) == len(
                 parts
             ), f"Sanity check fail: {expected_file_parts}, {parts}"
@@ -854,9 +848,7 @@ def get_expected_generated_files(
         assert len(set([type(x) for x in res])) == 1, f"Sanity check fail: {res}"
 
         # Filter again through predicted for removale since some of them already inject their value for distro name
-        return iter(
-            set([x for x in res if x not in set([Path(_) for _ in files_to_remove])])
-        )
+        return iter(set([x for x in res if x not in set([Path(_) for _ in files_to_remove])]))
 
     return _get_expected_generated_files
 

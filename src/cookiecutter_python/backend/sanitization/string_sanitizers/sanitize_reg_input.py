@@ -34,9 +34,7 @@ class RegExSanitizer:
     def __init__(self):
         def _log_message(error, input_data):
             raw_log_args: Tuple = type(self).log_message(error, input_data)
-            return tuple(
-                [raw_log_args[0]] + [self._string(x) for x in raw_log_args[1:]]
-            )
+            return tuple([raw_log_args[0]] + [self._string(x) for x in raw_log_args[1:]])
 
         type(self).sanitizer = BaseSanitizer(
             self._verify,
