@@ -24,9 +24,7 @@ def get_context() -> OrderedDict:
 def get_request():
     cookie_dict: OrderedDict = get_context()
 
-    logger.info(
-        "Cookiecutter Data: %s", json.dumps(cookie_dict, sort_keys=True, indent=4)
-    )
+    logger.info("Cookiecutter Data: %s", json.dumps(cookie_dict, sort_keys=True, indent=4))
 
     interpreters = cookie_dict['interpreters']
 
@@ -50,25 +48,21 @@ class InputSanitizationError(Exception):
 
 
 def input_sanitization(request):
-    # CHECK Package Name
     try:
+        # CHECK Valid Package Name
         sanitize['module-name'](request.module_name)
-        # verify_templated_module_name(request.module_name)
+        # CHECK Version
+        sanitize['semantic-version'](request.package_version_string)
+        # CHECK Interpreters
+        sanitize['interpreters'](request.interpreters)
     except sanitize.exceptions['module-name'] as error:
         raise InputSanitizationError(
             f'ERROR: {request.module_name} is not a valid Python module name!'
         ) from error
-
-    # CHECK Version
-    try:
-        sanitize['semantic-version'](request.package_version_string)
     except sanitize.exceptions['semantic-version'] as error:
         raise InputSanitizationError(
             f'ERROR: {request.package_version_string} is not a valid Semantic Version!'
         ) from error
-
-    try:
-        sanitize['interpreters'](request.interpreters)
     except sanitize.exceptions['interpreters'] as error:
         logger.warning(
             "Interpreters Data Error: %s",

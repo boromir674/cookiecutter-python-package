@@ -12,9 +12,7 @@ HostingServiceChecker = t.Callable[[str], bool]
 class CheckHostingServiceHandler:
     check_hosting_service: HostingServiceChecker
     service_name: str = attr.ib(
-        default=attr.Factory(
-            lambda self: str(self.check_hosting_service), takes_self=True
-        )
+        default=attr.Factory(lambda self: str(self.check_hosting_service), takes_self=True)
     )
     package_name: str = attr.ib(init=False, default=None)
 

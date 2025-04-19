@@ -104,7 +104,5 @@ def test_gen_parametrized_only_from_user_config_defaults_to_sphinx_builder_n_py3
     assert 'tools' in generated_project_readthedocs_yaml_content['build']
     assert 'python' in generated_project_readthedocs_yaml_content['build']['tools']
 
-    assert (
-        generated_project_readthedocs_yaml_content['build']['tools']['python'] == '3.8'
-    )
+    assert generated_project_readthedocs_yaml_content['build']['tools']['python'] == '3.8'
     # Note: Python RTD 3.8 has been default for some time

@@ -43,8 +43,9 @@ uv venv .lint-env
 uv pip install 'isort>=5.12.0, <6.0.0' 'black>=23.3.0, <24.0.0' 'ruff' 'prospector[with_pyroma]'
 
 ## APPLY ISORT ##
+  # --skip tests/data/snapshots \
 echo "[INFO] Running Isort..."
-uv run --active isort --skip tests/data/snapshots \
+uv run --active isort \
   --skip 'src/cookiecutter_python/{{ cookiecutter.project_slug }}/' \
   ${LINT_ARGS}
 
@@ -55,11 +56,11 @@ if [ -n "$(git status --porcelain -uno)" ]; then
   git commit -m "refactor(isort): apply isort"
 fi
 
+  # --exclude tests/data/snapshots \
 ## APPLY BLACK ##
 echo "[INFO] Running Black..."
 uv run --active black \
   --skip-string-normalization \
-  --exclude tests/data/snapshots \
   --extend-exclude 'src/cookiecutter_python/{{ cookiecutter.project_slug }}/' \
   --config pyproject.toml \
   ${LINT_ARGS}

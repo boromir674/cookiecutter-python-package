@@ -114,9 +114,7 @@ def test_main_with_invalid_module_name(get_main_with_mocked_template, dat):
     from collections import OrderedDict
 
     result = get_main_with_mocked_template(
-        overrides={
-            "get_context": lambda: lambda: OrderedDict(dat, **{'pkg_name': '121212'})
-        }
+        overrides={"get_context": lambda: lambda: OrderedDict(dat, **{'pkg_name': '121212'})}
     )()
     assert result == 1  # exit code of 1 indicates failed execution
 
@@ -125,9 +123,7 @@ def test_main_with_invalid_version(get_main_with_mocked_template, dat):
     from collections import OrderedDict
 
     main = get_main_with_mocked_template(
-        overrides={
-            "get_context": lambda: lambda: OrderedDict(dat, **{'version': 'gg0.0.1'})
-        }
+        overrides={"get_context": lambda: lambda: OrderedDict(dat, **{'version': 'gg0.0.1'})}
     )
     result = main()
     assert result == 1  # exit code of 1 indicates failed execution
