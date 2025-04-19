@@ -3,6 +3,31 @@ Changelog
 =========
 
 
+2.5.3 (2024-04-19)
+==================
+
+Main goal was to reduce the **Cyclomatic Complexity** (McCabe) in the source code.
+- A new CI acceptance criteria was set to reject code with Complexity above 5!
+- Refactored code.
+
+Also redesigned the way we generated alternative docs sites (ie mkdocs, pshinx) by using
+"if" noditional jinja expressions as fodler names.
+- This allowed to retire some production and
+some test code!
+
+Changes
+^^^^^^^
+
+ci
+"""
+- add new CI acceptance criteria to reject code with Cyclomatic Complexity (McCabe) above 5
+- deactivate windows CI
+
+refactor
+""""""""
+- refactor code to reduce Cyclomatic Complexity (McCabe) below 5
+
+
 2.5.3 (2024-04-18)
 ==================
 
