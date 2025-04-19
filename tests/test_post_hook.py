@@ -68,9 +68,7 @@ def create_context_from_emulated_project(dat):
         Path(path.join(project_dir, TO_DELETE, 'conf.py')).touch()
         # create at least one level of nest to make cover more post_removal code
         mkdir(path.join(project_dir, TO_DELETE, 'contents'))
-        Path(
-            path.join(project_dir, TO_DELETE, 'contents', '10_introduction.rst')
-        ).touch()
+        Path(path.join(project_dir, TO_DELETE, 'contents', '10_introduction.rst')).touch()
 
         mkdir(path.join(project_dir, 'scripts'))
         # Path(path.join(project_dir, 'scripts', 'gen_api_refs_pages.py')).touch()
@@ -218,9 +216,7 @@ def get_post_gen_main(get_object):
         add_cli: bool,
         project_dir: Path,
         extra_files: t.Optional[t.List[t.Union[str, t.Tuple[str, ...]]]] = None,
-        extra_non_empty_files: t.Optional[
-            t.List[t.Union[str, t.Tuple[str, ...]]]
-        ] = None,
+        extra_non_empty_files: t.Optional[t.List[t.Union[str, t.Tuple[str, ...]]]] = None,
         **kwargs,
     ):
         """"""
@@ -327,9 +323,7 @@ def test_main(
     from pathlib import Path
 
     # GIVEN a temporary directory, for the emulated generated project
-    tmp_target_gen_dir = tmpdir.mkdir(
-        'cookiecutter_python.unit-tests.proj-targetr-gen-dir'
-    )
+    tmp_target_gen_dir = tmpdir.mkdir('cookiecutter_python.unit-tests.proj-targetr-gen-dir')
 
     post_hook_main = get_post_gen_main(
         create_context_from_emulated_project,
@@ -420,9 +414,7 @@ def test_stable_cicd_was_selected_and_worked(
     from pathlib import Path
 
     # GIVEN a temporary directory, for the emulated generated project
-    tmp_target_gen_dir = tmpdir.mkdir(
-        'cookiecutter_python.unit-tests.proj-targetr-gen-dir'
-    )
+    tmp_target_gen_dir = tmpdir.mkdir('cookiecutter_python.unit-tests.proj-targetr-gen-dir')
 
     post_hook_main = get_post_gen_main(
         create_context_from_emulated_project,
@@ -442,12 +434,8 @@ def test_stable_cicd_was_selected_and_worked(
 
     # AND the files for 'experimental' cicd optoin are missing
     assert not (Path(tmp_target_gen_dir) / '.github/workflows/cicd.yml').exists()
-    assert not (
-        Path(tmp_target_gen_dir) / '.github/workflows/codecov-upload.yml'
-    ).exists()
-    assert not (
-        Path(tmp_target_gen_dir) / '.github/workflows/signal-deploy.yml'
-    ).exists()
+    assert not (Path(tmp_target_gen_dir) / '.github/workflows/codecov-upload.yml').exists()
+    assert not (Path(tmp_target_gen_dir) / '.github/workflows/signal-deploy.yml').exists()
 
 
 def test_experimental_cicd_was_selected_and_worked(
@@ -456,9 +444,7 @@ def test_experimental_cicd_was_selected_and_worked(
     from pathlib import Path
 
     # GIVEN a temporary directory, for the emulated generated project
-    tmp_target_gen_dir = tmpdir.mkdir(
-        'cookiecutter_python.unit-tests.proj-targetr-gen-dir'
-    )
+    tmp_target_gen_dir = tmpdir.mkdir('cookiecutter_python.unit-tests.proj-targetr-gen-dir')
 
     post_hook_main = get_post_gen_main(
         create_context_from_emulated_project,

@@ -24,9 +24,7 @@ def get_context() -> OrderedDict:
 def get_request():
     cookie_dict: OrderedDict = get_context()
 
-    logger.info(
-        "Cookiecutter Data: %s", json.dumps(cookie_dict, sort_keys=True, indent=4)
-    )
+    logger.info("Cookiecutter Data: %s", json.dumps(cookie_dict, sort_keys=True, indent=4))
 
     interpreters = cookie_dict['interpreters']
 

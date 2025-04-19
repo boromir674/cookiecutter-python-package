@@ -18,10 +18,7 @@ def sdist_expected_correct_file_structure():
         'CONTRIBUTING.md',
     )
     SRC = tuple(
-        [
-            'src/cookiecutter_python/{{ cookiecutter.project_slug }}/' + x
-            for x in METADATA
-        ]
+        ['src/cookiecutter_python/{{ cookiecutter.project_slug }}/' + x for x in METADATA]
     ) + (
         # COOKIECUTTER TEMPLATE
         'src/cookiecutter_python/cookiecutter.json',
@@ -429,7 +426,9 @@ def assert_sdist_exact_file_structure(safe_extract, tmp_path: Path):
 
         # if verion includes metadata (ie 1.2.5-dev) then we must match 1.2.5.dev0 !
         if '-' in __version__:
-            DISTRO_NAME_AS_IN_SITE_PACKAGES = f'cookiecutter_python-{__version__.split("-")[0]}.{__version__.split("-")[1]}0'
+            DISTRO_NAME_AS_IN_SITE_PACKAGES = (
+                f'cookiecutter_python-{__version__.split("-")[0]}.{__version__.split("-")[1]}0'
+            )
         else:
             DISTRO_NAME_AS_IN_SITE_PACKAGES = f'cookiecutter_python-{__version__}'
 
@@ -448,9 +447,7 @@ def assert_sdist_exact_file_structure(safe_extract, tmp_path: Path):
         )
 
         # Verify no extra files are present
-        extra_runtime_files = set(runtime_files) - set(
-            map(Path, expected_file_structure)
-        )
+        extra_runtime_files = set(runtime_files) - set(map(Path, expected_file_structure))
         assert extra_runtime_files == set(), (
             "Expected no extra runtime files compared to expectations, "
             "got [" + '\n'.join(map(str, sorted(extra_runtime_files))) + "]"

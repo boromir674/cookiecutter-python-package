@@ -20,9 +20,7 @@ exceptions: t.MutableMapping[str, t.Tuple[t.Type[Exception], ...]] = {
 
 def error_2_str(error):
     recognized_non_critical = {UndefinedVariableInTemplate}
-    recognized_critical = set(exceptions['critical']).difference(
-        recognized_non_critical
-    )
+    recognized_critical = set(exceptions['critical']).difference(recognized_non_critical)
 
     ## Mark NON Critical for program execution ##
     # Program should potentially be able to handle that exception and proceed

@@ -245,9 +245,9 @@ def iter_files(request):
             path.isfile(file_path)
             and '__pycache__' not in str(file_path)
             and str(os.path.relpath(file_path, start=request.project_dir)) != '.git'
-            and not str(
-                os.path.relpath(file_path, start=request.project_dir)
-            ).startswith('.git/')
+            and not str(os.path.relpath(file_path, start=request.project_dir)).startswith(
+                '.git/'
+            )
         ):
             yield str(file_path)
 
@@ -266,14 +266,7 @@ def git_commit(request):
     )
 
     request.repo.index.add(
-        list(
-            iter(
-                (
-                    path.relpath(x, start=request.project_dir)
-                    for x in iter_files(request)
-                )
-            )
-        )
+        list(iter((path.relpath(x, start=request.project_dir) for x in iter_files(request))))
     )
     author = Actor(request.vars['author'], request.vars['author_email'])
 
