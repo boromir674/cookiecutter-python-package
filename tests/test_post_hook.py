@@ -1,22 +1,59 @@
-import sys
 import typing as t
+import pytest
 from pathlib import Path
 
 
-if sys.version_info >= (3, 8):
-    from typing import Literal, Protocol
-else:
-    from typing_extensions import Protocol
-    from typing_extensions import Literal
+## TYPES
 
-import pytest
+# Automatically, discover what files to create for an accurate emulated project
+## Project Type Dependend Files ##
+# Types
+class RuntimeRequest(t.Protocol):
+    module_name: str  # runtime value for {{ cookiecutter.pkg_name }}
 
+UniqueFile = t.Tuple[str, ...]  # One Files of a Project Type
+ProjectUniqueFiles = t.List[UniqueFile]  # All Files of a Project Type
+
+CreateProjectUniqueFilesList = t.Callable[[RuntimeRequest], ProjectUniqueFiles]
+"""EG for 'module+cli' Project Type: lambda x: [
+    ('src', x.module_name, 'cli.py'),
+    ('src', x.module_name, '__main__.py'),
+    ('tests', 'test_cli.py'),
+    ('tests', 'test_invoking_cli.py'),
+]"""
+# TODO: Create Single Source of Truth (SoT), both to read here and for Post Removal
+# to read in Post Gen Hook
+# SEE 'get_docs_gen_internal_config', SoT solution for Docs post Removal
+
+ProjectType = t.Literal['module+cli', 'pytest-plugin']
+ProjectUniqueFilesMap = t.Dict[ProjectType, CreateProjectUniqueFilesList]
+
+
+
+# Fixture to "reduce complexity" of "create_context_from_emulated_project" fixture
+@pytest.fixture
+def generate_all_extra_files():
+    from cookiecutter_python.hooks.post_gen_project import CICD_DELETE
+
+    def _generate_all_extra_files(
+        project_types: ProjectUniqueFilesMap,
+        emulated_context: t.Dict[str, str],
+    ) -> t.Iterator[UniqueFile]:
+        for file_path_parts_tuple in (file_path_parts_tuple for proj_unique_files_from_request in project_types.values() for file_path_parts_tuple in proj_unique_files_from_request(
+                type('GG', (), {'module_name': emulated_context['pkg_name']})()
+            )):
+            assert type(file_path_parts_tuple) is tuple
+            yield file_path_parts_tuple
+        for path_components_tuple in (path_components_tuple for cicd_version_unique_files in CICD_DELETE.values() for path_components_tuple in cicd_version_unique_files):
+            assert type(path_components_tuple) is tuple
+            yield path_components_tuple
+    return _generate_all_extra_files
 
 ### IMPORTANT ###
 # UPDATE every time a NEW Template File is added to the Generator
 # To increase control on test case behavior, see tests/conftest.py -> 'class HookRequest'
 @pytest.fixture
-def create_context_from_emulated_project(dat):
+def create_context_from_emulated_project(generate_all_extra_files, dat):
     """Create an emulated Gen Project and return a Request matching it.
 
     An minimal Project structure is automatically created to emulate the
@@ -93,28 +130,12 @@ def create_context_from_emulated_project(dat):
             ),
         )
 
-        # Automatically, discover what files to create for an accurate emulated project
-        ## Project Type Dependend Files ##
-        # Types
-        class RuntimeRequest(Protocol):
-            module_name: str  # runtime value for {{ cookiecutter.pkg_name }}
-
-        UniqueFile = t.Tuple[str, ...]  # One Files of a Project Type
-        ProjectUniqueFiles = t.List[UniqueFile]  # All Files of a Project Type
-
-        CreateProjectUniqueFilesList = t.Callable[[RuntimeRequest], ProjectUniqueFiles]
-        """EG for 'module+cli' Project Type: lambda x: [
-            ('src', x.module_name, 'cli.py'),
-            ('src', x.module_name, '__main__.py'),
-            ('tests', 'test_cli.py'),
-            ('tests', 'test_invoking_cli.py'),
-        ]"""
-        # TODO: Create Single Source of Truth (SoT), both to read here and for Post Removal
-        # to read in Post Gen Hook
-        # SEE 'get_docs_gen_internal_config', SoT solution for Docs post Removal
-
-        ProjectType = Literal['module+cli', 'pytest-plugin']
-        ProjectUniqueFilesMap = t.Dict[ProjectType, CreateProjectUniqueFilesList]
+        # # Automatically, discover what files to create for an accurate emulated project
+        # ## Project Type Dependend Files ##
+        
+        # # TODO: Create Single Source of Truth (SoT), both to read here and for Post Removal
+        # # to read in Post Gen Hook
+        # # SEE 'get_docs_gen_internal_config', SoT solution for Docs post Removal
 
         # ProjectUniqueFilesMap = t.Dict[str, CreateProjectUniqueFilesList]
         expected_post_removal: ProjectUniqueFilesMap = {
@@ -122,26 +143,9 @@ def create_context_from_emulated_project(dat):
             'pytest-plugin': PYTEST_PLUGIN_ONLY,
         }
 
-        from cookiecutter_python.hooks.post_gen_project import CICD_DELETE
-
-        def generate_all_extra_files(
-            project_types: ProjectUniqueFilesMap,
-        ) -> t.Iterator[UniqueFile]:
-            for proj_unique_files_from_request in project_types.values():
-                for file_path_parts_tuple in proj_unique_files_from_request(
-                    type('GG', (), {'module_name': emulated_context['pkg_name']})()
-                ):
-                    assert type(file_path_parts_tuple) is tuple
-                    yield file_path_parts_tuple
-            for cicd_version_unique_files in CICD_DELETE.values():
-                assert type(cicd_version_unique_files) is list
-                assert all([type(x) is tuple for x in cicd_version_unique_files])
-                for path_components_tuple in cicd_version_unique_files:
-                    yield path_components_tuple
-
-        ## All files expected to be considered, for Post Removal ##
+        ## Generate All files expected to be considered, for Post Removal ##
         extra_files_declared: t.List[UniqueFile] = list(
-            (x for x in generate_all_extra_files(expected_post_removal))
+            (x for x in generate_all_extra_files(expected_post_removal, emulated_context))
         )
 
         assert isinstance(extra_files_declared, list) and len(extra_files_declared) > 2
@@ -194,11 +198,33 @@ def create_context_from_emulated_project(dat):
     return emulate_project_before_post_gen_hook
 
 
+## Helper Fixture for emulating logs file placement, during generation.
+@pytest.fixture(scope='session')
+def create_dummy_files():
+    def _create_dummy_files(
+        absolute_proj_dir: Path,
+        extra_files: t.Optional[t.List[t.Union[str, t.Tuple[str, ...]]]] = None,
+        extra_non_empty_files: t.Optional[t.List[t.Union[str, t.Tuple[str, ...]]]] = None,
+    ):
+        # Create Extra Empty files, on-demand to support diverse test cases
+        for _file_path in extra_files or []:
+            assert isinstance(_file_path, str)
+            file_path = (_file_path,)
+            absolute_proj_dir.joinpath(*file_path).touch()
+
+        # Create Extra files with dummy content, to Emulate, to support diverse test cases
+        for _file_path in extra_non_empty_files or []:
+            assert isinstance(_file_path, str)
+            file_path = (_file_path,)
+            with open(absolute_proj_dir.joinpath(*file_path), 'w') as _file:
+                _file.write('print("Hello World!")\n')
+    return _create_dummy_files
+
 ### IMPORTANT ###
 # UPDATE every time a NEW Template File is added to the Generator
 # To increase control on test case behavior, see tests/conftest.py -> 'class HookRequest'
 @pytest.fixture
-def get_post_gen_main(get_object):
+def get_post_gen_main(create_dummy_files, get_object):
     """Get post_gen_project.main method, with Monkeypatched objects.
 
     An minimal Project structure is automatically created to emulate the
@@ -210,6 +236,10 @@ def get_post_gen_main(get_object):
     from pathlib import Path
 
     name = 'gg'
+
+    def _emulated_exit(exit_code: int):
+        assert exit_code == 0
+        return exit_code
 
     def get_post_gen_hook_project_main(
         context_from_emulated_project,
@@ -226,9 +256,6 @@ def get_post_gen_main(get_object):
 
         _PYTHON_MINOR_VERSION = version_info.minor
 
-        def _emulated_exit(exit_code: int):
-            assert exit_code == 0
-            return exit_code
 
         def mock_get_context():
             # to avoid bugs we require empty project dir, before emulated generation
@@ -249,20 +276,10 @@ def get_post_gen_main(get_object):
             # sanity check that sth got generated
             assert len(list(absolute_proj_dir.iterdir())) > 0
 
-            # Create Extra Empty files, on-demand to support diverse test cases
-            if extra_files:
-                for _file_path in extra_files:
-                    if isinstance(_file_path, str):
-                        file_path = (_file_path,)
-                    absolute_proj_dir.joinpath(*file_path).touch()
-
-            # Create Extra files with dummy content, to Emulate, to support diverse test cases
-            if extra_non_empty_files:
-                for _file_path in extra_non_empty_files:
-                    if isinstance(_file_path, str):
-                        file_path = (_file_path,)
-                    with open(absolute_proj_dir.joinpath(*file_path), 'w') as _file:
-                        _file.write('print("Hello World!")\n')
+            create_dummy_files(absolute_proj_dir,
+                extra_files=extra_files,
+                extra_non_empty_files=extra_non_empty_files,
+            )
 
             # SANITY CHECK that request has cicd str value, otherwise the test cannot continue
             assert isinstance(
@@ -333,7 +350,7 @@ def test_main(
     # THEN the Emulated Generated Project, contains all the necessary files
     # that are required for the post_gen_project to run successfully
 
-    expexpected_gen_dir = Path(tmp_target_gen_dir).absolute()
+    expected_gen_dir = Path(tmp_target_gen_dir).absolute()
 
     # WHEN the post_gen_project.main is called
     result = post_hook_main()  # raises error, if post gen exit code != 0
@@ -341,7 +358,7 @@ def test_main(
     # THEN the post_gen_project.main runs successfully
     assert result is None
 
-    assert_initialized_git(expexpected_gen_dir)
+    assert_initialized_git(expected_gen_dir)
 
 
 # REQUIRES well maintained emulated generated project (fixtures)
