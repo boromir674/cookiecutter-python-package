@@ -134,20 +134,9 @@ default_context:
     UNINTENTIONALLY_PLACED_LOG_FILE: Path = gen_project_dir / FILE_TARGET_LOGS
     assert not bug
     ## Implementation Option 1
-    if bug:
-        print(f"\n Verifying Unintentional Logging Behaviour still happens: {bug}\n")
-        assert UNINTENTIONALLY_PLACED_LOG_FILE.exists()
-        assert UNINTENTIONALLY_PLACED_LOG_FILE.is_file()
-        assert UNINTENTIONALLY_PLACED_LOG_FILE.stat().st_size == 0
-    elif sys.platform != 'win32':
+    if sys.platform != 'win32':
         # on Windows, it has been reported that the Log file exists!
         assert not UNINTENTIONALLY_PLACED_LOG_FILE.exists()
-    ## Implementation Option 2
-    # assert (
-    #     not bug and not UNINTENTIONALLY_PLACED_LOG_FILE.exists()
-    # ) or (
-    #     bug and UNINTENTIONALLY_PLACED_LOG_FILE.exists() and UNINTENTIONALLY_PLACED_LOG_FILE.is_file() and UNINTENTIONALLY_PLACED_LOG_FILE.stat().st_size == 0
-    # )
 
     ##################################
 
