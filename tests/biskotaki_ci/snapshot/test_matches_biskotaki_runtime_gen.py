@@ -1,4 +1,91 @@
+import os
 import pytest
+
+RUNNING_ON_CI: bool = 'CI' in os.environ
+
+
+@pytest.fixture
+def compare_irrelevant_of_date_to_snapshot():
+    def _compare_confpy_to_snapshot(runtime_biskotaki, snapshot_dir):
+
+        # first compare CHANGLOG files, then all other files
+
+        runtime_conf = runtime_biskotaki / 'docs' / 'conf.py'  # the reality
+        snapshot_conf = snapshot_dir / 'docs' / 'conf.py'  # the expectation
+        runtime_conf_content = runtime_conf.read_text().splitlines()
+        snap_conf_content = snapshot_conf.read_text().splitlines()
+        assert len(runtime_conf_content) == len(snap_conf_content)
+
+        conf_line_pairs_generator = iter(
+            line_pair
+            for line_pair in [
+                x
+                for x in zip(runtime_conf_content, snap_conf_content)
+                if not (x[1].startswith('release =') or 'year=' in x[1])
+            ]
+        )
+
+
+        runtime_changelog = runtime_biskotaki / 'CHANGELOG.rst'  # the reality
+        snapshot_changelog = snapshot_dir / 'CHANGELOG.rst'  # the expectation      
+
+        runtime_changelog_content = runtime_changelog.read_text().splitlines()
+        snap_changelog_content = snapshot_changelog.read_text().splitlines()
+        assert len(runtime_changelog_content) == len(snap_changelog_content)
+
+        changelog_line_pairs_generator = iter(
+            [
+                line_pair
+                for line_pair in [
+                    x
+                    for x in zip(runtime_changelog_content, snap_changelog_content)
+                    if not x[0].startswith('0.0.1')
+                ]
+            ]
+        )
+                
+        if RUNNING_ON_CI:  # quickly do sanity check
+            ## COMPARE docs/conf.py
+            assert all([line_pair[0] == line_pair[1] for line_pair in conf_line_pairs_generator]), (
+                f"File: docs/conf.py has different content at Runtime vs Snapshot\n"
+                "-------------------\n"
+                f"Runtime: {runtime_conf}\n"
+                "-------------------\n"
+                f"Snapshot: {snapshot_conf}\n"
+                "-------------------\n"
+            )
+            assert all([line_pair[0] == line_pair[1] for line_pair in changelog_line_pairs_generator]), (
+                f"File: CHANGELOG.rst has different content at Runtime vs Snapshot\n"
+                "-------------------\n"
+                f"Runtime: {runtime_changelog}\n"
+                "-------------------\n"
+                f"Snapshot: {snapshot_changelog}\n"
+                "-------------------\n"
+            )
+        else:  # sanity check indicating the exact failling line in case of error
+            for line_pair in conf_line_pairs_generator:
+                assert line_pair[0] == line_pair[1], (
+                    f"File: docs/conf.py has different content at Runtime vs Snapshot\n"
+                    "-------------------\n"
+                    f"Runtime: {runtime_conf}\n"
+                    "-------------------\n"
+                    f"Snapshot: {snapshot_conf}\n"
+                    "-------------------\n"
+                    f"Line: {line_pair[0]}\n"
+                    "-------------------\n"
+                )
+            for line_pair in changelog_line_pairs_generator:
+                assert line_pair[0] == line_pair[1], (
+                    f"File: CHANGELOG.rst has different content at Runtime vs Snapshot\n"
+                    "-------------------\n"
+                    f"Runtime: {runtime_changelog}\n"
+                    "-------------------\n"
+                    f"Snapshot: {snapshot_changelog}\n"
+                    "-------------------\n"
+                    f"Line: {line_pair[0]}\n"
+                    "-------------------\n"
+                )
+    return _compare_confpy_to_snapshot
 
 
 @pytest.mark.parametrize(
@@ -8,7 +95,7 @@ import pytest
         'biskotaki-interactive',
     ],
 )
-def test_snapshot_matches_runtime(snapshot, biskotaki_ci_project, test_root):
+def test_snapshot_matches_runtime(snapshot, compare_irrelevant_of_date_to_snapshot, biskotaki_ci_project, test_root):
     """Verify Snapshots against '.github/biskotaki.yaml' Gen Project."""
     ## GIVEN a Snapshot we maintain, reflecting the Gold Standard of Biskotaki
     from pathlib import Path
@@ -87,45 +174,39 @@ def test_snapshot_matches_runtime(snapshot, biskotaki_ci_project, test_root):
     # if running on CI
     RUNNING_ON_CI: bool = 'CI' in os.environ
 
-    if not RUNNING_ON_CI:
-        # just exclude pre-emptively '.vscode/' folder, and '.vscode/settings.json' file
-        # also exclude .tox/ folder, and .tox/ folder contents
-        snap_relative_paths_set = set(
-            [
-                x
-                for x in snap_relative_paths_set
-                if 'poetry.lock' not in x.parts
-                if '.vscode' not in x.parts
-                and 'settings.json' not in x.parts
-                and '.tox' not in x.parts
-                and 'dist' not in x.parts
-                and '.mypy_cache' not in x.parts
-                and x.parts
-                not in {
-                    ('reqs-prod+type.txt',),
-                    ('gg-reqs.txt',),
-                }
-            ]
-        )
+    # Useful for locally run Tests
+    # just exclude pre-emptively '.vscode/' folder, and '.vscode/settings.json' file
+    # also exclude .tox/ folder, and .tox/ folder contents
+    snap_relative_paths_set = set(
+        [
+            x
+            for x in snap_relative_paths_set
+            if 'poetry.lock' not in x.parts
+            if '.vscode' not in x.parts
+            and 'settings.json' not in x.parts
+            and '.tox' not in x.parts
+            and 'dist' not in x.parts
+            and '.mypy_cache' not in x.parts
+            and x.parts
+            not in {
+                ('reqs-prod+type.txt',),
+                ('gg-reqs.txt',),
+            }
+        ]
+    )
 
     if has_developer_fixed_windows_mishap:
         assert runtime_relative_paths_set == snap_relative_paths_set
+    elif running_on_windows:  # there is a log mishappening that we exists on windows
+        from cookiecutter_python._logging_config import (
+            FILE_TARGET_LOGS as LOG_FILE_NAME,
+        )
+
+        # create augmented set, with added extra file, as union of both sets
+        augmented_exp_set = snap_relative_paths_set.union({Path(LOG_FILE_NAME)})
+        assert runtime_relative_paths_set == augmented_exp_set
     else:
-        if running_on_windows:  # there is a log mishappening that we exists on windows
-            from cookiecutter_python._logging_config import (
-                FILE_TARGET_LOGS as LOG_FILE_NAME,
-            )
-
-            # create augmented set, with added extra file, as union of both sets
-            augmented_exp_set = snap_relative_paths_set.union({Path(LOG_FILE_NAME)})
-            assert runtime_relative_paths_set == augmented_exp_set
-        else:
-            assert runtime_relative_paths_set == snap_relative_paths_set
-
-    # if runtime has extras such as .vscode/ folder, then probably on tests are running
-    # on local dev machine were vscode was opened, at some point, in the Template Project folder
-
-    # To fix: exit, clean dir an rerun test !
+        assert runtime_relative_paths_set == snap_relative_paths_set
 
     ## THEN we expect the same files to have the same content
 
@@ -134,90 +215,14 @@ def test_snapshot_matches_runtime(snapshot, biskotaki_ci_project, test_root):
     # so, we hard exclude the line starting with the '0.0.1' string, to avoid
     # comparing rolling date with the static one in the snapshot
 
-    # first compare CHANGLOG files, then all other files
-    runtime_changelog = runtime_biskotaki / 'CHANGELOG.rst'  # the reality
-    snapshot_changelog = snapshot_dir / 'CHANGELOG.rst'  # the expectation
-
-    runtime_file_content = runtime_changelog.read_text().splitlines()
-    snap_file_content = snapshot_changelog.read_text().splitlines()
-    assert len(runtime_file_content) == len(snap_file_content)
-
-    line_pairs_generator = iter(
-        [
-            line_pair
-            for line_pair in [
-                x
-                for x in zip(runtime_file_content, snap_file_content)
-                if not x[0].startswith('0.0.1')
-            ]
-        ]
-    )
-
-    if RUNNING_ON_CI:  # quickly do sanity check
-        assert all([line_pair[0] == line_pair[1] for line_pair in line_pairs_generator]), (
-            f"File: CHANGELOG.rst has different content at Runtime vs Snapshot\n"
-            "-------------------\n"
-            f"Runtime: {runtime_changelog}\n"
-            "-------------------\n"
-            f"Snapshot: {snapshot_changelog}\n"
-            "-------------------\n"
-        )
-    else:  # sanity check indicating the exact failling line in case of error
-        for line_pair in line_pairs_generator:
-            assert line_pair[0] == line_pair[1], (
-                f"File: CHANGELOG.rst has different content at Runtime vs Snapshot\n"
-                "-------------------\n"
-                f"Runtime: {runtime_changelog}\n"
-                "-------------------\n"
-                f"Snapshot: {snapshot_changelog}\n"
-                "-------------------\n"
-                f"Line: {line_pair[0]}\n"
-                "-------------------\n"
-            )
+    # THEN Compare docs/conf.py and CHANGELOG.rst to disregard Calendar Year of Snapshot Creation vs Runtime
+    compare_irrelevant_of_date_to_snapshot(runtime_biskotaki, snapshot_dir)
 
     # Remove CHANGELOG.rst from Automatic Comparison
     automated_files = snap_relative_paths_set - {Path('CHANGELOG.rst')}
-
-    # THEN Compare docs/conf.py to disregard Calendar Year of Snapshot Creation vs Runtime
-    runtime_conf = runtime_biskotaki / 'docs' / 'conf.py'  # the reality
-    snapshot_conf = snapshot_dir / 'docs' / 'conf.py'  # the expectation
-
-    runtime_file_content = runtime_conf.read_text().splitlines()
-    snap_file_content = snapshot_conf.read_text().splitlines()
-
-    assert len(runtime_file_content) == len(snap_file_content)
-    line_pairs_generator = iter(
-        line_pair
-        for line_pair in [
-            x
-            for x in zip(runtime_file_content, snap_file_content)
-            if not (x[1].startswith('release =') or 'year=' in x[1])
-        ]
-    )
-    if RUNNING_ON_CI:  # quickly do sanity check
-        assert all([line_pair[0] == line_pair[1] for line_pair in line_pairs_generator]), (
-            f"File: docs/conf.py has different content at Runtime vs Snapshot\n"
-            "-------------------\n"
-            f"Runtime: {runtime_conf}\n"
-            "-------------------\n"
-            f"Snapshot: {snapshot_conf}\n"
-            "-------------------\n"
-        )
-    else:  # sanity check indicating the exact failling line in case of error
-        for line_pair in line_pairs_generator:
-            assert line_pair[0] == line_pair[1], (
-                f"File: docs/conf.py has different content at Runtime vs Snapshot\n"
-                "-------------------\n"
-                f"Runtime: {runtime_conf}\n"
-                "-------------------\n"
-                f"Snapshot: {snapshot_conf}\n"
-                "-------------------\n"
-                f"Line: {line_pair[0]}\n"
-                "-------------------\n"
-            )
-
     # Remove docs/conf.py from Automatic Comparison
     automated_files = automated_files - {Path('docs/conf.py')}
+
 
     ## AUTOMATIC Snapshot COMPARISON ##
 
