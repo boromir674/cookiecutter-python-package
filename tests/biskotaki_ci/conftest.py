@@ -139,10 +139,9 @@ default_context:
         assert UNINTENTIONALLY_PLACED_LOG_FILE.exists()
         assert UNINTENTIONALLY_PLACED_LOG_FILE.is_file()
         assert UNINTENTIONALLY_PLACED_LOG_FILE.stat().st_size == 0
-    else:
+    elif sys.platform != 'win32':
         # on Windows, it has been reported that the Log file exists!
-        if sys.platform != 'win32':
-            assert not UNINTENTIONALLY_PLACED_LOG_FILE.exists()
+        assert not UNINTENTIONALLY_PLACED_LOG_FILE.exists()
     ## Implementation Option 2
     # assert (
     #     not bug and not UNINTENTIONALLY_PLACED_LOG_FILE.exists()
