@@ -179,9 +179,8 @@ default_context:
                                 "author": "Konstantinos Lampridis",
                                 "author_email": 'k.lampridis@hotmail.com',
                                 "github_username": 'boromir674',
-                                # "project_short_description": "Project generated using https://github.com/boromir674/cookiecutter-python-package",
-                                "project_short_description": "{{ cookiecutter.project_short_description }}",
-                                "pypi_subtitle": "Project generated using https://github.com/boromir674/cookiecutter-python-package",
+                                "project_short_description": "Project generated using https://github.com/boromir674/cookiecutter-python-package",
+                                "pypi_subtitle": "{{ cookiecutter.project_short_description }}",
                                 # current date in format '2024-03-04'
                                 # "release_date": datetime.datetime.now().strftime('%Y-%m-%d'),
                                 "release_date": "{% now 'utc', '%Y-%m-%d' %}",
@@ -299,8 +298,8 @@ default_context:
                                 "author_email": 'k.lampridis@hotmail.com',
                                 "github_username": 'boromir674',
                                 # "project_short_description": "Project generated using https://github.com/boromir674/cookiecutter-python-package",
-                                "project_short_description": "{{ cookiecutter.project_short_description }}",
-                                "pypi_subtitle": "Project generated using https://github.com/boromir674/cookiecutter-python-package",
+                                "project_short_description": "Project generated from https://github.com/boromir674/cookiecutter-python-package/",
+                                "pypi_subtitle": "{{ cookiecutter.project_short_description }}",
                                 # current date in format '2024-03-04'
                                 # "release_date": datetime.datetime.now().strftime('%Y-%m-%d'),
                                 "release_date": "{% now 'utc', '%Y-%m-%d' %}",
@@ -412,8 +411,8 @@ default_context:
                             "author_email": 'k.lampridis@hotmail.com',
                             "github_username": 'boromir674',
                             # "project_short_description": "Project generated using https://github.com/boromir674/cookiecutter-python-package",
-                            "project_short_description": "{{ cookiecutter.project_short_description }}",
-                            "pypi_subtitle": "Project generated using https://github.com/boromir674/cookiecutter-python-package",
+                            "project_short_description": "Project generated from https://github.com/boromir674/cookiecutter-python-package/",
+                            "pypi_subtitle": "{{ cookiecutter.project_short_description }}",
                             # current date in format '2024-03-04'
                             # "release_date": datetime.datetime.now().strftime('%Y-%m-%d'),
                             # "release_date": RELEASE_DATE,
@@ -686,6 +685,7 @@ def test_cookiecutter_generates_context_with_expected_values(
                 p1[1] == p2[1]
             ), f"Context Missmatch at '{C_KEY}' -> '{p1[0]}': Runtime: '{p1[1]}', Expected: '{p2[1]}'"
 
+    # THEN the internal data in jinja context map under 'cookiecutter' key are as expected
     assert prod_result[C_KEY] == dict(
         EXPECTED_CONTEXT[C_KEY],
         **(
@@ -697,9 +697,8 @@ def test_cookiecutter_generates_context_with_expected_values(
         ),
     )
 
-    # AND the back-up/copy of raw data is place under '_cookiecutter' key as Dict
+    # SANITY the back-up/copy of raw data is place under '_cookiecutter' key as Dict
     assert isinstance(prod_result['_cookiecutter'], dict)
-
     # AND the internal data in jinja context map under '_cookiecutter' key are as expected
     assert len(prod_result['_cookiecutter']) == len(EXPECTED_CONTEXT['_cookiecutter'])
     for p1, p2 in zip(
@@ -707,6 +706,6 @@ def test_cookiecutter_generates_context_with_expected_values(
         EXPECTED_CONTEXT['_cookiecutter'].items(),
     ):
         assert p1[0] == p2[0]
-        if p1[0] in {'project_short_description', 'pypi_subtitle'}:
-            continue
-        assert p1[1] == p2[1], f"Error at key {p1[0]} with value {p1[1]}! Expected {p2[1]}!"
+        # if p1[0] in {'project_short_description', 'pypi_subtitle'}:
+        #     continue
+        assert p1[1] == p2[1], f"Error at key {p1[0]} with value '{p1[1]}'. Expected '{p2[1]}'!"
