@@ -151,7 +151,16 @@ def compare_file_content():
     return _compare_file_content
 
 
-def test_gs_matches_runtime(gen_gs_project, validate_project, compare_file_content, test_root):
+@pytest.fixture(scope='module')
+def file_gen():
+    def _file_gen(runtime_relative_paths_set: t.Set[Path]) -> t.Iterator[t.Tuple[Path, Path]]:
+        for relative_path in [x for x in sorted(runtime_relative_paths_set - {Path('cookie-py.log'), Path('CHANGELOG.rst')}) if x.is_file() and x.suffix != '.png']:
+            yield relative_path
+
+    return _file_gen
+
+
+def test_gs_matches_runtime(gen_gs_project, validate_project, compare_file_content, file_gen, test_root):
     ## GIVEN the Snapshot project files maintained for the Gold Standard of Biskotaki
     snapshot_dir: Path = test_root / 'data' / 'snapshots' / 'biskotaki-gold-standard'
     snap_relative_paths_set = validate_project(snapshot_dir)
@@ -193,56 +202,44 @@ def test_gs_matches_runtime(gen_gs_project, validate_project, compare_file_conte
         os.environ.get("BUG_LOG_DEL_WIN") != "permission_error"
     )
 
-    # we should implement an if run on CI check here
-    running_on_ci: bool = 'CI' in os.environ
-
-    if not running_on_ci:
-        # just exclude pre-emptively '.vscode/' folder, and '.vscode/settings.json' file
-        # also exclude .tox/ folder, and .tox/ folder contents
-        # also exlude reqs.txt, in case developer ran command `tox -e pin-deps`
-        snap_relative_paths_set = set(
-            [
-                x
-                for x in snap_relative_paths_set
-                if not (
-                    any(
-                        [
-                            p
-                            in {
-                                'poetry.lock',
-                                '.vscode',
-                                'settings.json',
-                                '.tox',
-                                '.pytest_cache',
-                            }
-                            for p in x.parts
-                        ]
-                    )
+    # This is useful for local development, to make the tests more reliable
+    snap_relative_paths_set = set(
+        [
+            x
+            for x in snap_relative_paths_set
+            if not (
+                any(
+                    [
+                        p
+                        in {
+                            'poetry.lock',
+                            '.vscode',
+                            'settings.json',
+                            '.tox',
+                            '.pytest_cache',
+                        }
+                        for p in x.parts
+                    ]
                 )
-            ]
-        )
-        snap_relative_paths_set = set(
-            [x for x in snap_relative_paths_set if x.name != 'reqs.txt']
-        )
+            )
+        ]
+    )
+    snap_relative_paths_set = set(
+        [x for x in snap_relative_paths_set if x.name != 'reqs.txt']
+    )
 
     if has_developer_fixed_windows_mishap:
         assert runtime_relative_paths_set == snap_relative_paths_set
+    elif running_on_windows:  # there is a log mishappening that we exists on windows
+        from cookiecutter_python._logging_config import (
+            FILE_TARGET_LOGS as LOG_FILE_NAME,
+        )
+
+        # create augmented set, with added extra file, as union of both sets
+        augmented_exp_set = snap_relative_paths_set.union({Path(LOG_FILE_NAME)})
+        assert runtime_relative_paths_set == augmented_exp_set
     else:
-        if running_on_windows:  # there is a log mishappening that we exists on windows
-            from cookiecutter_python._logging_config import (
-                FILE_TARGET_LOGS as LOG_FILE_NAME,
-            )
-
-            # create augmented set, with added extra file, as union of both sets
-            augmented_exp_set = snap_relative_paths_set.union({Path(LOG_FILE_NAME)})
-            assert runtime_relative_paths_set == augmented_exp_set
-        else:
-            assert runtime_relative_paths_set == snap_relative_paths_set
-
-    # if runtime has extras such as .vscode/ folder, then probably on tests are running
-    # on local dev machine were vscode was opened, at some point, in the Template Project folder
-
-    # To fix: exit, clean dir an rerun test !
+        assert runtime_relative_paths_set == snap_relative_paths_set
 
     ## THEN we expect the same files to have the same content
 
@@ -276,39 +273,9 @@ def test_gs_matches_runtime(gen_gs_project, validate_project, compare_file_conte
         "-------------------\n"
     )
 
-    def file_gen() -> t.Iterator[t.Tuple[Path, Path]]:
-        for runtime_file, relative_path in (
-            (rf, rel_path)
-            for rf, rel_path in [
-                (gen_gs_project / x, x)
-                for x in sorted(runtime_relative_paths_set - {Path('CHANGELOG.rst')})
-            ]
-            if rf.is_file()
-        ):
-            yield runtime_file, snapshot_dir / relative_path
-
-    debug = True
-    if debug:
-        for runtime_file, snap_file in ((x, y) for x, y in file_gen()):
-            if runtime_file.suffix == '.png':
-                assert runtime_file.is_file()
-                assert snap_file.is_file()
-                continue
-            # handle file with runtime logs
-            if runtime_file.name == 'cookie-py.log':
-                continue
-            # go line by line and assert each one for easier debugging
-            compare_file_content(runtime_file, snap_file)
-    else:
-        for runtime_file, snap_file in ((x, y) for x, y in file_gen()):
-            assert runtime_file.read_text() == snap_file.read_text(), (
-                f"File: {runtime_file.relative_to(gen_gs_project)} has different content at Runtime than in Snapshot\n"
-                "-------------------\n"
-                f"Runtime: {runtime_file}\n"
-                "-------------------\n"
-                f"Snapshot: {snap_file}\n"
-                "-------------------\n"
-            )
+    for runtime_file, snap_file in ((gen_gs_project / x, snapshot_dir / x) for x in file_gen(runtime_relative_paths_set)):
+        # go line by line and assert each one for easier debugging
+        compare_file_content(runtime_file, snap_file)
 
     # If error appears above,
     #  - either Generator has Regressed
