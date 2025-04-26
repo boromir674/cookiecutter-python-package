@@ -683,7 +683,9 @@ def get_expected_generated_files(
         # we leverage the same production mapping of builder_id to files
         from cookiecutter_python.hooks.post_gen_project import builder_id_2_files
 
-        for docs_builder_id, builder_files in ((k, v) for k, v in builder_id_2_files.items() if k != config.data['docs_builder']):
+        for docs_builder_id, builder_files in (
+            (k, v) for k, v in builder_id_2_files.items() if k != config.data['docs_builder']
+        ):
             assert all(
                 [isinstance(x, str) for x in builder_files]
             ), f"Temporary Requirement of Test Code: builder_files must be a list of strings, not {builder_files}"
