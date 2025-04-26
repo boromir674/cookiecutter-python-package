@@ -342,16 +342,11 @@ def verify_file_size_within_acceptable_limits():
 
 
 @pytest.fixture
-def safe_extract():
+def is_path_traversal_safe():
     """
-    Safely extract tarfile members to the specified path.
-    Ensures no file escapes the target directory.
+    Canonicalizes both paths and ensures `target` is strictly inside `base`.
     """
-    import re
-    import tarfile
-    from pathlib import Path
-
-    def is_path_traversal_safe(base: Path, target: Path) -> bool:
+    def _is_path_traversal_safe(base: Path, target: Path) -> bool:
         """
         Canonicalizes both paths and ensures `target` is strictly inside `base`.
         """
@@ -363,55 +358,72 @@ def safe_extract():
 
         return str(target_resolved).startswith(str(base_resolved))
 
-    def validate_tar_members(
-        tar: tarfile.TarFile, base_path: Path
-    ) -> t.Iterator[tarfile.TarInfo]:
-        # Location to extract to
-        base_path = base_path.resolve(strict=False)
-
-        for member in tar.getmembers():
-            # File Path after extraction
-            member_path = base_path / member.name
-
-            # Normalize and reject absolute paths and traversal
-            if not is_path_traversal_safe(base_path, member_path):
-                raise ValueError(f"Unsafe path detected in tar file: {member.name}")
-
-            # Optional: block symlinks inside tar to ensure secure extraction
-            if member.issym() or member.islnk():
-                raise ValueError(f"Symlink not allowed: {member.name}")
-
-            # Optional: sanitize explicitly (fails fast on traversal hints)
-            if (
-                # 1. Detect invalid characters or sequences commonly used in traversal attacks.
-                member.name is None
-                or any([x in member.name for x in {"..", "\\"}])
-                or
-                # 2. Enforce strict whitelist pattern. Adjust pattern as necessary.
-                any(
-                    [
-                        re.fullmatch(r"[a-zA-Z0-9_.\- {}%=\"]+", x) is None
-                        for x in member.name.split("/")
-                    ]
-                )
-            ):
-                # Extra: Use only allowed filenames if applicable
-                raise ValueError(f"Invalid file name '{member.name}'")
-
-            yield member
-
-    def _safe_extract(tar: tarfile.TarFile, path: Path):
-        """
-        Safely extract tar file into the given path using validated members.
-        """
-        path = path.resolve(strict=False)
-        tar.extractall(path=path, members=validate_tar_members(tar, path))
-
-    return _safe_extract
+    return _is_path_traversal_safe
 
 
 @pytest.fixture
-def assert_sdist_exact_file_structure(safe_extract, tmp_path: Path):
+def create_safe_extract():
+    """
+    Safely extract tarfile members to the specified path.
+    Ensures no file escapes the target directory.
+    """
+    import re
+    import tarfile
+
+    class TarMembersValidator:
+        def __init__(self, is_path_traversal_safe: t.Callable[[Path, Path], bool]):
+            self.is_path_traversal_safe = is_path_traversal_safe
+        
+        def validate_tar_members(
+            self,
+            tar: tarfile.TarFile, base_path: Path
+        ) -> t.Iterator[tarfile.TarInfo]:
+            # Location to extract to
+            base_path = base_path.resolve(strict=False)
+
+            for member in tar.getmembers():
+                # File Path after extraction
+                member_path = base_path / member.name
+
+                # Normalize and reject absolute paths and traversal
+                if not self.is_path_traversal_safe(base_path, member_path):
+                    raise ValueError(f"Unsafe path detected in tar file: {member.name}")
+
+                # Optional: block symlinks inside tar to ensure secure extraction
+                if member.issym() or member.islnk():
+                    raise ValueError(f"Symlink not allowed: {member.name}")
+
+                # Optional: sanitize explicitly (fails fast on traversal hints)
+                if (
+                    # 1. Detect invalid characters or sequences commonly used in traversal attacks.
+                    member.name is None
+                    or any([x in member.name for x in {"..", "\\"}])
+                    or
+                    # 2. Enforce strict whitelist pattern. Adjust pattern as necessary.
+                    any(
+                        [
+                            re.fullmatch(r"[a-zA-Z0-9_.\- {}%=\"]+", x) is None
+                            for x in member.name.split("/")
+                        ]
+                    )
+                ):
+                    # Extra: Use only allowed filenames if applicable
+                    raise ValueError(f"Invalid file name '{member.name}'")
+
+                yield member
+
+        def __call__(self, tar: tarfile.TarFile, path: Path):
+            """
+            Safely extract tar file into the given path using validated members.
+            """
+            path = path.resolve(strict=False)
+            tar.extractall(path=path, members=self.validate_tar_members(tar, path))
+
+    return lambda is_path_traversal_safe: TarMembersValidator(is_path_traversal_safe)
+
+
+@pytest.fixture
+def assert_sdist_exact_file_structure(create_safe_extract, is_path_traversal_safe, tmp_path: Path):
     def _verify_sdist_file_structure(
         sdist_built_at_runtime: Path, expected_file_structure: t.Tuple[str]
     ):
@@ -419,8 +431,10 @@ def assert_sdist_exact_file_structure(safe_extract, tmp_path: Path):
         extracted_from_tar_gz = tmp_path / "extracted_from_tar_gz"
         import tarfile
 
+        my_safe_extract = create_safe_extract(is_path_traversal_safe)
+        
         with tarfile.open(sdist_built_at_runtime, "r:gz") as tar:
-            safe_extract(tar, extracted_from_tar_gz)
+            my_safe_extract(tar, extracted_from_tar_gz)
 
         from cookiecutter_python import __version__
 

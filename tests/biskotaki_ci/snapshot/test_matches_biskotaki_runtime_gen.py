@@ -171,9 +171,6 @@ def test_snapshot_matches_runtime(snapshot, compare_irrelevant_of_date_to_snapsh
         os.environ.get("BUG_LOG_DEL_WIN") != "permission_error"
     )
 
-    # if running on CI
-    RUNNING_ON_CI: bool = 'CI' in os.environ
-
     # Useful for locally run Tests
     # just exclude pre-emptively '.vscode/' folder, and '.vscode/settings.json' file
     # also exclude .tox/ folder, and .tox/ folder contents
