@@ -49,11 +49,11 @@ wheels = [
 
 [[package]]
 name = "attrs"
-version = "21.4.0"
+version = "23.2.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/d7/77/ebb15fc26d0f815839ecd897b919ed6d85c050feeb83e100e020df9153d2/attrs-21.4.0.tar.gz", hash = "sha256:626ba8234211db98e869df76230a137c4c40a12d72445c45d5f5b716f076e2fd", size = 201839 }
+sdist = { url = "https://files.pythonhosted.org/packages/e3/fc/f800d51204003fa8ae392c4e8278f256206e7a919b708eef054f5f4b650d/attrs-23.2.0.tar.gz", hash = "sha256:935dc3b529c262f6cf76e50877d35a4bd3c1de194fd41f47a2b7ae8f19971f30", size = 780820 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/be/be/7abce643bfdf8ca01c48afa2ddf8308c2308b0c3b239a44e57d020afa0ef/attrs-21.4.0-py2.py3-none-any.whl", hash = "sha256:2d27e3784d7a565d36ab851fe94887c5eccd6a463168875832a1be79c82828b4", size = 60567 },
+    { url = "https://files.pythonhosted.org/packages/e0/44/827b2a91a5816512fcaf3cc4ebc465ccd5d598c45cefa6703fcf4a79018f/attrs-23.2.0-py3-none-any.whl", hash = "sha256:99b87a485a5820b23b879f04c2305b44b951b502fd64be915879d77a7e8fc6f1", size = 60752 },
 ]
 
 [[package]]
@@ -231,7 +231,7 @@ wheels = [
 
 [[package]]
 name = "cookiecutter-python"
-version = "2.5.4"
+version = "2.5.5"
 source = { editable = "." }
 dependencies = [
     { name = "attrs" },
@@ -288,7 +288,7 @@ typing = [
 
 [package.metadata]
 requires-dist = [
-    { name = "attrs", specifier = ">=21.4.0,<22.0.0" },
+    { name = "attrs", specifier = ">=23.0.0,<24.0.0" },
     { name = "build", marker = "extra == 'test'", specifier = ">=1.2.2.post1" },
     { name = "click", specifier = ">=8,<9" },
     { name = "cookiecutter", specifier = ">=2.1.1,<3.0.0" },
