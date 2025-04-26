@@ -5,7 +5,12 @@ source =
 [report]
 show_missing = true
 precision = 2
-omit = *migrations*
+omit =
+    *migrations*
+    biskotaki-gold-standard
+    biskotaki
+    my-new-project
+    my-fixture
 exclude_lines =
     raise NotImplementedError
     raise NotImplemented
