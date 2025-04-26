@@ -372,9 +372,8 @@ def user_config(distro_loc: Path) -> ConfigInterfaceProtocol:
             data = json.load(fp)
         return data
 
-    _load_context_yaml: t.Callable[[PathLike], t.MutableMapping] = lambda x: prod_load_yaml(x)[
-        'default_context'
-    ]
+    def _load_context_yaml(file_path: PathLike) -> t.MutableMapping[str, t.Any]:
+        return prod_load_yaml(file_path)['default_context']
 
     @attr.s(auto_attribs=True, slots=True)
     class ConfigData:
