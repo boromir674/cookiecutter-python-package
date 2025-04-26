@@ -30,6 +30,11 @@ RELEASE_DATE = datetime.datetime.now().strftime('%Y-%m-%d')
 # TEST CASE 2 depends on finding the .github/biskotaki.yaml in local checkout,
 # because its automatic discovery mechanism relies on relative path from this file
 
+# CONSTANTS
+
+PROD_TEMPLATE = 'PROD_TEMPLATE'
+
+
 TEST_TIME_BISKOTAKI_CONFIG = None
 SHOULD_SKIP = False
 
@@ -65,6 +70,30 @@ default_context:
         )
         fp.close()
         TEST_TIME_BISKOTAKI_CONFIG = Path(fp.name)
+
+
+@pytest.fixture
+def get_expected_context():
+    def _get_expected_context(expected_context: t.Dict[str, t.Any], folder_path: Path):
+        def gen():
+            # generator keys an inject _output_dir
+            for k, v in expected_context[C_KEY].items():
+                # if key is not _template, yield it
+                if k != '_template':
+                    yield k, v
+                # if key is _template, yield it and then yield _output_dir
+                else:
+                    yield k, v
+                    yield '_output_dir', str(folder_path.absolute())
+
+        return OrderedDict(
+            [
+                (C_KEY, OrderedDict([(k, v) for k, v in gen()])),
+                ('_cookiecutter', expected_context['_cookiecutter']),
+            ]
+        )
+
+    return _get_expected_context
 
 
 @pytest.fixture(
@@ -106,7 +135,7 @@ default_context:
         pytest.param(
             # TEST CASE 2 - Production Template included in Distribution
             (
-                'PROD_TEMPLATE',  # GIVEN the prod Template (cookiecutter.json + jinja Template project)
+                PROD_TEMPLATE,  # GIVEN the prod Template (cookiecutter.json + jinja Template project)
                 'BISKOTAKI_CONFIG',  # and the .github/biskotaki.yaml User Config YAML
                 # EXPECTED CONTEXT
                 OrderedDict(
@@ -179,9 +208,8 @@ default_context:
                                 "author": "Konstantinos Lampridis",
                                 "author_email": 'k.lampridis@hotmail.com',
                                 "github_username": 'boromir674',
-                                # "project_short_description": "Project generated using https://github.com/boromir674/cookiecutter-python-package",
-                                "project_short_description": "{{ cookiecutter.project_short_description }}",
-                                "pypi_subtitle": "Project generated using https://github.com/boromir674/cookiecutter-python-package",
+                                "project_short_description": "Project generated using https://github.com/boromir674/cookiecutter-python-package",
+                                "pypi_subtitle": "{{ cookiecutter.project_short_description }}",
                                 # current date in format '2024-03-04'
                                 # "release_date": datetime.datetime.now().strftime('%Y-%m-%d'),
                                 "release_date": "{% now 'utc', '%Y-%m-%d' %}",
@@ -225,7 +253,7 @@ default_context:
         pytest.param(
             # TEST CASE 3 - Production Template included in Distribution
             (
-                'PROD_TEMPLATE',  # GIVEN the prod Template (cookiecutter.json + jinja Template project)
+                PROD_TEMPLATE,  # GIVEN the prod Template (cookiecutter.json + jinja Template project)
                 'TEST_TIME_BISKOTAKI_CONFIG',  # and a User Config File that "should be identical" to .github/biskotaki.yaml
                 # EXPECTED CONTEXT
                 OrderedDict(
@@ -299,8 +327,8 @@ default_context:
                                 "author_email": 'k.lampridis@hotmail.com',
                                 "github_username": 'boromir674',
                                 # "project_short_description": "Project generated using https://github.com/boromir674/cookiecutter-python-package",
-                                "project_short_description": "{{ cookiecutter.project_short_description }}",
-                                "pypi_subtitle": "Project generated using https://github.com/boromir674/cookiecutter-python-package",
+                                "project_short_description": "Project generated from https://github.com/boromir674/cookiecutter-python-package/",
+                                "pypi_subtitle": "{{ cookiecutter.project_short_description }}",
                                 # current date in format '2024-03-04'
                                 # "release_date": datetime.datetime.now().strftime('%Y-%m-%d'),
                                 "release_date": "{% now 'utc', '%Y-%m-%d' %}",
@@ -343,7 +371,7 @@ default_context:
         ),
         (
             # TEST CASE 4 - Production Template + Gold Standard User Config
-            'PROD_TEMPLATE',  # GIVEN the prod Template (cookiecutter.json + jinja Template project)
+            PROD_TEMPLATE,  # GIVEN the prod Template (cookiecutter.json + jinja Template project)
             'GOLD_STANDARD_CONFIG',  # and the tests/data/gold-standard.yml
             # EXPECTED CONTEXT
             OrderedDict(
@@ -412,8 +440,8 @@ default_context:
                             "author_email": 'k.lampridis@hotmail.com',
                             "github_username": 'boromir674',
                             # "project_short_description": "Project generated using https://github.com/boromir674/cookiecutter-python-package",
-                            "project_short_description": "{{ cookiecutter.project_short_description }}",
-                            "pypi_subtitle": "Project generated using https://github.com/boromir674/cookiecutter-python-package",
+                            "project_short_description": "Project generated from https://github.com/boromir674/cookiecutter-python-package/",
+                            "pypi_subtitle": "{{ cookiecutter.project_short_description }}",
                             # current date in format '2024-03-04'
                             # "release_date": datetime.datetime.now().strftime('%Y-%m-%d'),
                             # "release_date": RELEASE_DATE,
@@ -448,16 +476,15 @@ default_context:
     ],
     ids=(
         'simple_template',  # TEST CASE 1
-        'prod_template',  # TEST CASE 2 (mutually exclusinve with Test Case 3)
+        'prod_template',  # TEST CASE 2 (mutually exclusive with Test Case 3)
         'test_prod_template',  # TEST CASE 3
         'gold_standard',  # TEST CASE 4
     ),
 )
 def template_test_case(
     request,
+    get_expected_context,
     distro_loc: Path,
-    mock_check,
-    user_config,  # for mocking future http requests to pypi.org and readthedocs.org
 ):
     # handles cookiecutters dedicated for testing and the one included in the distribution
     COOKIE_TEMPLATE_DIR: Path = (
@@ -477,6 +504,7 @@ def template_test_case(
     # Prepare Expected Context, produced at runtime by cookiecutter (under the hood)
     expected_context: OrderedDict = request.param[2]
 
+    # GIVEN the parent dir we expect the cookiecutter template to be in
     _expected_cookiecutter_parent_dir: str = str(COOKIE_TEMPLATE_DIR)
 
     # Solve issue of CI Windows, with a hack
@@ -514,67 +542,72 @@ def template_test_case(
         # ADD to Expected CONTEXT (ordered): interpreters
         expected_context[C_KEY]['interpreters'] = interpreters
 
-    COOKIECUTTER_CALLABLE: t.Callable
-
-    if request.param[0] == 'PROD_TEMPLATE':
-        assert isinstance(interpreters, dict)
-        assert isinstance(interpreters['supported-interpreters'], list)
-        assert len(interpreters['supported-interpreters']) > 0
-
-        # MOCK NETWORK ACCESS
-        FOUND_ON_PYPI = False
-        FOUND_ON_READTHEDOCS = False
-
-        # mock_check.config = type('A', (), {'data': {'pypi': 'pkg_name', 'readthedocs': 'readthedocs_project_slug'}})
-        mock_check.config = user_config[USER_CONFIG_FILE]
-        mock_check('pypi', FOUND_ON_PYPI)
-        mock_check('readthedocs', FOUND_ON_READTHEDOCS)
-
-        from cookiecutter_python.backend.main import generate as generate_callback
-
-        COOKIECUTTER_CALLABLE = generate_callback
-    else:
-        from cookiecutter.main import cookiecutter
-
-        def _generate_callback(**kwargs):
-            return cookiecutter(str(COOKIE_TEMPLATE_DIR), **kwargs)
-
-        COOKIECUTTER_CALLABLE = _generate_callback
-
-    def get_expected_context(folder_path: Path):
-        def gen():
-            # generator keys an inject _output_dir
-            for k, v in expected_context[C_KEY].items():
-                # if key is not _template, yield it
-                if k != '_template':
-                    yield k, v
-                # if key is _template, yield it and then yield _output_dir
-                else:
-                    yield k, v
-                    yield '_output_dir', str(folder_path.absolute())
-
-        return OrderedDict(
-            [
-                (C_KEY, OrderedDict([(k, v) for k, v in gen()])),
-                ('_cookiecutter', expected_context['_cookiecutter']),
-            ]
-        )
+    # Sanity Check
+    assert (
+        request.param[0] != 'PROD_TEMPLATE'
+        or isinstance(interpreters, dict)
+        and isinstance(interpreters['supported-interpreters'], list)
+        and len(interpreters['supported-interpreters']) > 0
+    )
 
     return {
         'cookie': COOKIE_TEMPLATE_DIR,
         'user_config': USER_CONFIG_FILE,
-        'get_expected_context': get_expected_context,
-        'cookiecutter_callback': COOKIECUTTER_CALLABLE,
+        'get_expected_context': lambda gen_proj_dir: get_expected_context(
+            expected_context, gen_proj_dir
+        ),
+        'alias_of_template_used': request.param[0],
     }
+
+
+CookiecutterCallable = t.Callable
+
+
+@pytest.fixture
+def cookiecutter_callable_mapping(
+    mock_check, user_config
+) -> t.Callable[[Path, Path], t.Dict[str, CookiecutterCallable]]:
+    # Mapping for COOKIECUTTER_CALLABLE
+    def prod_template_callable(config_file: Path):
+        mock_check.config = user_config[config_file]  # read the config file
+        mock_check('pypi', False)  # defer from network access and return False
+        mock_check('readthedocs', False)  # defer from network access and return False
+
+        from cookiecutter_python.backend.main import generate as generate_callback
+
+        return generate_callback
+
+    def test_template_callable(cookiecutter_template_dir: Path):
+        from cookiecutter.main import cookiecutter
+
+        def _generate_callback(**kwargs):
+            return cookiecutter(str(cookiecutter_template_dir), **kwargs)
+
+        return _generate_callback
+        # return lambda **kwargs: cookiecutter(str(cookiecutter_template_dir), **kwargs)
+
+    from collections import defaultdict
+
+    def _get_cookiecutter_callable_mapping(config_file: Path, cookiecutter_template_dir: Path):
+        cookiecutter_callable_mapping = defaultdict(
+            # we call cookiecutter directly
+            lambda: test_template_callable(cookiecutter_template_dir),
+            **{
+                # we call the cookiecutter_python.backend.main.generate  wrapper of cookiecutter callable
+                PROD_TEMPLATE: prod_template_callable(config_file),
+            },
+        )
+        return cookiecutter_callable_mapping
+
+    return _get_cookiecutter_callable_mapping
 
 
 @patch('cookiecutter.main.generate_context')
 def test_cookiecutter_generates_context_with_expected_values(
-    generate_context_mock,
-    template_test_case,
-    tmp_path: Path,
-    # mocker,
-    # get_object,
+    generate_context_mock,  # magic mock object
+    template_test_case,  # fixture with request.param, with Test Case Data
+    cookiecutter_callable_mapping,  # support to call cookiecutter
+    tmp_path: Path,  # pytest fixture
 ):
     """Verify generated Jinja Context, given Cookiecutter Template and User Config YAML."""
     # GIVEN a Cookiecutter Template: Dir with cookiecutter.json + {{ cookiecutter.project_name }}/
@@ -621,7 +654,9 @@ def test_cookiecutter_generates_context_with_expected_values(
     # and with the User Config YAML
     generate_context_mock.return_value = prod_result
 
-    template_test_case['cookiecutter_callback'](
+    callback_mapping = cookiecutter_callable_mapping(config_yaml, cookie)
+
+    callback_mapping[template_test_case['alias_of_template_used']](
         # str(cookie),  # template dir path
         config_file=str(config_yaml),
         default_config=False,
@@ -686,6 +721,7 @@ def test_cookiecutter_generates_context_with_expected_values(
                 p1[1] == p2[1]
             ), f"Context Missmatch at '{C_KEY}' -> '{p1[0]}': Runtime: '{p1[1]}', Expected: '{p2[1]}'"
 
+    # THEN the internal data in jinja context map under 'cookiecutter' key are as expected
     assert prod_result[C_KEY] == dict(
         EXPECTED_CONTEXT[C_KEY],
         **(
@@ -697,9 +733,8 @@ def test_cookiecutter_generates_context_with_expected_values(
         ),
     )
 
-    # AND the back-up/copy of raw data is place under '_cookiecutter' key as Dict
+    # SANITY the back-up/copy of raw data is place under '_cookiecutter' key as Dict
     assert isinstance(prod_result['_cookiecutter'], dict)
-
     # AND the internal data in jinja context map under '_cookiecutter' key are as expected
     assert len(prod_result['_cookiecutter']) == len(EXPECTED_CONTEXT['_cookiecutter'])
     for p1, p2 in zip(
@@ -707,6 +742,8 @@ def test_cookiecutter_generates_context_with_expected_values(
         EXPECTED_CONTEXT['_cookiecutter'].items(),
     ):
         assert p1[0] == p2[0]
-        if p1[0] in {'project_short_description', 'pypi_subtitle'}:
-            continue
-        assert p1[1] == p2[1], f"Error at key {p1[0]} with value {p1[1]}! Expected {p2[1]}!"
+        # if p1[0] in {'project_short_description', 'pypi_subtitle'}:
+        #     continue
+        assert (
+            p1[1] == p2[1]
+        ), f"Error at key {p1[0]} with value '{p1[1]}'. Expected '{p2[1]}'!"

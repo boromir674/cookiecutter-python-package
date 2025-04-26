@@ -13,3 +13,5 @@ jobs:
     steps:
       # HANDLER 1: Label PR, given file changes and Labeling Rules '.github/labeler.yml'
       - uses: actions/labeler@v5
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}  # Ensure GITHUB_TOKEN is used
