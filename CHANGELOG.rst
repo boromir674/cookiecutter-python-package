@@ -3,12 +3,22 @@ Changelog
 =========
 
 
-2.5.3 (2024-04-19)
+2.5.5 (2024-04-26)
 ==================
 
 Main goal was to reduce the **Cyclomatic Complexity** (McCabe) in the source code.
-- A new CI acceptance criteria was set to reject code with Complexity above 5!
-- Refactored code.
+
+Refactored code in `tests` to reduce Cyclomatic Complexity (McCabe) below 5
+
+- Currently, only 9 test functions exceed Cyclomatiic Complexity of 5.
+- Also, update Acceptance Criteria to max value **9** (previous 11) for Cyclomatic Complexity (McCabe) in CI
+
+
+2.5.4 (2024-04-19)
+==================
+
+Main goal was to reduce the **Cyclomatic Complexity** (McCabe) in the source code.
+- All python function code in `src`, have a maximum of **5** McCabe Cyclomatic Complexity!
 
 Also redesigned the way we generated alternative docs sites (ie mkdocs, pshinx) by using
 "if" noditional jinja expressions as fodler names.
