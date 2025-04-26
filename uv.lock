@@ -231,7 +231,7 @@ wheels = [
 
 [[package]]
 name = "cookiecutter-python"
-version = "2.5.5"
+version = "2.5.7"
 source = { editable = "." }
 dependencies = [
     { name = "attrs" },
