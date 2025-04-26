@@ -21,15 +21,14 @@ def test_referenced_job_output_vars_correspond_to_existing_jobs(
     snapshot: str,
     test_root: Path,
 ):
+    """Test that for a given snapshot project, its source Github Action workflows
+    yaml files "correctly" reference other jobs' output variables.
+
+    This is a regression test to ensure that the generated workflows are
+    logically correct and do not reference non-existing jobs.
+    """
     SNAPSHOT_PROJECT = test_root / 'data' / 'snapshots' / snapshot
     SNAPSHOT_NAME = snapshot
-    # SNAPSHOT_PROJECT, SNAPSHOT_NAME = snapshot_project_data
-    # This test checks that all jobs that reference variables from other jobs
-    # also depend on those jobs. This is important because otherwise the
-    # workflow will fail due to missing variables.
-    # This test is not exhaustive, but should catch most cases.
-    # The test is implemented as a pytest test because it's easier to write
-    # than a custom script.
 
     CICDDesignOption = t.Literal["stable", "experimental"]
 
@@ -85,43 +84,36 @@ def test_referenced_job_output_vars_correspond_to_existing_jobs(
     for yaml_workflow in cicd_option_2_yaml_file_paths[snapshot_cicd_value]:
         with yaml_workflow.open() as f:
             # GIVEN we successfully load the yaml file
-            try:
-                yaml_dict = yaml.safe_load(f)
-            # except poyo.exceptions.PoyoException as error:
-            except yaml.YAMLError as error:
-                raise RuntimeError(
-                    'Unable to parse YAML file {}. Error: {}' ''.format(yaml_workflow, error)
-                ) from error
-            # THEN we check the yaml_dict that all jobs that reference variables from other jobs also depend on those jobs
+            yaml_dict = yaml.safe_load(f)
 
+            # GIVEN all the declared jobs in the workflow
             jobs: t.Dict[str, t.Dict[str, t.Any]] = yaml_dict["jobs"]
 
-            for job_name, job_data in jobs.items():
+            # TODO: "scan" all job key/value pairs and not only those in the 'with' dict
+
+            for job_name, job_data in (
+                (job_name, job_data)
+                for job_name, job_data in jobs.items()
+                if 'with' in job_data
+            ):
                 # we start small: only verify on jobs that call other reusable workflows
-                if 'with' not in job_data:
-                    continue
                 with_dict = job_data['with']
 
                 # here every key maps to a reusable workflow input value
 
-                # WHEN we scan all values passed to the reusable workflow
                 # we try to find patterns such as '${{ needs.test_suite.outputs.PEP_VERSION }}'
-
-                # AND verify that test_suite extracted is also in needs of job_data
-                for key, value in with_dict.items():
-                    if not isinstance(value, str):
-                        continue
-                    if 'needs.' not in value:
-                        continue
+                for value in (
+                    value
+                    for value in with_dict.values()
+                    if isinstance(value, str) and 'needs.' in value
+                ):
+                    # WHEN we scan all values passed to the reusable workflow
                     parts = value.split('needs.')
-                    if len(parts) < 2:
-                        continue
                     job_name_referenced: str = parts[1].split('.')[0]
                     # AND verify that job_name_referenced is in the jobs
-                    if job_name_referenced not in jobs:
-                        pytest.fail(
-                            f"Job {job_name} references variables from other jobs, but {job_name_referenced} is not a job."
-                        )
+                    assert (
+                        job_name_referenced in jobs
+                    ), f"Job {job_name} references variables from other jobs, but {job_name_referenced} is not a job."
 
     # THEN we have successfully verified that all jobs that reference variables from other jobs also depend on those jobs
     # and the test passes

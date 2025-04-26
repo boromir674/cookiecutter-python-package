@@ -1,12 +1,8 @@
 import pytest
 
 
-def test_registering_multiple_exceptions_under_the_same_type_allows_catching_multiple_errors():
-    import json
-    import logging
-
-    logger = logging.getLogger(__name__)
-
+@pytest.fixture
+def real_scenario():
     # GIVEN a Sanitize Task - Type
     SANITIZE_TASK_TYPE = 'unit-test-sanitizer'
 
@@ -69,49 +65,37 @@ def test_registering_multiple_exceptions_under_the_same_type_allows_catching_mul
     with pytest.raises(StringWithImpropperCharsError):
         verify_input_string_not_empty_and_only_lowercase_latin_chars('123')
 
+
+def test_registering_multiple_exceptions_under_the_same_type_allows_catching_multiple_errors(
+    real_scenario,  # proves that "client-code" does not need to reference the exceptions
+    # but the exceptions are registered under the same type, so we can catch them
+):
     # THEN we should be able to catch both exceptions, in case of error
     class InputSanitizationError(Exception):
         pass
 
-    # WHEN we use the Sanitizer, as it is designed to be used, with empty string
+    # SANITY Santizer has been registered
+    from cookiecutter_python.backend import sanitize
+
+    # GIVEN a Sanitize Task - Type
+    SANITIZE_TASK_TYPE = 'unit-test-sanitizer'
+
+    # WHEN we use the Sanitizer, with empty string
     input_string = ''
     with pytest.raises(InputSanitizationError):
         try:
             sanitize[SANITIZE_TASK_TYPE](input_string)
         except sanitize.exceptions[SANITIZE_TASK_TYPE] as error:
-            logger.warning(
-                "Input String Value (format) Error: %s",
-                json.dumps(
-                    {
-                        'error': str(error),
-                        'input_string': input_string,
-                    },
-                    sort_keys=True,
-                    indent=4,
-                ),
-            )
             raise InputSanitizationError(
                 f"ERROR: '{input_string}' could not pass Sanitization, due to invalid format."
             ) from error
 
     # WHEN we use the Sanitizer, on string with non [a-z] characters
-
     input_string = '123'
     with pytest.raises(InputSanitizationError):
         try:
             sanitize[SANITIZE_TASK_TYPE](input_string)
         except sanitize.exceptions[SANITIZE_TASK_TYPE] as error:
-            logger.warning(
-                "Input String Value (format) Error: %s",
-                json.dumps(
-                    {
-                        'error': str(error),
-                        'input_string': input_string,
-                    },
-                    sort_keys=True,
-                    indent=4,
-                ),
-            )
             raise InputSanitizationError(
                 f"ERROR: '{input_string}' could not pass Sanitization, due to invalid format."
             ) from error

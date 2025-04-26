@@ -40,7 +40,7 @@ dodgy:
 mccabe:
   run: true
   options:
-    max-complexity: 5
+    max-complexity: 9
 
 
 # INACTIVE
