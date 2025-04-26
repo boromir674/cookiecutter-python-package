@@ -3,6 +3,12 @@ Changelog
 =========
 
 
+2.5.7 (2024-04-26)
+==================
+
+Changes only affect the `PR Labeler` Workflow, running on CI
+
+
 2.5.6 (2024-04-26)
 ==================
 

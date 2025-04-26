@@ -5,13 +5,13 @@ on:
 
 jobs:
   label_PR:
-    permissions:
-      contents: read
-      pull-requests: write
+    # permissions:
+    #   contents: read
+    #   pull-requests: write
     runs-on: ubuntu-latest
     # This Job behaves as a Listener to PR events, and each step is a Handler
     steps:
       # HANDLER 1: Label PR, given file changes and Labeling Rules '.github/labeler.yml'
       - uses: actions/labeler@v5
         with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}  # Ensure GITHUB_TOKEN is used
+          repo-token: ${{ secrets.COOKIECUTTER_PYTHON_PACKAGE_LABELER }}  # Ensure GITHUB_TOKEN is used
