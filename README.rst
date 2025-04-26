@@ -49,7 +49,7 @@ Link: https://github.com/boromir674/biskotaki/actions/runs/4157571651
    a. **Job Matrix**, spanning different `platform`'s and `python version`'s
 
       1. Platforms: `ubuntu-latest`, `macos-latest`
-      2. Python Interpreters: `3.7`, `3.8`, `3.9`, `3.10`, `3.11`, `3.12`
+      2. Python Interpreters: `3.8`, `3.9`, `3.10`, `3.11`, `3.12`
    b. **Parallel Job** execution, generated from the `matrix`, that runs the `Test Suite`
    c. **Artifact** store of **Source** and **Wheel** Distributions, factoring Platform and Python Version
 
