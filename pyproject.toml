@@ -14,7 +14,7 @@ build-backend = "poetry.core.masonry.api"
 name = "cookiecutter_python"
 ### ... ###
 
-version = "2.5.5"
+version = "2.5.6"
 description = "1-click Generator of Python Project, from Template with streamlined \"DevOps\" using a powerful CI/CD Pipeline."
 readme = "README.rst"
 license = "AGPL-3.0-only"
@@ -74,7 +74,7 @@ maintainers = [
 license = {text = "AGPL-3.0-only"}
 
 name = "cookiecutter_python"
-version = "2.5.5"
+version = "2.5.6"
 description = "1-click Generator of Python Project, from Template with streamlined \"DevOps\" using a powerful CI/CD Pipeline."
 readme = "README.rst"
 # keywords = []
@@ -92,7 +92,7 @@ dependencies = [
     "requests-futures<2.0.0,>=1.0.0",
     "gitpython<4.0.0,>=3.1.30; python_version < \"3.13\" and python_version >= \"3.7\"",
     "questionary<2.0.0,>=1.10.0",
-    "attrs<22.0.0,>=21.4.0",
+    "attrs >=23.0.0, <24.0.0",
     "pyyaml<7.0,>=6.0",
     "rich<14.0.0,>=13.0.0; python_version < \"3.13\" and python_version >= \"3.7\"",
     "jinja2-time<1.0.0,>=0.2.0",
