@@ -1,5 +1,7 @@
 import os
+
 import pytest
+
 
 RUNNING_ON_CI: bool = 'CI' in os.environ
 

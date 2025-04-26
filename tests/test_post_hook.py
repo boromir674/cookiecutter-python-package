@@ -1,6 +1,7 @@
 import typing as t
-import pytest
 from pathlib import Path
+
+import pytest
 
 
 ## TYPES

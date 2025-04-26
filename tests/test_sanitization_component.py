@@ -1,5 +1,6 @@
 import pytest
 
+
 @pytest.fixture
 def real_scenario():
     # GIVEN a Sanitize Task - Type
