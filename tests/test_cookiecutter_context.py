@@ -72,7 +72,6 @@ default_context:
         TEST_TIME_BISKOTAKI_CONFIG = Path(fp.name)
 
 
-
 @pytest.fixture
 def get_expected_context():
     def _get_expected_context(expected_context: t.Dict[str, t.Any], folder_path: Path):
@@ -93,6 +92,7 @@ def get_expected_context():
                 ('_cookiecutter', expected_context['_cookiecutter']),
             ]
         )
+
     return _get_expected_context
 
 
@@ -504,7 +504,7 @@ def template_test_case(
     # Prepare Expected Context, produced at runtime by cookiecutter (under the hood)
     expected_context: OrderedDict = request.param[2]
 
-    # GIVEN the parent dir we expect the cookiecutter template to be in 
+    # GIVEN the parent dir we expect the cookiecutter template to be in
     _expected_cookiecutter_parent_dir: str = str(COOKIE_TEMPLATE_DIR)
 
     # Solve issue of CI Windows, with a hack
@@ -543,28 +543,38 @@ def template_test_case(
         expected_context[C_KEY]['interpreters'] = interpreters
 
     # Sanity Check
-    assert request.param[0] != 'PROD_TEMPLATE' or isinstance(interpreters, dict) and isinstance(interpreters['supported-interpreters'], list) and len(interpreters['supported-interpreters']) > 0
+    assert (
+        request.param[0] != 'PROD_TEMPLATE'
+        or isinstance(interpreters, dict)
+        and isinstance(interpreters['supported-interpreters'], list)
+        and len(interpreters['supported-interpreters']) > 0
+    )
 
     return {
         'cookie': COOKIE_TEMPLATE_DIR,
         'user_config': USER_CONFIG_FILE,
-        'get_expected_context': lambda gen_proj_dir: get_expected_context(expected_context, gen_proj_dir),
+        'get_expected_context': lambda gen_proj_dir: get_expected_context(
+            expected_context, gen_proj_dir
+        ),
         'alias_of_template_used': request.param[0],
     }
 
+
 CookiecutterCallable = t.Callable
 
-@pytest.fixture
-def cookiecutter_callable_mapping(mock_check, user_config) -> t.Callable[[Path, Path], t.Dict[str, CookiecutterCallable]]:
 
+@pytest.fixture
+def cookiecutter_callable_mapping(
+    mock_check, user_config
+) -> t.Callable[[Path, Path], t.Dict[str, CookiecutterCallable]]:
     # Mapping for COOKIECUTTER_CALLABLE
     def prod_template_callable(config_file: Path):
-
         mock_check.config = user_config[config_file]  # read the config file
         mock_check('pypi', False)  # defer from network access and return False
         mock_check('readthedocs', False)  # defer from network access and return False
 
         from cookiecutter_python.backend.main import generate as generate_callback
+
         return generate_callback
 
     def test_template_callable(cookiecutter_template_dir: Path):
@@ -572,24 +582,24 @@ def cookiecutter_callable_mapping(mock_check, user_config) -> t.Callable[[Path, 
 
         def _generate_callback(**kwargs):
             return cookiecutter(str(cookiecutter_template_dir), **kwargs)
+
         return _generate_callback
         # return lambda **kwargs: cookiecutter(str(cookiecutter_template_dir), **kwargs)
 
     from collections import defaultdict
-    def _get_cookiecutter_callable_mapping(config_file: Path, cookiecutter_template_dir: Path):
 
+    def _get_cookiecutter_callable_mapping(config_file: Path, cookiecutter_template_dir: Path):
         cookiecutter_callable_mapping = defaultdict(
             # we call cookiecutter directly
-            lambda: test_template_callable(cookiecutter_template_dir), **{
+            lambda: test_template_callable(cookiecutter_template_dir),
+            **{
                 # we call the cookiecutter_python.backend.main.generate  wrapper of cookiecutter callable
                 PROD_TEMPLATE: prod_template_callable(config_file),
-            }
+            },
         )
         return cookiecutter_callable_mapping
 
     return _get_cookiecutter_callable_mapping
-
-
 
 
 @patch('cookiecutter.main.generate_context')
@@ -734,4 +744,6 @@ def test_cookiecutter_generates_context_with_expected_values(
         assert p1[0] == p2[0]
         # if p1[0] in {'project_short_description', 'pypi_subtitle'}:
         #     continue
-        assert p1[1] == p2[1], f"Error at key {p1[0]} with value '{p1[1]}'. Expected '{p2[1]}'!"
+        assert (
+            p1[1] == p2[1]
+        ), f"Error at key {p1[0]} with value '{p1[1]}'. Expected '{p2[1]}'!"

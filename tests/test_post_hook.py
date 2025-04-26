@@ -6,11 +6,13 @@ import pytest
 
 ## TYPES
 
+
 # Automatically, discover what files to create for an accurate emulated project
 ## Project Type Dependend Files ##
 # Types
 class RuntimeRequest(t.Protocol):
     module_name: str  # runtime value for {{ cookiecutter.pkg_name }}
+
 
 UniqueFile = t.Tuple[str, ...]  # One Files of a Project Type
 ProjectUniqueFiles = t.List[UniqueFile]  # All Files of a Project Type
@@ -30,7 +32,6 @@ ProjectType = t.Literal['module+cli', 'pytest-plugin']
 ProjectUniqueFilesMap = t.Dict[ProjectType, CreateProjectUniqueFilesList]
 
 
-
 # Fixture to "reduce complexity" of "create_context_from_emulated_project" fixture
 @pytest.fixture
 def generate_all_extra_files():
@@ -40,15 +41,25 @@ def generate_all_extra_files():
         project_types: ProjectUniqueFilesMap,
         emulated_context: t.Dict[str, str],
     ) -> t.Iterator[UniqueFile]:
-        for file_path_parts_tuple in (file_path_parts_tuple for proj_unique_files_from_request in project_types.values() for file_path_parts_tuple in proj_unique_files_from_request(
+        for file_path_parts_tuple in (
+            file_path_parts_tuple
+            for proj_unique_files_from_request in project_types.values()
+            for file_path_parts_tuple in proj_unique_files_from_request(
                 type('GG', (), {'module_name': emulated_context['pkg_name']})()
-            )):
+            )
+        ):
             assert type(file_path_parts_tuple) is tuple
             yield file_path_parts_tuple
-        for path_components_tuple in (path_components_tuple for cicd_version_unique_files in CICD_DELETE.values() for path_components_tuple in cicd_version_unique_files):
+        for path_components_tuple in (
+            path_components_tuple
+            for cicd_version_unique_files in CICD_DELETE.values()
+            for path_components_tuple in cicd_version_unique_files
+        ):
             assert type(path_components_tuple) is tuple
             yield path_components_tuple
+
     return _generate_all_extra_files
+
 
 ### IMPORTANT ###
 # UPDATE every time a NEW Template File is added to the Generator
@@ -133,7 +144,7 @@ def create_context_from_emulated_project(generate_all_extra_files, dat):
 
         # # Automatically, discover what files to create for an accurate emulated project
         # ## Project Type Dependend Files ##
-        
+
         # # TODO: Create Single Source of Truth (SoT), both to read here and for Post Removal
         # # to read in Post Gen Hook
         # # SEE 'get_docs_gen_internal_config', SoT solution for Docs post Removal
@@ -219,7 +230,9 @@ def create_dummy_files():
             file_path = (_file_path,)
             with open(absolute_proj_dir.joinpath(*file_path), 'w') as _file:
                 _file.write('print("Hello World!")\n')
+
     return _create_dummy_files
+
 
 ### IMPORTANT ###
 # UPDATE every time a NEW Template File is added to the Generator
@@ -257,7 +270,6 @@ def get_post_gen_main(create_dummy_files, get_object):
 
         _PYTHON_MINOR_VERSION = version_info.minor
 
-
         def mock_get_context():
             # to avoid bugs we require empty project dir, before emulated generation
             absolute_proj_dir = Path(project_dir).absolute()
@@ -277,7 +289,8 @@ def get_post_gen_main(create_dummy_files, get_object):
             # sanity check that sth got generated
             assert len(list(absolute_proj_dir.iterdir())) > 0
 
-            create_dummy_files(absolute_proj_dir,
+            create_dummy_files(
+                absolute_proj_dir,
                 extra_files=extra_files,
                 extra_non_empty_files=extra_non_empty_files,
             )

@@ -346,6 +346,7 @@ def is_path_traversal_safe():
     """
     Canonicalizes both paths and ensures `target` is strictly inside `base`.
     """
+
     def _is_path_traversal_safe(base: Path, target: Path) -> bool:
         """
         Canonicalizes both paths and ensures `target` is strictly inside `base`.
@@ -373,10 +374,9 @@ def create_safe_extract():
     class TarMembersValidator:
         def __init__(self, is_path_traversal_safe: t.Callable[[Path, Path], bool]):
             self.is_path_traversal_safe = is_path_traversal_safe
-        
+
         def validate_tar_members(
-            self,
-            tar: tarfile.TarFile, base_path: Path
+            self, tar: tarfile.TarFile, base_path: Path
         ) -> t.Iterator[tarfile.TarInfo]:
             # Location to extract to
             base_path = base_path.resolve(strict=False)
@@ -423,7 +423,9 @@ def create_safe_extract():
 
 
 @pytest.fixture
-def assert_sdist_exact_file_structure(create_safe_extract, is_path_traversal_safe, tmp_path: Path):
+def assert_sdist_exact_file_structure(
+    create_safe_extract, is_path_traversal_safe, tmp_path: Path
+):
     def _verify_sdist_file_structure(
         sdist_built_at_runtime: Path, expected_file_structure: t.Tuple[str]
     ):
@@ -432,7 +434,7 @@ def assert_sdist_exact_file_structure(create_safe_extract, is_path_traversal_saf
         import tarfile
 
         my_safe_extract = create_safe_extract(is_path_traversal_safe)
-        
+
         with tarfile.open(sdist_built_at_runtime, "r:gz") as tar:
             my_safe_extract(tar, extracted_from_tar_gz)
 

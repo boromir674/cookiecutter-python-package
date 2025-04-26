@@ -9,7 +9,6 @@ RUNNING_ON_CI: bool = 'CI' in os.environ
 @pytest.fixture
 def compare_irrelevant_of_date_to_snapshot():
     def _compare_confpy_to_snapshot(runtime_biskotaki, snapshot_dir):
-
         # first compare CHANGLOG files, then all other files
 
         runtime_conf = runtime_biskotaki / 'docs' / 'conf.py'  # the reality
@@ -27,9 +26,8 @@ def compare_irrelevant_of_date_to_snapshot():
             ]
         )
 
-
         runtime_changelog = runtime_biskotaki / 'CHANGELOG.rst'  # the reality
-        snapshot_changelog = snapshot_dir / 'CHANGELOG.rst'  # the expectation      
+        snapshot_changelog = snapshot_dir / 'CHANGELOG.rst'  # the expectation
 
         runtime_changelog_content = runtime_changelog.read_text().splitlines()
         snap_changelog_content = snapshot_changelog.read_text().splitlines()
@@ -45,10 +43,12 @@ def compare_irrelevant_of_date_to_snapshot():
                 ]
             ]
         )
-                
+
         if RUNNING_ON_CI:  # quickly do sanity check
             ## COMPARE docs/conf.py
-            assert all([line_pair[0] == line_pair[1] for line_pair in conf_line_pairs_generator]), (
+            assert all(
+                [line_pair[0] == line_pair[1] for line_pair in conf_line_pairs_generator]
+            ), (
                 f"File: docs/conf.py has different content at Runtime vs Snapshot\n"
                 "-------------------\n"
                 f"Runtime: {runtime_conf}\n"
@@ -56,7 +56,9 @@ def compare_irrelevant_of_date_to_snapshot():
                 f"Snapshot: {snapshot_conf}\n"
                 "-------------------\n"
             )
-            assert all([line_pair[0] == line_pair[1] for line_pair in changelog_line_pairs_generator]), (
+            assert all(
+                [line_pair[0] == line_pair[1] for line_pair in changelog_line_pairs_generator]
+            ), (
                 f"File: CHANGELOG.rst has different content at Runtime vs Snapshot\n"
                 "-------------------\n"
                 f"Runtime: {runtime_changelog}\n"
@@ -87,6 +89,7 @@ def compare_irrelevant_of_date_to_snapshot():
                     f"Line: {line_pair[0]}\n"
                     "-------------------\n"
                 )
+
     return _compare_confpy_to_snapshot
 
 
@@ -97,7 +100,9 @@ def compare_irrelevant_of_date_to_snapshot():
         'biskotaki-interactive',
     ],
 )
-def test_snapshot_matches_runtime(snapshot, compare_irrelevant_of_date_to_snapshot, biskotaki_ci_project, test_root):
+def test_snapshot_matches_runtime(
+    snapshot, compare_irrelevant_of_date_to_snapshot, biskotaki_ci_project, test_root
+):
     """Verify Snapshots against '.github/biskotaki.yaml' Gen Project."""
     ## GIVEN a Snapshot we maintain, reflecting the Gold Standard of Biskotaki
     from pathlib import Path
@@ -221,7 +226,6 @@ def test_snapshot_matches_runtime(snapshot, compare_irrelevant_of_date_to_snapsh
     automated_files = snap_relative_paths_set - {Path('CHANGELOG.rst')}
     # Remove docs/conf.py from Automatic Comparison
     automated_files = automated_files - {Path('docs/conf.py')}
-
 
     ## AUTOMATIC Snapshot COMPARISON ##
 

@@ -372,8 +372,9 @@ def user_config(distro_loc: Path) -> ConfigInterfaceProtocol:
             data = json.load(fp)
         return data
 
-    _load_context_yaml: t.Callable[[PathLike], t.MutableMapping] = lambda x: prod_load_yaml(x)['default_context']
-
+    _load_context_yaml: t.Callable[[PathLike], t.MutableMapping] = lambda x: prod_load_yaml(x)[
+        'default_context'
+    ]
 
     @attr.s(auto_attribs=True, slots=True)
     class ConfigData:
@@ -403,7 +404,6 @@ def user_config(distro_loc: Path) -> ConfigInterfaceProtocol:
         _loader: DataLoader = attr.ib(init=False)
         _data: t.Mapping = attr.ib(init=False)
 
-
         config_files = {
             'biskotaki': '.github/biskotaki.yaml',
             'without-interpreters': 'tests/data/biskotaki-without-interpreters.yaml',
@@ -412,15 +412,27 @@ def user_config(distro_loc: Path) -> ConfigInterfaceProtocol:
         # When no Config File suppied values are derived from Ccookiecutter.json
         default_parameters = {
             'data_file': distro_loc / 'cookiecutter.json',
-            'data_loader': lambda cls: lambda json_file_string_path: cls.transorm_json_data(_load_context_json(json_file_string_path)),
+            'data_loader': lambda cls: lambda json_file_string_path: cls.transorm_json_data(
+                _load_context_json(json_file_string_path)
+            ),
         }
 
         def __attrs_post_init__(self):
             # called on user_config[config_file]
-            
-            _data_file_path = ConfigData.default_parameters['data_file'] if self.path is None else Path(my_dir) / '..' / ConfigData.config_files.get(self.path, self.path)
-            self._loader = ConfigData.default_parameters['data_loader'](ConfigData) if self.path is None else lambda yaml_file_string_path: ConfigData.transorm_yaml_data(_load_context_yaml(yaml_file_string_path))
-            self._config_file_arg = _data_file_path if self.path is not None else None           
+
+            _data_file_path = (
+                ConfigData.default_parameters['data_file']
+                if self.path is None
+                else Path(my_dir) / '..' / ConfigData.config_files.get(self.path, self.path)
+            )
+            self._loader = (
+                ConfigData.default_parameters['data_loader'](ConfigData)
+                if self.path is None
+                else lambda yaml_file_string_path: ConfigData.transorm_yaml_data(
+                    _load_context_yaml(yaml_file_string_path)
+                )
+            )
+            self._config_file_arg = _data_file_path if self.path is not None else None
 
             assert _data_file_path.exists()
             assert _data_file_path.is_file()
@@ -456,9 +468,7 @@ def user_config(distro_loc: Path) -> ConfigInterfaceProtocol:
 
         @staticmethod
         def transorm_yaml_data(data: t.Dict[str, t.Any]):
-            data['initialize_git_repo'] = {'yes': True}.get(
-                data['initialize_git_repo'], False
-            )
+            data['initialize_git_repo'] = {'yes': True}.get(data['initialize_git_repo'], False)
             return data
 
         @property
@@ -891,6 +901,7 @@ def assert_files_committed_if_flag_is_on(
         except InvalidGitRepositoryError:
             _repo = None
         return _repo
+
     return _assert_files_commited
 
 
@@ -931,7 +942,8 @@ def my_run_subprocess():
             # cwd=project_directory,
         )
         completed_process = subprocess.run(  # pylint: disable=W1510
-            [executable] + list(args), **dict(dict(kwargs_dict, check=True, shell=False), **kwargs)
+            [executable] + list(args),
+            **dict(dict(kwargs_dict, check=True, shell=False), **kwargs),
         )
         return CLIResult(completed_process)
 

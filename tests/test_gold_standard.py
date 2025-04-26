@@ -154,13 +154,21 @@ def compare_file_content():
 @pytest.fixture(scope='module')
 def file_gen():
     def _file_gen(runtime_relative_paths_set: t.Set[Path]) -> t.Iterator[t.Tuple[Path, Path]]:
-        for relative_path in [x for x in sorted(runtime_relative_paths_set - {Path('cookie-py.log'), Path('CHANGELOG.rst')}) if x.is_file() and x.suffix != '.png']:
+        for relative_path in [
+            x
+            for x in sorted(
+                runtime_relative_paths_set - {Path('cookie-py.log'), Path('CHANGELOG.rst')}
+            )
+            if x.is_file() and x.suffix != '.png'
+        ]:
             yield relative_path
 
     return _file_gen
 
 
-def test_gs_matches_runtime(gen_gs_project, validate_project, compare_file_content, file_gen, test_root):
+def test_gs_matches_runtime(
+    gen_gs_project, validate_project, compare_file_content, file_gen, test_root
+):
     ## GIVEN the Snapshot project files maintained for the Gold Standard of Biskotaki
     snapshot_dir: Path = test_root / 'data' / 'snapshots' / 'biskotaki-gold-standard'
     snap_relative_paths_set = validate_project(snapshot_dir)
@@ -224,9 +232,7 @@ def test_gs_matches_runtime(gen_gs_project, validate_project, compare_file_conte
             )
         ]
     )
-    snap_relative_paths_set = set(
-        [x for x in snap_relative_paths_set if x.name != 'reqs.txt']
-    )
+    snap_relative_paths_set = set([x for x in snap_relative_paths_set if x.name != 'reqs.txt'])
 
     if has_developer_fixed_windows_mishap:
         assert runtime_relative_paths_set == snap_relative_paths_set
@@ -273,7 +279,9 @@ def test_gs_matches_runtime(gen_gs_project, validate_project, compare_file_conte
         "-------------------\n"
     )
 
-    for runtime_file, snap_file in ((gen_gs_project / x, snapshot_dir / x) for x in file_gen(runtime_relative_paths_set)):
+    for runtime_file, snap_file in (
+        (gen_gs_project / x, snapshot_dir / x) for x in file_gen(runtime_relative_paths_set)
+    ):
         # go line by line and assert each one for easier debugging
         compare_file_content(runtime_file, snap_file)
 

@@ -23,7 +23,7 @@ def test_referenced_job_output_vars_correspond_to_existing_jobs(
 ):
     """Test that for a given snapshot project, its source Github Action workflows
     yaml files "correctly" reference other jobs' output variables.
-    
+
     This is a regression test to ensure that the generated workflows are
     logically correct and do not reference non-existing jobs.
     """
@@ -91,21 +91,29 @@ def test_referenced_job_output_vars_correspond_to_existing_jobs(
 
             # TODO: "scan" all job key/value pairs and not only those in the 'with' dict
 
-            for job_name, job_data in ((job_name, job_data) for job_name, job_data in jobs.items() if 'with' in job_data):
+            for job_name, job_data in (
+                (job_name, job_data)
+                for job_name, job_data in jobs.items()
+                if 'with' in job_data
+            ):
                 # we start small: only verify on jobs that call other reusable workflows
                 with_dict = job_data['with']
 
                 # here every key maps to a reusable workflow input value
 
                 # we try to find patterns such as '${{ needs.test_suite.outputs.PEP_VERSION }}'
-                for value in (value for value in with_dict.values() if isinstance(value, str) and 'needs.' in value):
+                for value in (
+                    value
+                    for value in with_dict.values()
+                    if isinstance(value, str) and 'needs.' in value
+                ):
                     # WHEN we scan all values passed to the reusable workflow
                     parts = value.split('needs.')
                     job_name_referenced: str = parts[1].split('.')[0]
                     # AND verify that job_name_referenced is in the jobs
-                    assert job_name_referenced in jobs, (
-                        f"Job {job_name} references variables from other jobs, but {job_name_referenced} is not a job."
-                    )
+                    assert (
+                        job_name_referenced in jobs
+                    ), f"Job {job_name} references variables from other jobs, but {job_name_referenced} is not a job."
 
     # THEN we have successfully verified that all jobs that reference variables from other jobs also depend on those jobs
     # and the test passes

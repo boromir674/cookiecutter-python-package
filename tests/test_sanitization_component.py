@@ -66,7 +66,6 @@ def real_scenario():
         verify_input_string_not_empty_and_only_lowercase_latin_chars('123')
 
 
-
 def test_registering_multiple_exceptions_under_the_same_type_allows_catching_multiple_errors(
     real_scenario,  # proves that "client-code" does not need to reference the exceptions
     # but the exceptions are registered under the same type, so we can catch them
