@@ -3,6 +3,17 @@ Changelog
 =========
 
 
+2.5.8 (2025-04-27)
+==================
+
+Changes
+^^^^^^^
+
+test
+""""
+- reduce Cyclomatic Complexity of get_expected_generated_files to 8 (prev 9)
+
+
 2.5.7 (2024-04-26)
 ==================
 
