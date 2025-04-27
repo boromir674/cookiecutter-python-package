@@ -23,14 +23,6 @@ cookiecutter\_python.backend.check\_server\_result module
    :undoc-members:
    :show-inheritance:
 
-cookiecutter\_python.backend.gen\_docs\_common module
------------------------------------------------------
-
-.. automodule:: cookiecutter_python.backend.gen_docs_common
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 cookiecutter\_python.backend.helpers module
 -------------------------------------------
 
