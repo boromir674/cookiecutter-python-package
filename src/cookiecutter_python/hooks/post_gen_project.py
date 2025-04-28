@@ -63,20 +63,12 @@ def get_request():
             'builder': cookie_dict['docs_builder'],
             'python_runtime': cookie_dict['rtd_python_version'],
         },
-        # internally used to get the template folder of each Doc Builder
-        # 'docs_extra_info': DOCS,
     }
     return type('PostGenProjectRequest', (), data)
 
 
-class PostFileRemovalError(Exception):
-    pass
-
-
 ### Define specialized files present per 'project_type' ###
-# (ie 'module' or 'module+cli')
 # each set of files exists exclusively for a given 'project_type'
-
 
 # CLI have extra files for command-line entrypoint and unit testing them
 def CLI_ONLY(x):
@@ -86,7 +78,6 @@ def CLI_ONLY(x):
         ('tests', 'test_cli.py'),
         ('tests', 'test_invoking_cli.py'),
     ]
-
 
 # Pytest plugin must use the legacy setuptools backend (no poetry)
 # thus the setup.cfg and MANIFEST.in files are required
@@ -119,69 +110,44 @@ CICD_DELETE: t.Dict[str, t.List[t.Tuple[str, ...]]] = {
         ('.github', 'workflows', 'test.yaml'),
     ],
 }
-
-#     ('.github', 'workflows', 'test.yml'),
-# ]
-# CICD_STABLE_EXPERIMENTAL = lambda x: [
-#     ('.github', 'workflows', 'cicd.yml'),
-#     ('.github', 'workflows', 'codecov-upload.yml'),
-#     ('.github', 'workflows', 'signal-deploy.yml'),
-# ]
-
-# TODO: read from cookiecuuter['_template'] / cookiecutter.json
-# delete mkdocs.yml if not using mkdocs
-# delete sphinx files if not using sphinx
-builder_id_2_files = {
+### Define specialized files present per 'Docs Builder' option ###
+DOCS_FILES_EXTRA = {
     'mkdocs': ['mkdocs.yml', 'scripts/gen_api_refs_pages.py'],
 }
 
 
-###### V1 POST FILE REMOVAL
+###### POST Gen FILE REMOVALs
 def post_file_removal(request):
     """Preserve only files relevant to Project Type requested to Generate."""
-    # Remove special files only relevant to Project Type {module, cli+comule, pytest-plugin}
-    _remove_irrelevant_project_type_files(request)
-    # Remove files depending on CI/CD Pipeline Design input
-    _remove_irrelevant_ci_cd_files(request)
+    # Remove files that are not relevant to the selected project type {module, cli+comule, pytest-plugin}
+    files_to_remove = [
+        os.path.join(request.project_dir, *x)
+        for x in delete_files[request.vars['project_type']](request)
+    ]
+    _delete_files(files_to_remove)
+    # Remove files that are not relevant to the selected CI/CD Design option
+    irrelevant_ci_cd_files = [
+        os.path.join(request.project_dir, *path_components)
+        for path_components in CICD_DELETE[request.vars['cicd']]
+    ]
+    _delete_files(irrelevant_ci_cd_files)
     # Remove generated docs folders, but the input builder (ie mkdocs/sphinx) selected
     _remove_irrelevant_docs_folders(request.project_dir)
     # Remove some top-level files depending on input (ie mkdocs.yml)
     _remove_irrelevant_top_level_files(request)
 
 
-def _remove_irrelevant_project_type_files(request):
-    """Remove files that are not relevant to the selected project type."""
-    files_to_remove = [
-        os.path.join(request.project_dir, *x)
-        for x in delete_files[request.vars['project_type']](request)
-    ]
-    _delete_files(files_to_remove)
-
-
-def _remove_irrelevant_ci_cd_files(request):
-    """Remove files that are not relevant to the selected CI/CD option."""
-    irrelevant_ci_cd_files = [
-        os.path.join(request.project_dir, *path_components)
-        for path_components in CICD_DELETE[request.vars['cicd']]
-    ]
-    _delete_files(irrelevant_ci_cd_files)
-
-
 def _remove_irrelevant_docs_folders(gen_project_dir: str):
     """Remove generated docs folders that are not relevant to the selected docs builder."""
     # find top-level folders and delte the ones with name 'PyGen_TO_DELETE'
-    for folder in Path(gen_project_dir).iterdir():
-        if folder.is_dir() and folder.name == 'PyGen_TO_DELETE':
-            shutil.rmtree(folder, ignore_errors=True)
+    for docs_folder_to_delete in (folder for folder in Path(gen_project_dir).iterdir() if folder.is_dir() and folder.name == 'PyGen_TO_DELETE'):
+        shutil.rmtree(docs_folder_to_delete, ignore_errors=True)
 
 
 def _remove_irrelevant_top_level_files(request):
-    """Remove top-level files that are not relevant to the selected docs builder."""
-    for builder_id, files in builder_id_2_files.items():
-        if builder_id != request.docs_website['builder']:
-            for file in files:
-                os.remove(os.path.join(request.project_dir, file))
-
+    """Remove irrelevant to selected docs builder files, that are outside docs folder."""
+    for irrelevant_to_builder_file in [x for builder_id, files in DOCS_FILES_EXTRA.items() if builder_id != request.docs_website['builder'] for x in files]:
+        os.remove(os.path.join(request.project_dir, irrelevant_to_builder_file))
 
 def _delete_files(files_to_remove):
     """Delete a list of files if they exist."""
@@ -189,8 +155,7 @@ def _delete_files(files_to_remove):
         Path(file).unlink(missing_ok=True)
 
 
-###################
-
+###### LOG FILE REMOVAL
 
 def _take_care_of_logs(logs_file: Path):
     """Remove accidental App Log file, if found inside the Generated Project.
@@ -233,11 +198,7 @@ def _take_care_of_logs(logs_file: Path):
         # Tell user about this, and let them decide what to do
         print(f"[INFO]: Captured Logs were written in {logs_file}")
 
-
-class GitBinaryNotFoundError(Exception):
-    pass
-
-
+## COMMIT ##
 def iter_files(request):
     path_obj = Path(request.project_dir)
     for file_path in path_obj.rglob('*'):
@@ -273,8 +234,7 @@ def git_commit(request):
     request.repo.index.commit(commit_message, author=author, committer=copy(author))
 
 
-###### v2 POST HOOK
-
+###### POST HOOK
 
 def post_hook():
     """Delete irrelevant to Project Type files and optionally do git commit."""
