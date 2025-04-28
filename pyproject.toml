@@ -16,7 +16,7 @@ name = "cookiecutter_python"
 
 version = "2.5.8"
 description = "1-click Generator of Python Project, from Template with streamlined \"DevOps\" using a powerful CI/CD Pipeline."
-readme = "README.rst"
+readme = "README.md"
 license = "AGPL-3.0-only"
 
 # OLD
@@ -39,7 +39,7 @@ include = [
     # because path = "src/stubs/*.pyi" does not work
     "pyproject.toml",
     "LICENSE",
-    "README.rst",
+    "README.md",
     "CONTRIBUTING.md",
     "CHANGELOG.rst",
     # "Dockerfile",
@@ -76,7 +76,7 @@ license = {text = "AGPL-3.0-only"}
 name = "cookiecutter_python"
 version = "2.5.8"
 description = "1-click Generator of Python Project, from Template with streamlined \"DevOps\" using a powerful CI/CD Pipeline."
-readme = "README.rst"
+readme = "README.md"
 # keywords = []
 # classifiers = []
 
