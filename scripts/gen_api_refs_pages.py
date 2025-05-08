@@ -19,7 +19,9 @@ logger = logging.getLogger(__name__)
 # Loop, recursively, over all Python *.py Files, inside 'src' dir and subdirs
 # except for src/cookiecutter_python/{{ cookiecutter.project_slug }} dir
 
-for path in sorted(x for x in src.rglob("*.py") if '{{ cookiecutter.project_slug }}' not in x.parts):
+for path in sorted(
+    x for x in src.rglob("*.py") if '{{ cookiecutter.project_slug }}' not in x.parts
+):
     print(f"Processing {path}")
     ## 1. extract Relative path from Python File and remove suffix (.py)
     # EG src/biskotaki/cli.py  -->   biskotaki/cli

@@ -70,6 +70,7 @@ def get_request():
 ### Define specialized files present per 'project_type' ###
 # each set of files exists exclusively for a given 'project_type'
 
+
 # CLI have extra files for command-line entrypoint and unit testing them
 def CLI_ONLY(x):
     return [
@@ -78,6 +79,7 @@ def CLI_ONLY(x):
         ('tests', 'test_cli.py'),
         ('tests', 'test_invoking_cli.py'),
     ]
+
 
 # Pytest plugin must use the legacy setuptools backend (no poetry)
 # thus the setup.cfg and MANIFEST.in files are required
@@ -140,14 +142,24 @@ def post_file_removal(request):
 def _remove_irrelevant_docs_folders(gen_project_dir: str):
     """Remove generated docs folders that are not relevant to the selected docs builder."""
     # find top-level folders and delte the ones with name 'PyGen_TO_DELETE'
-    for docs_folder_to_delete in (folder for folder in Path(gen_project_dir).iterdir() if folder.is_dir() and folder.name == 'PyGen_TO_DELETE'):
+    for docs_folder_to_delete in (
+        folder
+        for folder in Path(gen_project_dir).iterdir()
+        if folder.is_dir() and folder.name == 'PyGen_TO_DELETE'
+    ):
         shutil.rmtree(docs_folder_to_delete, ignore_errors=True)
 
 
 def _remove_irrelevant_top_level_files(request):
     """Remove irrelevant to selected docs builder files, that are outside docs folder."""
-    for irrelevant_to_builder_file in [x for builder_id, files in DOCS_FILES_EXTRA.items() if builder_id != request.docs_website['builder'] for x in files]:
+    for irrelevant_to_builder_file in [
+        x
+        for builder_id, files in DOCS_FILES_EXTRA.items()
+        if builder_id != request.docs_website['builder']
+        for x in files
+    ]:
         os.remove(os.path.join(request.project_dir, irrelevant_to_builder_file))
+
 
 def _delete_files(files_to_remove):
     """Delete a list of files if they exist."""
@@ -156,6 +168,7 @@ def _delete_files(files_to_remove):
 
 
 ###### LOG FILE REMOVAL
+
 
 def _take_care_of_logs(logs_file: Path):
     """Remove accidental App Log file, if found inside the Generated Project.
@@ -198,6 +211,7 @@ def _take_care_of_logs(logs_file: Path):
         # Tell user about this, and let them decide what to do
         print(f"[INFO]: Captured Logs were written in {logs_file}")
 
+
 ## COMMIT ##
 def iter_files(request):
     path_obj = Path(request.project_dir)
@@ -235,6 +249,7 @@ def git_commit(request):
 
 
 ###### POST HOOK
+
 
 def post_hook():
     """Delete irrelevant to Project Type files and optionally do git commit."""

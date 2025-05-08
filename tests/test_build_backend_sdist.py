@@ -9,6 +9,13 @@ import pytest
 # EXPECTATIONS as fixture
 @pytest.fixture(scope="session")
 def sdist_expected_correct_file_structure():
+    METADATA = (
+        'pyproject.toml',
+        'README.md',
+        'CHANGELOG.rst',
+        'LICENSE',
+        'CONTRIBUTING.md',
+    )
     SRC = tuple(
         ['src/cookiecutter_python/{{ cookiecutter.project_slug }}/' + x for x in METADATA]
     ) + (
@@ -291,13 +298,6 @@ def sdist_expected_correct_file_structure():
         'tests/test_sanitization_component.py',
         'tests/test_sanity.py',
         'tests/test_snapshot_workflow_yaml.py',
-    )
-    METADATA = (
-        'pyproject.toml',
-        'README.md',
-        'LICENSE',
-        'CHANGELOG.rst',
-        'CONTRIBUTING.md',
     )
     # Injected by Build Backend (Process)
     ADDED_METADATA = ('PKG-INFO',)

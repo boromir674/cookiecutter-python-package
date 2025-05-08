@@ -5,7 +5,7 @@ from .load_config import get_interpreters_from_yaml
 
 def pre_main(request):
     """Do preparatory steps before the Generation process.
-    
+
     Makes Request Futures and modifies the Template Context.
     """
     ## External Services Clients Initialization ##
