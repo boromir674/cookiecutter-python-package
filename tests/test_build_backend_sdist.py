@@ -17,7 +17,10 @@ def sdist_expected_correct_file_structure():
         'CONTRIBUTING.md',
     )
     SRC = tuple(
-        ['src/cookiecutter_python/{{ cookiecutter.project_slug }}/' + x for x in METADATA_SHIPPED_IN_TEMPLATE_PROJECT]
+        [
+            'src/cookiecutter_python/{{ cookiecutter.project_slug }}/' + x
+            for x in METADATA_SHIPPED_IN_TEMPLATE_PROJECT
+        ]
     ) + (
         # COOKIECUTTER TEMPLATE
         'src/cookiecutter_python/cookiecutter.json',
