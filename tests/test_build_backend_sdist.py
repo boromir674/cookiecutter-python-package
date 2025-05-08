@@ -9,15 +9,15 @@ import pytest
 # EXPECTATIONS as fixture
 @pytest.fixture(scope="session")
 def sdist_expected_correct_file_structure():
-    METADATA = (
+    METADATA_SHIPPED_IN_TEMPLATE_PROJECT = (
         'pyproject.toml',
-        'README.md',
+        'README.rst',
         'CHANGELOG.rst',
         'LICENSE',
         'CONTRIBUTING.md',
     )
     SRC = tuple(
-        ['src/cookiecutter_python/{{ cookiecutter.project_slug }}/' + x for x in METADATA]
+        ['src/cookiecutter_python/{{ cookiecutter.project_slug }}/' + x for x in METADATA_SHIPPED_IN_TEMPLATE_PROJECT]
     ) + (
         # COOKIECUTTER TEMPLATE
         'src/cookiecutter_python/cookiecutter.json',
@@ -298,6 +298,14 @@ def sdist_expected_correct_file_structure():
         'tests/test_sanitization_component.py',
         'tests/test_sanity.py',
         'tests/test_snapshot_workflow_yaml.py',
+    )
+    # METADATA of this PROJECT
+    METADATA = (
+        'pyproject.toml',
+        'README.md',
+        'LICENSE',
+        'CHANGELOG.rst',
+        'CONTRIBUTING.md',
     )
     # Injected by Build Backend (Process)
     ADDED_METADATA = ('PKG-INFO',)
