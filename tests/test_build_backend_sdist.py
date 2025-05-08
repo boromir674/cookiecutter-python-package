@@ -9,14 +9,6 @@ import pytest
 # EXPECTATIONS as fixture
 @pytest.fixture(scope="session")
 def sdist_expected_correct_file_structure():
-    METADATA = (
-        'pyproject.toml',
-        # TODO: generate md files instead of rst!
-        'README.rst',
-        'CHANGELOG.rst',
-        'LICENSE',
-        'CONTRIBUTING.md',
-    )
     SRC = tuple(
         ['src/cookiecutter_python/{{ cookiecutter.project_slug }}/' + x for x in METADATA]
     ) + (
@@ -302,7 +294,7 @@ def sdist_expected_correct_file_structure():
     )
     METADATA = (
         'pyproject.toml',
-        'README.rst',
+        'README.md',
         'LICENSE',
         'CHANGELOG.rst',
         'CONTRIBUTING.md',
