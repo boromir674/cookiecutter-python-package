@@ -50,3 +50,7 @@ coverage\.xml
 coverage\.*
 check-yaml
 TODOs.md
+dist-wheels/
+biskotaki\.log
+tests/data/snapshots/biskotaki-gold-standard/site/
+site/
