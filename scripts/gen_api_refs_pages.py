@@ -1,11 +1,11 @@
 """Generate the code reference pages."""
 
+import logging
 import typing as t
 from pathlib import Path
 
 import mkdocs_gen_files
 
-import logging
 
 # Initialize the navigation object
 nav = mkdocs_gen_files.Nav()
