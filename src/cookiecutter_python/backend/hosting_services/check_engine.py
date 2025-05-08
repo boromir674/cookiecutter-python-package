@@ -1,4 +1,4 @@
-from typing import List, Tuple, Union
+from typing import Iterator, List, Tuple, Union
 
 import attr
 
@@ -34,7 +34,7 @@ class Engine:
     def handle(self, request_result):
         return self.handlers(request_result)
 
-    def check(self, servers: List[str]):
+    def check(self, servers: List[str]) -> Iterator:
         """Request Future per supported server, for web hosting service checks
 
         For each server the dedicated 'checker' is called, which tries to
@@ -48,7 +48,7 @@ class Engine:
             servers (List[str]): [description]
 
         Returns:
-            [type]: [description]
+            Iterator: of custom objects with 'future' evaluatable attribute
         """
         return iter(filter(None, [getattr(self, server)() for server in servers]))
 
