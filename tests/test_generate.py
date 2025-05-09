@@ -57,7 +57,6 @@ def test_supported_python_interpreters(
     project_dir: str = generate(
         checkout=None,
         no_input=True,
-        extra_context=None,
         replay=False,
         overwrite=False,
         output_dir=tmpdir,

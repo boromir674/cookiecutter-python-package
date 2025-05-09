@@ -68,17 +68,17 @@ jobs:
         run: |
           . .venv/bin/activate
 
-          echo "[INFO] Running Doc Tests!"
-          sphinx-build -E -b doctest docs dist/docs
+          # echo "[INFO] Running Doc Tests!"
+          # sphinx-build -E -b doctest docs dist/docs
 
           echo "[INFO] Building docs"
-          sphinx-build -E -b html docs dist/docs
+          mkdocs build --site-dir dist/docs
 
-          echo "[INFO] Building docs with spelling check"
-          sphinx-build -b spelling docs dist/docs
+          # echo "[INFO] Building docs with spelling check"
+          # sphinx-build -b spelling docs dist/docs
 
-          echo "[INFO] Building docs with url link check"
-          sphinx-build -b linkcheck docs dist/docs || 'true'
+          # echo "[INFO] Building docs with url link check"
+          # sphinx-build -b linkcheck docs dist/docs || 'true'
 
       - name: "Upload Docs HTML/CSS/JS bundle to CI Artifacts"
         if: inputs.upload_distro
