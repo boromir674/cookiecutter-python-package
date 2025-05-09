@@ -22,7 +22,7 @@ build:
     post_install:
       # Reproducible Docs Building Environment - stetup/installation
       # - uv pip install --no-deps -r prod+docs.txt
-      - python pip install --no-deps -e .
+      - python -m pip install --no-deps -e .
       # Install dependencies for the 'pre_build' step
       - python -m pip install pyyaml
     pre_build:
