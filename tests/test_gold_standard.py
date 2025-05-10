@@ -153,7 +153,7 @@ def compare_file_content():
 
 @pytest.fixture(scope='module')
 def file_gen():
-    def _file_gen(runtime_relative_paths_set: t.Set[Path]) -> t.Iterator[t.Tuple[Path, Path]]:
+    def _file_gen(runtime_relative_paths_set: t.Set[Path]) -> t.Iterator[Path]:
         for relative_path in [
             x
             for x in sorted(

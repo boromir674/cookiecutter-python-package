@@ -10,6 +10,11 @@ import yaml
 logger = logging.getLogger(__name__)
 
 
+SupportedInterpreters = t.TypedDict(
+    "SupportedInterpreters", {"supported-interpreters": t.Sequence[str]}
+)
+
+
 def load_yaml(config_file) -> t.MutableMapping:
     # TODO use a proxy to load yaml
     with io.open(config_file, encoding='utf-8') as file_handle:
@@ -25,7 +30,7 @@ def load_yaml(config_file) -> t.MutableMapping:
 
 def get_interpreters_from_yaml(
     config_file: str,
-) -> t.Optional[t.Mapping[str, t.Sequence[str]]]:
+) -> t.Optional[SupportedInterpreters]:
     """Parse the 'interpreters' variable out of the user's config yaml file.
 
     Args:
@@ -60,7 +65,7 @@ def _validate_and_get_context(data: t.MutableMapping) -> t.MutableMapping:
 
 def _extract_interpreters(
     context: t.MutableMapping,
-) -> t.Optional[t.Mapping[str, t.Sequence[str]]]:
+) -> t.Optional[SupportedInterpreters]:
     """Extract the interpreters from the 'default_context'."""
     interpreters = context.get('interpreters')
 
@@ -72,14 +77,14 @@ def _extract_interpreters(
         return _parse_interpreters_from_string(interpreters)
 
     if isinstance(interpreters, dict):
-        return interpreters
+        return t.cast(SupportedInterpreters, interpreters)
 
     raise UserYamlDesignError('Interpreters value is not a string or a dictionary')
 
 
 def _parse_interpreters_from_string(
     interpreters: str,
-) -> t.Optional[t.Mapping[str, t.Sequence[str]]]:
+) -> t.Optional[SupportedInterpreters]:
     """Parse interpreters from a JSON string."""
     logger.warning(
         "User's YAML is now expected to contain a dictionary for the 'interpreters' key"
