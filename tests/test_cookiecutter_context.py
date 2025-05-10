@@ -630,7 +630,6 @@ def test_cookiecutter_generates_context_with_expected_values(
 
     expected_extra_context_passed = None
 
-
     from cookiecutter.generate import generate_context
 
     # SANITY no calls to generate_context yet

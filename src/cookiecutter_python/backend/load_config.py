@@ -10,9 +10,9 @@ import yaml
 logger = logging.getLogger(__name__)
 
 
-SupportedInterpreters = t.TypedDict("SupportedInterpreters", {
-    "supported-interpreters": t.Sequence[str]
-})
+SupportedInterpreters = t.TypedDict(
+    "SupportedInterpreters", {"supported-interpreters": t.Sequence[str]}
+)
 
 
 def load_yaml(config_file) -> t.MutableMapping:

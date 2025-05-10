@@ -35,11 +35,10 @@ def pre_main(request):
 
     # If INTERACTIVE, Run Interactive Dialog Pipeline, to update Context
     if interactive_mode:
-
         ### INTERACTIVE TERMINAL DIALOGS ###
         user_input = parse_context(request.config_file)
 
-        ## STORE CONTEXT ## 
+        ## STORE CONTEXT ##
         _context.update(
             {
                 # Adapt from dialog to same interface as cookiecutter.json and biskotaki ci config file yaml
