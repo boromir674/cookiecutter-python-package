@@ -99,7 +99,9 @@ git commit -m "chore: sem ver bump to ${NEW_VERSION}"
 
 
 ## 2. CHANGELOG Update ##
-
+echo
+echo " STEP 2 ---> Do Heuristic CHANGELOG Auto-Update, by parsing Commits written in 'conventional' format"
+. /data/repos/software-release/.env
 # Do Heuristic Auto-Update, by parsing commits written in "conventional" format
 release-software-rolling -cl -mb master -nv ${NEW_VERSION}
 
