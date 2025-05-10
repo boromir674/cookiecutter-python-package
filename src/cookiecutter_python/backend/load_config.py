@@ -10,6 +10,11 @@ import yaml
 logger = logging.getLogger(__name__)
 
 
+SupportedInterpreters = t.TypedDict("SupportedInterpreters", {
+    "supported-interpreters": t.Sequence[str]
+})
+
+
 def load_yaml(config_file) -> t.MutableMapping:
     # TODO use a proxy to load yaml
     with io.open(config_file, encoding='utf-8') as file_handle:
@@ -25,7 +30,7 @@ def load_yaml(config_file) -> t.MutableMapping:
 
 def get_interpreters_from_yaml(
     config_file: str,
-) -> t.Optional[t.Mapping[str, t.Sequence[str]]]:
+) -> t.Optional[SupportedInterpreters]:
     """Parse the 'interpreters' variable out of the user's config yaml file.
 
     Args:

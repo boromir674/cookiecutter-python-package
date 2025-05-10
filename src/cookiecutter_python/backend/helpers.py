@@ -1,25 +1,26 @@
 import json
 import logging
+from pathlib import Path
 import typing as t
+
+from jinja2 import Environment, FileSystemLoader
+from cookiecutter_python.handle.interactive_cli_pipeline import (
+    InteractiveDialogsPipeline,
+)
+
+logger = logging.getLogger(__name__)
+
+my_dir = Path(__file__).parent.absolute()
 
 
 GivenInterpreters = t.Mapping[str, t.Sequence[str]]
 
-logger = logging.getLogger(__name__)
-
 
 def parse_context(config_file: str):
     """Render Context on demand, using cookiecutter.json and optional config file."""
-    from pathlib import Path
-
-    my_dir = Path(__file__).parent.absolute()
 
     # use whatever way cookiecutter uses to render the cookiecutter.json
-    # cookie uses Jinja2
-
-    from jinja2 import Environment, FileSystemLoader
-
-    # render file
+    # cookiecutter uses Jinja2 to render files
     env = Environment(
         loader=FileSystemLoader(str(my_dir / '..')),
         extensions=['jinja2_time.TimeExtension'],  # shipped with cookiecutter 1.7
@@ -64,10 +65,6 @@ def parse_context(config_file: str):
         cook_json,
         **{k: v for k, v in user_default_context.items()},
         **{k: v[0] for k, v in choices.items() if k not in user_default_context},
-    )
-
-    from cookiecutter_python.handle.interactive_cli_pipeline import (
-        InteractiveDialogsPipeline,
     )
 
     pipe = InteractiveDialogsPipeline()

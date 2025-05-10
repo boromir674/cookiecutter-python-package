@@ -4,25 +4,20 @@ from .load_config import get_interpreters_from_yaml
 
 
 def pre_main(request):
-    """Do preparatory steps before the Generation process.
+    """Do preparatory steps before the Generation (rendering) process.
 
-    Makes Request Futures and modifies the Template Context.
+    Uses Futures to make async http request to pypi.org and readthedocs.org web
+    servers to check if the "intented" project name/id is already taken.
+
+    This is done to proactively notify the user after the Generation process
+    that the project name/id is already taken, and to suggest they either change
+    the project name/id or to re-run the generation process with a different
+    project name/id.
     """
     ## External Services Clients Initialization ##
-    # clients "how to question" 3rd party web services like pypi, and rtd
-    # making http request to web servers hosting endpoints for APIs
-
-    # Checkers are initialized as 'Activated'
-
-    # Activate Async HTTP only if all below are True:
-    # - User did not pass the --offline CLI flag
-    # - User did not pass the --default-config CLI flag
-    # - User passed a Config file YAML
 
     # Activate: if User Config is given and Default Config is False
-    deactivate_signal: bool = bool(request.default_config)
-    if request.offline:
-        deactivate_signal = True
+    deactivate_signal = request.offline or bool(request.default_config)
 
     request.check = Engine.create(request.config_file, deactivate_signal)
 
@@ -38,24 +33,22 @@ def pre_main(request):
     _context = request.extra_context or {}
     interactive_mode = not bool(request.no_input)
 
-    # If INTERACTIVE, Run Dialog Pipeline, to update Context
+    # If INTERACTIVE, Run Interactive Dialog Pipeline, to update Context
     if interactive_mode:
-        # Render Context to be used in Dialogs
+
+        ### INTERACTIVE TERMINAL DIALOGS ###
         user_input = parse_context(request.config_file)
+
+        ## STORE CONTEXT ## 
         _context.update(
             {
+                # Adapt from dialog to same interface as cookiecutter.json and biskotaki ci config file yaml
                 'interpreters': {
                     'supported-interpreters': user_input.pop('supported-interpreters')
-                },  # 'supported-interpreters
-                # 'supported-interpreters': user_input.pop('supported-interpreters'),
+                },
                 **user_input,
             }
         )
-    elif request.config_file and bool(
-        interpreters := get_interpreters_from_yaml(request.config_file)
-    ):
-        # just update interpreters cookiecutter extra_context
-        _context['interpreters'] = interpreters
 
-    request.extra_context = dict(_context)
+    request.extra_context = dict(_context) if _context else None
     return request

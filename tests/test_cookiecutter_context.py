@@ -625,14 +625,11 @@ def test_cookiecutter_generates_context_with_expected_values(
     # GIVEN a way to "track" the input passed at runtime to cookiecutter's generate_context function
     from cookiecutter.config import get_config
 
-    user_config_dict = get_config(config_yaml)
-    expected_default_context_passed = user_config_dict['default_context']
+    user_config_dict: t.Dict = get_config(config_yaml)
+    expected_default_context_passed: t.Dict = user_config_dict['default_context']
 
     expected_extra_context_passed = None
-    if 'interpreters' in EXPECTED_CONTEXT['cookiecutter']:
-        expected_extra_context_passed = {
-            'interpreters': EXPECTED_CONTEXT['cookiecutter']['interpreters']
-        }
+
 
     from cookiecutter.generate import generate_context
 
@@ -674,6 +671,8 @@ def test_cookiecutter_generates_context_with_expected_values(
     # AND we check the runtime input passed to cookiecutter's generate_context function
     # THEN the internal generate_context of coociecutter was called with expected runtime input values
 
+    # THEN the Cookiecutter generate function was called with contenxt values
+    # from config file and extra context value from pre_main
     generate_context_mock.assert_called_with(
         context_file=str(
             Path(EXPECTED_CONTEXT['cookiecutter']['_template']) / 'cookiecutter.json'
