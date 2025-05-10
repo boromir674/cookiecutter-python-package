@@ -60,6 +60,10 @@ plugins:
       nav_file: SUMMARY.md
   - section-index
 
+  # Enable displaying at the bottom of pages the last date of modification!
+  # uv add --optional docs 'mkdocs-git-revision-date-localized-plugin'
+  - git-revision-date-localized
+
 markdown_extensions:
   - mkdocs-click
   - pymdownx.highlight

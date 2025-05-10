@@ -163,9 +163,50 @@ read -ep "Press any key to make a RELEASE CANDIDATE '${RELEASE_BR}' branch from 
 RC_TAG="v${RELEASE_BR}-rc"
 
 git tag -f "$RC_TAG"
-git tag push origin -f "$RC_TAG"
+git push origin -f "$RC_TAG"
 
 echo
 echo "Release Candidate Pipeline Triggered !"
 
+# press any key to continue
+read -ep "Please watch the CI/CD Pipeline to succeed (press any key to continue to 'live watch') !" -n1 -s
+
 gh run watch
+
+echo "========================="
+echo "Assuming CI/CD Pipeline Succeeded !"
+
+echo "[NEXT] Please run the below to complete merge to 'main'"
+echo
+echo 'gh pr merge --subject "[NEW] Python Project Generator v${NEW_VERSION}" --body "Release v${NEW_VERSION}" --merge'
+
+echo "[IF] prohibitted, you can use --admin flag:"
+echo
+echo 'gh pr merge --admin --subject "[NEW] Python Project Generator v${NEW_VERSION}" --body "Release v${NEW_VERSION}" --merge'
+
+echo
+# press any key to continue
+read -ep "After Merge to '${DEFAULT_BRANCH}' branch is made (ie via CLI or github.com), press any key to proceed with updating local '${DEFAULT_BRANCH}' branch" -n1 -s
+
+echo "========================="
+
+git checkout ${DEFAULT_BRANCH}
+git pull
+
+git tag -f "v${NEW_VERSION}"
+git push origin -f "v${NEW_VERSION}"
+echo
+echo "Release v${NEW_VERSION} is now tagged !"
+echo
+
+# press any key to continue
+read -ep "Please watch the CI/CD Pipeline to succeed (press any key to continue to 'live watch') !" -n1 -s
+
+gh run watch
+
+# after success pypi and docker artifacts pushed !! :-)
+echo
+echo "========================="
+echo "Release v${NEW_VERSION} is now tagged and pushed to PyPi and Docker Hub !"
+echo
+echo " [FINISH] :-)"
