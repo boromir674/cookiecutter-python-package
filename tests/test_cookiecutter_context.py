@@ -670,8 +670,8 @@ def test_cookiecutter_generates_context_with_expected_values(
     # AND we check the runtime input passed to cookiecutter's generate_context function
     # THEN the internal generate_context of coociecutter was called with expected runtime input values
 
-    # THEN the Cookiecutter generate function was called with contenxt values
-    # from config file and extra context value from pre_main
+    # THEN internally cookiecutter passes the expected arguments to the
+    # cookiecutter.generate.generate_context function
     generate_context_mock.assert_called_with(
         context_file=str(
             Path(EXPECTED_CONTEXT['cookiecutter']['_template']) / 'cookiecutter.json'

@@ -1,6 +1,5 @@
 from .helpers import parse_context
 from .hosting_services import Engine
-from .load_config import get_interpreters_from_yaml
 
 
 def pre_main(request):
