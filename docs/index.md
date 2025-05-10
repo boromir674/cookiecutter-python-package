@@ -156,7 +156,7 @@ and capabilities.
 
     [:octicons-arrow-right-24: :material-language-python: Architecture ](./topics/arch.md)
 
-    [:octicons-arrow-right-24: :material-generator-portable: Generator Process ](./topics/cli_logic.md)
+    [:octicons-arrow-right-24: :material-generator-portable: Generator Process ](./topics/generator_process.md)
 
 
 -   :fontawesome-solid-book-open:{ .lg .middle } __Development Topics__
