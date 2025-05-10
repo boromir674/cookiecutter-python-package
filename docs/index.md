@@ -1,6 +1,9 @@
 # Welcome to `Cookiecutter Python Package` Documentation!
 
-**Cookiecutter Python Package**, is an open source project [github.com/boromir674/cookiecutter-python-package](https://github.com/boromir674/cookiecutter-python-package), that **Generates** `Open Source Python Projects`!
+[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/boromir674/cookiecutter-python-package/test.yaml?style=for-the-badge&logo=github%20actions&logoColor=%2365CDCA&label=CI%2FCD&link=https%3A%2F%2Fgithub.com%2Fboromir674%2Fcookiecutter-python-package%2Factions%2Fworkflows%2Ftest.yaml)](https://github.com/boromir674/cookiecutter-python-package/actions/workflows/test.yaml)    [![Read the Docs](https://img.shields.io/readthedocs/python-package-generator?style=for-the-badge&logo=read%20the%20docs&logoColor=%2365CDCA&label=Docs)](https://python-package-generator.readthedocs.io/en/master/)    [![Release Version](https://img.shields.io/pypi/v/cookiecutter_python?style=for-the-badge&logo=pypi&logoColor=%2365CDCA)](https://pypi.org/project/cookiecutter-python/)      [![Coverage](https://img.shields.io/codecov/c/github/boromir674/cookiecutter-python-package/master?style=for-the-badge&logo=codecov&logoColor=%2365CDCA)](https://app.codecov.io/gh/boromir674/cookiecutter-python-package)
+[![PyPI Stats](https://img.shields.io/pypi/dm/cookiecutter-python?logoColor=%2365CDCA&logo=pypi&color=%23849ED9)](https://pypistats.org/packages/cookiecutter-python)     [![Maintainability](https://api.codeclimate.com/v1/badges/1d347d7dfaa134fd944e/maintainability)](https://codeclimate.com/github/boromir674/cookiecutter-python-package/maintainability)      [![Tech Debt](https://img.shields.io/codeclimate/tech-debt/boromir674/cookiecutter-python-package)](https://codeclimate.com/github/boromir674/cookiecutter-python-package/)     [![OpenSSF](https://bestpractices.coreinfrastructure.org/projects/5988/badge)](https://bestpractices.coreinfrastructure.org/en/projects/5988)
+
+**Cookiecutter Python Package**, is an open source project, that **Generates** `Open Source Python Projects`!
 
 ## A few words
 
@@ -156,7 +159,7 @@ and capabilities.
 
     [:octicons-arrow-right-24: :material-language-python: Architecture ](./topics/arch.md)
 
-    [:octicons-arrow-right-24: :material-generator-portable: Generator Process ](./topics/cli_logic.md)
+    [:octicons-arrow-right-24: :material-generator-portable: Generator Process ](./topics/generator_process.md)
 
 
 -   :fontawesome-solid-book-open:{ .lg .middle } __Development Topics__

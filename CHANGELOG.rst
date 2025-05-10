@@ -3,6 +3,22 @@ Changelog
 =========
 
 
+2.5.10 (2025-05-10)
+===================
+
+Changes
+^^^^^^^
+
+documentation
+"""""""""""""
+- add badges in Docs Site Landing Page
+- fix link
+
+chore
+"""""
+- sem ver bump to 2.5.10
+
+
 2.5.9 (2025-05-10)
 ==================
 
