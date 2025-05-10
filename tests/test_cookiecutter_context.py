@@ -625,7 +625,7 @@ def test_cookiecutter_generates_context_with_expected_values(
     # GIVEN a way to "track" the input passed at runtime to cookiecutter's generate_context function
     from cookiecutter.config import get_config
 
-    user_config_dict: t.Dict = get_config(config_yaml)
+    user_config_dict: t.MutableMapping[str, t.Any] = get_config(config_yaml)
     expected_default_context_passed: t.Dict = user_config_dict['default_context']
 
     expected_extra_context_passed = None

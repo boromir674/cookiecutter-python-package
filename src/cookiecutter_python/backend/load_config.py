@@ -65,7 +65,7 @@ def _validate_and_get_context(data: t.MutableMapping) -> t.MutableMapping:
 
 def _extract_interpreters(
     context: t.MutableMapping,
-) -> t.Optional[t.Mapping[str, t.Sequence[str]]]:
+) -> t.Optional[SupportedInterpreters]:
     """Extract the interpreters from the 'default_context'."""
     interpreters = context.get('interpreters')
 
@@ -77,14 +77,14 @@ def _extract_interpreters(
         return _parse_interpreters_from_string(interpreters)
 
     if isinstance(interpreters, dict):
-        return interpreters
+        return t.cast(SupportedInterpreters, interpreters)
 
     raise UserYamlDesignError('Interpreters value is not a string or a dictionary')
 
 
 def _parse_interpreters_from_string(
     interpreters: str,
-) -> t.Optional[t.Mapping[str, t.Sequence[str]]]:
+) -> t.Optional[SupportedInterpreters]:
     """Parse interpreters from a JSON string."""
     logger.warning(
         "User's YAML is now expected to contain a dictionary for the 'interpreters' key"
