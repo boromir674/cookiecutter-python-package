@@ -1,0 +1,188 @@
+site_name: 'Cookiecutter Python Package'
+site_url: 'https://python-package-generator.readthedocs.io/'
+
+site_description: '1-click Generator of Python Project, from Template with streamlined \"DevOps\" using a powerful CI/CD Pipeline.'
+site_author: 'Konstantinos Lampridis'
+
+repo_url: 'https://github.com/boromir674/cookiecutter-python-package/'
+repo_name: 'boromir674/cookiecutter-python-package'
+edit_uri: blob/main/docs/
+
+theme:
+  # 1
+  name: material
+  icon:
+    logo: material/palette
+    previous: fontawesome/solid/angle-left
+    next: fontawesome/solid/angle-right
+    default: material/tag
+
+  features:
+    - navigation.path
+    - navigation.top
+    - navigation.footer
+    # enables switching multiple tabs with the same name
+    - content.tabs.link
+    # renders copy button on code blocks
+    - content.code.copy
+
+plugins:
+  # Enable jinja inside your markdown files
+  # - allows {% include %} statements
+  # - requires careful escape of double-braces in markdown
+  # - requires wrapping content between {% raw %} and {% endraw %}
+  # https://github.com/fralau/mkdocs_macros_plugin
+  - macros:
+      include_dir: docs/includes
+
+  # Authors need installation
+  # - git-authors
+
+  # Automated Tags - Page Generation
+  # - tags
+  - tags:
+      tags_file: tags.md
+  
+  # BASIC SEARCH PLUGIN
+  - search
+  # MERMAID Render Support
+  - mermaid2
+  # Directives Provider for docstrings parsing
+  - mkdocstrings
+  # gain the ability to tap-in to the build process
+  - gen-files:
+      # scripts allowing to programmatically generate .md content
+      scripts:
+        # custom script to generate API references
+        - scripts/gen_api_refs_pages.py
+  # programmatically generate Nav Item: ie 'reference/' entry in Navigation
+  - literate-nav:
+      nav_file: SUMMARY.md
+  - section-index
+
+markdown_extensions:
+  - mkdocs-click
+  - pymdownx.highlight
+  ### ADMONITIONS ###
+  # enabled block kelements such as example, note, info, warning, tip, etc
+  # https://squidfunk.github.io/mkdocs-material/reference/admonitions/
+  - admonition
+
+  ### SUPERFENCES ###
+  # arbitrary nesting of code and content blocks inside each other,
+  # including admonitions, tabs, lists and all other elements
+  # https://squidfunk.github.io/mkdocs-material/setup/extensions/python-markdown-extensions/#superfences
+  # this custom fence defined below with name 'mermaid' is required
+  # to prevent superfences from breaking mermaid default syntax (3 backticks)!
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+  ### TABBED ###
+  # usage of content tabs, a simple way to group related content and
+  # code blocks under accessible tabs.
+  # https://squidfunk.github.io/mkdocs-material/setup/extensions/python-markdown-extensions/#tabbed
+  - pymdownx.tabbed:
+      alternate_style: true
+
+  ### GRIDS ###
+  - attr_list
+  - md_in_html
+
+  ### ICONS/EMOJIS ###
+  # https://squidfunk.github.io/mkdocs-material/reference/icons-emojis/#with-colors-docsstylesheetsextracss
+  # The following icon sets are bundled with Material for MkDocs:
+  #  – Material Design: https://pictogrammers.com/library/mdi/
+  #  – FontAwesome    : https://fontawesome.com/search?ic=free
+  #  – Octicons       : https://primer.style/octicons/
+  #  – Simple Icons   : https://simpleicons.org/
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+
+  ### On-HOVER TOOLTIP ###
+  # abbr by default supports tooltips on url links
+  - abbr
+  # if attr_list is also added, then tooltips on other html elements are supported as below:
+  # ie :material-information-outline:{ title="Important information" }
+
+  # The Details extension supercharges the Admonition extension, making the resulting call-outs collapsible, allowing them to be opened and closed by the user.
+  # https://squidfunk.github.io/mkdocs-material/setup/extensions/python-markdown-extensions/#details
+  # example: ??? blahblah
+  # expanded example: ???+ blahblah
+  # if element is insise non-trivial content wrap in div with class markdown 
+  - pymdownx.details
+
+###### SITE NAVIGATION ######
+nav:
+  ## Landing Page ##
+  - Home: index.md
+
+  ## Motivation ##
+  - Motivation: topics/why_this_package.md
+
+  ## TUTORIALS ##
+  # - Tutorials:
+    # Landing Page
+    # - "tutorials/index.md"
+
+  ## HOW-TO GUIDES ##
+  - Guides:
+    # Landing Page
+    - "guides/index.md"
+    # Nested Pages
+    # - "Process - Release Me": "topics/gitops/release-me-process.md"
+
+  ## REFERENCES ##
+  - API References: reference/
+
+  ## TOPICS/EXPLANATIONS ##
+  - Topics:
+    # Generator Process and Parameter default computation
+    - "Generator Process": "topics/generator_process.md"
+
+    # Generation Process CLI - Flowchart
+    - "Generator Process CLI": "topics/cli_logic.md"
+
+    # Project Architecture
+    - "Architecture": "topics/arch.md"
+
+    # Python Dependencies
+    - "Python Dependencies": "topics/dependencies.md"
+
+
+    # Development topics: build process, CI/CD, etc. 
+    - Development:
+      # Landing Page
+      - "topics/development/index.md"
+      # Nested Pages
+      - "Docker": "topics/development/build_process_DAG.md"
+      - "CI/CD": "topics/development/cicd.md"
+      - "Dependabot": "topics/development/dependabot.md"
+
+      # GitOps / Processes
+      - "Reference Processes":
+        # Process subpage 1
+        - "Release Changes":
+          - "topics/development/gitops/index.md"
+
+          - V2:
+            - "Single Branch - Tutorial": "topics/development/gitops/tutorial_release_my_branch_v2.md"
+            - "Single Branch - Guide": "topics/development/gitops/gitops-v2.md"
+            - "Single Branch - Cheatsheet": "topics/development/gitops/gitops-v2-cheatsheet.md"
+            - "Multi Branch - Cheatsheet": "topics/development/gitops/gitops-multi-topics-cheatsheet.md"
+
+        # Process subpage 2
+        - "Docs-only Release": "topics/development/docs_only_release_process.md"
+        # Process subpage 3
+        - "Make an RC (Candidate) Release ": "topics/development/release_candidate.md"
+
+  # Tags - Page #
+  - tags: tags.md
+
+
+extra:
+  generator: false

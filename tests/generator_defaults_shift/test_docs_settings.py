@@ -105,7 +105,6 @@ def test_gen_parametrized_only_from_user_config_defaults_to_sphinx_builder_n_py3
     project_dir: str = generate(
         checkout=None,
         no_input=True,
-        extra_context=None,
         replay=False,
         overwrite=False,
         output_dir=tmpdir,

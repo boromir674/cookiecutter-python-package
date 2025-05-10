@@ -16,50 +16,42 @@ build:
   # ALL JOBS implied: https://docs.readthedocs.io/en/stable/builds.html
   jobs:
     pre_install:
-      - python -m pip install tox==3.27.1
-    #   - python -m pip install poetry
-    #   - tox -e pin-deps -- -E docs
-    # Pre Install must generate a req-docs.txt file, if 'python:' section is used
+      - python -m pip install uv 'tox==3.28.0'
+      # Reproducible Docs Building Environment - stetup/installation
+      - uv export --extra docs --frozen --no-dev --no-emit-project -f requirements-txt -o prod+docs.txt
     post_install:
-      # introducing myst-parser for parsing .md files, required a bump
-      # of sphinx to 6.x, somehow `poetry lock` was ok, but poetry export not!
-      # due to this we do not have 100% reproducible builds here, but we should be fine.
-
-      # when we retire python 2.6, 3.7 stuff, this can go back to `poery export` :)
-
-      - python -m pip install -e .[docs]
-      # 8/3/2024: latest 'myst-parser' PyPI release 2.0.0
-      - python -m pip install "myst-parser>=2.0.0,<2.1.0"
-      # 8/3/2024: latest 'markdown-it-py' PyPI release 3.0.0
-      - python -m pip install "markdown-it-py>=3.0.0,<3.1.0"
+      # Reproducible Docs Building Environment - stetup/installation
+      # - uv pip install --no-deps -r prod+docs.txt
+      - python -m pip install --no-deps -e .
+      # Install dependencies for the 'pre_build' step
+      - python -m pip install pyyaml
     pre_build:
       - tox -e pydeps
-      - cp -r pydeps/* docs/contents/35_development/arch
-      - ls -l docs/contents/35_development/arch
+      - cp -r pydeps/* docs/assets
+      - ls -l docs/assets
 
       - chmod +x ./scripts/visualize-ga-workflow.py
-      - ./scripts/visualize-ga-workflow.py .github/workflows/test.yaml --rst > ./docs/contents/35_development/ci_cd_pipeline_mermaid.rst
+      - ./scripts/visualize-ga-workflow.py .github/workflows/test.yaml > ./docs/includes/cicd_mermaid.md
 
       - chmod +x ./scripts/visualize-dockerfile.py
-      - ./scripts/visualize-dockerfile.py --rst > docs/contents/35_development/docker_build_mermaid.rst
+      - ./scripts/visualize-dockerfile.py > ./docs/includes/dockerfile_mermaid.md
 
 
-# SPHINX BUILD documentation in the docs/ directory
-sphinx:
-  builder: html
-  configuration: docs/conf.py
-  fail_on_warning: false
+# MKDOCS BUILD documentation in the "docs/" directory
+mkdocs:
+  configuration: mkdocs.yml
+  # fail_on_warning: false
 
-# Sphinx only: Optionally build in additional formats
-formats:
-  - pdf
-  - epub
+
+# TODO: Verify if below work for MkDocs or whther there is a work-around
+# formats:
+#   - pdf
+#   - epub
 
 
 # Optional but recommended, declare the Python requirements required
 # to build your documentation
 # See https://docs.readthedocs.io/en/stable/guides/reproducible-builds.html
-# python:
-#    install:
-#     # Pre Install must generate a reqs.txt
-#     - requirements: reqs.txt
+python:
+   install:
+   - requirements: prod+docs.txt

@@ -19,7 +19,7 @@ def generate(
     # interactive=True,
     no_input=False,  # INTERACTIVE ON by Default
     offline=False,
-    extra_context=None,
+    # extra_context=None,
     replay=False,
     overwrite=False,
     output_dir='.',
@@ -50,7 +50,7 @@ def generate(
             default_config=default_config,
             web_servers=WEB_SERVERS,
             no_input=no_input,
-            extra_context=extra_context,
+            extra_context=None,
             offline=offline,
         )
     )
