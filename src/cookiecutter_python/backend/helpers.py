@@ -1,12 +1,14 @@
 import json
 import logging
-from pathlib import Path
 import typing as t
+from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
+
 from cookiecutter_python.handle.interactive_cli_pipeline import (
     InteractiveDialogsPipeline,
 )
+
 
 logger = logging.getLogger(__name__)
 
