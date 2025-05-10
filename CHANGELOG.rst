@@ -3,6 +3,44 @@ Changelog
 =========
 
 
+2.5.9 (2025-05-10)
+==================
+
+Migration of **Documentation Site** from `sphinx` to `mkdocs` and `mkdocs-material` theme!
+
+Also add **Documentation Content** for `How-to` Guides and `Developer's Guides`.
+
+Changes
+^^^^^^^
+
+test
+""""
+- adjust tests
+
+documentation
+"""""""""""""
+- migrate readthedocs CI to mkdocs
+- migrate to mkdocs, add content and improve UX/UI
+- replace README.rst with README.md
+
+refactor
+""""""""
+- remove extra_context kwarg from our 'generate' function
+- reduce complexity and reduce code
+
+build
+"""""
+- solve mkdocs --optional docs
+
+ci
+""
+- migrate Docs Job to mkdocs
+
+chore
+"""""
+- sem ver bump to 2.5.9
+
+
 2.5.8 (2025-04-27)
 ==================
 

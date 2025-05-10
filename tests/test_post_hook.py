@@ -176,7 +176,7 @@ def create_context_from_emulated_project(generate_all_extra_files, dat):
 
         ## Docs Builder Type Dependend Files ##
         from cookiecutter_python.hooks.post_gen_project import (
-            builder_id_2_files as builder_id_2_extra_files_map,
+            DOCS_FILES_EXTRA as builder_id_2_extra_files_map,
         )
 
         # theoritically, it should suffice for us to create 'emulated' files, as:

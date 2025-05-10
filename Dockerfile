@@ -40,7 +40,7 @@ COPY src src
 COPY pyproject.toml .
 COPY uv.lock .
 COPY LICENSE .
-COPY README.rst .
+COPY README.md .
 
 
 FROM python_slim as base_env
@@ -115,7 +115,7 @@ COPY src src
 COPY pyproject.toml .
 # COPY poetry.lock .
 COPY LICENSE .
-COPY README.rst .
+COPY README.md .
 # COPY tests tests
 
 # Install in Editable Mode
@@ -175,7 +175,7 @@ RUN apt-get update && \
 COPY src src
 COPY pyproject.toml .
 COPY poetry.lock .
-COPY README.rst .
+COPY README.md .
 
 # Add user's bin folder to PATH
 ENV PATH="/root/.local/bin:$PATH"
