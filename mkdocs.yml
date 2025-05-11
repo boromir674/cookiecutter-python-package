@@ -169,19 +169,23 @@ nav:
 
       # GitOps / Processes
       - "Reference Processes":
+
         # Process subpage 1
+        - V2:
+          - "Topic Branch into dev": "topics/development/topic_branch_to_dev.md"
+        # Process subpage 2
         - "Release Changes":
           - "topics/development/gitops/index.md"
 
-          - V2:
+          - V1:
             - "Single Branch - Tutorial": "topics/development/gitops/tutorial_release_my_branch_v2.md"
             - "Single Branch - Guide": "topics/development/gitops/gitops-v2.md"
             - "Single Branch - Cheatsheet": "topics/development/gitops/gitops-v2-cheatsheet.md"
             - "Multi Branch - Cheatsheet": "topics/development/gitops/gitops-multi-topics-cheatsheet.md"
 
-        # Process subpage 2
-        - "Docs-only Release": "topics/development/docs_only_release_process.md"
         # Process subpage 3
+        - "Docs-only Release": "topics/development/docs_only_release_process.md"
+        # Process subpage 4
         - "Make an RC (Candidate) Release ": "topics/development/release_candidate.md"
 
   # Tags - Page #
