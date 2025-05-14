@@ -138,7 +138,7 @@ def compare_file_content():
 
         # find common parts of a above Path objects
         common_parts = set(runtime_file.parts).intersection(set(snap_file.parts))
-        
+
         # use existing part to order the set
         ordered_parts: t.Tuple = tuple([x for x in snap_file.parts if x in common_parts])
 
