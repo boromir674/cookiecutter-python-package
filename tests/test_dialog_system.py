@@ -48,7 +48,7 @@ def test_dialog_prompts_for_all_cookiecutter_variables(get_object, distro_loc):
         overrides={'prompt': lambda: emulated_prompt},
     )
 
-    context_res = pre_main(
+    request: Request = pre_main(
         Request(
             config_file=None,
             default_config=False,
@@ -58,7 +58,7 @@ def test_dialog_prompts_for_all_cookiecutter_variables(get_object, distro_loc):
         )
     )
 
-    runtime_content = context_res.extra_context
+    runtime_content = request.extra_context
     assert runtime_content == {
         'interpreters': {'supported-interpreters': []}
     }, "Emulated function removed, but assertion was not updated. Update this line or emulated function to fix test logic."

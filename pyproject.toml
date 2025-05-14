@@ -14,7 +14,7 @@ build-backend = "poetry.core.masonry.api"
 name = "cookiecutter_python"
 ### ... ###
 
-version = "2.5.10"
+version = "2.6.0"
 description = "1-click Generator of Python Project, from Template with streamlined \"DevOps\" using a powerful CI/CD Pipeline."
 readme = "README.md"
 license = "AGPL-3.0-only"
@@ -74,7 +74,7 @@ maintainers = [
 license = {text = "AGPL-3.0-only"}
 
 name = "cookiecutter_python"
-version = "2.5.10"
+version = "2.6.0"
 description = "1-click Generator of Python Project, from Template with streamlined \"DevOps\" using a powerful CI/CD Pipeline."
 readme = "README.md"
 # keywords = []
@@ -126,7 +126,6 @@ docs = [
     "mkdocs-macros-plugin>=1.3.7, <2.0.0",
     "mkdocs-material>=9.6.12, <10.0.0",
     "mkdocs-mermaid2-plugin>=1.2.1, <2.0.0",
-    "mkdocs-section-index==0.3.9",
     # mkdocstrings 0.26.1 is the last to support python3.8!
     "mkdocstrings==0.26.1",
     "mkdocstrings-python==1.11.1",
