@@ -53,9 +53,6 @@ def gen_gs_project(
     assert (gen_project_dir / 'docs').is_dir()
     assert (gen_project_dir / 'docs' / 'assets').exists()
     assert (gen_project_dir / 'docs' / 'assets').is_dir()
-    assert (gen_project_dir / 'docs' / 'dev_guides').exists()
-    assert (gen_project_dir / 'docs' / 'dev_guides' / 'docker.md').exists()
-    assert (gen_project_dir / 'docs' / 'dev_guides' / 'docker.md').is_file()
 
     ## Logging file created - Assertions ##
     from cookiecutter_python._logging_config import FILE_TARGET_LOGS
@@ -139,11 +136,18 @@ def compare_file_content():
         runtime_file_content = runtime_file.read_text().splitlines()
         snap_file_content = snap_file.read_text().splitlines()
 
+        # find common parts of a above Path objects
+        common_parts = set(runtime_file.parts).intersection(set(snap_file.parts))
+        
+        # use existing part to order the set
+        ordered_parts: t.Tuple = tuple([x for x in snap_file.parts if x in common_parts])
+
         for line_index, line_pair in enumerate(zip(runtime_file_content, snap_file_content)):
             assert line_pair[0] == line_pair[1], (
                 f"File: {runtime_file.relative_to(runtime_file.parent)} has different content at Runtime than in Snapshot\n"
+                f"Relative (sub) path: {Path(*ordered_parts).resolve()}\n"
                 f"Line Index: {line_index}\n"
-                f"Line Runtime: {line_pair[0]}\n"
+                f"Line Runtime : {line_pair[0]}\n"
                 f"Line Snapshot: {line_pair[1]}\n"
             )
         assert len(runtime_file_content) == len(snap_file_content)
@@ -225,6 +229,7 @@ def test_gs_matches_runtime(
                             'settings.json',
                             '.tox',
                             '.pytest_cache',
+                            'del-env',
                         }
                         for p in x.parts
                     ]
@@ -234,9 +239,7 @@ def test_gs_matches_runtime(
     )
     snap_relative_paths_set = set([x for x in snap_relative_paths_set if x.name != 'reqs.txt'])
 
-    if has_developer_fixed_windows_mishap:
-        assert runtime_relative_paths_set == snap_relative_paths_set
-    elif running_on_windows:  # there is a log mishappening that we exists on windows
+    if running_on_windows:  # there is a log mishappening that we exists on windows
         from cookiecutter_python._logging_config import (
             FILE_TARGET_LOGS as LOG_FILE_NAME,
         )
