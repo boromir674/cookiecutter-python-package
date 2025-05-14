@@ -207,12 +207,6 @@ def test_gs_matches_runtime(
     import sys
 
     running_on_windows: bool = sys.platform.startswith("win")
-    # exception misbehaviour fixed on Windows?
-    import os
-
-    has_developer_fixed_windows_mishap: bool = (
-        os.environ.get("BUG_LOG_DEL_WIN") != "permission_error"
-    )
 
     # This is useful for local development, to make the tests more reliable
     snap_relative_paths_set = set(
