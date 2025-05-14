@@ -3,6 +3,43 @@ Changelog
 =========
 
 
+2.6.0 (2025-05-15)
+==================
+
+Changes
+^^^^^^^
+
+feature
+"""""""
+- generate better Mkdocs documentation
+
+test
+""""
+- fix tests
+- fix integration tests
+- simplify code
+
+documentation
+"""""""""""""
+- retire section-index plugin in favor of material built-in !
+- do rebase on Integration Branch to pass GH Rule for Update branch before merge
+- add the 'Topic Branch PR to Dev' Process Guide
+
+refactor
+""""""""
+- apply black
+- pass mypy checks
+- apply ruff
+- apply black
+- apply isort
+- simplify extra_context passing into cookiecutter
+
+chore
+"""""
+- sem ver bump to 2.6.0
+- remove comment from gen_api script
+
+
 2.5.10 (2025-05-10)
 ===================
 
