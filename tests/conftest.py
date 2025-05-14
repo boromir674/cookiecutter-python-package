@@ -375,6 +375,10 @@ def user_config(distro_loc: Path) -> ConfigInterfaceProtocol:
     def _load_context_yaml(file_path: PathLike) -> t.MutableMapping[str, t.Any]:
         return prod_load_yaml(file_path)['default_context']
 
+    class DefParams(t.TypedDict):
+        data_file: Path
+        data_loader: t.Callable[[t.Type], DataLoader]
+
     @attr.s(auto_attribs=True, slots=True)
     class ConfigData:
         """Compute the 'default parameters' either from user yaml or from json.
@@ -403,13 +407,14 @@ def user_config(distro_loc: Path) -> ConfigInterfaceProtocol:
         _loader: DataLoader = attr.ib(init=False)
         _data: t.Mapping = attr.ib(init=False)
 
+        # CLASS VARS
         config_files = {
             'biskotaki': '.github/biskotaki.yaml',
             'without-interpreters': 'tests/data/biskotaki-without-interpreters.yaml',
         }
 
         # When no Config File suppied values are derived from Ccookiecutter.json
-        default_parameters = {
+        default_parameters: t.ClassVar[DefParams] = {
             'data_file': distro_loc / 'cookiecutter.json',
             'data_loader': lambda cls: lambda json_file_string_path: cls.transorm_json_data(
                 _load_context_json(json_file_string_path)
@@ -419,7 +424,7 @@ def user_config(distro_loc: Path) -> ConfigInterfaceProtocol:
         def __attrs_post_init__(self):
             # called on user_config[config_file]
 
-            _data_file_path = (
+            _data_file_path: Path = (
                 ConfigData.default_parameters['data_file']
                 if self.path is None
                 else Path(my_dir) / '..' / ConfigData.config_files.get(self.path, self.path)
@@ -466,7 +471,7 @@ def user_config(distro_loc: Path) -> ConfigInterfaceProtocol:
             return data
 
         @staticmethod
-        def transorm_yaml_data(data: t.Dict[str, t.Any]):
+        def transorm_yaml_data(data: t.MutableMapping[str, t.Any]):
             data['initialize_git_repo'] = {'yes': True}.get(data['initialize_git_repo'], False)
             return data
 

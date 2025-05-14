@@ -17,25 +17,43 @@ theme:
     default: material/tag
 
   features:
+    # render a breadcrumb navigation above the title of each page, which might make orientation easier for users visiting your documentation on devices with smaller screens.
     - navigation.path
-    - navigation.top
+    - navigation.top  # back-to-top button shown when user, after scrolling down, starts to scroll 
     - navigation.footer
+    # enables switching multiple tabs with the same name
+    - content.tabs.link
+    # renders copy button on code blocks
+    - content.code.copy
+    # make index.md landing page to collapsible sections (no need for sections-index 3rd-party plugin)
+    - navigation.indexes
 
 plugins:
   # Enable jinja inside your markdown files
+  # - allows {% raw %}{% include %}{% endraw %} statements
+  # - requires careful escape of double-braces in markdown
+  # - requires wrapping content between {% raw %}{%{% endraw %} raw {% raw %}%}{% endraw %} and {% raw %}{%{% endraw %} endraw {% raw %}%}{% endraw %}
   # https://github.com/fralau/mkdocs_macros_plugin
   - macros
+      # include_dir: docs/includes
+
   # Authors need installation
   # - git-authors
+
+  # Automated Tags - Page Generation
   - tags:
       tags_file: tags.md
+
   # BASIC SEARCH PLUGIN
   - search
+
   # MERMAID Render Support
   - mermaid2
+
   # Directives Provider for docstrings parsing
   - mkdocstrings
-  # gain the ability to tap-in to the build process
+
+  # Tap-in to the build process and generate files with mkdocstrings directives
   - gen-files:
       # scripts allowing to programmatically generate .md content
       scripts:
@@ -44,19 +62,94 @@ plugins:
   # programmatically generate Nav Item: ie 'reference/' entry in Navigation
   - literate-nav:
       nav_file: SUMMARY.md
-  - section-index
 
 markdown_extensions:
   - mkdocs-click
   - pymdownx.highlight
-  
+
+  ### ADMONITIONS ###
+  # enabled block kelements such as example, note, info, warning, tip, etc
+  # https://squidfunk.github.io/mkdocs-material/reference/admonitions/
+  - admonition
+
+  ### SUPERFENCES ###
+  # arbitrary nesting of code and content blocks inside each other,
+  # including admonitions, tabs, lists and all other elements
+  # https://squidfunk.github.io/mkdocs-material/setup/extensions/python-markdown-extensions/#superfences
+  # this custom fence defined below with name 'mermaid' is required
+  # to prevent superfences from breaking mermaid default syntax (3 backticks)!
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+  ### TABBED ###
+  # usage of content tabs, a simple way to group related content and
+  # code blocks under accessible tabs.
+  # https://squidfunk.github.io/mkdocs-material/setup/extensions/python-markdown-extensions/#tabbed
+  - pymdownx.tabbed:
+      alternate_style: true
+
+  ### GRIDS with Grid Cards or Generic Cards ###
+  - attr_list
+  - md_in_html
+
+  ### ICONS/EMOJIS ###
+  # https://squidfunk.github.io/mkdocs-material/reference/icons-emojis/#with-colors-docsstylesheetsextracss
+  # The following icon sets are bundled with Material for MkDocs:
+  #  – Material Design: https://pictogrammers.com/library/mdi/
+  #  – FontAwesome    : https://fontawesome.com/search?ic=free
+  #  – Octicons       : https://primer.style/octicons/
+  #  – Simple Icons   : https://simpleicons.org/
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+  ### On-HOVER TOOLTIP ###
+  # abbr by default supports tooltips on url links
+  - abbr
+  # if attr_list is also added, then tooltips on other html elements are supported as below:
+  # ie :material-information-outline:{ title="Important information" }
+
+  # The Details extension supercharges the Admonition extension, making the resulting call-outs collapsible, allowing them to be opened and closed by the user.
+  # https://squidfunk.github.io/mkdocs-material/setup/extensions/python-markdown-extensions/#details
+  # example: ??? blahblah
+  # expanded example: ???+ blahblah
+  # if element is insise non-trivial content wrap in div with class markdown 
+  - pymdownx.details
+
+###### SITE NAVIGATION ######
 nav:
-  - Home:
-    - "Quick Start": index.md
+  ## Landing Page ##
+  - Home: index.md
+
+  ## Motivation ##
+  # - Motivation: topics/why_this_package.md
+
+  ## TUTORIALS ##
+  # - Tutorials:
+    # Landing Page
+    # - "tutorials/index.md"
+
+  ## REFERENCES ##
   - API References: reference/
+
+  ## TOPICS/EXPLANATIONS ##
   - Topics:
-    - "Docker": build-process_DAG.md
-    - "CI/CD": cicd.md
+
+    # Project Architecture
+    - "Architecture": "topics/arch.md"
+
+    # Development (nested) topics: build process, CI/CD, etc. 
+    - Development:
+      # Landing Page
+      - "topics/development/index.md"
+      # Nested Pages
+      - "Docker": "topics/development/build_process_DAG.md"
+      - "CI/CD": "topics/development/cicd.md"
+
+  ## Automated Tags - Page Generation ##
   - tags: tags.md
 
 

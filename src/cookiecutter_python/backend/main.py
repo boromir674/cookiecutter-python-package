@@ -39,11 +39,7 @@ def generate(
     'artifacts', and Continuous Documentation of the Python Project.
     """
     print('Start Python Generator !')
-    # Initialize Generation Request:
-    #  - store the CI Test Matrix Python Interpreters versions list
-    #       -  prompt for user input in interactive or atempt to read from yaml otherwise
-    #  - prepare Cookiecutter extra context:
-    #      - add interpreters versions list
+    # Future HTTP requests to pypi.org and readthedocs.org web servers
     request = pre_main(
         Request(
             config_file=config_file,
@@ -54,9 +50,9 @@ def generate(
             offline=offline,
         )
     )
-    print('Extra context: ', request.extra_context)
     ## GENERATION from Template; delegate to Cookiecutter callable ##
     project_dir = generator(
+        # COOKIECUTTER TEMPLATE (cookiecutter.json)
         os.path.abspath(os.path.join(my_dir, '..')),  # template dir path
         checkout=checkout,
         # no_input=no_input,

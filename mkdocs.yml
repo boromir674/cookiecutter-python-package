@@ -18,13 +18,19 @@ theme:
     default: material/tag
 
   features:
+    # render a breadcrumb navigation above the title of each page, which might make orientation easier for users visiting your documentation on devices with smaller screens.
     - navigation.path
-    - navigation.top
+    - navigation.top  # back-to-top button shown when user, after scrolling down, starts to scroll up again.
     - navigation.footer
     # enables switching multiple tabs with the same name
     - content.tabs.link
     # renders copy button on code blocks
     - content.code.copy
+
+    - navigation.instant
+    # URL in the address bar is automatically updated with the active anchor as highlighted in the table of contents (right sidebar)
+    - navigation.tracking
+    - navigation.indexes
 
 plugins:
   # Enable jinja inside your markdown files
@@ -58,7 +64,7 @@ plugins:
   # programmatically generate Nav Item: ie 'reference/' entry in Navigation
   - literate-nav:
       nav_file: SUMMARY.md
-  - section-index
+  # - section-index
 
   # Enable displaying at the bottom of pages the last date of modification!
   # uv add --optional docs 'mkdocs-git-revision-date-localized-plugin'
@@ -169,19 +175,23 @@ nav:
 
       # GitOps / Processes
       - "Reference Processes":
+
         # Process subpage 1
+        - V2:
+          - "Topic Branch into dev": "topics/development/topic_branch_to_dev.md"
+        # Process subpage 2
         - "Release Changes":
           - "topics/development/gitops/index.md"
 
-          - V2:
+          - V1:
             - "Single Branch - Tutorial": "topics/development/gitops/tutorial_release_my_branch_v2.md"
             - "Single Branch - Guide": "topics/development/gitops/gitops-v2.md"
             - "Single Branch - Cheatsheet": "topics/development/gitops/gitops-v2-cheatsheet.md"
             - "Multi Branch - Cheatsheet": "topics/development/gitops/gitops-multi-topics-cheatsheet.md"
 
-        # Process subpage 2
-        - "Docs-only Release": "topics/development/docs_only_release_process.md"
         # Process subpage 3
+        - "Docs-only Release": "topics/development/docs_only_release_process.md"
+        # Process subpage 4
         - "Make an RC (Candidate) Release ": "topics/development/release_candidate.md"
 
   # Tags - Page #
