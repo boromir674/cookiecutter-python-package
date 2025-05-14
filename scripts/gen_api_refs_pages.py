@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 for path in sorted(
     x for x in src.rglob("*.py") if '{{ cookiecutter.project_slug }}' not in x.parts
 ):
+    # print(f"Processing {path}")
     ## 1. extract Relative path from Python File and remove suffix (.py)
     # EG src/biskotaki/cli.py  -->   biskotaki/cli
     _module_path = path.relative_to(src).with_suffix("")
@@ -35,7 +36,6 @@ for path in sorted(
 
     # Skip __main__ Files
     if parts[-1] == "__main__":
-        print(f"Skip Gen API Refs for file: {path}")
         continue
 
     # For __init__ Files dedicate an index.md file, instead of __init__.md
