@@ -4,7 +4,6 @@ import pytest
 
 
 def test_version_msg_function_returns_expected_string(distro_loc: Path):
-
     # GIVEN the version_msg function
     from cookiecutter_python.cli import version_msg
 
@@ -13,6 +12,7 @@ def test_version_msg_function_returns_expected_string(distro_loc: Path):
 
     # THEN it should return the expected string
     import sys
+
     EXPECTED_PYTHON_VERSION: str = ".".join(map(str, sys.version_info[:3]))
 
     EXPECTED_PARENT_DIR_OF_COOKIECUTTER_PYTHON: Path = distro_loc.parent
@@ -40,6 +40,7 @@ def test_cli_version_flag_returns_expected_string(
     assert result.exit_code == 0
 
     import sys
+
     EXPECTED_PYTHON_VERSION: str = ".".join(map(str, sys.version_info[:3]))
 
     EXPECTED_PARENT_DIR_OF_COOKIECUTTER_PYTHON: Path = distro_loc.parent
