@@ -1,4 +1,5 @@
 from pathlib import Path
+
 import pytest
 
 
@@ -26,8 +27,8 @@ def test_cli_version_flag_returns_expected_string(
     distro_loc: Path,
     isolated_cli_runner,
 ):
-    from cookiecutter_python.cli import main
     from cookiecutter_python import __version__
+    from cookiecutter_python.cli import main
 
     result = isolated_cli_runner.invoke(
         main,

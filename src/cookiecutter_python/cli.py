@@ -1,8 +1,8 @@
 """Main `cookiecutter_python` CLI."""
 
 import os
-import typing as t
 import sys
+import typing as t
 
 import click
 
