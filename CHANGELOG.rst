@@ -3,6 +3,30 @@ Changelog
 =========
 
 
+2.6.1 (2025-05-16)
+==================
+
+Changes
+^^^^^^^
+
+fix
+"""
+- --version CLI flag
+
+test
+""""
+- fix integration tests
+
+documentation
+"""""""""""""
+- update 'Topic to Integration' Dev Process Guide
+
+chore
+"""""
+- sem ver bump to 2.6.1
+- update terminal based release script
+
+
 2.6.0 (2025-05-15)
 ==================
 

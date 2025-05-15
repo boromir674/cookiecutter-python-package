@@ -146,6 +146,7 @@ def sdist_expected_correct_file_structure():
         # 'src/stubs/requests_futures/sessions.pyi',
     )
     TESTS = (
+        'tests/test_version_string.py',
         'tests/test_git_sdk.py',
         'tests/test_git_porcelain.py',
         'tests/test_is_repo_clean_function.py',
