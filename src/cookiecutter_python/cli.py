@@ -1,6 +1,7 @@
 """Main `cookiecutter_python` CLI."""
 
 import os
+import typing as t
 import sys
 
 import click
@@ -17,10 +18,10 @@ this_file_location = os.path.dirname(os.path.realpath(os.path.abspath(__file__))
 
 def version_msg():
     """Message about Python Generator version, location and Python version."""
-    python_version = sys.version[:3]
+    python_version: t.Tuple[int, int, int] = sys.version_info[:3]
     message = u'Python Generator %(version)s from {} (Python {})'
     location = os.path.dirname(this_file_location)
-    return message.format(location, python_version)
+    return message.format(location, ".".join(map(str, python_version)))
 
 
 @click.command(context_settings=dict(help_option_names=[u'-h', u'--help']))
