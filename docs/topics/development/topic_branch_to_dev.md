@@ -43,8 +43,9 @@ Prerequisites:
     <li><b>Open PR</b> to Integration Branch
 
         ```sh
-        git checkout ${DEV_BR} && git pull && git checkout -
-        git rebase ${DEV_BR} && git push -f && gh pr create --base ${DEV_BR}
+        git checkout ${DEV_BR} && git pull && git rebase ${MAIN_BR} && git push -f
+        git checkout - && git rebase ${DEV_BR}
+        git push -f && gh pr create --base ${DEV_BR}
         ```
 
     </li>
