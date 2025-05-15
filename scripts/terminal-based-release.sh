@@ -168,10 +168,13 @@ git push origin -f "$RC_TAG"
 echo
 echo "Release Candidate Pipeline Triggered !"
 
-# press any key to continue
-read -ep "Please watch the CI/CD Pipeline to succeed (press any key to continue to 'live watch') !" -n1 -s
 
-gh run watch
+# press any key to continue
+read -ep "Please run 'gh run watch' to watch the CI/CD Pipeline (press any key to continue)" -n1 -s
+
+# TODO: try to implement the below; currently after gh run watch finishes it stops execution of the sshell script!
+# read -ep "Please watch the CI/CD Pipeline to succeed (press any key to continue to 'live watch') !" -n1 -s
+# gh run watch
 
 echo "========================="
 echo "Assuming CI/CD Pipeline Succeeded !"
