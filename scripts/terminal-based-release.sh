@@ -161,9 +161,25 @@ gh pr create --base ${RELEASE_BR} --head "${BRANCH_WITH_CHANGES}" --title "Relea
 
 
 ## ENABLE AUTO MERGE with 'merge' strategy (others are 'squash' and 'rebase')
-gh pr merge ${BRANCH_WITH_CHANGES} --merge --auto
+# this cmd 'gh pr merge ${BRANCH_WITH_CHANGES} --merge --auto' randomly exits with error code 1.
+# need to "catch" and retry untill success (max retried = 3)
+
+set +e
+gh pr merge "${BRANCH_WITH_CHANGES}" --merge --auto
+if [ $? -ne 0 ]; then
+    echo "gh pr merge ${BRANCH_WITH_CHANGES} --merge --auto failed, retrying..."
+    for i in {1..3}; do
+        gh pr merge "${BRANCH_WITH_CHANGES}" --merge --auto
+        if [ $? -eq 0 ]; then
+            break
+        fi
+    done
+fi
+set -e
+
 
 ## WATCH GITHUB ACTIONS WORKFLOWS RUNNING
+echo "========== Watch GH Workflow Run =========="
 gh run watch
 
 echo "========================="
