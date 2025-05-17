@@ -14,7 +14,7 @@ build-backend = "poetry.core.masonry.api"
 name = "cookiecutter_python"
 ### ... ###
 
-version = "2.6.0"
+version = "2.6.1"
 description = "1-click Generator of Python Project, from Template with streamlined \"DevOps\" using a powerful CI/CD Pipeline."
 readme = "README.md"
 license = "AGPL-3.0-only"
@@ -74,7 +74,7 @@ maintainers = [
 license = {text = "AGPL-3.0-only"}
 
 name = "cookiecutter_python"
-version = "2.6.0"
+version = "2.6.1"
 description = "1-click Generator of Python Project, from Template with streamlined \"DevOps\" using a powerful CI/CD Pipeline."
 readme = "README.md"
 # keywords = []
