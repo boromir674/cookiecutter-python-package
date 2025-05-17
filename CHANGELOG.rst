@@ -3,6 +3,18 @@ Changelog
 =========
 
 
+2.6.2 (2025-05-17)
+==================
+
+Changes
+^^^^^^^
+
+chore
+"""""
+- sem ver bump to 2.6.2
+- improve terminal based release script
+
+
 2.6.1 (2025-05-16)
 ==================
 
