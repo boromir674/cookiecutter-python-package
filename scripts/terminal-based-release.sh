@@ -1,6 +1,20 @@
 #!/usr/bin/env bash
 
-# RUN THIS, WHEN All changes for Release are on the dev branch
+### Part of Release Process ###
+
+# Topic_A, Topic_B, ... , Topic_N
+#    \         |            /
+#     \        |           /
+#       \      |         /
+#         \    |       /
+#         Integration_Br
+#              |
+#          Release_Br
+#              |
+#          Default_Br
+
+# RUN THIS, WHEN All changes for Release are ALREADY on the Integration_Br branch
+
 
 ## CONFIGURATION
 ### 1. SEM VER SOURCE UPDATE ###
@@ -21,7 +35,8 @@ DEFAULT_BRANCH=${_MAIN}
 
 # INPUTS
 # 1. NEW_VERSION: The new version to be released
-# 2. DEV (Optional): The branch where all changes merge too, initially
+# 2. Branch with Changes DEV (Optional): The branch where all changes for release are, initially
+# 3. Branch 
 
 # USAGE
 # ./terminal-based-release.sh <NEW_VERSION> [<DEV>]
@@ -93,8 +108,7 @@ echo =======
 # Press any key to continue dialog .. (unless ctrl + C)
 read -ep "Press any key to commit!" -n1 -s
 
-# read -tn $'Press any key to continue dialog .. (unless ctrl + C)\n'
-
+### 1.a Commit the changes
 git commit -m "chore: sem ver bump to ${NEW_VERSION}"
 
 
@@ -124,6 +138,7 @@ echo =======
 # Dialog before Commit
 read -ep "Press any key to commit '${CHANGELOG_FILE}' !" -n1 -s
 
+### 2.a Commit the changes
 git commit -m "docs: add ${NEW_VERSION} Release entry in ${CHANGELOG_FILE}"
 
 echo
@@ -132,6 +147,7 @@ echo "DONE !"
 echo
 read -ep "Press any key to push changes to ${BRANCH_WITH_CHANGES} remote!" -n1 -s
 
+## PUSH Integration_Br (dev) TO REMOTE
 git push
 
 git checkout ${RELEASE_BR}
@@ -139,28 +155,35 @@ git rebase ${DEFAULT_BRANCH}
 git push
 
 git checkout "${BRANCH_WITH_CHANGES}"
+
+## OPEN PR TO RELEASE BRANCH
 gh pr create --base ${RELEASE_BR} --head "${BRANCH_WITH_CHANGES}" --title "Release v${NEW_VERSION}"
 
+
+## ENABLE AUTO MERGE with 'merge' strategy (others are 'squash' and 'rebase')
 gh pr merge ${BRANCH_WITH_CHANGES} --merge --auto
 
+## WATCH GITHUB ACTIONS WORKFLOWS RUNNING
 gh run watch
 
 echo "========================="
 echo "DONE! PR ${BRANCH_WITH_CHANGES} --> ${RELEASE_BR} Merged !"
 
-# Update Local Release Branch
 git checkout ${RELEASE_BR}
 
 echo
 read -ep "Press any key to update local '${RELEASE_BR}' branch from remote!" -n1 -s
 
+## PULL RELEASE BRANCH
 git pull
 
+## CREATE PR TO DEFAULT_BRANCH (ie release --> main)
 gh pr create --base ${DEFAULT_BRANCH} --head "${RELEASE_BR}" --title "Release v${NEW_VERSION}"
 echo
 read -ep "Press any key to make a RELEASE CANDIDATE '${RELEASE_BR}' branch from remote!" -n1 -s
 
-RC_TAG="v${RELEASE_BR}-rc"
+## CREATE and PUSH RC TAG
+RC_TAG="v${NEW_VERSION}-rc"
 
 git tag -f "$RC_TAG"
 git push origin -f "$RC_TAG"
@@ -176,6 +199,7 @@ read -ep "Please run 'gh run watch' to watch the CI/CD Pipeline (press any key t
 # read -ep "Please watch the CI/CD Pipeline to succeed (press any key to continue to 'live watch') !" -n1 -s
 # gh run watch
 
+## PROMPT USER TO MERGE the PR if QA/CHECKS PASSED
 echo "========================="
 echo "Assuming CI/CD Pipeline Succeeded !"
 
