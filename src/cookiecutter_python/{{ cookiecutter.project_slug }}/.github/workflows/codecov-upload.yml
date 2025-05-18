@@ -36,7 +36,7 @@ jobs:
       # Upload coverage reports to Codecov
       - name: Upload Coverage Reports to Codecov
         env:
-          CODECOV_TOKEN: ${{ "{{" }} secrets.CODECOV_TOKEN ${{ "}}" }}  # this is "read" from inputs
+          CODECOV_TOKEN: ${{ "{{" }} secrets.CODECOV_TOKEN {{ "}}" }}  # this is "read" from inputs
         run: |
           for file in coverage/coverage*.xml; do
             OS_NAME=$(echo $file | sed -E "s/coverage-(\w\+)-/\1/")
