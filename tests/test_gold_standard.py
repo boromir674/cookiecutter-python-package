@@ -253,8 +253,8 @@ def test_gs_matches_runtime(
     # comparing rolling date with the static one in the snapshot
 
     # first compare CHANGLOG files, then all other files
-    snapshot_changelog = snapshot_dir / 'CHANGELOG.rst'  # the expectation
-    runtime_changelog = gen_gs_project / 'CHANGELOG.rst'  # the reality
+    snapshot_changelog = snapshot_dir / 'CHANGELOG.md'  # the expectation
+    runtime_changelog = gen_gs_project / 'CHANGELOG.md'  # the reality
 
     snap_file_content = snapshot_changelog.read_text().splitlines()
     runtime_file_content = runtime_changelog.read_text().splitlines()
@@ -265,11 +265,11 @@ def test_gs_matches_runtime(
             for line_pair in [
                 x
                 for x in zip(runtime_file_content, snap_file_content)
-                if not x[1].startswith('0.0.1')
+                if not x[1].startswith('0.1.0')
             ]
         ]
     ), (
-        f"File: CHANGELOG.rst has different content in Snapshot and Runtime\n"
+        f"File: CHANGELOG.md has different content in Snapshot and Runtime\n"
         "-------------------\n"
         f"Runtime: {runtime_changelog}\n"
         "-------------------\n"

@@ -1,0 +1,296 @@
+name: "Test Python Complete Workflow"
+
+# Tests on Python Build and the Build Process (ie correct metadata assigned):
+#  - Run Test Suite against package installation in "Edit Mode"
+#  - Run Test Suite against Built Wheel installation (from package)
+#  - Verify Package and Metadata are valid
+
+on:
+  workflow_call:
+    inputs:
+
+      # JOB_MATRIX
+      job_matrix:
+        required: false
+        type: string
+        default: "{\"platform\": [\"ubuntu-latest\"], \"python-version\": [\"3.10\"]}"
+
+      # POLICY
+      run_policy:
+        required: false
+        type: string
+        default: '1'
+        description: "0 = Off, 1 = On"
+
+      # TODO support this feature
+      # # BUILD_INSTALLATION
+      # build_installation:
+      #   required: false
+      #   type: string
+      #   default: 'edit sdist wheel'
+      #   description: "Code Installation Modes, for running Tests"
+
+      # ARTIFACT NAME
+      artifact_name:
+        required: false
+        type: string
+        default: ''
+        description: "CI Artifact Name (id / alias) for uploading Distros, such as files .tar.gz, .whl(s)"
+
+    ### OUTPUTS ###
+    # Map the workflow outputs to job outputs
+    outputs:
+      PEP_VERSION:
+        description: "PEP version of the wheel file"
+        value: ${{ jobs.test_suite.outputs.PEP_VERSION }}
+      # COVERAGE_ARTIFACT:
+      #   description: "CI Artifact Name (id / alias) of uploaded Coverage XML"
+      #   value: ${{ jobs.test_build.outputs.COVERAGE_ARTIFACT }}
+
+jobs:
+  # RUN TEST SUITE ON ALL PLATFORMS
+  test_suite:
+    runs-on: ${{ matrix.platform }}
+    if: always() && inputs.run_policy != 0
+    strategy:
+      matrix: ${{fromJSON(inputs.job_matrix)}}
+      fail-fast: false
+    outputs:
+      PEP_VERSION: ${{ steps.extract_wheel_info.outputs.PEP_VERSION }}
+      # COVERAGE_ARTIFACT: ${{ steps.set_coverage_artifact.outputs.COVERAGE_ARTIFACT }}
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # --cov-report=html:{envdir}/htmlcov \
+      PYTEST_ARGS: >
+        -ra --cov --cov-report=term-missing \
+        --cov-context=test \
+        --cov-report=xml:coverage.{envname}.xml \
+        -n auto tests
+      # log deletion post hook fails on windows, due to permission error! (other process is using the file, so removing is denied)
+      # windows spawn multiple processes, so log deletion is not possible, even when running 1 Single Unit Test
+      BUG_LOG_DEL_WIN: 'permission_error'
+
+      # Dynamic command for 'Virtualenv activation' script
+      VENV_ACTIVATE: ${{ matrix.platform == 'windows-latest' && 'Scripts/activate' || 'bin/activate' }}
+    steps:
+      - run: 'echo "OS: ${{ matrix.platform }}, Python: ${{ matrix.python-version }}"'
+
+      # Setup Python
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        if: matrix.platform != 'windows-latest'
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: Install uv
+        if: matrix.platform == 'windows-latest'
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      # with uv this started indicating errors, which are false positives
+      ### Sanity Check that folder is Compatible for Python Distro / Build ###
+      # - name: Run Pyroma on the Directory
+      #   run: uvx pyroma --directory .
+
+      ### IF v*-rc tag pushed: update sources sem ver with -rc suffix ###
+      - name: "Update Source Sem Ver with Release Candidate *-rc' suffix"
+        if: ${{ startsWith(github.event.ref, 'refs/tags/v') && contains(github.event.ref, '-rc') }}
+        shell: bash
+        run: |
+          # Extract PROD Sem Ver
+          VERSION_SOURCE_OF_TRUTH='src/biskotakigold/__init__.py'
+
+          REGEX='^[[:space:]]*__version__[[:space:]]*=[[:space:]]*["'\'']([0-9]+)\.([0-9]+)\.([0-9]+)["'\'']'
+
+          SEMVER="$(grep -E -o "${REGEX}" "${VERSION_SOURCE_OF_TRUTH}" | sed -E "s/${REGEX}/\1.\2.\3/")"
+
+          # Derive RC Sem Ver
+          RC_SEMVER="${SEMVER}-rc"
+
+          ## Set Source Sem Ver to Release Candidate Sem Ver ##
+          sh ./scripts/distro-sem-ver-bump.sh "${RC_SEMVER}"
+
+      # UV Export Prod + Test Dependencies (without package)
+      - name: "Export exact 'Prod + Test' Dependencies in requirements.txt format"
+        run: uv export --no-emit-project --no-dev --extra test --frozen --format requirements-txt -o prod+test.txt
+
+
+      ######## PHASE 1: INSTALL CODE AND RUN SANITY CHECKS ########
+
+      # 1. CREATE VENV and INSTALL 'Prod + Test' Dependencies
+      - name: Create venv with exact 'Prod + Test' Dependencies
+        shell: bash
+        run: |
+          uv venv venv-edit
+          . venv-edit/${{ env.VENV_ACTIVATE }}
+          uv pip install --no-deps -r prod+test.txt
+      
+      # 2. INSTALL Package in 'edit' mode
+      - name: Install Package in 'edit' mode inside venv
+        shell: bash
+        run: |
+          . venv-edit/${{ env.VENV_ACTIVATE }}
+          uv pip install --no-deps -e .
+
+      # 3. Test Mode 1: Run Test Suite against code
+      - name: 'Run Test Suite against the Package code'
+        shell: bash
+        env:
+          COVERAGE_FILE: '.coverage.edit'
+        run: |
+          . venv-edit/${{ env.VENV_ACTIVATE }}
+
+          # pytest ${{ env.PYTEST_ARGS }}
+          pytest -ra --cov --cov-report=term-missing \
+            --cov-context=test \
+            --cov-report=xml:coverage.test-edit.xml \
+            -n auto tests
+
+
+      ######## PHASE 2: BUILD WHEEL AND SDIST DISTRIBUTIONS FROM CODE ########
+      # UV BUILD: Build Package Wheel and Sdist Distros: .whl and .tar.gz files
+      - name: 'Build Package Wheel/Sdist distros, using uv and poetry.core.masonry.api'
+        shell: bash
+        id: uv_build
+        run: |
+          set -o pipefail
+          uv build --out-dir dist . 2>&1 | tee test_output.log
+
+      - name: Extract Package PEP Version from Wheel
+        id: extract_wheel_info
+        shell: bash
+        run: |
+          # Extract PEP version from wheel file name
+          WHEEL_FILE=$(ls dist/biskotakigold-*.whl)
+
+          # extract file name from wheel file
+          WHEEL_NAME="$(basename $WHEEL_FILE)"
+
+          echo "WHEEL_NAME=$WHEEL_NAME" >> $GITHUB_ENV
+
+          # extract pep version from wheel file name, supporting patterns such as below:
+          # - '1.15.0rc0' from 'biskotakigold-1.15.0rc0-py3-none-any.whl'
+          # - '1.2.12' from 'biskotakigold-1.2.12-py3-none-any.whl'
+          # - '1.2.12' from 'biskotakigold-1.2.12-cp3-abi3-any.whl'
+          # - '3.0.7' from 'biskotakigold-3.0.7-jy3-none-any.whl'
+          # - '8.9.37dev0' from 'biskotakigold-8-9-37dev0-jy3-none-win32.whl'
+          # - '8.9.37dev0' from 'biskotakigold-8-9-37dev0-jy3-none-linux_i386.whl'
+
+          PEP_VERSION=$(echo $WHEEL_NAME | cut -d'-' -f2 | sed 's/-/./g')
+          echo "PEP_VERSION=$PEP_VERSION" >> $GITHUB_OUTPUT
+
+          echo "[INFO] Extracted PEP version: $PEP_VERSION"
+          ls -l "${WHEEL_FILE}"
+
+      - name: Show dist folder
+        shell: bash
+        run: ls -la dist/
+
+
+      ######## PHASE 3: VERIFY PACKAGE AND METADATA ARE VALID ########
+      - run: mkdir verification
+      - name: Verify packaged Wheel/Sdist Distros are valid according to python standards
+        shell: bash
+        working-directory: verification
+        run: |
+          uv venv check-env
+          . check-env/${{ env.VENV_ACTIVATE }}
+          uv pip install poetry-core pyroma 'twine >=5.0.0, <6.0.0'
+          # --active
+
+          # Check .tar.gz file using 'pyroma' command
+          echo "[INFO] Running pyroma on the sdist"
+          pyroma --file "$(ls ../dist/*.tar.gz)"
+
+      # Twine Check reports that Name and Version are missing but they are false positives
+      # afterchecking the .tar.gz file both Name and Version are found in PKG-INFO text file.
+      # - name: Run Twine Check on Sdist .tar.gz file
+      #   shell: bash
+      #   working-directory: verification
+      #   run: |
+      #     . check-env/${{ env.VENV_ACTIVATE }}
+
+      #     # SANITY CHECK THAT twine reports erors that are false positive
+      #     grep 
+      #     # Check .tar.gz files using 'twine check' command
+      #     echo "[INFO] Running twine check on the sdist .tar.gz file"
+      #     python -m twine check ../dist/biskotakigold-${{ steps.extract_wheel_info.outputs.PEP_VERSION }}.tar.gz
+
+      # - name: Run Twine Check on Wheel .whl file
+      #   shell: bash
+      #   working-directory: verification
+      #   run: |
+      #     . check-env/${{ env.VENV_ACTIVATE }}
+
+      #     # Check .whl file using 'twine check' command
+      #     echo "[INFO] Running twine check on the Wheel .whl file"
+      #     python -m twine check ../dist/biskotakigold-${{ steps.extract_wheel_info.outputs.PEP_VERSION }}-py3-none-any.whl
+
+      ######## PHASE 4: INSTALL WHEELS AND RUN SANITY CHECKS ########
+
+      # 1. Build 'Prod + Test' Wheels
+      - name: Build Wheels of 'Prod + Test' Dependencies
+        run: pip wheel --wheel-dir dist-wheels -r prod+test.txt
+
+      # 2. 
+      - name: Install Package and prod+test Wheels
+        shell: bash
+        run: |
+          uv venv venv-wheels
+          . venv-wheels/${{ env.VENV_ACTIVATE }}
+
+          uv pip install --no-deps dist-wheels/*.whl
+          uv pip install --no-deps dist/*.whl
+
+      # 3. Run Tests
+      - name: 'Run Test Suite against the Package Wheel and prod+test wheels'
+        shell: bash
+        env:
+          COVERAGE_FILE: '.coverage.wheels'
+          PY_WHEEL: 1 # required on Windows Job when app is installed via wheel
+        run: |
+          . venv-wheels/${{ env.VENV_ACTIVATE }}
+          pytest -ra --cov --cov-report=term-missing \
+            --cov-report=html:test-wheels/htmlcov --cov-context=test \
+            --cov-report=xml:coverage.test-wheels.xml \
+            -n auto tests
+
+
+      ## Code Coverage ## TODO; enable combine by moving each .coverage file to other dir to avoid override of subsequent coverage invocations with pytest
+      - name: "Combine Coverage (dev, sdist, wheel) & make Reports"
+        env:
+          COVERAGE_FILE: .coverage
+          OUTPUT_XML: coverage-${{ matrix.platform }}-${{ matrix.python-version }}.xml
+        shell: bash
+        run: |
+          uv venv cov-env
+          . cov-env/${{ env.VENV_ACTIVATE }}
+          uv pip install 'coverage[toml] >= 5.1' 'diff_cover >=6'
+
+          echo '[INFO] Running coverage'
+          coverage combine --keep
+          coverage report --skip-covered --show-missing -i
+          coverage xml -o ./${{ env.OUTPUT_XML }} -i
+          # uv run coverage html -d ./htmlcov -i
+
+      - name: "Upload Test Coverage as Artifacts"
+        uses: actions/upload-artifact@v4
+        with:
+          overwrite: false
+          name: coverage-${{ matrix.platform }}-${{ matrix.python-version }}.xml
+          path: coverage-${{ matrix.platform }}-${{ matrix.python-version }}.xml
+          if-no-files-found: error
+
+      - name: Upload Source & Wheel distributions as Artefacts
+        if: always()  # TODO add condition on uv_build step succeeds
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name || format('dist-{0}-{1}', matrix.platform, matrix.python-version) }}'
+          path: dist
+          if-no-files-found: error

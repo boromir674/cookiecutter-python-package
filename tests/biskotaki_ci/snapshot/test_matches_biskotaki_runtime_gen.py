@@ -26,8 +26,8 @@ def compare_irrelevant_of_date_to_snapshot():
             ]
         )
 
-        runtime_changelog = runtime_biskotaki / 'CHANGELOG.rst'  # the reality
-        snapshot_changelog = snapshot_dir / 'CHANGELOG.rst'  # the expectation
+        runtime_changelog = runtime_biskotaki / 'CHANGELOG.md'  # the reality
+        snapshot_changelog = snapshot_dir / 'CHANGELOG.md'  # the expectation
 
         runtime_changelog_content = runtime_changelog.read_text().splitlines()
         snap_changelog_content = snapshot_changelog.read_text().splitlines()
@@ -39,7 +39,7 @@ def compare_irrelevant_of_date_to_snapshot():
                 for line_pair in [
                     x
                     for x in zip(runtime_changelog_content, snap_changelog_content)
-                    if not x[0].startswith('0.0.1')
+                    if not x[0].startswith('0.1.0')
                 ]
             ]
         )
@@ -59,7 +59,7 @@ def compare_irrelevant_of_date_to_snapshot():
             assert all(
                 [line_pair[0] == line_pair[1] for line_pair in changelog_line_pairs_generator]
             ), (
-                f"File: CHANGELOG.rst has different content at Runtime vs Snapshot\n"
+                f"File: CHANGELOG.md has different content at Runtime vs Snapshot\n"
                 "-------------------\n"
                 f"Runtime: {runtime_changelog}\n"
                 "-------------------\n"
@@ -80,7 +80,7 @@ def compare_irrelevant_of_date_to_snapshot():
                 )
             for line_pair in changelog_line_pairs_generator:
                 assert line_pair[0] == line_pair[1], (
-                    f"File: CHANGELOG.rst has different content at Runtime vs Snapshot\n"
+                    f"File: CHANGELOG.md has different content at Runtime vs Snapshot\n"
                     "-------------------\n"
                     f"Runtime: {runtime_changelog}\n"
                     "-------------------\n"

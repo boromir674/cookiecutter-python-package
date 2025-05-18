@@ -3,7 +3,7 @@ default_context:
     project_type: module+cli
     project_slug: biskotaki-gold-standard
     pkg_name: biskotakigold
-    repo_name: biskotaki-gold
+    repo_name: biskotaki
     readthedocs_project_slug: biskotaki-gold
     docker_image: bgs
     full_name: Konstantinos Lampridis

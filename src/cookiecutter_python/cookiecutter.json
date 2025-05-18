@@ -14,7 +14,7 @@
     "pypi_subtitle": "{{ cookiecutter.project_short_description }}",
     "release_date": "{% now 'utc', '%Y-%m-%d' %}",
     "year": "{% now 'utc', '%Y' %}",
-    "version": "0.0.1",
+    "version": "0.1.0",
     "initialize_git_repo": ["yes", "no"],
     "interpreters": {
         "supported-interpreters": [

@@ -1,7 +1,9 @@
 # Snapshots of Generator Output for Regression Testing
 
-We maintain 2 `Biskotaki` Projects, Generated with input `User Config`, 
-the [./.github/biskotaki.yaml](../../../.github/biskotaki.yaml) file.
+We maintain in Total 3 `Biskotaki` (snapshot) Projects:
+
+- 2 are **Generated** with input `User Config`, the [./.github/biskotaki.yaml](../../../.github/biskotaki.yaml) file
+- 1 is **Generated** with input `User Config` the [tests/data/gold-standard.yml](../gold-standard.yml)
 
 Since, `rendering` is involved in the `Generation`, we call them `Snapshots`
 

@@ -42,14 +42,23 @@ jobs:
   # RUN TEST SUITE ON ALL PLATFORMS
   test_n_build:
     if: ${{ vars.TEST_JOB_ON != 'false' && !contains(github.event.head_commit.message, '_CI_SKIP_') }}
-    uses: boromir674/automated-workflows/.github/workflows/test_build.yml@test
+    needs: set_github_outputs
+    if: ${{ needs.set_github_outputs.outputs.TESTS_ENABLED == 'true' }}
+    uses: ./.github/workflows/test-job.yml
     with:
-      # Spawn Job per combination of factors in JOB_MATRIX
-      job_matrix: '{"platform": ["ubuntu-latest"], "python-version": ["3.10", "3.11", "3.12"]}'
-      build_installation: 'sdist, wheel'  # Verify sdist and wheel installations/"builds" against Tests
-      # typecheck_policy: '1'  # {0: Skip, 1: Run, 2: Run and allow failures}
-      # run_policy: '0'  # Force skip of downstream 'test_build' Test Job
+      job_matrix: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\"], \"python-version\": [\"3.8\", \"3.9\", \"3.10\", \"3.11\", \"3.12\"]}"
+      # job_matrix: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\", \"windows-latest\"], \"python-version\": [\"3.11\"]}"
+      # job_matrix: "{\"platform\": [\"windows-latest\"], \"python-version\": [\"3.11\"]}"
       artifact_name: 'BUILD_ARTIFACT'
+
+
+    # uses: boromir674/automated-workflows/.github/workflows/test_build.yml@test
+    # with:
+    #   # Spawn Job per combination of factors in JOB_MATRIX
+    #   job_matrix: '{"platform": ["ubuntu-latest"], "python-version": ["3.10", "3.11", "3.12"]}'
+    #   build_installation: 'sdist, wheel'  # Verify sdist and wheel installations/"builds" against Tests
+    #   # typecheck_policy: '1'  # {0: Skip, 1: Run, 2: Run and allow failures}
+    #   # run_policy: '0'  # Force skip of downstream 'test_build' Test Job
 
   codecov_coverage_host:
     needs: test_n_build

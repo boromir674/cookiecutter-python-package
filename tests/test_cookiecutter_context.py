@@ -166,7 +166,7 @@ def get_expected_context():
                                     ),
                                     ("release_date", RELEASE_DATE),
                                     ("year", str(datetime.datetime.now().year)),
-                                    ("version", "0.0.1"),
+                                    ("version", "0.1.0"),
                                     ("initialize_git_repo", "no"),
                                     (
                                         "interpreters",
@@ -214,7 +214,7 @@ def get_expected_context():
                                 # "release_date": datetime.datetime.now().strftime('%Y-%m-%d'),
                                 "release_date": "{% now 'utc', '%Y-%m-%d' %}",
                                 "year": "{% now 'utc', '%Y' %}",
-                                "version": "0.0.1",
+                                "version": "0.1.0",
                                 "initialize_git_repo": [
                                     'no',
                                     'yes',
@@ -284,7 +284,7 @@ def get_expected_context():
                                     ),
                                     ("release_date", RELEASE_DATE),
                                     ("year", str(datetime.datetime.now().year)),
-                                    ("version", "0.0.1"),
+                                    ("version", "0.1.0"),
                                     ("initialize_git_repo", "no"),
                                     (
                                         "interpreters",
@@ -333,7 +333,7 @@ def get_expected_context():
                                 # "release_date": datetime.datetime.now().strftime('%Y-%m-%d'),
                                 "release_date": "{% now 'utc', '%Y-%m-%d' %}",
                                 "year": "{% now 'utc', '%Y' %}",
-                                "version": "0.0.1",
+                                "version": "0.1.0",
                                 "initialize_git_repo": [
                                     'no',
                                     'yes',
@@ -385,7 +385,7 @@ def get_expected_context():
                                 ('project_type', 'module+cli'),
                                 ("project_slug", "biskotaki-gold-standard"),
                                 ("pkg_name", "biskotakigold"),
-                                ("repo_name", "biskotaki-gold"),
+                                ("repo_name", "biskotaki"),
                                 ("readthedocs_project_slug", "biskotaki-gold"),
                                 ("docker_image", "bgs"),
                                 ("full_name", "Konstantinos Lampridis"),
@@ -402,7 +402,7 @@ def get_expected_context():
                                 ),
                                 ("release_date", RELEASE_DATE),
                                 ("year", str(datetime.datetime.now().year)),
-                                ("version", "0.0.1"),
+                                ("version", "0.1.0"),
                                 ("initialize_git_repo", "no"),
                                 (
                                     "interpreters",
@@ -432,7 +432,7 @@ def get_expected_context():
                             ],  # NOTE Difference to 1st Item
                             "project_slug": "biskotaki-gold-standard",
                             "pkg_name": "biskotakigold",
-                            "repo_name": "biskotaki-gold",
+                            "repo_name": "biskotaki",
                             "readthedocs_project_slug": "biskotaki-gold",
                             "docker_image": "bgs",
                             "full_name": "Konstantinos Lampridis",
@@ -448,7 +448,7 @@ def get_expected_context():
                             "release_date": "{% now 'utc', '%Y-%m-%d' %}",
                             "year": "{% now 'utc', '%Y' %}",
                             # "year": str(datetime.datetime.now().year),
-                            "version": "0.0.1",
+                            "version": "0.1.0",
                             "initialize_git_repo": [
                                 'no',
                                 'yes',
