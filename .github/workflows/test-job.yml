@@ -60,7 +60,6 @@ jobs:
       # COVERAGE_ARTIFACT: ${{ steps.set_coverage_artifact.outputs.COVERAGE_ARTIFACT }}
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      WHEELS_PIP_DIR: "wheels-pip"
         # --cov-report=html:{envdir}/htmlcov \
       PYTEST_ARGS: >
         -ra --cov --cov-report=term-missing \
@@ -298,7 +297,6 @@ jobs:
       - name: "Upload Test Coverage as Artifacts"
         uses: actions/upload-artifact@v4
         with:
-        # TODO: implement mechanism for uploading test reports on separate artifact names. then codecov host upload job should be able somehow to get all of them. then change below from true to false
           overwrite: false
           name: coverage-${{ matrix.platform }}-${{ matrix.python-version }}.xml
           path: coverage-${{ matrix.platform }}-${{ matrix.python-version }}.xml
