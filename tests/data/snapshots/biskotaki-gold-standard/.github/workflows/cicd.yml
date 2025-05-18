@@ -43,7 +43,6 @@ jobs:
   test_n_build:
     if: ${{ vars.TEST_JOB_ON != 'false' && !contains(github.event.head_commit.message, '_CI_SKIP_') }}
     needs: set_github_outputs
-    if: ${{ needs.set_github_outputs.outputs.TESTS_ENABLED == 'true' }}
     uses: ./.github/workflows/test-job.yml
     with:
       job_matrix: "{\"platform\": [\"ubuntu-latest\", \"macos-latest\"], \"python-version\": [\"3.8\", \"3.9\", \"3.10\", \"3.11\", \"3.12\"]}"
