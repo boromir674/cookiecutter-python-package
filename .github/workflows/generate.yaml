@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - update-generate
+    tags:
+      - gen
   pull_request:
     branches:
       - 'master'
