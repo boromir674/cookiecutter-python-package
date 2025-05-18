@@ -131,14 +131,6 @@ docs = [
     "mkdocstrings-python==1.11.1",
     "pymdown-extensions>=10.15, <11.0.0",
 ]
-docslive = [
-    "myst-parser>=3.0.1,<5.0.0",
-    "sphinx-autobuild<2022.0.0,>=2021.3.14",
-    "sphinx-inline-tabs==2023.4.21",
-    "sphinxcontrib-mermaid==0.9.2",
-    "sphinxcontrib-spelling >=7.3.3 , <8.0.0",
-    "tornado<7.0.0,>=6.3.3; python_version < \"3.13\" and python_version >= \"3.8\"",
-]
 typing = [
     "types-requests~=2.27.26",
     "types-pyyaml<7.0.0.0,>=6.0.12.5",
