@@ -143,7 +143,7 @@ jobs:
     if: vars.GH_RELEASE_JOB_ON != 'false' && (
       vars.GH_RELEASE_JOB_ON == 'true' ||
       needs.signal_deploy.outputs.AUTOMATED_DEPLOY == 'true')
-    uses: boromir674/automated-workflows/.github/workflows/gh-release.yml
+    uses: boromir674/automated-workflows/.github/workflows/gh-release.yml@v1.13.0
     name: 'GH Release'
     with:
       tag: ${{ "{{" }} github.ref_name {{ "}}" }}
