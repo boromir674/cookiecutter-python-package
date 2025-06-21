@@ -1,69 +1,83 @@
-=========
-Changelog
-=========
+# Changelog
+
+> All notable changes to this project will be documented in this file.
+
+This project adheres to [Semantic Versioning](https://semver.org/).
 
 
-2.6.2 (2025-05-17)
-==================
+## [2.6.3] (2025-06-21)
 
-Changes
-^^^^^^^
+### Changes
 
-chore
-"""""
+### ci
+
+- clean test-job.yml Job of CI/CD Pipeline
+
+### docs
+
+- migrate CHANGELOG.rst to CHANGELOG.md
+
+### chore
+
+- bump version to 2.6.3
+- update 'Terminal-Based Release Process' script
+
+
+## [2.6.2] (2025-05-17)
+
+### Changes
+
+#### chore
+
 - sem ver bump to 2.6.2
 - add try/catch with 3 retries for 'auto merge'
 - improve terminal based release script
 
 
-2.6.1 (2025-05-16)
-==================
+## [2.6.1] (2025-05-16)
 
-Changes
-^^^^^^^
+### Changes
 
-fix
-"""
+#### fix
+
 - --version CLI flag
 
-test
-""""
+#### test
+
 - fix integration tests
 
-documentation
-"""""""""""""
+#### documentation
+
 - update 'Topic to Integration' Dev Process Guide
 
-chore
-"""""
+#### chore
+
 - sem ver bump to 2.6.1
 - update terminal based release script
 
 
-2.6.0 (2025-05-15)
-==================
+## [2.6.0] (2025-05-15)
 
-Changes
-^^^^^^^
+### Changes
 
-feature
-"""""""
+#### feature
+
 - generate better Mkdocs documentation
 
-test
-""""
+#### test
+
 - fix tests
 - fix integration tests
 - simplify code
 
-documentation
-"""""""""""""
+#### documentation
+
 - retire section-index plugin in favor of material built-in !
 - do rebase on Integration Branch to pass GH Rule for Update branch before merge
 - add the 'Topic Branch PR to Dev' Process Guide
 
-refactor
-""""""""
+#### refactor
+
 - apply black
 - pass mypy checks
 - apply ruff
@@ -71,91 +85,82 @@ refactor
 - apply isort
 - simplify extra_context passing into cookiecutter
 
-chore
-"""""
+#### chore
+
 - sem ver bump to 2.6.0
 - remove comment from gen_api script
 
 
-2.5.10 (2025-05-10)
-===================
+## [2.5.10] (2025-05-10)
 
-Changes
-^^^^^^^
+### Changes
 
-documentation
-"""""""""""""
+#### documentation
+
 - add badges in Docs Site Landing Page
 - fix link
 
-chore
-"""""
+#### chore
+
 - sem ver bump to 2.5.10
 
 
-2.5.9 (2025-05-10)
-==================
+## [2.5.9] (2025-05-10)
 
 Migration of **Documentation Site** from `sphinx` to `mkdocs` and `mkdocs-material` theme!
 
 Also add **Documentation Content** for `How-to` Guides and `Developer's Guides`.
 
-Changes
-^^^^^^^
+### Changes
 
-test
-""""
+#### test
+
 - adjust tests
 
-documentation
-"""""""""""""
+#### documentation
+
 - migrate readthedocs CI to mkdocs
 - migrate to mkdocs, add content and improve UX/UI
 - replace README.rst with README.md
 
-refactor
-""""""""
+#### refactor
+
 - remove extra_context kwarg from our 'generate' function
 - reduce complexity and reduce code
 
-build
-"""""
+#### build
+
 - solve mkdocs --optional docs
 
-ci
-""
+#### ci
+
 - migrate Docs Job to mkdocs
 
-chore
-"""""
+#### chore
+
 - sem ver bump to 2.5.9
 
 
-2.5.8 (2025-04-27)
-==================
+## [2.5.8] (2025-04-27)
 
-Changes
-^^^^^^^
+### Changes
 
-test
-""""
+#### test
+
 - reduce Cyclomatic Complexity of get_expected_generated_files to 8 (prev 9)
 
 
-2.5.7 (2024-04-26)
-==================
+## [2.5.7] (2024-04-26)
 
 Changes only affect the `PR Labeler` Workflow, running on CI
 
 
-2.5.6 (2024-04-26)
-==================
+## [2.5.6] (2024-04-26)
 
 - build: update `attrs` dependency to `>=23.0.0, <24.0.0` range
 
 
-2.5.5 (2024-04-26)
-==================
+## [2.5.5] (2024-04-26)
 
 Main goal was to reduce the **Cyclomatic Complexity** (McCabe) in the source code.
 
@@ -165,8 +170,7 @@ Refactored code in `tests` to reduce Cyclomatic Complexity (McCabe) below 5
 - Also, update Acceptance Criteria to max value **9** (previous 11) for Cyclomatic Complexity (McCabe) in CI
 
 
-2.5.4 (2024-04-19)
-==================
+## [2.5.4] (2024-04-19)
 
 Main goal was to reduce the **Cyclomatic Complexity** (McCabe) in the source code.
 - All python function code in `src`, have a maximum of **5** McCabe Cyclomatic Complexity!
@@ -176,21 +180,19 @@ Also redesigned the way we generated alternative docs sites (ie mkdocs, pshinx) 
 - This allowed to retire some production and
 some test code!
 
-Changes
-^^^^^^^
+### Changes
 
-ci
-"""
+#### ci
+
 - add new CI acceptance criteria to reject code with Cyclomatic Complexity (McCabe) above 5
 - deactivate windows CI
 
-refactor
-""""""""
+#### refactor
+
 - refactor code to reduce Cyclomatic Complexity (McCabe) below 5
 
 
-2.5.3 (2024-04-18)
-==================
+## [2.5.3] (2024-04-18)
 
 Initial goal was to simplify the tests.  
 In the process:
@@ -201,34 +203,30 @@ In the process:
 - improved user experience on the cli.terminal with better messages
 
 
-2.5.2 (2024-04-14)
-==================
+## [2.5.2] (2024-04-14)
 
 **Mutants elimination** and **CWEs mitigation**
 
 
-2.5.1-dev (2024-04-12)
-======================
+## [2.5.1-dev] (2024-04-12)
 
 Internal CI/CD Pipeline minor fix.
 
 
-2.5.1 (2024-04-10)
-==================
+## [2.5.1] (2024-04-10)
 
 | **Migrating** to `uv` !
 | New **PR Validation** dedicated `CI` Workflows
 
 
-Changes
-^^^^^^^
+### Changes
 
-fix
-"""
+#### fix
+
 - improve placeholder text for CLI `--help` response
 
-ci
-"""
+#### ci
+
 - migrate Dockerfile `prod` and `test_wheels` stages to `uv` (from pip)
 - add docs, type, and pydeps Jobs in PR validation workflows, callable from 3 reusable workflows
 - hard-enable the Static Code Analysis (SCA) Job in `ci.yml`
@@ -238,45 +236,43 @@ ci
 - document job triggers in `ci.yml` for better clarity
 - exclude the `ci-redesign` branch from `test.yaml` triggers
 
-refactor
-""""""""
+#### refactor
+
 - apply `black` formatting across the codebase
 - apply `ruff` linting fixes across the codebase
 - apply `isort` with the new policy of 2 lines after the last import statement
 - generate `lines_after_imports = 2` in `isort` configuration inside `pyproject.toml`
 
-test
-""""
+#### test
+
 - update snapshots to reflect the latest changes
 - fix and update tests to account for Windows-specific quirks
 - enable integration tests in CI pipeline
 
-build
-"""""
+#### build
+
 - migrate Dockerfile to `uv` (from pip) for better dependency management
 
 
-2.5.0 (2024-03-27)
-==================
+## [2.5.0] (2024-03-27)
 
 | This release introduces the option for generating a newly designed cleaner `CI/CD` Pipeline,
 | via `cicd` CLI flag option, and by passing the `experimental` value
 
 | It also includes fixes, refactoring, and updates to testing snapshots for better reliability.
 
-Changes
-^^^^^^^
+### Changes
 
-feature
-"""""""
+#### feature
+
 - update prod cookiecutter template
 - update pyproject template with mkdocs extras
 - pin griffe package for mkdocs-based Generated Projects
 - implement the 'cicd' option in Gen Config
 - allow Generator to accept python 3.12, 3.13, and 3.14 in supported-interpreters context variable
 
-ci
-""
+#### ci
+
 - fix type checking by installing missing package
 - run the docs build process for biskotaki gold, without pinned dependencies
 - fix CI Pipeline by using Automated Workflows v1.14.0
@@ -288,8 +284,8 @@ ci
 - improve Job Template name
 - add 'experimental' CI pipeline to `CI Biskotaki`
 
-test
-""""
+#### test
+
 - update biskotaki CI no-input/interactive Snapshots
 - update no-input and interactive Snapshots generated from .github/biskotaki.yaml
 - update Gold-Standard Biskotaki to CI Matrix [3.10, 3.11, 3.12] and RTD Python 3.11
@@ -301,114 +297,106 @@ test
 - apply ruff in code
 - pass mypy checks
 
-refactor
-""""""""
+#### refactor
+
 - generate with python 3.10 <= x <= 3.13 for Gold Standard
 - context render used in interactive mode
 - hide warnings about interpreter mismatch to help local development console declutter
 
-fix
-"""
+#### fix
+
 - Gold Standard CI Visualization script
 - Gold Standard dependency updates
 - ci pipeline generated as in Gold Standard biskotaki
 - fix docker image that needed maintenance
 
 
-2.4.0 (2024-03-14)
-==================
+## [2.4.0] (2024-03-14)
 
-Changes
-^^^^^^^
+### Changes
 
-feature
-"""""""
+#### feature
+
 - make Gold Standard Python Project pass Pylint Job on CI
 - comment out the 'verbose' cli flag to make pylint score over 8.2 on fresh project
 
-ci
-""
+#### ci
+
 - prevent Mkdocs 'site' folder from being pushed to Biskotaki repo, after 'tox -e docs'
 - install 'generate-python' CLI in dedicated step
 - install pipx and poetry (using pipx)
 - run poetry lock and add poetry.lock file in py-gold branch of biskotaki repo
 
-release
-"""""""
+#### release
+
 - bump version to 2.4.0
 
-gitops
-""""""
+#### gitops
+
 - handle case where the origin/release branch is not found
 
 
-2.3.0 (2024-03-13)
-==================
+## [2.3.0] (2024-03-13)
 
-Changes
-^^^^^^^
+### Changes
 
-feature
-"""""""
+#### feature
+
 - cover most source code areas, when PR labeling: src, tests, ci, data, config
 - add Job that makes a Github Release on v* tags on Main Branch
 
-fix
-"""
+#### fix
+
 - expect interpreters to be loaded as dict by cookiecutter in intereactive mode
 
-test
-""""
+#### test
+
 - update Gold Standard Snapshot
 - update biskotaki-interactive Snapshot, used in Regression Testing
 - update biskotaki-no-input Snapshot, used in Regression Testing
 
-ci
-""
+#### ci
+
 - clean code
 
-gitops
-""""""
+#### gitops
+
 - pass git tag to Workflow for PR in to a boarding branch
 
 
-2.2.1-dev1 (2024-03-13)
-=======================
+## [2.2.1-dev1] (2024-03-13)
 
-Changes
-^^^^^^^
+### Changes
 
-documentation
-"""""""""""""
+#### documentation
+
 - update README to emphasize that our CI frontend is based on tox 3.x
 - fix example User Config YAML, in README quickstart section
 
-gitops
-""""""
+#### gitops
+
 - allow on-demand merging of RT into Release
 - add GitOps Process supporting boarding multiple Topic Branches in RT, before Releasing
 
-build
-"""""
+#### build
+
 - do poetry update
 
 
-2.2.1 (2024-03-11)
-==================
+## [2.2.1] (2024-03-11)
 
-Changes
-^^^^^^^
+### Changes
 
-fix
-"""
+#### fix
+
 - adjust mkdocs configured template to follow the Gold Standard Snaphost
 
-test
-""""
+#### test
+
 - fix building wheel and sdist from gen proj
 
-ci
-""
+#### ci
+
 - pass PAT 'GH_TOKEN' in GH Release Workflow
 - pass git tag name, ie v2.2.1-rc in GH Release Workflow
 - allow checking for -rc tag regardless of top-level PYPI overide switch
@@ -417,124 +405,113 @@ ci
 - generate and push Python Gold Standard to py-gold branch of biskotaki repo
 
 
-2.2.0 (2024-03-10)
-==================
+## [2.2.0] (2024-03-10)
 
-Changes
-^^^^^^^
+### Changes
 
-ci
-""
+#### ci
+
 - enable Python 3.12 CI Builds
 
 
-2.1.0 (2024-03-09)
-==================
+## [2.1.0] (2024-03-09)
 
 | This Release **bumps** the internal `Cookiecutter` version from '1.7.x' to **'2.x'**.
 | We become up-to-date with latest `cookiecutter` version, from `pypi` and avoids vendor lock-in.
 
-Changes
-^^^^^^^
+### Changes
 
-fix
-"""
+#### fix
+
 - add stubs for cookiecutter.generate and remove poyo stubs
 
-test
-""""
+#### test
+
 - add test data for verifying internal Context Cokiecutter builds and passes to Jinja
 - require quoted 'yes' / 'no' in User YAML
 - sanity check calling cookiecutter on prod Template with pytest-fixture user yaml
 - verify cookiecutter sets context with overriden Choice Variables from User Config
 
-documentation
-"""""""""""""
+#### documentation
+
 - use quotes for specifying pip version ranges in RTD
 - install couple of Docs dependencies with pip, during RTD Docs Build
 
-refactor
-""""""""
+#### refactor
+
 - type check according to mypy errors
 - eliminate all warning during Tests, by quoting 'yes'/'no' in User Config YAML
 - use pyyaml instead of poyo for reading User YAML
 
-build
-"""""
+#### build
+
 - bump Cokiecutter from 1.7 to 2.x
 
-ci
-""
+#### ci
+
 - do Wheel Tests, by passing PY_WHEEL env var in Test Suite
 - dedicate tox env to send signal in Test Suite for special Sdist handling on Windows
 - handle error on Sdist Tests
 - run 1st round of Tests with shell: bash
 
 
-2.0.2 (2024-02-27)
-==================
+## [2.0.2] (2024-02-27)
 
-Changes
-^^^^^^^
+### Changes
 
-refactor
-""""""""
+#### refactor
+
 - do 'accidental Logs - Deletion' as part of main and not of post_file_removal, in post hook
 
 
-2.0.2-dev (2024-02-27)
-======================
+## [2.0.2-dev] (2024-02-27)
 
-Changes
-^^^^^^^
+### Changes
 
-documentation
-"""""""""""""
+#### documentation
+
 - improve clean-up instructions in Git Ops Cheatsheet Page
 
-ci
-""
+#### ci
+
 - add glob patterns to exclude Template Project contents from CodeQL
 
-release
-"""""""
+#### release
+
 - bump version to 2.0.2-dev
 
-gitops
-""""""
+#### gitops
+
 - support automatic Source Sem Ver update for '-rc' and '-dev' sem ver metadata
 - allow workflows to trigger on event 'merge to Release'
 - add user name and email before tagging prod tag on Main/Master
 - ensure release branch is on master, in 'RT in Release' Workflow
 
 
-2.0.1 (2024-02-25)
-==================
+## [2.0.1] (2024-02-25)
 
 Fix CWE https://github.com/boromir674/cookiecutter-python-package/security/dependabot/7
 
-Changes
-^^^^^^^
+### Changes
 
-documentation
-"""""""""""""
+#### documentation
+
 - update git ops cheat sheet
 
-build
-"""""
+#### build
+
 - required tornado >=6.3.3 to patch CWE, for docslive Extras
 
-ci
-""
+#### ci
+
 - fix logic in determining Distro or Docs changes
 
-release
-"""""""
+#### release
+
 - bump version to 2.0.1
 
 
-2.0.0 (2024-02-25)
-==================
+## [2.0.0] (2024-02-25)
 
 **Backwords Compatible Major Release**, unless you are still using legacy Python 3.6!
 
@@ -548,43 +525,38 @@ We update our Pytest **test** dependency constraint to ^7.2.0, which caused
 
 Thus, we resorted in updating the `python` constraint to `>=3.7`
 
-Changes
-^^^^^^^
+### Changes
 
-build
-"""""
+#### build
+
 - drop support for Python 3.6
 - update pytest constraint to ^7.2.0
 
-release
-"""""""
+#### release
+
 - bump version to 2.0.0
 
-gitops
-""""""
+#### gitops
+
 - add missing workflow for PR to master
 - fix listener of 'Merge RT in Release' Workflow
 
 
-1.15.4 (2024-02-24)
-===================
+## [1.15.4] (2024-02-24)
 
-Changes
-^^^^^^^
+### Changes
 
-build
-"""""
+#### build
+
 - require gitpython >= 3.1.30 due to CVE reported by Dependabot
 
 
-1.15.4-dev4 (2024-02-24)
-========================
+## [1.15.4-dev4] (2024-02-24)
 
-Changes
-^^^^^^^
+### Changes
 
-ci
-""
+#### ci
+
 - configure codeql to ignore template cookiecutter dir
 - design automated acceptance check
 - prevent tox from failing when running Bandit
@@ -592,151 +564,137 @@ ci
 - setup Continuous Bandit Scanning and Reporting
 
 
-1.15.4-dev1 (2024-02-24)
-========================
+## [1.15.4-dev1] (2024-02-24)
 
-Changes
-^^^^^^^
+### Changes
 
-ci
-""
+#### ci
+
 - enable Dependabot Version Updates, on a daily basis scan
 
 
-1.15.4-dev (2024-02-23)
-=======================
+## [1.15.4-dev] (2024-02-23)
 
-Changes
-^^^^^^^
+### Changes
 
-documentation
-"""""""""""""
+#### documentation
+
 - fix instructions
 
-gitops
-""""""
+#### gitops
+
 - fix PR Labeling Rules to distinguish Test Data from Test Code
 - fix triggering of merge to Master Workflow, with pat
 
 
-1.15.3-dev (2024-02-23)
-=======================
+## [1.15.3-dev] (2024-02-23)
 
-Changes
-^^^^^^^
+### Changes
 
-documentation
-"""""""""""""
+#### documentation
+
 - add 'Publish My Branch' Git Ops Guide
 
-build
-"""""
+#### build
+
 - build docs with Sphinx 6.2 (from 4.x), to render Markdown, with extension 'myst-parser'
 
-ci
-""
+#### ci
+
 - fix both CI and RTD Docs Builds
 
-gitops
-""""""
+#### gitops
+
 - fix logic when deriving Protected Branch name
 
-tox
-"""
+#### tox
+
 - pip install -e .[docslive], instead of poetry export first
 
 
-1.15.2-dev (2024-02-22)
-=======================
+## [1.15.2-dev] (2024-02-22)
 
-Changes
-^^^^^^^
+### Changes
 
-documentation
-"""""""""""""
+#### documentation
+
 - do minor tweaks in the style of README
 
-gitops
-""""""
+#### gitops
+
 - do RC Release via CI/CD, without commiting Source Sem Ver
 
 
-1.15.1 (2024-02-22)
-===================
+## [1.15.1] (2024-02-22)
 
-Changes
-^^^^^^^
+### Changes
 
-refactor
-""""""""
+#### refactor
+
 - make sure generated code passes Linters and Formatters
 
-ci
-""
+#### ci
+
 - skip Build n Test, on pushes to 'release' branch
 
-chore
-"""""
+#### chore
+
 - include scripts dir in Lint checking
 
-tests
-"""""
+#### tests
+
 - update biskotaki-interactive Snapshot, used in Regression Testing
 
-gitops
-""""""
+#### gitops
+
 - when neither Distro nor Docs changed then reduce Checks before Train
 - add more mutually exclusive PR Labeling Rules
 
 
-1.15.0 (2024-02-21)
-===================
+## [1.15.0] (2024-02-21)
 
-Changes
-^^^^^^^
+### Changes
 
-feature
-"""""""
+#### feature
+
 - provide script to generate RST mermaid from Dockerfile and GA Workflow
 
-documentation
-"""""""""""""
+#### documentation
+
 - generate and embed Pydeps SVG Graphs, into RST, at RTD Build time
 
-ci
-""
+#### ci
+
 - update Python from 3.9 to 3.10 in Cross-Platofrom Job Matrix
 
-release
-"""""""
+#### release
+
 - bump version to 1.15.0
 
-gitops
-""""""
+#### gitops
+
 - do maximal set of checks before RT, as fallback, when dynamic minimum set derivation fails
 
 
-1.14.1 (2024-02-20)
-===================
+## [1.14.1] (2024-02-20)
 
-Changes
-^^^^^^^
+### Changes
 
-fix
-"""
+#### fix
+
 - use proper python reference in Code Visualize CI Job
 
-refactor
-""""""""
+#### refactor
+
 - remove relic Docs Reusable Workflow, since we "import" a remote one
 
-ci
-""
+#### ci
+
 - pass regex without double-quotes, to bash =~ operator
 - use Reusable Workflow, with ability to override Inputs from Github Vars
 
-gitops
-""""""
+#### gitops
+
 - use custom commit before opening PR to Protected Branch
 - do gh merge, sintead of git merge
 - allow ash to deal with gh and jq for label fetching
@@ -746,18 +704,16 @@ gitops
 - properly track/checkout the selected Protected Branch
 
 
-1.14.1-dev1 (2024-02-19)
-========================
+## [1.14.1-dev1] (2024-02-19)
 
-Changes
-^^^^^^^
+### Changes
 
-documentation
-"""""""""""""
+#### documentation
+
 - use same Theme in Local and RTD Build
 
-gitops
-""""""
+#### gitops
+
 - listen to merges from Protected to RT
 - do not listen to merges to boarding
 - derive name of Protected Branch from Labels
@@ -765,30 +721,28 @@ gitops
 - select Required Checks at Runtime/Dynamically, by examining changes'
 
 
-1.14.1-dev (2024-02-19)
-=======================
+## [1.14.1-dev] (2024-02-19)
 
-Changes
-^^^^^^^
+### Changes
 
-documentation
-"""""""""""""
+#### documentation
+
 - rename Docs Page 'Usage' Section to shorter name
 
-development
-"""""""""""
+#### development
+
 - improve tox envs
 
-ci
-""
+#### ci
+
 - fix build command we pass to Called Docs Workflow
 
-release
-"""""""
+#### release
+
 - bump version to 1.14.1-dev
 
-gitops
-""""""
+#### gitops
+
 - derive merge commit message from PR Labels
 - if release-train exists, then track Upstream, else automatically create on top of master
 - replace PR to train and release, squash with merge 'method'
@@ -797,51 +751,47 @@ gitops
 - allow 'customly' prepared 'boarding' Branch
 
 
-1.14.0 (2024-02-18)
-===================
+## [1.14.0] (2024-02-18)
 
-Changes
-^^^^^^^
+### Changes
 
-feature
-"""""""
+#### feature
+
 - revamp Mkdocs build Process, and enhance Template Content of Docs Pages
 
-fix
-"""
+#### fix
+
 - provide correct env name for Code Visualization CI Job to reference
 - fix biskotaki generation with sphinx docs
 
-test
-""""
+#### test
+
 - update tests to match new expectations, given biskotaki.yml updates
 - update Gold Standard Biskotatki Snapshot
 
-ci
-""
+#### ci
+
 - update Generate Workflow, according to changed tox
 
-chore
-"""""
+#### chore
+
 - remove python 3.6 and add python 3.11 from Biskotaki Ref Project
 
 
-1.13.0 (2024-02-15)
-===================
+## [1.13.0] (2024-02-15)
 
 | Focused on revamping the Docker Image built with the ``generate-python`` CLI.
 | And documenting in the ``Documentation Site``, how to install via ``pipx``, ``docker``, or ``pip``.
 
-Changes
-^^^^^^^
+### Changes
 
-feature
-"""""""
+#### feature
+
 - avoid hard-fail when git binary is not installed, which causes gitpython ImportError
 - revamp Dockerfile, and reduce image size from 770MB to 229MB, with multi-stage build
 
-documentation
-"""""""""""""
+#### documentation
+
 - include a Mermaid Graph with a DAG of the Docker Multi-Stage Build Process
 - fix API docs and revamp Developer's Corner Page
 - update screenshot with latest CI/CD Template Design
@@ -849,147 +799,136 @@ documentation
 - fix sphinx warning
 - document installation via pipx, pip, and docker & and running via CLI or Container
 
-build
-"""""
+#### build
+
 - track .dockerignore!
 - add 'sphinx-inline-tabs' ^2023.4.21, for python >=3.8,<3.13 in docs and docslive Extras
 
-ci
-""
+#### ci
+
 - make poetry export more future proof, by installing export plugin manually
 
-gitops
-""""""
+#### gitops
+
 - fix pr-to-boarding Workflow
 
 
-1.12.5 (2024-02-11)
-===================
+## [1.12.5] (2024-02-11)
 
 We add `--offline` as optional CLI flag to the `generate-python` CLI.
 We keep the default behaviour of the CLI to be `online`, ie to make Async Http requests.
 
 
-Changes
-^^^^^^^
+### Changes
 
-feature
-"""""""
+#### feature
+
 - add CLI option to deactivate Async Http requests for PyPI and RTD web servers
 
-dev
-"""
+#### dev
+
 - run with --offline flag the Snapshot Update Scripts
 
-release
-"""""""
+#### release
+
 - bump version to 1.12.5
 
 
-1.12.5-dev1 (2024-02-10)
-========================
+## [1.12.5-dev1] (2024-02-10)
 
 Release with CI changes to support **Git Ops.**  
 Plus, new **Docs Task** as **CI/CD Job.**
 
 
-Changes
-^^^^^^^
+### Changes
 
-ci
-""
+#### ci
+
 - automatically run Cross-Platform or Doc Tests based on file changes
 - call Reusable Workflow, for Docs Build, and wire up Git Ops, to Policy system
 - use PEP_VERSION env var to store the version section from the wheel file name
 - bump all 'setup-python' action to v5, from v4
 - parse distro name and pep version from 'pip wheel' cmd console output
 
-release
-"""""""
+#### release
+
 - bump version to 1.12.5-dev1
 
 
-1.12.5-dev (2024-02-09)
-=======================
+## [1.12.5-dev] (2024-02-09)
 
-Changes
-^^^^^^^
+### Changes
 
-ci
-""
+#### ci
+
 - migrate from action v4 to v5
 
-chore
-"""""
+#### chore
+
 - improve build env description
 
-release
-"""""""
+#### release
+
 - bump version to 1.12.5-dev
 
 
-1.12.4 (2024-02-09)
-===================
+## [1.12.4] (2024-02-09)
 
 **Improved Code Coverage.**
 
 
-Changes
-^^^^^^^
+### Changes
 
-fix
-"""
+#### fix
+
 - dynamic runtime loading of all CookiecutterException subclasses from cookiecutter
 
-test
-""""
+#### test
+
 - unit-test *Exception Classifier* and cover all possible returned values
 
-documentation
-"""""""""""""
+#### documentation
+
 - add docstrings
 
-ci
-""
+#### ci
+
 - use pat with Commit, PR, Workflow Trigger in merge-to-rt Workflow
 
-refactor
-""""""""
+#### refactor
+
 - Exception Classifier more readable code and comment on *critical* / *not-critical* classification decisions
 
-release
-"""""""
+#### release
+
 - bump version to 1.12.4
 
 
-1.12.3 (2024-02-08)
-===================
+## [1.12.3] (2024-02-08)
 
 **Improved Code Coverage.**
 
 
-Changes
-^^^^^^^
+### Changes
 
-test
-""""
+#### test
+
 - verify expected exceptions are thrown, in cases of errors, and add new sanitization test cases
 
-chore
-"""""
+#### chore
+
 - chore(gitignore): update .gitignore
 
-ci
-""
+#### ci
+
 - trigger Job of merge-rt-in-release only if github.event_name == 'pull_request' && github.event.pull_request.merged == true
 
-release
-"""""""
+#### release
+
 - bump version to 1.12.3
 
 
-1.12.2 (2024-02-07)
-===================
+## [1.12.2] (2024-02-07)
 
 **Regression and Backwards Compatibility - Tests**
 
@@ -1007,21 +946,19 @@ If this test fails, then the Dialog System and the Cookiecutter Tempalte Vars ar
 From this Relase onward, we also start measuring Code Coverage only on Production Code.  
 We only measure the 'src' dir, and stop measuring Test Code, in 'tests' dir.
 
-Changes
-^^^^^^^
+### Changes
 
-test
-""""
+#### test
+
 - verify Gen Project configured with Sphinx and RTD Py3.8, as advertised Defaults
 - verify prompts user for each and everyone of Cookiecutter Template Variables
 
-release
-"""""""
+#### release
+
 - bump version to 1.12.2
 
 
-1.12.1 (2024-01-29)
-===================
+## [1.12.1] (2024-01-29)
 
 Adding Continous Deployment for `Github Release`, with a dedicated **CI Job**.
 
@@ -1038,39 +975,37 @@ The process involves `gitops operations`, simple `shell scripts`,
 and `github workflows`.
 
 
-Changes
-^^^^^^^
+### Changes
 
-documentation
-"""""""""""""
+#### documentation
+
 - add Badge to count monthly pypi downloads (#116)
 
-ci
-""
+#### ci
+
 - add Job for `gh release create`, and trigger load-to-rt on 'auto-release' tag
 - gitops "boarding" on `Release Train`
 - gitops "release" User's Branch
 - improve messages rendered on github actions web ui
 
-test
-""""
+#### test
+
 - expect either empty log file in PWD, after generator run, or no file at all
 
-refactor
-""""""""
+#### refactor
+
 - apply new black version 24.1, with the 2024 style
 
-style
-"""""
+#### style
+
 - clean code, by removing obsolete code comments related to cookiecutter callable
 
-release
-"""""""
+#### release
+
 - bump version to 1.12.1
 
 
-1.12.0 (2024-01-18)
-===================
+## [1.12.0] (2024-01-18)
 
 In this release, we fix then [known issue](https://github.com/boromir674/cookiecutter-python-package/issues/63),
 when running the `Generator` CLI in `interactive` mode.
@@ -1085,34 +1020,32 @@ The idea was to refrain from updating our locked `cookiecutter` dependency, from
 for the time being.
 
 
-Changes
-^^^^^^^
+### Changes
 
-feature
-"""""""
+#### feature
+
 - support running interactive CLI, without supplying User's Config Yaml file
 - populate Context, in pre_main, if interactive mode is ON
 
-test
-""""
+#### test
+
 - make snapshot testinng robust against runtime Calendar Year changes!
 
-refactor
-""""""""
+#### refactor
+
 - exclude DEBUG-level logs from being emitted in the Console (just in file)
 - Ruff, Black, Isort, Mypy
 
-chore
-"""""
+#### chore
+
 - remove Handler Chain Infra, since we delegate handling Input to Questionnaire
 
-release
-"""""""
+#### release
+
 - bump version to 1.12.0
 
 
-1.11.4 (2023-12-25)
-===================
+## [1.11.4] (2023-12-25)
 
 | Revisiting the **`Why this Generator?`_** page in the Docs Website.  
 | And **updating motivation**, for reader to use our software.
@@ -1126,50 +1059,42 @@ release
 
 .. _Diff: https://github.com/boromir674/cookiecutter-python-package/pull/114/files#diff-1f6c4e1615922e41582cdc651b4dd501a73e90bb6109e18ac5bb526ec2c92297
 
-Changes
-^^^^^^^
+### Changes
 
-documentation
-"""""""""""""
+#### documentation
+
 - redesign Motivation Documentation Page, around 4 Top Level arguments
 
 
-1.11.3 (2023-12-25)
-===================
+## [1.11.3] (2023-12-25)
 
-Changes
-^^^^^^^
+### Changes
 
-fix
-"""
+#### fix
+
 - fix syntax error in pyproject.toml, causing build process to fail
 
 
-1.11.2 (2023-12-25)
-===================
+## [1.11.2] (2023-12-25)
 
-Changes
-^^^^^^^
+### Changes
 
-documentation
-"""""""""""""
+#### documentation
+
 - improve README
 - fix URL link of CI/CD Pipeline, used in Docs site to demonstrate Generated Proj capabilities
 
 
-1.11.0 (2023-12-24)
-===================
+## [1.11.0] (2023-12-24)
 
-Changes
-^^^^^^^
+### Changes
 
-feature
-"""""""
+#### feature
+
 - drastically improve Developer's Guides section
 
 
-1.10.0 (2023-12-24)
-===================
+## [1.10.0] (2023-12-24)
 
 *Upgrade*, **Docker**, **Code Visualization** and **Docs** *Jobs*, which are
 out-of-the-box produced by the `Generator` as part of the **CI/CD Pipeline**
@@ -1192,156 +1117,141 @@ A Job can take into **account** "things" such as:
 - whether the `Test Job` was intentionally skipped
 - whether `production code` (ie python distro) changed from previous commit 
 
-Changes
-^^^^^^^
+### Changes
 
-feature
-"""""""
+#### feature
+
 - support **Policy-based** Workflows/Job, in the **CI/CD Pipeline**
 - add **Dev Guides** Page in Docs Website, when selecting `Mkdocs` as Docs Builder
 
-test
-""""
+#### test
+
 - improve automatically derived emulated project to use for Post Hook Unit Tests
 
 
-1.9.0 (2023-12-22)
-==================
+## [1.9.0] (2023-12-22)
 
 Introducing `Ruff` as part of the `Static Code Analysis` Toolchain.  
 Generator, now features `CI/CD`, with the `Ruff` Fast Python Linter!
 
 Preparing, to retire `pylint`, in the future, by removing CI Job dedicated to it, at the moment.
 
-Changes
-^^^^^^^
+### Changes
 
-feature
-"""""""
+#### feature
+
 - introduce `Ruff`, Fast Python Linter, in updated `Developer's Tool chain <https://github.com/boromir674/biskotaki/tree/auto-generated?tab=readme-ov-file#development>`_
 - run `Ruff` against code, as part of the Tools included in the `Static Code Analysis` CI Workflow, produced by the **Generator's** Template
 - run legacy `Pylint` agaist code, in dedicated Job, for easier potential retirement
 - make Template Code pass Ruff Checks/Evaluations
 - add `Ruff`, `tox -e ruff`, as available `tox command`` for fast `Static Code Check`
 
-fix
-"""
+#### fix
+
 - remove extra but empty Log file, that appears inside the Gen Project
 
-test
-""""
+#### test
+
 - automatically test that Rendered policy_lint.yml CI config is valid YAML
 - automatically verify that extra, but empty log file does NOT appear in Gen Proj
 
-documentation
-"""""""""""""
+#### documentation
+
 - feature Ruff as New Fast Python Linter, and add Ruff Code Badge in README
 - mention pytest-explicit as requirement for all test suite features (ie cli flags)
 
-style
-"""""
+#### style
+
 - apply isort and black code "fixes"
 
-refactor
-""""""""
+#### refactor
+
 - apply Ruff fixes
 
-ci
-""
+#### ci
+
 - run Ruff in the Static Code Analysis CI Job and keep running legacy Pylint in separate Job
 - remove dedicated docker settings reading Job
 - refactor so that some intermediate Jobs are eliminated
 - delegate Code Visualization to Reusable Workflow, with configurable execution Policy
 - use workflow one-liner instead of bash if-else
 
-chore
-"""""
+#### chore
+
 - add 'Snapshot Update' Scripts, and dedicate README for the Process
 
 
-1.8.7 (2023-12-16)
-==================
+## [1.8.7] (2023-12-16)
 
-Changes
-^^^^^^^
+### Changes
 
-ci
-""
+#### ci
+
 - run 1-Job Test, instead of Stress Tests, on push to master or main branch
 
-release
-"""""""
+#### release
+
 - bump version to 1.8.7
 
 
-1.8.6 (2023-12-15)
-==================
+## [1.8.6] (2023-12-15)
 
-Changes
-^^^^^^^
+### Changes
 
-documentation
-"""""""""""""
+#### documentation
+
 - improve **Quickstart** Gide in README.rst
 
 
-1.8.3 (2023-12-15)
-==================
+## [1.8.3] (2023-12-15)
 
-Changes
-^^^^^^^
+### Changes
 
-documentation
-"""""""""""""
+#### documentation
+
 - mention Documentation Site right after README.rst Subtitle and before badges
 
 
-1.8.2 (2023-12-15)
-==================
+## [1.8.2] (2023-12-15)
 
-Changes
-^^^^^^^
+### Changes
 
-ci
-""
+#### ci
+
 - remove unused workflow
 - fix workflow syntax due to merge confict resolution artifacts
 
 
-1.8.1 (2023-12-15)
-==================
+## [1.8.1] (2023-12-15)
 
-Changes
-^^^^^^^
+### Changes
 
-documentation
-"""""""""""""
+#### documentation
+
 - add shell on-liner for firing up a 'quick-release' event
 - add 'Quick Docs Release' Guide & restructure some content based on Diataxis theory
 
-ci
-""
+#### ci
+
 - Open PR to master on 'quick-release' event, to release Docs only Updates
 
 
-1.8.0 (2023-12-12)
-==================
+## [1.8.0] (2023-12-12)
 
-Changes
-^^^^^^^
+### Changes
 
-feature
-"""""""
+#### feature
+
 - New Generator Option allows for `Mkdocs` doc site builder, along with `sphinx` 
 - Generator adds python Logging Configuration, with Handlers for streaming to `File` and `Std err`
 - Generator adds full CI/CD Pipeline as Github Actions Workflow, introducing new Jobs such as `Docker`, and `PyPI`
 
-fix
-"""
+#### fix
+
 - include pytest-run-subprocess in test Extras of Generated Project pyproject.toml
 
-test
-""""
+#### test
+
 - add `Gold Standard` Generated Biskotaki Projects 
 - verify `No Regression` of Generator, with exhaustive comparison of Runtime result to `Gold Standard`
 - test `Gold Standard` passes `tox -e lint`
@@ -1350,60 +1260,56 @@ test
 - test default gen behaviour related to Docs, is same as before adding mkdocs option
 - yaml validation and required/expected workflow vars checks
 
-documentation
-"""""""""""""
+#### documentation
+
 - fix README badge
 - add docstring in backend.post_main:post_main function, to check out-of-the-box CD
 - add Docstring, for Cookiecutter Pre Hook, at Module (file/script) level
 
-dev
-"""
+#### dev
+
 - add Logging Configuration: DEBUG and above Stream to Std err and Write to Disk
 
-refactor
-""""""""
+#### refactor
+
 - simplify 'main' code
 - simplify 'pre_main' code
 
 
-1.7.5 (2023-02-05)
-==================
+## [1.7.5] (2023-02-05)
 
 | Moving towards fully automated CI/CD pipeline.
 | See the .github/workflows/test.yaml file for the workflow (aka pipeline) details.
 
 
-Changes
-^^^^^^^
+### Changes
 
-ci
-""
+#### ci
+
 - dedicate separate Job to upload Coverage xml files to Codecov
 - dedicate a Job Matrix for running Lint Checks
 - publish to pypi Job, configured given a 'test' or 'prod' Github Environment (configured through github web UI)
 - draw python dependency graphs, saved as .svg files, for master/dev branches and for tags starting with 'v'
 
-build
-"""""
+#### build
+
 - remove data of apt update after apt install from Dockerfile stage
 
 
-1.7.4 (2023-01-26)
-==================
+## [1.7.4] (2023-01-26)
 
 | Improvements in the CI/CD pipeline running on Github Actions.
 | See the .github/workflows/test.yaml file for the workflow (aka pipeline) details.
 
 
-Changes
-^^^^^^^
+### Changes
 
-documentation
-"""""""""""""
+#### documentation
+
 - check Web Server Result Interface
 
-ci
-""
+#### ci
+
 - 'set_github_outputs' Job to pass 'env' vars to GITHUB_OUTPUT
 - add flag to turn on/off docker build+publish
 - draw deps job based on changes in src dir
@@ -1412,35 +1318,33 @@ ci
 - define (docker) image, where the 'generate-python' cli is installed
 
 
-1.7.3 (2023-01-15)
-==================
+## [1.7.3] (2023-01-15)
 
-Changes
-^^^^^^^
+### Changes
 
-fix
-"""
+#### fix
+
 - raise a proper subclass of python built-in Exception
 
-documentation
-"""""""""""""
+#### documentation
+
 - improve documentation
 
-style
-"""""
+#### style
+
 - apply isort in codebase
 
-refactor
-""""""""
+#### refactor
+
 - satisfy pylint a bit more
 
-build
-"""""
+#### build
+
 - add pinned/locked dependencies defined in poetry.lock
 - replace PyInquirer with Questionary package
 
-ci
-""
+#### ci
+
 - install dependencies for pydeps Job
 - use pydeps == 1.11.0 which supports python3.10 & remove autoprovisioning of tox
 - draw dependency graphs in new Job after tests and upload artifacts
@@ -1459,86 +1363,77 @@ ci
 - `tox -e pydeps`: allow configuration of target dir & allow invoking from outside root dir
 
 
-1.7.2 (2022-11-13)
-==================
+## [1.7.2] (2022-11-13)
 
 Fixing a couple of bugs.
 
-Changes
-^^^^^^^
+### Changes
 
-fix
-"""
+#### fix
+
 - only generate 'fixtures.py' for pytest-plugin project type
 - fix pyproject.toml syntax
 
-documentation
-"""""""""""""
+#### documentation
+
 - improve documentation
 
 
-1.7.1 (2022-07-30)
-==================
+## [1.7.1] (2022-07-30)
 
-Changes
-^^^^^^^
+### Changes
 
-refactor
-""""""""
+#### refactor
+
 - reduce duplicate code & clean code
 
 
-1.7.0 (2022-07-11)
-==================
+## [1.7.0] (2022-07-11)
 
 Introducing a pre-emptive check of whether a Project registered under the same
 name as the one given to the generator, exists on
 the readthedocs.org server already.
 
-Changes
-^^^^^^^
+### Changes
 
-feature
-"""""""
+#### feature
+
 - check if a project with the same slug name, is already registered on the readthedocs server
 
-test
-""""
+#### test
+
 - improve flexibility of testing code
 
-refactor
-""""""""
+#### refactor
+
 - modularize code and improve dryness of code as well
 
 
-1.6.1 (2022-07-05)
-==================
+## [1.6.1] (2022-07-05)
 
 This is the first Cross-Platform release of the *Python Generator*.
 That means, now, we officially support installing and running the
 *Python Generator*, apart from Linux and Macos, on Windows machines as well.
 
-Changes
-^^^^^^^
+### Changes
 
-test
-""""
+#### test
+
 - manually covert gitpython outputted string paths into Path instances
 - use Path from pathlib instead of the os.path module
 
-refactor
-""""""""
+#### refactor
+
 - remove the 'path_builder' fixture, to reduce test code
 - remove depcrecation warning fired by Jinja2 when rendering the *.rst template files
 - use the 'run_subprocess' fixture to reduce test boilerplate code
 
-ci
-""
+#### ci
+
 - excplicitly use bash as the shell for some job steps
 
 
-1.6.0 (2022-06-28)
-==================
+## [1.6.0] (2022-06-28)
 
 Introducing the *Project Type* Generate Variable. Now you can select what
 type of Python Package you intend to develop and the Generation process
@@ -1556,59 +1451,53 @@ Project Types currently supported:
 - Pytest Plugin: a Python Package intended to providing a Pyetst Plugin (ie with
     a Test Fixture)
 
-Changes
-^^^^^^^
+### Changes
 
-feature
-"""""""
+#### feature
+
 - add 'project_type' Variable allowing for 'module', 'module+cli' or 'pytest-plugin' Projects
 - conditionaly populate 'test' dependencies, ie based on whether there is a cli entrypoint
 
 
-1.5.2 (2022-06-22)
-==================
+## [1.5.2] (2022-06-22)
 
 Development Update fixing the communication between the CI server and the Test
 Coverage Hosting Service. It also enable CI tests for the Documentation
 side of the project.
 
-Changes
-^^^^^^^
+### Changes
 
-ci
-""
+#### ci
+
 - install pyenchant on macos using homebrew
 - test documentation tests and building command
 - upload code coverage data to codecov.io from within the 'test_suite' job
 
 
-1.5.1 (2022-06-20)
-==================
+## [1.5.1] (2022-06-20)
 
 The Update includes improved code Architecture and better Test code Coverage!
 Features shorter Unites of Code, more DRY and more Tests.
 
-Changes
-^^^^^^^
+### Changes
 
-test
-""""
+#### test
+
 - add bandit tox env for discovering common security issues
 - verify commit message, author and email are the expected ones
 - git init, increase test code coverage
 
-refactor
-""""""""
+#### refactor
+
 - reduce code
 - centralize subprocess run invocations
 
-ci
-""
+#### ci
+
 - enable network-bound tests to trigger integration testing of the `check_pypi` feature
 
 
-1.5.0 (2022-06-11)
-==================
+## [1.5.0] (2022-06-11)
 
 This release focused on improving the code architecture, reducing technical
 debt, decoupling components, cleaning code, fixing styling issues.
@@ -1617,19 +1506,18 @@ It also features some updates in the Generated Project, with improved tox envs,
 cleaner python scripts and cleaner development tools' configuration files
 (such as .pylintrc, pyproject.toml, tox.ini).
 
-Changes
-^^^^^^^
+### Changes
 
-feature
-"""""""
+#### feature
+
 - document config settings, improve tox envs & scripts
 
-test
-""""
+#### test
+
 - verify Generator can be invoked as python module: `python -m cookiecutter_python`
 
-refactor
-""""""""
+#### refactor
+
 - dry code per string_sanitizer implementation
 - reduce code in cli.py by delegating error handling to the new cli_handlers.py module
 - reduce code of parse_version.py script
@@ -1638,28 +1526,25 @@ refactor
 - decouple components
 - clean code, satisfy some todos, dry code
 
-ci
-""
+#### ci
+
 - use the template's parse_version script to reduce duplicate code
 
 
-1.4.1 (2022-06-07)
-==================
+## [1.4.1] (2022-06-07)
 
-Changes
-^^^^^^^
+### Changes
 
-refactor
-""""""""
+#### refactor
+
 - decouple dialog creation
 
-chore
-"""""
+#### chore
+
 - satisfy prospector linter even better
 
 
-1.4.0 (2022-06-06)
-==================
+## [1.4.0] (2022-06-06)
 
 Add a CLI as an entrypoint to your Python Package
 -------------------------------------------------
@@ -1669,34 +1554,32 @@ a Command Line Interface (CLI) as an entrypoint.
 The *add_cli* Generator Variable has been added to behave as an enable/disable
 'switch'.
 
-Changes
-^^^^^^^
+### Changes
 
-feature
-"""""""
+#### feature
+
 - add 'dev' & 'dev-cov' envs, designed to run locally with 'python3' from PATH
 - allow user to scaffold a cli with an entrypoint when installing their package
 
-fix
-"""
+#### fix
+
 - use a proper name for the test case
 - remove hardcoded values and add templated ones
 
-test
-""""
+#### test
+
 - verify that when add_cli = 'no', there are no cli related files generated
 
-development
-"""""""""""
+#### development
+
 - add 'dev' & 'dev-cov' envs, designed to run locally with 'python3' from PATH
 
-refactor
-""""""""
+#### refactor
+
 - use the 'get_object' fixture from the 'pytest-object-getter' (pypi) package ;-)
 
 
-1.3.0 (2022-05-31)
-==================
+## [1.3.0] (2022-05-31)
 
 Python Interpreters Support and Test
 ------------------------------------
@@ -1736,112 +1619,102 @@ Running environment 'lint', 'black', 'isort' with 'lint apply' enabled:
 - *APPLY_BLACK= tox -e black*
 - *APPLY_ISORT= tox -e isort*
 
-Changes
-^^^^^^^
+### Changes
 
-feature
-"""""""
+#### feature
+
 - generate the Project's CI Test Workflow with a build matrix based on the user's input python interpreters
 
-test
-""""
+#### test
+
 - verify 'pre gen' script exits with 1 in case module name given is incorrect
 - write scenarios with/without 'config file' and with/without given 'interpreters'
 
-development
-"""""""""""
+#### development
+
 - add env for integration testing
 - add checks for 'scripts' dir, make 'black', 'isort' cmds only do 'lint-check' by default and add switch to allow doing 'lint-apply'
 
-build
-"""""
+#### build
+
 - add PyInquirer '>= 1.0.3 and < 1.1.0' dependency: required by checkbox dialog
 
 
-1.2.1 (2022-05-27)
-==================
+## [1.2.1] (2022-05-27)
 
 Compeltely migrate away from *setup.cfg*.
 Add Issue Templates, as markdown files, to help create well documented Issues on github.
 
-Changes
-^^^^^^^
+### Changes
 
-ci
-""
+#### ci
+
 - do not run py38-path tox env & improve ci steps names
 - push generated package to 'auto-generated' branch on 'origin' remote
 - do not initialize a git repository after package generation
 - refactor parse script to read from pyproject.toml
 
 
-1.2.0 (2022-05-24)
-==================
+## [1.2.0] (2022-05-24)
 
-Changes
-^^^^^^^
+### Changes
 
-feature
-"""""""
+#### feature
+
 - migrate to poetry from setuptools as 'build-backend'
 
-fix
-"""
+#### fix
+
 - add rule in MANIFEST to match tox.ini similar to *.md, etc non-python files
 - replace hardcoded values with templated variables
 
-test
-""""
+#### test
+
 - sanity check to double check that 'tox.ini' gets put in generated dir
 
-documentation
-"""""""""""""
+#### documentation
+
 - rewrite module docstring
 
-ci
-""
+#### ci
+
 - use checkout@v3 instead of @v1
 - upload sdist & wheel as artefacts
 - separate codecov data exchange into dedicated job
 
 
-1.1.1 (2022-05-17)
-==================
+## [1.1.1] (2022-05-17)
 
-Changes
-^^^^^^^
+### Changes
 
-documentation
-"""""""""""""
+#### documentation
+
 - document installation and cli usage
 
 
-1.1.0 (2022-05-17)
-==================
+## [1.1.0] (2022-05-17)
 
 Wrapping everything in a *command line interface* (cli).
 Speed up performance by using *futures* for http requests.
 
-Changes
-^^^^^^^
+### Changes
 
-feature
-"""""""
+#### feature
+
 - allow user to control parameters of the project generation process
 - expose project generator through an interactive cli
 - add async capabilities to the pre_gen_project.py for faster network bound operations
 
-documentation
-"""""""""""""
+#### documentation
+
 - demonstrate how to install and use the cli
 
-ci
-""
+#### ci
+
 - update workflow to install and use the 'generate-python' cli
 
 
-1.0.0 (2022-05-11)
-==================
+## [1.0.0] (2022-05-11)
 
 Releasing v1.0.0, the first ever v1.* version!
 We are confident that the user-facing "interface" of this package is stable
@@ -1851,24 +1724,22 @@ As far as changes are concerned, invoking the `project generator`
 now adds several new `status badges` in your README, which automatically update based on
 their corresponding CI services!
 
-Changes
-^^^^^^^
+### Changes
 
-feature
-"""""""
+#### feature
+
 - add new status badges and slightly improve content
 
-fix
-"""
+#### fix
+
 - clean files and configs
 
-documentation
-"""""""""""""
+#### documentation
+
 - explain which generated file governs which component (ie ci code, tests code, etc)
 
 
-0.11.0 (2022-05-11)
-===================
+## [0.11.0] (2022-05-11)
 
 The `Project Generator` now scaffolds a reasonably minimum website for your documentation pages!
 
@@ -1876,16 +1747,16 @@ The (html) website is built out of .rst files using `sphinx` and is ready to be 
 readthedocs.org, with just a few clicks' :)
 
 
-feature
-"""""""
+#### feature
+
 - add templated documentation pages & configure website building and hosting on rtd server
 
-fix
-"""
+#### fix
+
 - fix integration, by using a config file
 
-documentation
-"""""""""""""
+#### documentation
+
 - add word 'env' to know spelling list
 - improve visibility of Biskotaki pypi package, which is generated from this Template
 
@@ -1899,8 +1770,7 @@ ci
 - add pull request automatic labeling workflow
 
 
-0.10.0 (2022-05-11)
-===================
+## [0.10.0] (2022-05-11)
 
 Enhance the Template's project generated CI config, by adding extra `checks` in Test Jobs and
 automating the `integration` with the `codecov.io` hosting service.
@@ -1940,59 +1810,56 @@ the various `CI services` that this repository integrates with. The badges are u
 automatically, as their respective status reporting (web) service `continuously integrates`
 (ie triggers per commit) with the `cookiecutter-python-package` Project.
 
-Changes
-^^^^^^^
+### Changes
 
-feature
-"""""""
+#### feature
+
 - enable lint, distro packaging QA & test results transimission to codecov.io CI service
 
-fix
-"""
+#### fix
+
 - fix generated tox ini that had a hard coded value!
 
-documentation
-"""""""""""""
+#### documentation
+
 - add the changes introduced in this release
 - add Codacy Badge to quickly show the reported Code Quality
 
-ci
-""
+#### ci
+
 - enable test workflow for tags matching pattern "v*", pull requests to dev & pushes to ci branch
 - add job to generate the Biskotaki Python Package from this Template
 
 
-0.9.0 (2022-05-09)
-==================
+## [0.9.0] (2022-05-09)
 
-Changes
-^^^^^^^
+### Changes
 
-feature
-"""""""
+#### feature
+
 - update generated .gitignore
 - add lint check and lint apply tox envs in the generated project
 - document the project structure, test infra and ci as changelog entry
 
-fix
-"""
+#### fix
+
 - fix the generated tox ini multifactor environments
 - add contributing and license rules for generated package
 
-test
-""""
+#### test
+
 - skip test cases needing internet connection for default Test Suite execution
 - add test case for running without initializing git repository
 - define a test case where we run tox for a newly generated project
 - 73% code coverage
 
-documentation
-"""""""""""""
+#### documentation
+
 - document the get_object fixture
 - add instructions on how to Check Lint Rules and apply Lint fixes to satisfy them
 
-ci
-""
+#### ci
+
 - ignore post_gen_project.py script because the templated vars make black complain
 - add lint check in Test Workflow
 - add lint environment, which can check & fix code following our Code Style/Linting strategy
@@ -2004,21 +1871,19 @@ ci
 - enable for pushes to the 'ci' branch
 
 
-0.8.3 (2022-04-29)
-==================
+## [0.8.3] (2022-04-29)
 
-Changes
-^^^^^^^
+### Changes
 
-docs
-""""
+#### docs
+
 - add CONTRIBUTING.md
 
-dev
-"""
+#### dev
+
 - add configuration for code static analysis with `pylint`
 - add configuration for code static analysis with `prospector`
 
-ci
-""
+#### ci
+
 - add type checking all CI Jobs
