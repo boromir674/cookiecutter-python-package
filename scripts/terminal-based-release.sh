@@ -21,7 +21,7 @@
 SOURCES_TO_UPDATE='src/cookiecutter_python/__init__.py pyproject.toml uv.lock README.md'
 
 ### 2. CHANGELOG Update ###
-CHANGELOG_FILE='CHANGELOG.rst'
+CHANGELOG_FILE="${CHANGELOG_FILE:-CHANGELOG.md}"
 
 
 # Local Constant Variables
