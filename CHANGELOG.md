@@ -1,5 +1,27 @@
 # Changelog
 
+> All notable changes to this project will be documented in this file.
+
+This project adheres to [Semantic Versioning](https://semver.org/).
+
+
+## [2.6.3] (2025-06-21)
+
+### Changes
+
+### ci
+
+- clean test-job.yml Job of CI/CD Pipeline
+
+### docs
+
+- migrate CHANGELOG.rst to CHANGELOG.md
+
+### chore
+
+- bump version to 2.6.3
+- update 'Terminal-Based Release Process' script
+
 
 ## [2.6.2] (2025-05-17)
 
