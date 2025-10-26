@@ -343,7 +343,8 @@ class ConfigProtocol(Protocol):
 
 
 class ConfigInterfaceProtocol(t.Protocol):
-    def __getitem__(self, file_path_str: t.Union[str, None]) -> ConfigProtocol: ...
+    def __getitem__(self, file_path_str: t.Union[str, None]) -> ConfigProtocol:
+        ...
 
 
 @pytest.fixture
@@ -498,7 +499,8 @@ def user_config(distro_loc: Path) -> ConfigInterfaceProtocol:
 class RelativePathsGenerator(Protocol):
     """Generate relative paths from a given root folder."""
 
-    def relative_file_paths(self) -> t.Iterator[Path]: ...
+    def relative_file_paths(self) -> t.Iterator[Path]:
+        ...
 
 
 @pytest.fixture
