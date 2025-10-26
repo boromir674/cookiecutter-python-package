@@ -41,7 +41,7 @@ include = [
     "LICENSE",
     "README.md",
     "CONTRIBUTING.md",
-    "CHANGELOG.rst",
+    "CHANGELOG.md",
     # "Dockerfile",
 ]
 exclude = [
