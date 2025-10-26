@@ -308,7 +308,7 @@ def sdist_expected_correct_file_structure():
         'pyproject.toml',
         'README.md',
         'LICENSE',
-        'CHANGELOG.rst',
+        'CHANGELOG.md',
         'CONTRIBUTING.md',
     )
     # Injected by Build Backend (Process)
