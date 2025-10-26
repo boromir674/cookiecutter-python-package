@@ -13,5 +13,6 @@ class InteractiveDialogsPipeline:
     def process(self, request):
         """Process sequence of Interactive User Dialogs, for Context Information."""
         for dialog in self.dialogs:
+            # Call the dialog method (ie ProjectNameDialog.dialog) of each dialog node
             request = NodeFactory.create(dialog).process(request)
         return request
