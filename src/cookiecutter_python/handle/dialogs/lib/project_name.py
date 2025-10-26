@@ -29,33 +29,48 @@ class ProjectNameDialog:
                     'type': 'input',
                     'name': 'project_slug',
                     'message': 'Enter the Project Slug (ie lowercase text, no spaces):',
-                    'default': lambda answers: answers['project_name']
-                    .lower()
-                    .replace(' ', '-'),
+                    'default': cookie_vars.get('project_slug')
+                    or (lambda answers: answers['project_name'].lower().replace(' ', '-')),
                 },
                 {
                     'type': 'input',
                     'name': 'pkg_name',
                     'message': 'Enter the Package Name (ie lowercase text, no spaces):',
-                    'default': lambda answers: answers['project_slug'].replace('-', '_'),
+                    'default': (
+                        cookie_vars['pkg_name']
+                        if cookie_vars.get('pkg_name')
+                        else (lambda answers: answers['project_slug'].replace('-', '_'))
+                    ),
                 },
                 {
                     'type': 'input',
                     'name': 'repo_name',
                     'message': 'Enter the Repository Name (ie lowercase text, no spaces):',
-                    'default': lambda answers: answers['project_slug'],
+                    'default': (
+                        cookie_vars['repo_name']
+                        if cookie_vars.get('repo_name')
+                        else (lambda answers: answers['project_slug'])
+                    ),
                 },
                 {
                     'type': 'input',
                     'name': 'readthedocs_project_slug',
                     'message': 'Enter the ReadTheDocs Project Slug (ie lowercase text, no spaces):',
-                    'default': lambda answers: answers['project_slug'],
+                    'default': (
+                        cookie_vars['readthedocs_project_slug']
+                        if cookie_vars.get('readthedocs_project_slug')
+                        else (lambda answers: answers['project_slug'])
+                    ),
                 },
                 {
                     'type': 'input',
                     'name': 'docker_image',
                     'message': 'Enter the Docker Image Name (ie lowercase text, no spaces):',
-                    'default': lambda answers: answers['project_slug'],
+                    'default': (
+                        cookie_vars['docker_image']
+                        if cookie_vars.get('docker_image')
+                        else (lambda answers: answers['project_slug'])
+                    ),
                 },
                 # full_name
                 {
@@ -69,7 +84,8 @@ class ProjectNameDialog:
                     'type': 'input',
                     'name': 'author',
                     'message': 'Enter author:',
-                    'default': lambda answers: answers['full_name'],
+                    'default': cookie_vars.get('author')
+                    or (lambda answers: answers['full_name']),
                 },
                 # author_email
                 {
@@ -97,7 +113,8 @@ class ProjectNameDialog:
                     'type': 'input',
                     'name': 'pypi_subtitle',
                     'message': 'Enter pypi_subtitle:',
-                    'default': lambda answers: answers['project_short_description'],
+                    'default': cookie_vars.get('pypi_subtitle')
+                    or (lambda answers: answers['project_short_description']),
                 },
                 # release_date
                 {
