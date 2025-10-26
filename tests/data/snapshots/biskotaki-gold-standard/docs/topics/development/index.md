@@ -1,6 +1,6 @@
 # Development 
 Here you will find topics related to `Development`, the `build`, and the
-`CI/CD` Pipeline design of the **Biskotaki** open-source project.
+`CI/CD` Pipeline design of the **Biskotaki Gold Standard** open-source project.
 
 
 <div class="grid cards" markdown>

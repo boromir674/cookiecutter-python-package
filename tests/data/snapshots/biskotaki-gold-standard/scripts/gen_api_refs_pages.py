@@ -18,10 +18,10 @@ cli_module_path: t.Optional[Path] = None
 # Loop, recursively, over all Python *.py Files, inside 'src' dir and subdirs
 for path in sorted(src.rglob("*.py")):
     ## 1. extract Relative path from Python File and remove suffix (.py)
-    # EG src/biskotaki/cli.py  -->   biskotaki/cli
+    # EG src/biskotakigold/cli.py  -->   biskotakigold/cli
     _module_path = path.relative_to(src).with_suffix("")
     ## 2. derive corresponding Docs File to write Directives into
-    # EG biskotaki/cli  -->   biskotaki/cli.md
+    # EG biskotakigold/cli  -->   biskotakigold/cli.md
     doc_path = path.relative_to(src).with_suffix(".md")
     ## 3. derive Full Path to Docs File
     full_doc_path = Path("reference", doc_path)
