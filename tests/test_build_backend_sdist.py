@@ -583,8 +583,11 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
     # Create a temporary directory
     import tempfile
     import typing as t
+    import os
 
-    temp_dir: str = tempfile.mkdtemp()
+    # Make directory unique for pytest-xdist parallel execution
+    worker_id = os.environ.get("PYTEST_XDIST_WORKER", "master")
+    temp_dir: str = tempfile.mkdtemp(suffix=f"-{worker_id}")
 
     OUT_DIR = Path(temp_dir) / "unit-test-sdist_built_at_runtime_with_build"
     # Get distro_path: ie '/site-packages/cookiecutter_python'
@@ -605,15 +608,67 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
         str(OUT_DIR),
         str(project_path),
     ]
-    result = my_run_subprocess(*COMMAND_LINE_ARGS, check=False)
+    
+    # Add isolation to prevent cross-worker conflicts
+    env = os.environ.copy()
+    env["BUILD_BACKEND_ISOLATION"] = "true"
+    env["SETUPTOOLS_SCM_DEBUG"] = "1" if worker_id != "master" else "0"
+    
+    print(f"\n[Worker {worker_id}] Building with command: {' '.join(COMMAND_LINE_ARGS)}")
+    print(f"[Worker {worker_id}] Output directory: {OUT_DIR}")
+    print(f"[Worker {worker_id}] Project path: {project_path}")
+    print(f"[Worker {worker_id}] Python executable: {PYTHON}")
+    print(f"[Worker {worker_id}] Current working directory: {os.getcwd()}")
+    
+    # Check for potential lock files that could cause conflicts
+    lock_files = [
+        project_path / "poetry.lock",
+        project_path / ".build-lock",
+        project_path / "pyproject.toml.lock"
+    ]
+    for lock_file in lock_files:
+        if lock_file.exists():
+            print(f"[Worker {worker_id}] Lock file exists: {lock_file}")
+    
+    result = my_run_subprocess(*COMMAND_LINE_ARGS, check=False, env=env)
 
     print()
-    print("==========")
-    print(result.stdout)
-    print("==========")
-    print(result.stderr)
-    print("==========")
-    assert result.exit_code == 0, f"Expected exit code 0, got {result.exit_code}"
+    print("=" * 60)
+    print(f"[Worker {worker_id}] BUILD RESULT - Exit code: {result.exit_code}")
+    print("=" * 60)
+    print("STDOUT:")
+    stdout_content = result.stdout if result.stdout else "(empty)"
+    print(repr(stdout_content))  # Use repr to see hidden characters
+    print(stdout_content)
+    print("=" * 60)
+    print("STDERR:")
+    stderr_content = result.stderr if result.stderr else "(empty)"
+    print(repr(stderr_content))  # Use repr to see hidden characters  
+    print(stderr_content)
+    print("=" * 60)
+    
+    if result.exit_code != 0:
+        print(f"[Worker {worker_id}] BUILD FAILED!")
+        print(f"Command: {' '.join(COMMAND_LINE_ARGS)}")
+        print(f"Working directory: {project_path}")
+        print(f"Output directory exists: {OUT_DIR.exists()}")
+        if OUT_DIR.exists():
+            print(f"Output directory contents: {list(OUT_DIR.iterdir()) if OUT_DIR.is_dir() else 'Not a directory'}")
+        
+        # Additional debugging for CI environment
+        print(f"Environment variables of interest:")
+        debug_env_vars = ["PYTHONPATH", "PATH", "HOME", "BUILD_BACKEND_ISOLATION", "SETUPTOOLS_SCM_DEBUG"]
+        for var in debug_env_vars:
+            print(f"  {var}: {env.get(var, 'NOT SET')}")
+    
+    assert result.exit_code == 0, (
+        f"[Worker {worker_id}] Build failed with exit code {result.exit_code}\n"
+        f"Command: {' '.join(COMMAND_LINE_ARGS)}\n"
+        f"Working directory: {project_path}\n"
+        f"Environment: PYTEST_XDIST_WORKER={worker_id}\n"
+        f"STDOUT: {repr(result.stdout)}\n"
+        f"STDERR: {repr(result.stderr)}"
+    )
 
     import re
 
