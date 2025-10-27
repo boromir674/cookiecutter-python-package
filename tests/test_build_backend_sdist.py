@@ -581,9 +581,9 @@ def test_sdist_includes_dirs_and_files_exactly_as_expected_when_produced_via_uv_
 def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
     """Build project (at runtime) with 'build module', and return SDist tar.gz file."""
     # Create a temporary directory
+    import os
     import tempfile
     import typing as t
-    import os
 
     # Make directory unique for pytest-xdist parallel execution
     worker_id = os.environ.get("PYTEST_XDIST_WORKER", "master")
@@ -608,28 +608,28 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
         str(OUT_DIR),
         str(project_path),
     ]
-    
+
     # Add isolation to prevent cross-worker conflicts
     env = os.environ.copy()
     env["BUILD_BACKEND_ISOLATION"] = "true"
     env["SETUPTOOLS_SCM_DEBUG"] = "1" if worker_id != "master" else "0"
-    
+
     print(f"\n[Worker {worker_id}] Building with command: {' '.join(COMMAND_LINE_ARGS)}")
     print(f"[Worker {worker_id}] Output directory: {OUT_DIR}")
     print(f"[Worker {worker_id}] Project path: {project_path}")
     print(f"[Worker {worker_id}] Python executable: {PYTHON}")
     print(f"[Worker {worker_id}] Current working directory: {os.getcwd()}")
-    
+
     # Check for potential lock files that could cause conflicts
     lock_files = [
         project_path / "poetry.lock",
         project_path / ".build-lock",
-        project_path / "pyproject.toml.lock"
+        project_path / "pyproject.toml.lock",
     ]
     for lock_file in lock_files:
         if lock_file.exists():
             print(f"[Worker {worker_id}] Lock file exists: {lock_file}")
-    
+
     result = my_run_subprocess(*COMMAND_LINE_ARGS, check=False, env=env)
 
     print()
@@ -643,24 +643,32 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
     print("=" * 60)
     print("STDERR:")
     stderr_content = result.stderr if result.stderr else "(empty)"
-    print(repr(stderr_content))  # Use repr to see hidden characters  
+    print(repr(stderr_content))  # Use repr to see hidden characters
     print(stderr_content)
     print("=" * 60)
-    
+
     if result.exit_code != 0:
         print(f"[Worker {worker_id}] BUILD FAILED!")
         print(f"Command: {' '.join(COMMAND_LINE_ARGS)}")
         print(f"Working directory: {project_path}")
         print(f"Output directory exists: {OUT_DIR.exists()}")
         if OUT_DIR.exists():
-            print(f"Output directory contents: {list(OUT_DIR.iterdir()) if OUT_DIR.is_dir() else 'Not a directory'}")
-        
+            print(
+                f"Output directory contents: {list(OUT_DIR.iterdir()) if OUT_DIR.is_dir() else 'Not a directory'}"
+            )
+
         # Additional debugging for CI environment
         print(f"Environment variables of interest:")
-        debug_env_vars = ["PYTHONPATH", "PATH", "HOME", "BUILD_BACKEND_ISOLATION", "SETUPTOOLS_SCM_DEBUG"]
+        debug_env_vars = [
+            "PYTHONPATH",
+            "PATH",
+            "HOME",
+            "BUILD_BACKEND_ISOLATION",
+            "SETUPTOOLS_SCM_DEBUG",
+        ]
         for var in debug_env_vars:
             print(f"  {var}: {env.get(var, 'NOT SET')}")
-    
+
     assert result.exit_code == 0, (
         f"[Worker {worker_id}] Build failed with exit code {result.exit_code}\n"
         f"Command: {' '.join(COMMAND_LINE_ARGS)}\n"
