@@ -25,7 +25,7 @@ def test_running_lint_passes(snapshot_name, my_run_subprocess, test_root):
 
     # Programmatically run Lint, with the entrypoint we suggest, for a Dev to run
     res = my_run_subprocess(  # tox -e lint
-        *[sys.executable, '-m', 'tox', '-vv', '-e', 'lint'],
+        *['tox', '-vv', '-e', 'lint'],
         cwd=snapshot_dir,
         check=False,  # prevent raising exception, so we can do clean up
         shell=False,  # prevent execution of untrusted input
@@ -66,7 +66,7 @@ def test_running_ruff_passes(snapshot_name, my_run_subprocess, test_root):
 
     # Programmatically run Lint, with the entrypoint we suggest, for a Dev to run
     res = my_run_subprocess(  # tox -e ruff
-        *[sys.executable, '-m', 'tox', '-vv', '-e', 'ruff'],
+        *['tox', '-vv', '-e', 'ruff'],
         cwd=snapshot_dir,
         check=False,  # prevent raising exception, so we can do clean up
         shell=False,  # prevent execution of untrusted input

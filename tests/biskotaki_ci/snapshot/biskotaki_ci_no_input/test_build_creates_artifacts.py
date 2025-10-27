@@ -1,3 +1,4 @@
+import os
 import sys
 
 import pytest
@@ -18,7 +19,7 @@ def test_running_build_creates_source_and_wheel_distros(
 
     ## Programmatically run Build, with the entrypoint we suggest, for a Dev to run
     res = my_run_subprocess(  # tox -e build
-        *[sys.executable, '-m', 'tox', '-r', '-vv', '-e', 'build'],
+        *['tox', '-r', '-vv', '-e', 'build'],
         cwd=snapshot_dir,
         check=False,  # prevent raising exception, so we can do clean up
         shell=False,  # prevent execution of untrusted input
@@ -81,7 +82,7 @@ def test_running_build_creates_source_and_wheel_distros(
     # Check that Code passes Metadata Checks out of the box
     # run `tox -e check` and make sure we first do clean up before throwing an error
     res = my_run_subprocess(  # tox -e check
-        *[sys.executable, '-m', 'tox', '-r', '-vv', '-e', 'check'],
+        *['tox', '-r', '-vv', '-e', 'check'],
         cwd=snapshot_dir,
         check=False,  # prevent raising exception, so we can do clean up
         shell=False,  # prevent execution of untrusted input
@@ -89,14 +90,20 @@ def test_running_build_creates_source_and_wheel_distros(
             # required by Check environment
             'PKG_VERSION': '0.0.1',
             # required due to programmatic execution, in this case
-            'PATH': str(Path(sys.executable).parent),
+            'PATH': os.environ.get('PATH', str(Path(sys.executable).parent)),
         },
     )
 
     # CLEAN UP: Remove .tox/check folder, created by tox
     import shutil
 
-    shutil.rmtree(snapshot_dir / '.tox' / 'check')
+    try:
+        shutil.rmtree(snapshot_dir / '.tox' / 'check')
+    except FileNotFoundError:
+        import logging
+
+        logger = logging.getLogger(__name__)
+        logger.warning("No .tox/check folder found to clean up")
 
     # Check that Code passes Metadata Checks out of the box
     assert res.exit_code == 0

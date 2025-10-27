@@ -295,6 +295,7 @@ def sdist_expected_correct_file_structure():
         'tests/test_error_classifier.py',
         'tests/test_generate.py',
         'tests/test_gold_standard.py',
+        'tests/test_interactive_config_bug.py',
         'tests/test_module.py',
         'tests/test_post_hook.py',
         'tests/test_prehook.py',
