@@ -19,7 +19,7 @@ def test_running_build_creates_source_and_wheel_distros(
 
     ## Programmatically run Build, with the entrypoint we suggest, for a Dev to run
     res = my_run_subprocess(  # tox -e build
-        *['tox', '-r', '-vv', '-e', 'build'],
+        *[sys.executable, '-m', 'tox', '-r', '-vv', '-e', 'build'],
         cwd=snapshot_dir,
         check=False,  # prevent raising exception, so we can do clean up
         shell=False,  # prevent execution of untrusted input
@@ -82,7 +82,7 @@ def test_running_build_creates_source_and_wheel_distros(
     # Check that Code passes Metadata Checks out of the box
     # run `tox -e check` and make sure we first do clean up before throwing an error
     res = my_run_subprocess(  # tox -e check
-        *['tox', '-r', '-vv', '-e', 'check'],
+        *[sys.executable, '-m', 'tox', '-r', '-vv', '-e', 'check'],
         cwd=snapshot_dir,
         check=False,  # prevent raising exception, so we can do clean up
         shell=False,  # prevent execution of untrusted input
