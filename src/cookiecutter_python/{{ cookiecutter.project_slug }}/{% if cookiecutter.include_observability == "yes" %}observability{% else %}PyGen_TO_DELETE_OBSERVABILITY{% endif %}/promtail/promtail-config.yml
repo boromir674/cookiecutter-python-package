@@ -1,0 +1,55 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  # Scrape application logs (JSON format)
+  - job_name: "{{ cookiecutter.pkg_name }}-app-logs"
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: "{{ cookiecutter.pkg_name }}-logs"
+          __path__: "/var/log/{{ cookiecutter.pkg_name }}/*.log"
+    pipeline_stages:
+      # Parse JSON logs to extract log level
+      - json:
+          expressions:
+            level: level
+            timestamp: timestamp
+            message: message
+            component: component
+      # Add log level as a label for easy filtering
+      - labels:
+          level:
+          component:
+      # Set timestamp from log entry
+      - timestamp:
+          source: timestamp
+          format: RFC3339
+
+  # Scrape plain text logs (pytest, tox, etc.)
+  - job_name: "{{ cookiecutter.pkg_name }}-test-logs"
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: "{{ cookiecutter.pkg_name }}-test-logs"
+          __path__: /workspace/logs/*.log
+    pipeline_stages:
+      # Extract log level from plain text logs
+      - regex:
+          expression: '(?i)(?P<level>(DEBUG|INFO|WARNING|ERROR|CRITICAL))'
+      # Add extracted level as label
+      - labels:
+          level:
+      # If no level found, default to INFO
+      - template:
+          source: level
+          template: '{{ "{{" }} if .level {{ "}}" }}{{ "{{" }} .level {{ "}}" }}{{ "{{" }} else {{ "}}" }}INFO{{ "{{" }} end {{ "}}" }}'
