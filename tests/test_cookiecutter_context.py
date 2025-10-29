@@ -134,6 +134,7 @@ def get_expected_context():
         ),
         pytest.param(
             # TEST CASE 2 - Production Template included in Distribution
+            # whenever src/cookiecutter_python/cookiecutter.json is updated, the below needs syncing
             (
                 PROD_TEMPLATE,  # GIVEN the prod Template (cookiecutter.json + jinja Template project)
                 'BISKOTAKI_CONFIG',  # and the .github/biskotaki.yaml User Config YAML
@@ -144,7 +145,7 @@ def get_expected_context():
                         (
                             'cookiecutter',
                             OrderedDict(
-                                [
+                                [  # KEY, Default/First choice
                                     ('project_name', 'Biskotaki'),
                                     ('project_type', 'module'),
                                     ("project_slug", "biskotaki"),
@@ -184,6 +185,7 @@ def get_expected_context():
                                     ("docs_builder", "sphinx"),
                                     ("rtd_python_version", "3.10"),
                                     ('cicd', 'experimental'),
+                                    ('include_observability', 'no'),
                                     # since the below is expected to be put in the extra context before calling cookiecutter, it gets below the rest of Variables
                                     # ('_template', str(cookie)),
                                 ]
@@ -240,6 +242,7 @@ def get_expected_context():
                                     "3.12",
                                 ],
                                 'cicd': ['experimental', 'stable'],
+                                'include_observability': ['no', 'yes'],
                             },
                         ),
                     ]
@@ -252,6 +255,7 @@ def get_expected_context():
         ),
         pytest.param(
             # TEST CASE 3 - Production Template included in Distribution
+            # whenever src/cookiecutter_python/cookiecutter.json is updated, the below needs syncing
             (
                 PROD_TEMPLATE,  # GIVEN the prod Template (cookiecutter.json + jinja Template project)
                 'TEST_TIME_BISKOTAKI_CONFIG',  # and a User Config File that "should be identical" to .github/biskotaki.yaml
@@ -302,6 +306,7 @@ def get_expected_context():
                                     ("docs_builder", "sphinx"),
                                     ("rtd_python_version", "3.10"),
                                     ('cicd', 'experimental'),
+                                    ('include_observability', 'no'),
                                     # since the below is expected to be put in the extra context before calling cookiecutter, it gets below the rest of Variables
                                     # ('_template', str(cookie)),
                                 ]
@@ -359,6 +364,7 @@ def get_expected_context():
                                     "3.12",
                                 ],
                                 'cicd': ['experimental', 'stable'],
+                                'include_observability': ['no', 'yes'],
                             },
                         ),
                     ]
@@ -371,6 +377,7 @@ def get_expected_context():
         ),
         (
             # TEST CASE 4 - Production Template + Gold Standard User Config
+            # whenever src/cookiecutter_python/cookiecutter.json is updated, the below needs syncing
             PROD_TEMPLATE,  # GIVEN the prod Template (cookiecutter.json + jinja Template project)
             'GOLD_STANDARD_CONFIG',  # and the tests/data/gold-standard.yml
             # EXPECTED CONTEXT
@@ -417,6 +424,7 @@ def get_expected_context():
                                 ("docs_builder", "mkdocs"),
                                 ("rtd_python_version", "3.11"),
                                 ('cicd', 'experimental'),
+                                ('include_observability', 'no'),
                             ]
                         ),
                     ),
@@ -468,6 +476,7 @@ def get_expected_context():
                                 "3.12",
                             ],
                             'cicd': ['experimental', 'stable'],
+                            'include_observability': ['no', 'yes'],
                         },
                     ),
                 ]

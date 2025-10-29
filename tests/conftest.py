@@ -1,6 +1,7 @@
 import os
 import sys
 import typing as t
+import logging
 
 
 if sys.version_info >= (3, 8):
@@ -15,6 +16,9 @@ import pytest
 
 
 my_dir: str = os.path.dirname(os.path.realpath(__file__))
+
+
+logger = logging.getLogger(__name__)
 
 
 @pytest.fixture
@@ -370,6 +374,7 @@ def user_config(distro_loc: Path) -> ConfigInterfaceProtocol:
     def _load_context_json(file_path: PathLike) -> t.Dict:
         with open(file_path, 'r') as fp:
             data = json.load(fp)
+            assert type(data['cicd']) is list, f"'cicd' must be a list in {file_path}; found {type(data['cicd'])}"
         return data
 
     def _load_context_yaml(file_path: PathLike) -> t.MutableMapping[str, t.Any]:
@@ -413,7 +418,7 @@ def user_config(distro_loc: Path) -> ConfigInterfaceProtocol:
             'without-interpreters': 'tests/data/biskotaki-without-interpreters.yaml',
         }
 
-        # When no Config File suppied values are derived from Ccookiecutter.json
+        # When no Config File suppied values are derived from Cookiecutter.json
         default_parameters: t.ClassVar[DefParams] = {
             'data_file': distro_loc / 'cookiecutter.json',
             'data_loader': lambda cls: lambda json_file_string_path: cls.transorm_json_data(
@@ -436,7 +441,9 @@ def user_config(distro_loc: Path) -> ConfigInterfaceProtocol:
                     _load_context_yaml(yaml_file_string_path)
                 )
             )
-            self._config_file_arg = _data_file_path if self.path is not None else None
+            if self.path is not None:
+                # Store the config file path that was used to create this ConfigData
+                self._config_file_arg = _data_file_path
 
             assert _data_file_path.exists()
             assert _data_file_path.is_file()
@@ -454,6 +461,10 @@ def user_config(distro_loc: Path) -> ConfigInterfaceProtocol:
 
         @staticmethod
         def transorm_json_data(data: t.Dict[str, t.Any]):
+            """Handles case that no User Config gile was passed; ie derive values from
+            cookiecutter.json"""
+
+            # 1. Manual transformations that need custom logic
             data['project_slug'] = data['project_name'].lower().replace(' ', '-')
             data['docker_image'] = data['project_slug']
             data['project_type'] = data['project_type'][0]
@@ -462,12 +473,20 @@ def user_config(distro_loc: Path) -> ConfigInterfaceProtocol:
             data['initialize_git_repo'] = {'yes': True}.get(
                 data['initialize_git_repo'][0], False
             )
+
+            assert type(data['cicd']) is list, f"'cicd' must be a list; found {type(data['cicd'])}"
+            # 2. Auto-process choice variables (arrays) - use first element as default
+            for key, value in data.items():
+                if isinstance(value, list) and len(value) > 0:
+                    data[key] = value[0]
+
             # Docs Building #
-            data['docs_builder'] = data['docs_builder'][0]  # choice variable
+            # data['docs_builder'] = data['docs_builder'][0]  # choice variable
             # RTD CI Python Version #
-            data['rtd_python_version'] = data['rtd_python_version'][0]  # choice variable
+            # data['rtd_python_version'] = data['rtd_python_version'][0]  # choice variable
             # CICD Pipeline Design old/new , stable/experimental
-            data['cicd'] = data['cicd'][0]  # choice variable
+            # data['cicd'] = data['cicd'][0]  # choice variable
+
             return data
 
         @staticmethod
@@ -620,7 +639,6 @@ def get_expected_generated_files(
         user_docs_builder_id: str = config.data['docs_builder']
 
         expected_gen_files: t.Set[Path] = set()
-        expected_to_find: t.Set = set()
 
         ## DERIVE the EXPECTED files to be removed, varying across 'Project Type'
         # we leverage the same production logic
@@ -652,20 +670,21 @@ def get_expected_generated_files(
         # Find where each Docs Builder 'stores' its Template Files (ie source docs)
         selected_docs_template_dir: str = b(user_docs_builder_id)
 
-        builder_docs_folder_name: str = selected_docs_template_dir
-        source_docs_template_content_dir: Path = (
+        _source_docs_template_content_dir: Path = (
             distro_loc / r'{{ cookiecutter.project_slug }}' / selected_docs_template_dir
         )
 
+        _expected_to_find: t.Set = set()
+
         # those docs template dir, are expected to be found under 'docs' folder
         for file_path in iter(
-            (x for x in source_docs_template_content_dir.rglob('*') if x.is_file())
+            (x for x in _source_docs_template_content_dir.rglob('*') if x.is_file())
         ):
             assert isinstance(file_path, Path)
             # assert file_path is relative to docs_template_dir
-            rp = file_path.relative_to(source_docs_template_content_dir)
-            assert file_path.relative_to(source_docs_template_content_dir)
-            expected_to_find.add(Path('docs') / rp)
+            rp = file_path.relative_to(_source_docs_template_content_dir)
+            assert file_path.relative_to(_source_docs_template_content_dir)
+            _expected_to_find.add(Path('docs') / rp)
 
         # Now expected_to_find, should be populated with files names/paths that
         # should be expected to be rendered for the requested docs builder in the config
@@ -674,18 +693,37 @@ def get_expected_generated_files(
 
         # pre-emptively any .pyc file from expected_to_find, since a bug was reported
         # where the .pyc file was not removed
-        expected_to_find = {
+        _expected_to_find = {
             x
-            for x in expected_to_find
+            for x in _expected_to_find
             if not str(x).endswith('.pyc') and not str(x).endswith('__pycache__')
         }
 
         assert not any(
-            [str(x).endswith('.pyc') for x in expected_to_find]
-        ), f"Sanity check fail: {expected_to_find}"
+            [str(x).endswith('.pyc') for x in _expected_to_find]
+        ), f"Sanity check fail: {_expected_to_find}"
 
-        ## DERIVE the EXPECTED root-level files for post removal, based on docs-builer type
-        # we leverage the same production mapping of builder_id to files
+
+        # DERIVE ALL EXPECTED FILES FOR POST GENERATION REMOVAL and EXCLUDE FROM EXPECTATIONS
+
+        ### 1. DO NOT EXPECT the folders with a TO_DELETE substring in their names ###
+        from cookiecutter_python.hooks.post_gen_project import TO_DELETE_TEXT
+        
+        template_root = distro_loc / r'{{ cookiecutter.project_slug }}'
+        expected_for_post_removal = [d for d in template_root.rglob('*') if d.is_dir() and TO_DELETE_TEXT in str(d)]
+        
+        for dir_path in expected_for_post_removal:
+            # Add the directory itself
+            files_to_remove.add(str(dir_path.relative_to(template_root)))
+            
+            # ADD THIS: Also add all files within the directory
+            for file_path in dir_path.rglob('*'):
+                if file_path.is_file():
+                    files_to_remove.add(str(file_path.relative_to(template_root)))
+
+        ### 2. DO NOT EXPECT TO FIND root-level Docs Building Extra Files for other Docs Builders ###
+        ## DERIVE the EXPECTED root-level files for post removal after rendering
+        # we leverage single sourth of truth objects same as in production code
         from cookiecutter_python.hooks.post_gen_project import DOCS_FILES_EXTRA
 
         for docs_builder_id, builder_files in (
@@ -699,6 +737,8 @@ def get_expected_generated_files(
             [isinstance(x, str) for x in files_to_remove]
         ), f"Temporary Requirement of Test Code: files_to_remove must be a list of strings, not {files_to_remove}"
 
+
+        ### 3. DO NOT EXPECT TO FIND THE DOCS FOLDERS FOR OTHER DOCS BUILDERS ###
         ## Remove all Template Docs files from Expectations, because in the Template Project
         # 2 dedicated foldres are used to maintain mkdocs and spinx Docs (which get moved to ./docs in post hook)
         for (
@@ -739,6 +779,7 @@ def get_expected_generated_files(
                     str(file_path.relative_to(distro_loc / r'{{ cookiecutter.project_slug }}'))
                 )
 
+
         assert all(
             [isinstance(x, str) for x in files_to_remove]
         ), f"Temporary Requirement of Test Code: files_to_remove must be a list of strings, not {files_to_remove}"
@@ -772,8 +813,8 @@ def get_expected_generated_files(
             ]
         )
         assert (
-            len(set([type(x) for x in expected_to_find])) == 1
-        ), f"Sanity check fail: {expected_to_find}"
+            len(set([type(x) for x in _expected_to_find])) == 1
+        ), f"Sanity check fail: {_expected_to_find}"
         assert (
             len(set([type(x) for x in files_to_remove])) == 1
         ), f"Sanity check fail: {files_to_remove}"
@@ -799,7 +840,7 @@ def get_expected_generated_files(
         # update based on derived post renamings to happen
         so_far: int = len(expected_gen_files)
 
-        expected_gen_files.update(expected_to_find)
+        expected_gen_files.update(_expected_to_find)
 
         assert not any(
             [str(x).endswith('.pyc') for x in expected_gen_files]
@@ -814,8 +855,8 @@ def get_expected_generated_files(
         ), f"Sanity check fail: {expected_gen_files}"
 
         assert len(expected_gen_files) == so_far + len(
-            expected_to_find
-        ), "Our logic for deriving the expected files is wrong."
+            _expected_to_find
+        ), "Our logic, in the test code, for deriving the expected files is wrong."
 
         ## Inject Values in TEMPLATE placeholders ##
         # TODO: use comprenhesoin once stable, and then ease maintainace, with some automation
