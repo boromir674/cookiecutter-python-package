@@ -116,6 +116,8 @@ def parse_context(config_file: str):
         'docs_builder',
         'rtd_python_version',
         'cicd',
+        # Include Grafana, Loki stack no/yes
+        'include_observability',  # ["no", "yes"]
     ]
 
     for field in choice_fields:

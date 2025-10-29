@@ -6,7 +6,7 @@ This directory contains the observability infrastructure for **{{ cookiecutter.p
 
 ### Prerequisites
 - Docker and Docker Compose installed
-- Port 3000 available for Grafana web interface
+- Port 3000 available on host for Grafana web interface
 
 ### Start Observability Stack
 

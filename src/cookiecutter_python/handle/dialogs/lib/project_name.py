@@ -175,13 +175,21 @@ class ProjectNameDialog:
                     'choices': cookie_vars['rtd_python_version']['choices'],
                     'default': cookie_vars['rtd_python_version']['default'],
                 },
-                # CICD Pipeline design: stable, experimental
+                # CICD Pipeline design: stable, experimental (the good one)
                 {
                     'type': 'select',
                     'name': 'cicd',
                     'message': 'Select the CI/CD Pipeline Design',
                     'choices': cookie_vars['cicd']['choices'],
                     'default': cookie_vars['cicd']['default'],
+                },
+                # Grafana / Loki compose stack inclusion
+                {
+                    'type': 'select',
+                    'name': 'include_observability',
+                    'message': 'Include Observability Compose Stack (Grafana, Loki)?',
+                    'choices': cookie_vars['include_observability']['choices'],
+                    'default': cookie_vars['include_observability']['default'],
                 },
             ]
         )

@@ -75,6 +75,14 @@ def sdist_expected_correct_file_structure():
         'src/cookiecutter_python/{{ cookiecutter.project_slug }}/scripts/visualize-ga-workflow.py',
         'src/cookiecutter_python/{{ cookiecutter.project_slug }}/setup.cfg',
         'src/cookiecutter_python/{{ cookiecutter.project_slug }}/tox.ini',
+        # OBSERVABILITY COMPOSE STACK: GRAFANA, LOKI
+        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/{% if cookiecutter.include_observability == "yes" %}observability{% else %}PyGen_TO_DELETE_OBSERVABILITY{% endif %}/README.md',
+        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/{% if cookiecutter.include_observability == "yes" %}observability{% else %}PyGen_TO_DELETE_OBSERVABILITY{% endif %}/docker-compose.observability.yml',
+        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/{% if cookiecutter.include_observability == "yes" %}observability{% else %}PyGen_TO_DELETE_OBSERVABILITY{% endif %}/grafana/dashboards/dashboard.yml',
+        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/{% if cookiecutter.include_observability == "yes" %}observability{% else %}PyGen_TO_DELETE_OBSERVABILITY{% endif %}/grafana/datasources/loki.yml',
+        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/{% if cookiecutter.include_observability == "yes" %}observability{% else %}PyGen_TO_DELETE_OBSERVABILITY{% endif %}/loki/loki-config.yml',
+        'src/cookiecutter_python/{{ cookiecutter.project_slug }}/{% if cookiecutter.include_observability == "yes" %}observability{% else %}PyGen_TO_DELETE_OBSERVABILITY{% endif %}/promtail/promtail-config.yml',
+
         'src/cookiecutter_python/_find_lib.py',
         'src/cookiecutter_python/__init__.py',
         'src/cookiecutter_python/__main__.py',
@@ -146,6 +154,7 @@ def sdist_expected_correct_file_structure():
         # 'src/stubs/requests_futures/sessions.pyi',
     )
     TESTS = (
+        'tests/test_observability.py',
         'tests/test_version_string.py',
         'tests/test_git_sdk.py',
         'tests/test_git_porcelain.py',

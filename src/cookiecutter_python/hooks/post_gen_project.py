@@ -141,11 +141,14 @@ def post_file_removal(request):
     _remove_irrelevant_top_level_files(request)
 
 
+# find top-level folders and delete the ones with name 'PyGen_TO_DELETE' or 'PyGen_TO_DELETE_OBSERVABILITY'
+TO_DELETE_TEXT: str = 'TO_DELETE'
+"""Signature text to identify folders that must be deleted after generation."""
+
+
 def _remove_irrelevant_rendered_folders(gen_project_dir: str):
     """Remove generated docs folders that are not relevant to the selected docs builder."""
 
-    # find top-level folders and delete the ones with name 'PyGen_TO_DELETE' or 'PyGen_TO_DELETE_OBSERVABILITY'
-    TO_DELETE_TEXT: str = 'TO_DELETE'
 
     for folder_to_delete in (
         folder
