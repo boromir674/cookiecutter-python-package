@@ -53,8 +53,12 @@ jobs:
           uv run pytest -ra -vvs --run-slow -k via_build_module 2>&1 | tee integration_test_via_build_module.log
           uv run pytest -ra -vvs --run-slow -k test_build_creates_artifacts 2>&1 | tee integration_test_build_creates_artifacts.log
 
-          # Run rest of Integratoin Tests and Unit Tests for sanity
-          uv run pytest -ra -n auto --run-requires_uv --run-slow --run-network_bound -vvs -k 'test_cli or build_backend_sdist or test_build_creates_artifacts or test_lint_passes' 2>&1 | tee integration_test_full_suite.log
+
+          # Run rest of Integration Tests and Unit Tests for sanity (without lint tests)
+          uv run pytest -ra -n auto --run-requires_uv --run-slow --run-network_bound -vvs -k 'test_cli or build_backend_sdist or test_build_creates_artifacts' 2>&1 | tee integration_test_full_suite.log
+
+          # Isolate lint tests to prevent race condition with build tests
+          uv run pytest -ra -vvs --run-slow -k test_lint_passes 2>&1 | tee integration_test_lint_passes.log
 
       - name: "Combine Integration Test Logs with Headers"
         if: always()  # Process logs even if tests fail
@@ -72,7 +76,13 @@ jobs:
           echo "" >> combined_integration_tests.log
           
           echo "================================================================================" >> combined_integration_tests.log
-          echo "PYTEST INVOCATION 3: Full test suite (test_cli, build_backend_sdist, etc.)" >> combined_integration_tests.log
+          echo "PYTEST INVOCATION 3: test_lint_passes tests (isolated to prevent race condition)" >> combined_integration_tests.log
+          echo "================================================================================" >> combined_integration_tests.log
+          cat integration_test_lint_passes.log >> combined_integration_tests.log
+          echo "" >> combined_integration_tests.log
+          
+          echo "================================================================================" >> combined_integration_tests.log
+          echo "PYTEST INVOCATION 4: Remaining test suite (test_cli, build_backend_sdist)" >> combined_integration_tests.log
           echo "================================================================================" >> combined_integration_tests.log
           cat integration_test_full_suite.log >> combined_integration_tests.log
 
