@@ -39,6 +39,10 @@ def test_running_lint_passes(snapshot_name, my_run_subprocess, test_root):
 
     shutil.rmtree(snapshot_dir / '.tox' / 'lint')
 
+    # Also clean up .ruff_cache directory created by ruff during linting
+    if (snapshot_dir / '.ruff_cache').exists():
+        shutil.rmtree(snapshot_dir / '.ruff_cache')
+
     # Check that Code passes Lint out of the box
     assert (
         res.exit_code == 0
@@ -81,5 +85,10 @@ def test_running_ruff_passes(snapshot_name, my_run_subprocess, test_root):
         import shutil
 
         shutil.rmtree(snapshot_dir / '.tox' / 'ruff')
+
+    # Also clean up .ruff_cache directory created by ruff during linting
+    if (snapshot_dir / '.ruff_cache').exists():
+        import shutil
+        shutil.rmtree(snapshot_dir / '.ruff_cache')
 
     # VERIFIED that Generator emits python code that pass Ruff out of the box !!
