@@ -48,16 +48,6 @@ exclude = [
     "docs/*",
     "requirements/*",
     "scripts/*.py",
-
-    # Defensive exclusion: Prevent Poetry from scanning .tox directories in test snapshots
-    # These directories can contain broken symlinks or missing paths from test artifacts
-    # that cause build failures during Poetry's file discovery process (especially in CI
-    # with pytest-xdist parallel workers). This mitigates FileNotFoundError exceptions
-    # when Poetry encounters paths like pip._vendor that may not exist consistently.
-    "tests/**/.tox",
-    "tests/**/.tox/**",
-    "**/.tox",
-    "**/.tox/**",
 ]
 
 [tool.poetry.scripts]
