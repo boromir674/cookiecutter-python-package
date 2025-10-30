@@ -607,7 +607,28 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
     # invoke build module as frontend to whatever [build-system] is in pyproject.toml
     import sys
 
-    PYTHON = sys.executable  # python from virtualenv
+    # Use the most appropriate Python executable to avoid CI path validation errors
+    # Priority: 1) Current virtual env if within project, 2) Project .venv, 3) Fallback
+    current_python = sys.executable
+
+    # Check if current python is within the project directory (safe for Poetry)
+    try:
+        Path(current_python).relative_to(project_path)
+        PYTHON = current_python  # Safe to use current python
+        print(f"[Worker {worker_id}] Using current Python (within project): {PYTHON}")
+    except ValueError:
+        # Current python is outside project (e.g., CI hostedtoolcache)
+        # Try project .venv python instead
+        venv_python = project_path / ".venv" / "bin" / "python"
+        if venv_python.exists():
+            PYTHON = str(venv_python)
+            print(
+                f"[Worker {worker_id}] Using .venv Python (current outside project): {PYTHON}"
+            )
+        else:
+            # Last resort: use current python and hope for the best
+            PYTHON = current_python
+            print(f"[Worker {worker_id}] Using current Python (no .venv found): {PYTHON}")
 
     COMMAND_LINE_ARGS: t.List[str] = [
         PYTHON,
