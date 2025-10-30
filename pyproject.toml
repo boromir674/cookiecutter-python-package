@@ -58,6 +58,14 @@ exclude = [
     "tests/**/.tox/**",
     "**/.tox",
     "**/.tox/**",
+
+    # Exclude ruff cache files created during lint tests
+    # The test_running_ruff_passes creates .ruff_cache directories in test snapshots
+    # which should not be included in the source distribution
+    "tests/**/.ruff_cache",
+    "tests/**/.ruff_cache/**",
+    "**/.ruff_cache",
+    "**/.ruff_cache/**",
 ]
 
 [tool.poetry.scripts]
