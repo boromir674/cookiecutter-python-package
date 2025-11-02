@@ -64,9 +64,13 @@ jobs:
         run: |
           . mutation-env/bin/activate
           echo "Running baseline test suite to ensure 100% pass rate..."
-          pytest tests/ -v --tb=short
-          
-          echo "Baseline tests passed! Ready for mutation testing."
+
+          pytest -ra --tb=short --cov --cov-report=term-missing \
+            --cov-context=test \
+            --cov-report=xml:coverage.test-edit.xml \
+            -n auto tests
+
+          echo "Baseline tests passed and generated coverage! Ready for mutation testing."
 
       - name: Run mutation testing
         run: |
@@ -86,11 +90,17 @@ jobs:
             PATHS=$(echo "$TARGET_MODULES" | sed 's/,/ src\/cookiecutter_python\//g' | sed 's/^/src\/cookiecutter_python\//')
           else
             # Default: test main source modules (exclude template and hooks for now)
-            PATHS="src/cookiecutter_python/backend src/cookiecutter_python/handle src/cookiecutter_python/cli.py src/cookiecutter_python/utils.py"
+            PATHS="src/cookiecutter_python/backend, src/cookiecutter_python/handle, src/cookiecutter_python/cli.py, src/cookiecutter_python/utils.py"
           fi
           
           echo "Testing paths: $PATHS"
-          
+
+          pytest -ra --cov --cov-report=term-missing \
+            --cov-context=test \
+            --cov-report=xml:coverage.test-edit.xml \
+            -n auto tests
+
+
           # Run mutmut with timeout and CI-friendly options
           timeout 7200 mutmut run \
             --paths-to-mutate "$PATHS" \
@@ -98,8 +108,6 @@ jobs:
             --runner "python -m pytest tests/ -x --tb=no -q" \
             --use-coverage \
             --CI \
-            --simple-output \
-            --no-progress \
             || {
             echo "Mutation testing completed (exit code: $?)"
             echo "Note: Non-zero exit codes are normal in mutation testing"

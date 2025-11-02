@@ -206,5 +206,8 @@ lines_after_imports = 2
 tests_dir = "tests/"
 runner = "python -m pytest -n auto"
 
+
+# By default run a small subset of Mutants (override in cli with --paths-to-mutate)
 paths_to_mutate = "src/cookiecutter_python/utils.py"
 
+# paths_to_mutate = "src/cookiecutter_python/backend, src/cookiecutter_python/handle, src/cookiecutter_python/cli.py, src/cookiecutter_python/utils.py"
