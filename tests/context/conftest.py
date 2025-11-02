@@ -38,7 +38,7 @@ PROD_TEMPLATE = 'PROD_TEMPLATE'
 TEST_TIME_BISKOTAKI_CONFIG = None
 SHOULD_SKIP = False
 
-if not (MY_DIR.parent / '.github' / 'biskotaki.yaml').exists():
+if not (MY_DIR.parent.parent / '.github' / 'biskotaki.yaml').exists():
     SHOULD_SKIP = True
     # Create a temporary file to use as a test config and PRESERVE it on close!
     with tempfile.NamedTemporaryFile(mode='w+b', delete=False) as fp:
@@ -72,38 +72,15 @@ default_context:
         TEST_TIME_BISKOTAKI_CONFIG = Path(fp.name)
 
 
-@pytest.fixture
-def get_expected_context():
-    def _get_expected_context(expected_context: t.Dict[str, t.Any], folder_path: Path):
-        def gen():
-            # generator keys an inject _output_dir
-            for k, v in expected_context[C_KEY].items():
-                # if key is not _template, yield it
-                if k != '_template':
-                    yield k, v
-                # if key is _template, yield it and then yield _output_dir
-                else:
-                    yield k, v
-                    yield '_output_dir', str(folder_path.absolute())
-
-        return OrderedDict(
-            [
-                (C_KEY, OrderedDict([(k, v) for k, v in gen()])),
-                ('_cookiecutter', expected_context['_cookiecutter']),
-            ]
-        )
-
-    return _get_expected_context
-
 
 @pytest.fixture(
     params=[
         (
             # TEST CASE 1 - Simple Template with Cookiecutter Choice Variable included
             # GIVEN a simple Cookiecutter Template (cookiecutter.json + jinja Template project)
-            MY_DIR / 'data' / 'rendering' / 'only_list_template',
+            MY_DIR / '..' / 'data' / 'rendering' / 'only_list_template',
             # GIVEN a User Config YAML
-            MY_DIR / 'data' / 'rendering' / 'user_config.yml',
+            MY_DIR / '..' / 'data' / 'rendering' / 'user_config.yml',
             # THEN expected Context that cookiecutter will generate under the hood is
             OrderedDict(
                 [
@@ -490,11 +467,7 @@ def get_expected_context():
         'gold_standard',  # TEST CASE 4
     ),
 )
-def template_test_case(
-    request,
-    get_expected_context,
-    distro_loc: Path,
-):
+def template_test_case(request, distro_loc: Path):
     # handles cookiecutters dedicated for testing and the one included in the distribution
     COOKIE_TEMPLATE_DIR: Path = (
         distro_loc if request.param[0] == 'PROD_TEMPLATE' else request.param[0]
@@ -502,10 +475,10 @@ def template_test_case(
 
     # Set User Config YAML
     ALIAS_TO_CONFIG_FILE: t.Dict[str, t.Optional[Path]] = {
-        'BISKOTAKI_CONFIG': MY_DIR / '..' / '.github' / 'biskotaki.yaml',
+        'BISKOTAKI_CONFIG': MY_DIR / '..' / '..' / '.github' / 'biskotaki.yaml',
         'TEST_TIME_BISKOTAKI_CONFIG': TEST_TIME_BISKOTAKI_CONFIG,
-        'GOLD_STANDARD_CONFIG': MY_DIR / 'data' / 'gold-standard.yml',
-        'PYTEST_PLUGIN_CONFIG': MY_DIR / 'data' / 'pytest-fixture.yaml',
+        'GOLD_STANDARD_CONFIG': MY_DIR / '..' / 'data' / 'gold-standard.yml',
+        'PYTEST_PLUGIN_CONFIG': MY_DIR / '..' / 'data' / 'pytest-fixture.yaml',
     }
 
     USER_CONFIG_FILE = ALIAS_TO_CONFIG_FILE.get(request.param[1], request.param[1])
@@ -559,6 +532,28 @@ def template_test_case(
         and len(interpreters['supported-interpreters']) > 0
     )
 
+    # Helper Function for dynamically adding one key into expected context OrderedDict
+    def get_expected_context(expected_context: t.Dict[str, t.Any], folder_path: Path):
+        """Greate Expected Context as OrderedDict, given expected_context and generated project dir path"""
+        def gen():
+            """Generate key/values for expected context, ensuring _output_dir comes right after _template"""
+            # generator keys an inject _output_dir
+            for k, v in expected_context[C_KEY].items():
+                # if key is not _template, yield it
+                if k != '_template':
+                    yield k, v
+                # if key is _template, yield it and then yield _output_dir
+                else:
+                    yield k, v
+                    yield '_output_dir', str(folder_path.absolute())
+
+        return OrderedDict(
+            [
+                (C_KEY, OrderedDict([(k, v) for k, v in gen()])),
+                ('_cookiecutter', expected_context['_cookiecutter']),
+            ]
+        )
+
     return {
         'cookie': COOKIE_TEMPLATE_DIR,
         'user_config': USER_CONFIG_FILE,
@@ -609,148 +604,3 @@ def cookiecutter_callable_mapping(
         return cookiecutter_callable_mapping
 
     return _get_cookiecutter_callable_mapping
-
-
-@patch('cookiecutter.main.generate_context')
-def test_cookiecutter_generates_context_with_expected_values(
-    generate_context_mock,  # magic mock object
-    template_test_case,  # fixture with request.param, with Test Case Data
-    cookiecutter_callable_mapping,  # support to call cookiecutter
-    tmp_path: Path,  # pytest fixture
-):
-    """Verify generated Jinja Context, given Cookiecutter Template and User Config YAML."""
-    # GIVEN a Cookiecutter Template: Dir with cookiecutter.json + {{ cookiecutter.project_name }}/
-    cookie: Path = template_test_case['cookie']
-    # GIVEN a User Config YAML, which overrides a default Choice Variable
-    config_yaml: Path = template_test_case['user_config']
-
-    # GIVEN target Gen Project dir has no files inside
-    gen_proj_dir: Path = tmp_path
-    assert gen_proj_dir.exists() and len(list(gen_proj_dir.iterdir())) == 0
-
-    # GIVEN the EXPECTED CONTEXT DISCTIONARY
-    EXPECTED_CONTEXT = template_test_case['get_expected_context'](gen_proj_dir)
-
-    # GIVEN a way to "track" the input passed at runtime to cookiecutter's generate_context function
-    from cookiecutter.config import get_config
-
-    user_config_dict: t.MutableMapping[str, t.Any] = get_config(config_yaml)
-    expected_default_context_passed: t.Dict = user_config_dict['default_context']
-
-    expected_extra_context_passed = None
-
-    from cookiecutter.generate import generate_context
-
-    # SANITY no calls to generate_context yet
-    assert generate_context_mock.call_count == 0
-
-    prod_result = generate_context(
-        context_file=str(cookie / 'cookiecutter.json'),
-        default_context=expected_default_context_passed,
-        extra_context=expected_extra_context_passed,
-    )
-
-    # SANITY no calls to generate_context yet
-    assert generate_context_mock.call_count == 0
-
-    # assert prod_result == EXPECTED_CONTEXT
-
-    # WHEN cookiecutter is called (either directly or via Generator) on a Template
-    # and with the User Config YAML
-    generate_context_mock.return_value = prod_result
-
-    callback_mapping = cookiecutter_callable_mapping(config_yaml, cookie)
-
-    callback_mapping[template_test_case['alias_of_template_used']](
-        # str(cookie),  # template dir path
-        config_file=str(config_yaml),
-        default_config=False,
-        output_dir=gen_proj_dir,
-        # extra_context={'interpreters': EXPECTED_CONTEXT['cookiecutter']['interpreters']} if 'interpreters' in EXPECTED_CONTEXT['cookiecutter'] else None,
-        no_input=True,  # non interactive
-        checkout=False,
-        replay=False,
-    )
-
-    # THEN the generate_context was called once
-    assert generate_context_mock.call_count == 1
-    generate_context_mock.assert_called_once()
-
-    # AND we check the runtime input passed to cookiecutter's generate_context function
-    # THEN the internal generate_context of coociecutter was called with expected runtime input values
-
-    # THEN internally cookiecutter passes the expected arguments to the
-    # cookiecutter.generate.generate_context function
-    generate_context_mock.assert_called_with(
-        context_file=str(
-            Path(EXPECTED_CONTEXT['cookiecutter']['_template']) / 'cookiecutter.json'
-        ),
-        default_context=expected_default_context_passed,
-        extra_context=expected_extra_context_passed,
-    )
-
-    import yaml
-
-    # SANITY check User Config YAML data passed as Dict to 'default_context' kwarg of generate_context
-    assert expected_default_context_passed == OrderedDict(
-        [(k, v) for k, v in yaml.safe_load(config_yaml.read_text())['default_context'].items()]
-    )
-    # AND Cookiecutter inserts 2 keys into Jinja Context: 'cookiecutter' and '_cookiecutter'
-    assert set(prod_result.keys()) == {C_KEY, '_cookiecutter'}
-
-    # AND the Template Variables in 'cookiecutter' key is an OrderedDict
-    assert isinstance(prod_result[C_KEY], OrderedDict)
-
-    # AND the internal data in jinja context map under 'cookiecutter' key are as expected
-    assert len(prod_result[C_KEY]) == len(EXPECTED_CONTEXT[C_KEY])
-    for p1, p2 in zip(prod_result[C_KEY].items(), EXPECTED_CONTEXT[C_KEY].items()):
-        assert p1[0] == p2[0], (
-            "All PROD Keys: [\n"
-            + '\n'.join(prod_result[C_KEY].keys())
-            + '\n]\n\nAll TEST Keys: [\n'
-            + '\n'.join(EXPECTED_CONTEXT[C_KEY].keys())
-            + "\n]"
-        )
-        if p1[0] == 'release_date':
-            # ACCOUNT for different timezones we accept date difference of 1 day
-            runtime_date = p1[1]
-            expected_date = p2[1]
-            # verify diff is at most 1 day
-            assert (
-                abs(
-                    datetime.datetime.strptime(runtime_date, '%Y-%m-%d')
-                    - datetime.datetime.strptime(expected_date, '%Y-%m-%d')
-                ).days
-                <= 1
-            ), f"Context Missmatch at '{C_KEY}' -> '{p1[0]}': Runtime: '{runtime_date}', Expected: '{expected_date}'"
-        else:
-            assert (
-                p1[1] == p2[1]
-            ), f"Context Missmatch at '{C_KEY}' -> '{p1[0]}': Runtime: '{p1[1]}', Expected: '{p2[1]}'"
-
-    # THEN the internal data in jinja context map under 'cookiecutter' key are as expected
-    assert prod_result[C_KEY] == dict(
-        EXPECTED_CONTEXT[C_KEY],
-        **(
-            {
-                'release_date': prod_result[C_KEY]['release_date'],
-            }
-            if 'release_date' in prod_result[C_KEY]
-            else {}
-        ),
-    )
-
-    # SANITY the back-up/copy of raw data is place under '_cookiecutter' key as Dict
-    assert isinstance(prod_result['_cookiecutter'], dict)
-    # AND the internal data in jinja context map under '_cookiecutter' key are as expected
-    assert len(prod_result['_cookiecutter']) == len(EXPECTED_CONTEXT['_cookiecutter'])
-    for p1, p2 in zip(
-        prod_result['_cookiecutter'].items(),
-        EXPECTED_CONTEXT['_cookiecutter'].items(),
-    ):
-        assert p1[0] == p2[0]
-        # if p1[0] in {'project_short_description', 'pypi_subtitle'}:
-        #     continue
-        assert (
-            p1[1] == p2[1]
-        ), f"Error at key {p1[0]} with value '{p1[1]}'. Expected '{p2[1]}'!"
