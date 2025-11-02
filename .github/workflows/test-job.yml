@@ -88,13 +88,13 @@ jobs:
 
       - name: Install uv
         if: matrix.platform != 'windows-latest'
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+        run: curl -LsSf https://astral.sh/uv/0.8.0/install.sh | sh
 
       - name: Install uv
         if: matrix.platform == 'windows-latest'
         uses: astral-sh/setup-uv@v5
         with:
-          version: "latest"
+          version: "0.8.0"
 
       # ### Sanity Check that folder is Compatible for Python Distro / Build ###
       # - run: uvx pyroma --directory .
@@ -196,7 +196,17 @@ jobs:
         id: uv_build
         run: |
           set -o pipefail
+          echo "[DEBUG] Python version: $(python --version)"
+          echo "[DEBUG] UV version: $(uv --version)"
+          echo "[DEBUG] Poetry version: $(python -c 'import poetry.core; print(poetry.core.__version__)' 2>/dev/null || echo 'Not available')"
+          
           uv build --out-dir dist . 2>&1 | tee test_output.log
+          
+          echo "[DEBUG] Build completed, checking dist contents:"
+          ls -la dist/
+          
+          echo "[DEBUG] Checking wheel structure:"
+          unzip -l dist/*.whl | head -20 || echo "Failed to inspect wheel"
 
       - name: Extract Package PEP Version from Wheel
         id: extract_wheel_info
@@ -238,7 +248,14 @@ jobs:
           uv venv check-env
           . check-env/${{ env.VENV_ACTIVATE }}
           uv pip install poetry-core pyroma 'twine >=5.0.0, <6.0.0'
-          # --active
+
+          echo "[DEBUG] Python version in verification env: $(python --version)"
+          echo "[DEBUG] Twine version: $(python -m twine --version)"
+          echo "[DEBUG] Available dist files:"
+          ls -la ../dist/
+          
+          echo "[DEBUG] Checking wheel contents with unzip:"
+          unzip -l ../dist/*.whl | head -30 || echo "Failed to list wheel contents"
 
           # Check .tar.gz file using 'pyroma' command
           echo "[INFO] Running pyroma on the sdist"
@@ -246,7 +263,13 @@ jobs:
 
           # Check both .whl and .tar.gz files using 'twine check' command
           echo "[INFO] Running twine check on the sdist and wheel"
-          python -m twine check ../dist/*
+          python -m twine check ../dist/* || {
+            echo "[ERROR] Twine check failed! Debugging wheel structure:"
+            unzip -l ../dist/*.whl | grep -E "(METADATA|PKG-INFO|WHEEL)"
+            echo "Full wheel contents:"
+            unzip -l ../dist/*.whl
+            exit 1
+          }
 
 
       ######## PHASE 4: INSTALL WHEELS AND RUN SANITY CHECKS ########
