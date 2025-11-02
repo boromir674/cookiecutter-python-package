@@ -141,7 +141,7 @@ def post_file_removal(request):
     _remove_irrelevant_top_level_files(request)
 
 
-# find top-level folders and delete the ones with name 'PyGen_TO_DELETE' or 'PyGen_TO_DELETE_OBSERVABILITY'
+# remove rendered top-level folders with 'TO_DELETE' in their name
 TO_DELETE_TEXT: str = 'TO_DELETE'
 """Signature text to identify folders that must be deleted after generation."""
 
