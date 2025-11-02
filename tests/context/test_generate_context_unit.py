@@ -4,13 +4,13 @@ Although generate_context is a critical function, it is not called by our app
 directly. This meanis
 """
 
-import pytest
-import typing as t
-from pathlib import Path
-from collections import OrderedDict
-from unittest.mock import patch
 import datetime
+import typing as t
+from collections import OrderedDict
+from pathlib import Path
+from unittest.mock import patch
 
+import pytest
 from cookiecutter.generate import generate_context
 
 
@@ -26,14 +26,16 @@ def test_generate_context_returns_expected_structure(
     tmp_path,
 ):
     """Test that generate_context returns the expected context structure.
-    
+
     This is a pure unit test that verifies generate_context output
     without any cookiecutter execution or mocking side effects.
     """
     # GIVEN: Template configuration and user config
     from cookiecutter.config import get_config
 
-    expected_default_context_passed: t.Dict = get_config(template_test_case['user_config'])['default_context']
+    expected_default_context_passed: t.Dict = get_config(template_test_case['user_config'])[
+        'default_context'
+    ]
     expected_extra_context_passed = None  # as per original test
 
     # WHEN: We call generate_context directly
@@ -46,11 +48,11 @@ def test_generate_context_returns_expected_structure(
     # THEN: The context dict contains only the 'cookiecutter' key (no '_cookiecutter' yet)
     assert isinstance(result, OrderedDict)
     assert set(result.keys()) == {'cookiecutter'}
-    
+
     # AND: The cookiecutter section is an OrderedDict with expected structure
     assert isinstance(result['cookiecutter'], OrderedDict)
 
-    # AND Choice variables are (still) lists (downstream cookiecutter will pick one later, which is tested in other test module))   
+    # AND Choice variables are (still) lists (downstream cookiecutter will pick one later, which is tested in other test module))
 
     # AND the internal data in jinja context map under 'cookiecutter' key are as expected
     # GIVEN the EXPECTED CONTEXT DISCTIONARY

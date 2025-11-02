@@ -40,7 +40,7 @@ def test_cookiecutter_generates_context_with_expected_values(
 ):
     """Verify generated Jinja Context, given Cookiecutter Template and User Config YAML."""
     import yaml
-    
+
     # GIVEN a Cookiecutter Template: Dir with cookiecutter.json + {{ cookiecutter.project_name }}/
     cookie: Path = template_test_case['cookie']
     # GIVEN a User Config YAML, which overrides a default Choice Variable
@@ -64,13 +64,12 @@ def test_cookiecutter_generates_context_with_expected_values(
     )
 
     expected_extra_context_passed = None
-    
 
     # WHEN we call cookiecutter.generate_context like in production
 
     from cookiecutter.generate import generate_context
-    # from cookiecutter.main import generate_context  # increases call_count by 1 !!!
 
+    # from cookiecutter.main import generate_context  # increases call_count by 1 !!!
     # SANITY no calls to generate_context yet
     assert generate_context_mock.call_count == 0
 
@@ -80,8 +79,9 @@ def test_cookiecutter_generates_context_with_expected_values(
         default_context=expected_default_context_passed,  # user's config yaml
         extra_context=expected_extra_context_passed,  # None
     )
-    
+
     import copy
+
     _gen_output_og_object = copy.deepcopy(prod_result)
 
     # SANITY no calls to generate_context yet
@@ -106,7 +106,9 @@ def test_cookiecutter_generates_context_with_expected_values(
 
     # track returned value of generate_context from above: generator -> cookiecutter -> generate_context
 
-    generate_context_mock.return_value = prod_result  # exact output from app code generate_context function
+    generate_context_mock.return_value = (
+        prod_result  # exact output from app code generate_context function
+    )
     # see cookiecutter.main where generate_context is called
 
     # Run cookiecutter directly, or by running Pkg Gen
@@ -131,7 +133,6 @@ def test_cookiecutter_generates_context_with_expected_values(
     assert generate_context_mock.call_count == 1
     generate_context_mock.assert_called_once()
 
-
     # we check the runtime input parameters passed to cookiecutter's generate_context function
     # and verify that internal generate_context of coociecutter's was called with expected runtime input values
 
@@ -144,8 +145,6 @@ def test_cookiecutter_generates_context_with_expected_values(
         default_context=expected_default_context_passed,
         extra_context=expected_extra_context_passed,
     )
-
-
 
     # AND Cookiecutter inserts 2 keys into Jinja Context: 'cookiecutter' and '_cookiecutter'
     assert set(prod_result.keys()) == {C_KEY, '_cookiecutter'}
@@ -216,7 +215,13 @@ def test_cookiecutter_generates_context_with_expected_values(
     # VERIFY that generate_context never converts to bool anything
     assert all([type(x) != bool for x in _gen_output_og_object['cookiecutter'].values()])
     # exclude '_checkout' keys added iunder 'cookiecutter' context key
-    assert all([type(v) != bool for k, v in prod_result['cookiecutter'].items() if k not in {'_checkout'}]), f"Keys {[k for k,v in prod_result['cookiecutter'].items() if type(v) == bool]} got converted to bool unexpectedly!"
+    assert all(
+        [
+            type(v) != bool
+            for k, v in prod_result['cookiecutter'].items()
+            if k not in {'_checkout'}
+        ]
+    ), f"Keys {[k for k,v in prod_result['cookiecutter'].items() if type(v) == bool]} got converted to bool unexpectedly!"
 
     # ONLY in no_input = False, then cookiecutter converts to bool the yes/no !
     # very error-prone cookiecutter behavior !!!

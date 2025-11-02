@@ -82,7 +82,6 @@ def sdist_expected_correct_file_structure():
         'src/cookiecutter_python/{{ cookiecutter.project_slug }}/{% if cookiecutter.include_observability == "yes" %}observability{% else %}PyGen_TO_DELETE_OBSERVABILITY{% endif %}/grafana/datasources/loki.yml',
         'src/cookiecutter_python/{{ cookiecutter.project_slug }}/{% if cookiecutter.include_observability == "yes" %}observability{% else %}PyGen_TO_DELETE_OBSERVABILITY{% endif %}/loki/loki-config.yml',
         'src/cookiecutter_python/{{ cookiecutter.project_slug }}/{% if cookiecutter.include_observability == "yes" %}observability{% else %}PyGen_TO_DELETE_OBSERVABILITY{% endif %}/promtail/promtail-config.yml',
-
         'src/cookiecutter_python/_find_lib.py',
         'src/cookiecutter_python/__init__.py',
         'src/cookiecutter_python/__main__.py',
@@ -649,13 +648,13 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
     print(f"\n{'='*80}")
     print(f"COMPREHENSIVE ENVIRONMENT DEBUG INFO [Worker {worker_id}]")
     print(f"{'='*80}")
-    
+
     # Python runtime information
     print(f"Python executable: {PYTHON}")
     print(f"Python version: {sys.version}")
     print(f"Python platform: {sys.platform}")
     print(f"Python implementation: {sys.implementation.name}")
-    
+
     # File system and paths
     print(f"Current working directory: {os.getcwd()}")
     print(f"Project path: {project_path}")
@@ -663,22 +662,38 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
     print(f"Project path is directory: {project_path.is_dir()}")
     print(f"Output directory: {OUT_DIR}")
     print(f"Temp directory: {temp_dir}")
-    
+
     # Build command
     print(f"Build command: {' '.join(COMMAND_LINE_ARGS)}")
-    
+
     # Environment variables of interest
     print("\nCRITICAL ENVIRONMENT VARIABLES:")
     critical_env_vars = [
-        "PYTHONPATH", "PATH", "HOME", "USER", "PWD", "TMPDIR", "TMP", "TEMP",
-        "BUILD_BACKEND_ISOLATION", "SETUPTOOLS_SCM_DEBUG", "PIP_CACHE_DIR",
-        "PYTEST_XDIST_WORKER", "CI", "GITHUB_ACTIONS", "RUNNER_OS", "RUNNER_ARCH",
-        "VIRTUAL_ENV", "CONDA_DEFAULT_ENV", "POETRY_ACTIVE", "UV_CACHE_DIR"
+        "PYTHONPATH",
+        "PATH",
+        "HOME",
+        "USER",
+        "PWD",
+        "TMPDIR",
+        "TMP",
+        "TEMP",
+        "BUILD_BACKEND_ISOLATION",
+        "SETUPTOOLS_SCM_DEBUG",
+        "PIP_CACHE_DIR",
+        "PYTEST_XDIST_WORKER",
+        "CI",
+        "GITHUB_ACTIONS",
+        "RUNNER_OS",
+        "RUNNER_ARCH",
+        "VIRTUAL_ENV",
+        "CONDA_DEFAULT_ENV",
+        "POETRY_ACTIVE",
+        "UV_CACHE_DIR",
     ]
     for var in critical_env_vars:
         value = env.get(var, 'NOT SET')
         print(f"  {var}: {value}")
-    
+
     # File system structure
     print(f"\nFILE SYSTEM STRUCTURE:")
     print(f"Project root contents (first 20 items):")
@@ -690,18 +705,18 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
             print(f"  ... and {len(list(project_path.iterdir())) - 20} more items")
     except Exception as e:
         print(f"  Error listing project contents: {e}")
-    
+
     # Check critical files
     critical_files = [
         project_path / "pyproject.toml",
-        project_path / "poetry.lock", 
+        project_path / "poetry.lock",
         project_path / "uv.lock",
         project_path / "setup.py",
         project_path / "setup.cfg",
         project_path / "MANIFEST.in",
         project_path / "src",
         project_path / "src" / "cookiecutter_python",
-        project_path / "src" / "cookiecutter_python" / "__init__.py"
+        project_path / "src" / "cookiecutter_python" / "__init__.py",
     ]
     print(f"\nCRITICAL FILES CHECK:")
     for file_path in critical_files:
@@ -714,7 +729,7 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
                 print(f"  {file_path.relative_to(project_path)}: EXISTS (directory)")
         else:
             print(f"  {file_path.relative_to(project_path)}: MISSING")
-    
+
     # Check for potential lock files that could cause conflicts
     lock_files = [
         project_path / "poetry.lock",
@@ -726,21 +741,34 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
         if lock_file.exists():
             size = lock_file.stat().st_size
             mtime = lock_file.stat().st_mtime
-            print(f"  {lock_file.relative_to(project_path)}: EXISTS ({size} bytes, mtime: {mtime})")
+            print(
+                f"  {lock_file.relative_to(project_path)}: EXISTS ({size} bytes, mtime: {mtime})"
+            )
         else:
             print(f"  {lock_file.relative_to(project_path)}: NOT FOUND")
-    
+
     # Python packages information
     print(f"\nPYTHON PACKAGES INFO:")
     try:
         import subprocess
-        pip_list_result = subprocess.run([PYTHON, "-m", "pip", "list"], 
-                                       capture_output=True, text=True, timeout=30)
+
+        pip_list_result = subprocess.run(
+            [PYTHON, "-m", "pip", "list"], capture_output=True, text=True, timeout=30
+        )
         if pip_list_result.returncode == 0:
             lines = pip_list_result.stdout.strip().split('\n')
             print(f"  Total installed packages: {len(lines) - 2}")  # Subtract header lines
             # Show build-related packages
-            build_packages = ["build", "setuptools", "wheel", "poetry", "uv", "pip", "hatchling", "flit"]
+            build_packages = [
+                "build",
+                "setuptools",
+                "wheel",
+                "poetry",
+                "uv",
+                "pip",
+                "hatchling",
+                "flit",
+            ]
             for line in lines:
                 for pkg in build_packages:
                     if line.lower().startswith(pkg.lower()):
@@ -749,22 +777,23 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
             print(f"  Failed to get pip list: {pip_list_result.stderr}")
     except Exception as e:
         print(f"  Error getting pip list: {e}")
-    
+
     # Python import paths
     print(f"\nPYTHON IMPORT PATHS:")
     for i, path in enumerate(sys.path):
         print(f"  {i}: {path}")
-    
+
     # Check if our package is importable and get its location
     print(f"\nPACKAGE IMPORT CHECK:")
     try:
         import cookiecutter_python
+
         print(f"  cookiecutter_python.__file__: {cookiecutter_python.__file__}")
         print(f"  cookiecutter_python.__version__: {cookiecutter_python.__version__}")
         print(f"  Package directory: {Path(cookiecutter_python.__file__).parent}")
     except Exception as e:
         print(f"  Error importing cookiecutter_python: {e}")
-    
+
     # Check build tools availability
     print(f"\nBUILD TOOLS AVAILABILITY:")
     build_tools = ["build", "setuptools", "wheel", "hatchling"]
@@ -776,11 +805,12 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
             print(f"  {tool}: NOT AVAILABLE ({e})")
         except Exception as e:
             print(f"  {tool}: ERROR ({e})")
-    
+
     # Setuptools-scm specific debugging
     print(f"\nSETUPTOOLS-SCM DEBUG:")
     try:
         import setuptools_scm
+
         print(f"  setuptools_scm version: {setuptools_scm.__version__}")
         # Try to get version from project
         try:
@@ -792,22 +822,33 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
         print(f"  setuptools_scm: NOT AVAILABLE")
     except Exception as e:
         print(f"  setuptools_scm: ERROR ({e})")
-    
+
     # Git repository information (important for setuptools-scm)
     print(f"\nGIT REPOSITORY INFO:")
     try:
         import subprocess
+
         # Check if git is available
-        git_version_result = subprocess.run(["git", "--version"], 
-                                          capture_output=True, text=True, timeout=10)
+        git_version_result = subprocess.run(
+            ["git", "--version"], capture_output=True, text=True, timeout=10
+        )
         if git_version_result.returncode == 0:
             print(f"  Git version: {git_version_result.stdout.strip()}")
-            
+
             # Check git status in project directory
-            git_status_result = subprocess.run(["git", "status", "--porcelain"], 
-                                             cwd=project_path, capture_output=True, text=True, timeout=10)
+            git_status_result = subprocess.run(
+                ["git", "status", "--porcelain"],
+                cwd=project_path,
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
             if git_status_result.returncode == 0:
-                status_lines = git_status_result.stdout.strip().split('\n') if git_status_result.stdout.strip() else []
+                status_lines = (
+                    git_status_result.stdout.strip().split('\n')
+                    if git_status_result.stdout.strip()
+                    else []
+                )
                 print(f"  Git working directory status: {len(status_lines)} modified files")
                 if status_lines and status_lines[0]:  # Only show if there are actual changes
                     print(f"  First few changes:")
@@ -815,52 +856,75 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
                         print(f"    {line}")
             else:
                 print(f"  Git status failed: {git_status_result.stderr}")
-            
+
             # Check current branch/commit
-            git_branch_result = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"], 
-                                             cwd=project_path, capture_output=True, text=True, timeout=10)
+            git_branch_result = subprocess.run(
+                ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+                cwd=project_path,
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
             if git_branch_result.returncode == 0:
                 print(f"  Current branch: {git_branch_result.stdout.strip()}")
-            
-            git_commit_result = subprocess.run(["git", "rev-parse", "--short", "HEAD"], 
-                                             cwd=project_path, capture_output=True, text=True, timeout=10)
+
+            git_commit_result = subprocess.run(
+                ["git", "rev-parse", "--short", "HEAD"],
+                cwd=project_path,
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
             if git_commit_result.returncode == 0:
                 print(f"  Current commit: {git_commit_result.stdout.strip()}")
-                
+
             # Check if we're in a git repository
-            git_root_result = subprocess.run(["git", "rev-parse", "--show-toplevel"], 
-                                           cwd=project_path, capture_output=True, text=True, timeout=10)
+            git_root_result = subprocess.run(
+                ["git", "rev-parse", "--show-toplevel"],
+                cwd=project_path,
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
             if git_root_result.returncode == 0:
                 git_root = git_root_result.stdout.strip()
                 print(f"  Git repository root: {git_root}")
-                print(f"  Project path relative to git root: {project_path.relative_to(Path(git_root)) if Path(git_root) in project_path.parents or Path(git_root) == project_path else 'Not within git root'}")
+                print(
+                    f"  Project path relative to git root: {project_path.relative_to(Path(git_root)) if Path(git_root) in project_path.parents or Path(git_root) == project_path else 'Not within git root'}"
+                )
             else:
                 print(f"  Not in a git repository: {git_root_result.stderr}")
-                
+
         else:
             print(f"  Git not available: {git_version_result.stderr}")
     except FileNotFoundError:
         print(f"  Git command not found")
     except Exception as e:
         print(f"  Error checking git: {e}")
-    
+
     # Disk space information
     print(f"\nDISK SPACE INFO:")
     try:
         import shutil
+
         total, used, free = shutil.disk_usage(project_path)
-        print(f"  Project path disk - Total: {total//1024//1024} MB, Used: {used//1024//1024} MB, Free: {free//1024//1024} MB")
+        print(
+            f"  Project path disk - Total: {total//1024//1024} MB, Used: {used//1024//1024} MB, Free: {free//1024//1024} MB"
+        )
         total_tmp, used_tmp, free_tmp = shutil.disk_usage(temp_dir)
-        print(f"  Temp dir disk - Total: {total_tmp//1024//1024} MB, Used: {used_tmp//1024//1024} MB, Free: {free_tmp//1024//1024} MB")
+        print(
+            f"  Temp dir disk - Total: {total_tmp//1024//1024} MB, Used: {used_tmp//1024//1024} MB, Free: {free_tmp//1024//1024} MB"
+        )
     except Exception as e:
         print(f"  Error getting disk usage: {e}")
-    
+
     print(f"{'='*80}")
     print(f"END ENVIRONMENT DEBUG INFO")
     print(f"{'='*80}\n")
 
     # Start timing the build process
     import time
+
     start_time = time.time()
 
     result = my_run_subprocess(*COMMAND_LINE_ARGS, check=False, env=env)
@@ -913,11 +977,12 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
             print(f"  Output directory is not a directory!")
     else:
         print(f"  Output directory does not exist!")
-    
+
     # Check if any tar.gz files exist anywhere in temp area
     print(f"Searching for .tar.gz files in temp area:")
     try:
         import glob
+
         temp_path = Path(temp_dir)
         tar_files = list(temp_path.glob("**/*.tar.gz"))
         if tar_files:
@@ -934,7 +999,7 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
         print(f"\nBUILD FAILURE DETAILED ANALYSIS [Worker {worker_id}]:")
         print(f"Command: {' '.join(COMMAND_LINE_ARGS)}")
         print(f"Working directory: {project_path}")
-        
+
         # Check if pyproject.toml is readable
         pyproject_path = project_path / "pyproject.toml"
         if pyproject_path.exists():
@@ -948,23 +1013,33 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
                     print("WARNING: pyproject.toml does not contain [build-system] section")
             except Exception as e:
                 print(f"Error reading pyproject.toml: {e}")
-        
+
         # Check permissions
         try:
             import stat
+
             project_stat = project_path.stat()
             print(f"Project directory permissions: {stat.filemode(project_stat.st_mode)}")
             if OUT_DIR.parent.exists():
                 parent_stat = OUT_DIR.parent.stat()
-                print(f"Output parent directory permissions: {stat.filemode(parent_stat.st_mode)}")
+                print(
+                    f"Output parent directory permissions: {stat.filemode(parent_stat.st_mode)}"
+                )
         except Exception as e:
             print(f"Error checking permissions: {e}")
 
         # Additional debugging for CI environment
         print("Critical environment variables:")
         debug_env_vars = [
-            "PYTHONPATH", "PATH", "HOME", "TMPDIR", "BUILD_BACKEND_ISOLATION",
-            "SETUPTOOLS_SCM_DEBUG", "CI", "GITHUB_ACTIONS", "RUNNER_OS"
+            "PYTHONPATH",
+            "PATH",
+            "HOME",
+            "TMPDIR",
+            "BUILD_BACKEND_ISOLATION",
+            "SETUPTOOLS_SCM_DEBUG",
+            "CI",
+            "GITHUB_ACTIONS",
+            "RUNNER_OS",
         ]
         for var in debug_env_vars:
             print(f"  {var}: {env.get(var, 'NOT SET')}")
@@ -999,19 +1074,23 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
 
     # After build, retrieve the tar.gz file
     tar_gz_file = list(OUT_DIR.glob("*.tar.gz"))
-    
+
     print(f"\nFINAL BUILD ARTIFACTS SUMMARY:")
     print(f"Found {len(tar_gz_file)} tar.gz files in output directory")
     for i, tar_file in enumerate(tar_gz_file):
         size = tar_file.stat().st_size
         print(f"  {i+1}. {tar_file.name} ({size} bytes, {size/1024:.1f} KB)")
-    
-    assert len(tar_gz_file) == 1, f"Expected 1 tar.gz file, got {len(tar_gz_file)}. Files found: {[f.name for f in tar_gz_file]}"
+
+    assert (
+        len(tar_gz_file) == 1
+    ), f"Expected 1 tar.gz file, got {len(tar_gz_file)}. Files found: {[f.name for f in tar_gz_file]}"
     assert tar_gz_file[0].is_file(), f"Expected {tar_gz_file[0]} to be a file"
-    
+
     final_file = tar_gz_file[0]
-    print(f"SUCCESS: Built {final_file.name} ({final_file.stat().st_size} bytes) in {execution_time:.2f} seconds")
-    
+    print(
+        f"SUCCESS: Built {final_file.name} ({final_file.stat().st_size} bytes) in {execution_time:.2f} seconds"
+    )
+
     return final_file
 
 

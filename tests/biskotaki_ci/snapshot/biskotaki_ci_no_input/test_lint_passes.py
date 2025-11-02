@@ -89,6 +89,7 @@ def test_running_ruff_passes(snapshot_name, my_run_subprocess, test_root):
     # Also clean up .ruff_cache directory created by ruff during linting
     if (snapshot_dir / '.ruff_cache').exists():
         import shutil
+
         shutil.rmtree(snapshot_dir / '.ruff_cache')
 
     # VERIFIED that Generator emits python code that pass Ruff out of the box !!

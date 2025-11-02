@@ -1,7 +1,7 @@
+import logging
 import os
 import sys
 import typing as t
-import logging
 
 
 if sys.version_info >= (3, 8):
@@ -347,8 +347,7 @@ class ConfigProtocol(Protocol):
 
 
 class ConfigInterfaceProtocol(t.Protocol):
-    def __getitem__(self, file_path_str: t.Union[str, None]) -> ConfigProtocol:
-        ...
+    def __getitem__(self, file_path_str: t.Union[str, None]) -> ConfigProtocol: ...
 
 
 @pytest.fixture
@@ -374,7 +373,9 @@ def user_config(distro_loc: Path) -> ConfigInterfaceProtocol:
     def _load_context_json(file_path: PathLike) -> t.Dict:
         with open(file_path, 'r') as fp:
             data = json.load(fp)
-            assert type(data['cicd']) is list, f"'cicd' must be a list in {file_path}; found {type(data['cicd'])}"
+            assert (
+                type(data['cicd']) is list
+            ), f"'cicd' must be a list in {file_path}; found {type(data['cicd'])}"
         return data
 
     def _load_context_yaml(file_path: PathLike) -> t.MutableMapping[str, t.Any]:
@@ -474,7 +475,9 @@ def user_config(distro_loc: Path) -> ConfigInterfaceProtocol:
                 data['initialize_git_repo'][0], False
             )
 
-            assert type(data['cicd']) is list, f"'cicd' must be a list; found {type(data['cicd'])}"
+            assert (
+                type(data['cicd']) is list
+            ), f"'cicd' must be a list; found {type(data['cicd'])}"
             # 2. Auto-process choice variables (arrays) - use first element as default
             for key, value in data.items():
                 if isinstance(value, list) and len(value) > 0:
@@ -518,8 +521,7 @@ def user_config(distro_loc: Path) -> ConfigInterfaceProtocol:
 class RelativePathsGenerator(Protocol):
     """Generate relative paths from a given root folder."""
 
-    def relative_file_paths(self) -> t.Iterator[Path]:
-        ...
+    def relative_file_paths(self) -> t.Iterator[Path]: ...
 
 
 @pytest.fixture
@@ -703,19 +705,20 @@ def get_expected_generated_files(
             [str(x).endswith('.pyc') for x in _expected_to_find]
         ), f"Sanity check fail: {_expected_to_find}"
 
-
         # DERIVE ALL EXPECTED FILES FOR POST GENERATION REMOVAL and EXCLUDE FROM EXPECTATIONS
 
         ### 1. DO NOT EXPECT the folders with a TO_DELETE substring in their names ###
         from cookiecutter_python.hooks.post_gen_project import TO_DELETE_TEXT
-        
+
         template_root = distro_loc / r'{{ cookiecutter.project_slug }}'
-        expected_for_post_removal = [d for d in template_root.rglob('*') if d.is_dir() and TO_DELETE_TEXT in str(d)]
-        
+        expected_for_post_removal = [
+            d for d in template_root.rglob('*') if d.is_dir() and TO_DELETE_TEXT in str(d)
+        ]
+
         for dir_path in expected_for_post_removal:
             # Add the directory itself
             files_to_remove.add(str(dir_path.relative_to(template_root)))
-            
+
             # ADD THIS: Also add all files within the directory
             for file_path in dir_path.rglob('*'):
                 if file_path.is_file():
@@ -736,7 +739,6 @@ def get_expected_generated_files(
         assert all(
             [isinstance(x, str) for x in files_to_remove]
         ), f"Temporary Requirement of Test Code: files_to_remove must be a list of strings, not {files_to_remove}"
-
 
         ### 3. DO NOT EXPECT TO FIND THE DOCS FOLDERS FOR OTHER DOCS BUILDERS ###
         ## Remove all Template Docs files from Expectations, because in the Template Project
@@ -778,7 +780,6 @@ def get_expected_generated_files(
                 files_to_remove.add(
                     str(file_path.relative_to(distro_loc / r'{{ cookiecutter.project_slug }}'))
                 )
-
 
         assert all(
             [isinstance(x, str) for x in files_to_remove]

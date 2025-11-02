@@ -72,7 +72,6 @@ default_context:
         TEST_TIME_BISKOTAKI_CONFIG = Path(fp.name)
 
 
-
 @pytest.fixture(
     params=[
         (
@@ -535,6 +534,7 @@ def template_test_case(request, distro_loc: Path):
     # Helper Function for dynamically adding one key into expected context OrderedDict
     def get_expected_context(expected_context: t.Dict[str, t.Any], folder_path: Path):
         """Greate Expected Context as OrderedDict, given expected_context and generated project dir path"""
+
         def gen():
             """Generate key/values for expected context, ensuring _output_dir comes right after _template"""
             # generator keys an inject _output_dir
