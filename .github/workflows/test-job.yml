@@ -88,13 +88,13 @@ jobs:
 
       - name: Install uv
         if: matrix.platform != 'windows-latest'
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+        run: curl -LsSf https://astral.sh/uv/0.8.0/install.sh | sh
 
       - name: Install uv
         if: matrix.platform == 'windows-latest'
         uses: astral-sh/setup-uv@v5
         with:
-          version: "latest"
+          version: "0.8.0"
 
       # ### Sanity Check that folder is Compatible for Python Distro / Build ###
       # - run: uvx pyroma --directory .
@@ -237,8 +237,40 @@ jobs:
         run: |
           uv venv check-env
           . check-env/${{ env.VENV_ACTIVATE }}
-          uv pip install poetry-core pyroma 'twine >=5.0.0, <6.0.0'
-          # --active
+          uv pip install poetry-core pyroma 'twine >=6.0.0, <7.0.0'
+
+          echo "# ENVIRONMENT INFO" >> $GITHUB_STEP_SUMMARY
+          echo "- Python version in verification env: $(python --version)" >> $GITHUB_STEP_SUMMARY
+          echo "- UV version: $(uv --version)" >> $GITHUB_STEP_SUMMARY
+          echo "- Twine version: $(python -m twine --version)" >> $GITHUB_STEP_SUMMARY
+          
+          echo "## WHEEL ANALYSIS" >> $GITHUB_STEP_SUMMARY
+          echo "[DEBUG] Checking wheel contents with unzip:"
+          unzip -l ../dist/*.whl | head -30 || echo "Failed to list wheel contents"
+          
+          echo "[DEBUG] === METADATA EXTRACTION ==="
+          
+          echo "[DEBUG] === METADATA VERSION CHECK ==="
+          METADATA_VERSION=$(unzip -p ../dist/*.whl '*/METADATA' 2>/dev/null | grep '^Metadata-Version:' || echo "Metadata-Version: NOT FOUND")
+          echo "[DEBUG] $METADATA_VERSION" >> $GITHUB_STEP_SUMMARY
+
+          echo "[DEBUG] Raw METADATA content from wheel:"
+          unzip -p ../dist/*.whl '*/METADATA' 2>/dev/null | head -20 || echo "Could not extract METADATA"
+
+          echo '---' >> $GITHUB_STEP_SUMMARY
+          echo "**Raw MEtadata File**" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          unzip -p ../dist/*.whl '*/METADATA' 2>/dev/null >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo '---' >> $GITHUB_STEP_SUMMARY
+
+
+
+          echo "[DEBUG] === NAME/VERSION FIELD CHECK ==="
+          NAME_FIELD=$(unzip -p ../dist/*.whl '*/METADATA' 2>/dev/null | grep '^Name:' || echo "Name: NOT FOUND")
+          VERSION_FIELD=$(unzip -p ../dist/*.whl '*/METADATA' 2>/dev/null | grep '^Version:' || echo "Version: NOT FOUND")
+          echo "[DEBUG] $NAME_FIELD"
+          echo "[DEBUG] $VERSION_FIELD"
 
           # Check .tar.gz file using 'pyroma' command
           echo "[INFO] Running pyroma on the sdist"
@@ -246,7 +278,24 @@ jobs:
 
           # Check both .whl and .tar.gz files using 'twine check' command
           echo "[INFO] Running twine check on the sdist and wheel"
-          python -m twine check ../dist/*
+          python -m twine check ../dist/* || {
+            echo "[ERROR] ========================================"
+            echo "[ERROR] TWINE CHECK FAILED - DIAGNOSTIC INFO"
+            echo "[ERROR] ========================================"
+            echo "[ERROR] Environment: Python $(python --version), UV $(uv --version), Twine $(python -m twine --version)"
+            echo "[ERROR] Wheel file: $(ls ../dist/*.whl)"
+            echo "[ERROR] Metadata-Version: $(unzip -p ../dist/*.whl '*/METADATA' 2>/dev/null | grep '^Metadata-Version:' || echo 'NOT FOUND')"
+            echo "[ERROR] Name field: $(unzip -p ../dist/*.whl '*/METADATA' 2>/dev/null | grep '^Name:' || echo 'NOT FOUND')"
+            echo "[ERROR] Version field: $(unzip -p ../dist/*.whl '*/METADATA' 2>/dev/null | grep '^Version:' || echo 'NOT FOUND')"
+            echo "[ERROR] ========================================"
+            echo "[ERROR] Full METADATA content (first 30 lines):"
+            unzip -p ../dist/*.whl '*/METADATA' 2>/dev/null | head -30 || echo "Could not extract METADATA"
+            echo "[ERROR] ========================================"
+            echo "[ERROR] Wheel structure (metadata files only):"
+            unzip -l ../dist/*.whl | grep -E "(METADATA|PKG-INFO|WHEEL)" || echo "No metadata files found"
+            echo "[ERROR] ========================================"
+            exit 1
+          }
 
 
       ######## PHASE 4: INSTALL WHEELS AND RUN SANITY CHECKS ########

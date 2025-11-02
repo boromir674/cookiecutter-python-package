@@ -14,7 +14,7 @@ build-backend = "poetry.core.masonry.api"
 name = "cookiecutter_python"
 ### ... ###
 
-version = "2.6.3"
+version = "2.7.0"
 description = "1-click Generator of Python Project, from Template with streamlined \"DevOps\" using a powerful CI/CD Pipeline."
 readme = "README.md"
 license = "AGPL-3.0-only"
@@ -41,23 +41,13 @@ include = [
     "LICENSE",
     "README.md",
     "CONTRIBUTING.md",
-    "CHANGELOG.rst",
+    "CHANGELOG.md",
     # "Dockerfile",
 ]
 exclude = [
     "docs/*",
     "requirements/*",
     "scripts/*.py",
-    "tox.ini",
-    ".circleci/config.yml",
-    ".coveragerc",
-    ".DS_Store",
-    ".gitignore",
-    ".prospector.yml",
-    ".pylintrc",
-    ".readthedocs.yml",
-    ".scrutinizer.yml",
-    ".travis.yml"
 ]
 
 [tool.poetry.scripts]
@@ -74,7 +64,7 @@ maintainers = [
 license = {text = "AGPL-3.0-only"}
 
 name = "cookiecutter_python"
-version = "2.6.3"
+version = "2.7.0"
 description = "1-click Generator of Python Project, from Template with streamlined \"DevOps\" using a powerful CI/CD Pipeline."
 readme = "README.md"
 # keywords = []
