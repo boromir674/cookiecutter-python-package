@@ -11,7 +11,6 @@ import json
 from pathlib import Path
 
 
-
 def test_cookiecutter_context_preserves_choice_variable_types(tmp_path: Path):
     """Test that cookiecutter preserves variable types correctly in context.
 

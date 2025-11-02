@@ -5,7 +5,6 @@ from pathlib import Path
 from unittest.mock import patch
 
 
-
 MY_DIR = Path(__file__).parent
 C_KEY = 'cookiecutter'  # COOKIECUTTER_KEY
 # offest by 2 hours to match Jinja 'now' expression: {% now 'utc', '%Y-%m-%d' %}
