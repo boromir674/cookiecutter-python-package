@@ -6,6 +6,10 @@ on:
     # Run every Sunday at 2 AM UTC
     - cron: '0 2 * * 0'
   
+  # Temporary: test on push to this branch
+  push:
+    branches: [mutation-testing-workflow]
+  
   # Allow manual triggering for testing
   workflow_dispatch:
     inputs:
