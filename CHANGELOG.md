@@ -4,6 +4,42 @@
 
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+Only Major releases (bumps) contain breaking changes.
+
+
+## [2.7.0] (2025-11-02)
+
+The release introduces a complete observability stack 
+with Grafana + Loki + Promtail integration, delivers critical bug fixes for interactive configuration, and makes automated tests more robust.
+
+### Changes
+
+#### feature
+
+- add complete observability stack integration via `include_observability` parameter
+- generate Grafana + Loki + Promtail Docker Compose orchestration for production monitoring
+
+#### fix
+
+- preserve user config values for derived fields in interactive mode
+- use template variables to replace hard-coded relics in generated projects
+
+#### ci
+
+- enhance PR validation pipeline with isolated test execution and race condition prevention
+- isolate build backend tests for debugging complex build issues
+- add cross-worker conflict prevention in pytest-xdist
+
+#### test
+
+- verify more cookiecutter behaviors and sanity checks
+- reorganize tests with context-specific modules for better maintainability
+
+#### documentation
+
+- add comprehensive observability stack documentation with setup guides
+- improve template consistency across generated projects
+
 
 ## [2.6.3] (2025-06-21)
 
