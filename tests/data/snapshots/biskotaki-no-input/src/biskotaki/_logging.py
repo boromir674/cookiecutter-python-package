@@ -29,7 +29,7 @@ Usage:
 import logging
 
 
-# for 'biskotaki' app/code
+# for 'biskotaki' python module
 FILE_TARGET_LOGS = 'biskotaki.log'
 
 #### FILE LOGGING

@@ -41,23 +41,13 @@ include = [
     "LICENSE",
     "README.md",
     "CONTRIBUTING.md",
-    "CHANGELOG.rst",
+    "CHANGELOG.md",
     # "Dockerfile",
 ]
 exclude = [
     "docs/*",
     "requirements/*",
     "scripts/*.py",
-    "tox.ini",
-    ".circleci/config.yml",
-    ".coveragerc",
-    ".DS_Store",
-    ".gitignore",
-    ".prospector.yml",
-    ".pylintrc",
-    ".readthedocs.yml",
-    ".scrutinizer.yml",
-    ".travis.yml"
 ]
 
 [tool.poetry.scripts]

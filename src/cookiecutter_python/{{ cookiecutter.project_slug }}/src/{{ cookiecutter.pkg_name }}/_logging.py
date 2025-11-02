@@ -29,8 +29,8 @@ Usage:
 import logging
 
 
-# for 'biskotaki' app/code
-FILE_TARGET_LOGS = 'biskotaki.log'
+# for '{{ cookiecutter.pkg_name }}' python module
+FILE_TARGET_LOGS = '{{ cookiecutter.pkg_name }}.log'
 
 #### FILE LOGGING
 # set up logging to file for DEBUG Level and above

@@ -133,21 +133,28 @@ def post_file_removal(request):
         for path_components in CICD_DELETE[request.vars['cicd']]
     ]
     _delete_files(irrelevant_ci_cd_files)
+
     # Remove generated docs folders, but the input builder (ie mkdocs/sphinx) selected
-    _remove_irrelevant_docs_folders(request.project_dir)
+    # remove Grafana stuff if opted-out of Observability
+    _remove_irrelevant_rendered_folders(request.project_dir)
     # Remove some top-level files depending on input (ie mkdocs.yml)
     _remove_irrelevant_top_level_files(request)
 
 
-def _remove_irrelevant_docs_folders(gen_project_dir: str):
+# find top-level folders and delete the ones with name 'PyGen_TO_DELETE' or 'PyGen_TO_DELETE_OBSERVABILITY'
+TO_DELETE_TEXT: str = 'TO_DELETE'
+"""Signature text to identify folders that must be deleted after generation."""
+
+
+def _remove_irrelevant_rendered_folders(gen_project_dir: str):
     """Remove generated docs folders that are not relevant to the selected docs builder."""
-    # find top-level folders and delte the ones with name 'PyGen_TO_DELETE'
-    for docs_folder_to_delete in (
+
+    for folder_to_delete in (
         folder
         for folder in Path(gen_project_dir).iterdir()
-        if folder.is_dir() and folder.name == 'PyGen_TO_DELETE'
+        if folder.is_dir() and TO_DELETE_TEXT in str(folder.name)
     ):
-        shutil.rmtree(docs_folder_to_delete, ignore_errors=True)
+        shutil.rmtree(folder_to_delete, ignore_errors=True)
 
 
 def _remove_irrelevant_top_level_files(request):

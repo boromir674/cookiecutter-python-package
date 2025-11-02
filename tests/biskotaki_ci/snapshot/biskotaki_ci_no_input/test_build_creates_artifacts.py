@@ -1,3 +1,4 @@
+import os
 import sys
 
 import pytest
@@ -89,14 +90,20 @@ def test_running_build_creates_source_and_wheel_distros(
             # required by Check environment
             'PKG_VERSION': '0.0.1',
             # required due to programmatic execution, in this case
-            'PATH': str(Path(sys.executable).parent),
+            'PATH': os.environ.get('PATH', str(Path(sys.executable).parent)),
         },
     )
 
     # CLEAN UP: Remove .tox/check folder, created by tox
     import shutil
 
-    shutil.rmtree(snapshot_dir / '.tox' / 'check')
+    try:
+        shutil.rmtree(snapshot_dir / '.tox' / 'check')
+    except FileNotFoundError:
+        import logging
+
+        logger = logging.getLogger(__name__)
+        logger.warning("No .tox/check folder found to clean up")
 
     # Check that Code passes Metadata Checks out of the box
     assert res.exit_code == 0

@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  grafana:
+    image: grafana/grafana:latest
+    container_name: "{{ cookiecutter.project_slug }}-grafana"
+    ports:
+      - "3000:3000"
+    environment:
+      # Default admin credentials
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      # Allow anonymous access for easier development
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      # Disable user signup
+      - GF_USERS_ALLOW_SIGN_UP=false
+      # Set timezone
+      - TZ=UTC
+    volumes:
+      # Persist Grafana data
+      - grafana-storage:/var/lib/grafana
+      # Mount logs directory for file-based data source
+      - "./logs:/var/log/{{ cookiecutter.pkg_name }}:ro"
+      # Mount project directory
+      - .:/workspace:ro
+      # Mount dashboards
+      - ./observability/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./observability/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    restart: unless-stopped
+    networks:
+      - observability-network
+
+  # Loki for log aggregation
+  loki:
+    image: grafana/loki:latest
+    container_name: "{{ cookiecutter.project_slug }}-loki"
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./observability/loki/loki-config.yml:/etc/loki/local-config.yaml:ro
+      - loki-storage:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    restart: unless-stopped
+    networks:
+      - observability-network
+
+  # Promtail for log collection
+  promtail:
+    image: grafana/promtail:latest
+    container_name: "{{ cookiecutter.project_slug }}-promtail"
+    volumes:
+      - ./observability/promtail/promtail-config.yml:/etc/promtail/config.yml:ro
+      - "./logs:/var/log/{{ cookiecutter.pkg_name }}:ro"
+      - .:/workspace:ro
+    command: -config.file=/etc/promtail/config.yml
+    restart: unless-stopped
+    networks:
+      - observability-network
+    depends_on:
+      - loki
+
+volumes:
+  grafana-storage:
+  loki-storage:
+
+networks:
+  observability-network:
+    driver: bridge
