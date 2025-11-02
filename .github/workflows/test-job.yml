@@ -264,12 +264,21 @@ jobs:
           # Check both .whl and .tar.gz files using 'twine check' command
           echo "[INFO] Running twine check on the sdist and wheel"
           python -m twine check ../dist/* || {
-            echo "[ERROR] Twine check failed! Debugging wheel structure:"
-            unzip -l ../dist/*.whl | grep -E "(METADATA|PKG-INFO|WHEEL)"
-            echo "Full wheel contents:"
-            unzip -l ../dist/*.whl
-            echo "Raw METADATA content:"
-            unzip -p ../dist/*.whl '*/METADATA' 2>/dev/null | head -20 || echo "Could not extract METADATA"
+            echo "[ERROR] ========================================"
+            echo "[ERROR] TWINE CHECK FAILED - DIAGNOSTIC INFO"
+            echo "[ERROR] ========================================"
+            echo "[ERROR] Environment: Python $(python --version), UV $(uv --version), Twine $(python -m twine --version)"
+            echo "[ERROR] Wheel file: $(ls ../dist/*.whl)"
+            echo "[ERROR] Metadata-Version: $(unzip -p ../dist/*.whl '*/METADATA' 2>/dev/null | grep '^Metadata-Version:' || echo 'NOT FOUND')"
+            echo "[ERROR] Name field: $(unzip -p ../dist/*.whl '*/METADATA' 2>/dev/null | grep '^Name:' || echo 'NOT FOUND')"
+            echo "[ERROR] Version field: $(unzip -p ../dist/*.whl '*/METADATA' 2>/dev/null | grep '^Version:' || echo 'NOT FOUND')"
+            echo "[ERROR] ========================================"
+            echo "[ERROR] Full METADATA content (first 30 lines):"
+            unzip -p ../dist/*.whl '*/METADATA' 2>/dev/null | head -30 || echo "Could not extract METADATA"
+            echo "[ERROR] ========================================"
+            echo "[ERROR] Wheel structure (metadata files only):"
+            unzip -l ../dist/*.whl | grep -E "(METADATA|PKG-INFO|WHEEL)" || echo "No metadata files found"
+            echo "[ERROR] ========================================"
             exit 1
           }
 
