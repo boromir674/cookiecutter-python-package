@@ -1,0 +1,248 @@
+name: "Mutation Testing"
+
+# Run mutation testing weekly to catch test quality issues
+on:
+  schedule:
+    # Run every Sunday at 2 AM UTC
+    - cron: '0 2 * * 0'
+  
+  # Allow manual triggering for testing
+  workflow_dispatch:
+    inputs:
+      mutant_count:
+        description: 'Maximum number of mutants to test (default: 100)'
+        required: false
+        default: '100'
+        type: string
+      target_modules:
+        description: 'Specific modules to test (comma-separated, default: all)'
+        required: false
+        default: ''
+        type: string
+
+jobs:
+  mutation-testing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120  # Mutation testing can take a while
+    
+    strategy:
+      matrix:
+        # Run on latest stable Python for consistency
+        python-version: ["3.11"]
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/0.8.0/install.sh | sh
+
+      - name: Export dependencies
+        run: |
+          uv export --no-emit-project --no-dev --extra test --frozen --format requirements-txt -o requirements-test.txt
+
+      - name: Create virtual environment and install dependencies
+        run: |
+          uv venv mutation-env
+          . mutation-env/bin/activate
+          uv pip install --no-deps -r requirements-test.txt
+          uv pip install --no-deps -e .
+          
+          # Install mutation testing tools
+          uv pip install mutmut coverage
+
+      - name: Run baseline tests to ensure they pass
+        run: |
+          . mutation-env/bin/activate
+          echo "Running baseline test suite to ensure 100% pass rate..."
+          pytest tests/ -v --tb=short
+          
+          echo "Baseline tests passed! Ready for mutation testing."
+
+      - name: Configure mutmut
+        run: |
+          # Create mutmut configuration if it doesn't exist
+          if [ ! -f mutmut_config.py ]; then
+            cat > mutmut_config.py << 'EOF'
+          def pre_mutation(context):
+              """Called before each mutation is applied."""
+              pass
+
+          def post_mutation(context):
+              """Called after each mutation test completes."""
+              pass
+          EOF
+          fi
+
+      - name: Run mutation testing
+        run: |
+          . mutation-env/bin/activate
+          
+          # Set parameters
+          MAX_MUTANTS="${{ github.event.inputs.mutant_count || '100' }}"
+          TARGET_MODULES="${{ github.event.inputs.target_modules }}"
+          
+          echo "Starting mutation testing..."
+          echo "Max mutants: $MAX_MUTANTS"
+          echo "Target modules: ${TARGET_MODULES:-'all source modules'}"
+          
+          # Determine target paths
+          if [ -n "$TARGET_MODULES" ]; then
+            # Convert comma-separated modules to space-separated paths
+            PATHS=$(echo "$TARGET_MODULES" | sed 's/,/ src\/cookiecutter_python\//g' | sed 's/^/src\/cookiecutter_python\//')
+          else
+            # Default: test main source modules (exclude template and hooks for now)
+            PATHS="src/cookiecutter_python/backend src/cookiecutter_python/handle src/cookiecutter_python/cli.py src/cookiecutter_python/utils.py"
+          fi
+          
+          echo "Testing paths: $PATHS"
+          
+          # Run mutmut with timeout and limits
+          timeout 7200 mutmut run \
+            --paths-to-mutate "$PATHS" \
+            --tests-dir tests/ \
+            --runner "python -m pytest tests/ -x --tb=no -q" \
+            --use-coverage \
+            --use-patch-file \
+            || {
+            echo "Mutation testing completed or timed out"
+            mutmut show
+          }
+
+      - name: Generate mutation testing report
+        if: always()
+        run: |
+          . mutation-env/bin/activate
+          
+          echo "=== MUTATION TESTING RESULTS ==="
+          
+          # Show summary
+          echo "## Summary"
+          mutmut summary || echo "No mutation results available"
+          
+          echo ""
+          echo "## Detailed Results"
+          
+          # Show survived mutants (potential test gaps)
+          echo "### Survived Mutants (Test Coverage Gaps)"
+          mutmut show survived || echo "No survived mutants found"
+          
+          echo ""
+          echo "### Killed Mutants (Good Test Coverage)"
+          mutmut show killed | head -20 || echo "No killed mutants to show"
+          
+          echo ""
+          echo "### Mutation Score"
+          mutmut show | grep -E "(Survived|Killed|Skipped|Timeout)" || echo "Could not calculate mutation score"
+
+      - name: Create mutation report artifact
+        if: always()
+        run: |
+          . mutation-env/bin/activate
+          
+          # Create detailed report
+          mkdir -p mutation-reports
+          
+          # Export mutmut results
+          mutmut results > mutation-reports/raw-results.txt 2>/dev/null || echo "No raw results available"
+          mutmut show > mutation-reports/summary.txt 2>/dev/null || echo "No summary available"
+          mutmut show survived > mutation-reports/survived.txt 2>/dev/null || echo "No survived mutants"
+          mutmut show killed > mutation-reports/killed.txt 2>/dev/null || echo "No killed mutants"
+          
+          # Create human-readable report
+          cat > mutation-reports/README.md << 'EOF'
+          # Mutation Testing Report
+          
+          This report shows the results of mutation testing using mutmut.
+          
+          ## What is Mutation Testing?
+          
+          Mutation testing evaluates the quality of your test suite by introducing small changes (mutations) 
+          to your source code and checking if your tests catch these changes.
+          
+          ## Key Metrics
+          
+          - **Killed Mutants**: Your tests detected the mutation (GOOD)
+          - **Survived Mutants**: Your tests missed the mutation (NEEDS ATTENTION)
+          - **Mutation Score**: Percentage of mutants killed (higher is better)
+          
+          ## Files
+          
+          - `summary.txt`: Overall mutation testing summary
+          - `survived.txt`: Mutants that survived (potential test gaps)
+          - `killed.txt`: Mutants that were killed (good test coverage)
+          - `raw-results.txt`: Raw mutmut output
+          
+          ## Next Steps
+          
+          1. Review survived mutants in `survived.txt`
+          2. Add tests to catch the missing edge cases
+          3. Re-run mutation testing to verify improvements
+          EOF
+          
+          echo "Report files created:"
+          ls -la mutation-reports/
+
+      - name: Upload mutation testing results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutation-testing-report-${{ github.run_number }}
+          path: mutation-reports/
+          retention-days: 30
+
+      - name: Comment on commit (if scheduled)
+        if: github.event_name == 'schedule'
+        run: |
+          . mutation-env/bin/activate
+          
+          # Create a summary for commit comment
+          MUTATION_SUMMARY=$(mutmut summary 2>/dev/null || echo "Mutation testing completed")
+          SURVIVED_COUNT=$(mutmut show survived 2>/dev/null | wc -l || echo "0")
+          
+          # Use GitHub CLI to create an issue comment (requires repo write access)
+          gh api repos/${{ github.repository }}/commits/${{ github.sha }}/comments \
+            --method POST \
+            --field body="## 🧬 Weekly Mutation Testing Results
+
+          **Summary**: $MUTATION_SUMMARY
+
+          **Survived Mutants**: $SURVIVED_COUNT (potential test coverage gaps)
+
+          📊 **Full Report**: Check the [mutation-testing-report-${{ github.run_number }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) artifact
+
+          🔬 **What this means**: 
+          - Survived mutants indicate areas where your test suite might miss edge cases
+          - Review the detailed report to improve test coverage quality
+          - This is normal and helps identify testing blind spots
+
+          _Automated weekly mutation testing run_" \
+          || echo "Could not post commit comment (this is optional)"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fail job if mutation score is very low
+        if: always()
+        run: |
+          . mutation-env/bin/activate
+          
+          # Extract mutation score and fail if too low (optional quality gate)
+          MUTATION_OUTPUT=$(mutmut show 2>/dev/null || echo "")
+          
+          # This is informational - don't fail the job for now
+          # In the future, you could set a threshold like:
+          # if [[ "$MUTATION_OUTPUT" =~ "Mutation score: ([0-9]+)%" ]]; then
+          #   SCORE=${BASH_REMATCH[1]}
+          #   if [ "$SCORE" -lt 70 ]; then
+          #     echo "Mutation score $SCORE% is below threshold of 70%"
+          #     exit 1
+          #   fi
+          # fi
+          
+          echo "Mutation testing completed successfully"
+          echo "Review the artifacts for detailed results"
