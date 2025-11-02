@@ -58,7 +58,7 @@ jobs:
           uv pip install --no-deps -e .
           
           # Install mutation testing tools
-          uv pip install mutmut coverage
+          uv pip install 'mutmut>=2.0.0, <3.0.0' coverage
 
       - name: Run baseline tests to ensure they pass
         run: |
@@ -67,21 +67,6 @@ jobs:
           pytest tests/ -v --tb=short
           
           echo "Baseline tests passed! Ready for mutation testing."
-
-      - name: Configure mutmut
-        run: |
-          # Create mutmut configuration if it doesn't exist
-          if [ ! -f mutmut_config.py ]; then
-            cat > mutmut_config.py << 'EOF'
-          def pre_mutation(context):
-              """Called before each mutation is applied."""
-              pass
-
-          def post_mutation(context):
-              """Called after each mutation test completes."""
-              pass
-          EOF
-          fi
 
       - name: Run mutation testing
         run: |
@@ -106,16 +91,18 @@ jobs:
           
           echo "Testing paths: $PATHS"
           
-          # Run mutmut with timeout and limits
+          # Run mutmut with timeout and CI-friendly options
           timeout 7200 mutmut run \
             --paths-to-mutate "$PATHS" \
             --tests-dir tests/ \
             --runner "python -m pytest tests/ -x --tb=no -q" \
             --use-coverage \
-            --use-patch-file \
+            --CI \
+            --simple-output \
+            --no-progress \
             || {
-            echo "Mutation testing completed or timed out"
-            mutmut show
+            echo "Mutation testing completed (exit code: $?)"
+            echo "Note: Non-zero exit codes are normal in mutation testing"
           }
 
       - name: Generate mutation testing report
@@ -127,22 +114,22 @@ jobs:
           
           # Show summary
           echo "## Summary"
-          mutmut summary || echo "No mutation results available"
+          mutmut results || echo "No mutation results available"
           
           echo ""
           echo "## Detailed Results"
           
-          # Show survived mutants (potential test gaps)
-          echo "### Survived Mutants (Test Coverage Gaps)"
-          mutmut show survived || echo "No survived mutants found"
+          # Show all results with legend
+          echo "### All Results"
+          mutmut results || echo "No results found"
           
           echo ""
-          echo "### Killed Mutants (Good Test Coverage)"
-          mutmut show killed | head -20 || echo "No killed mutants to show"
+          echo "### Sample Survived Mutants (Test Coverage Gaps)"
+          mutmut show survived 2>/dev/null | head -10 || echo "No survived mutants found"
           
           echo ""
           echo "### Mutation Score"
-          mutmut show | grep -E "(Survived|Killed|Skipped|Timeout)" || echo "Could not calculate mutation score"
+          mutmut results | grep -E "(Survived|Killed|Skipped|Timeout)" || echo "Could not calculate mutation score"
 
       - name: Create mutation report artifact
         if: always()
@@ -152,11 +139,12 @@ jobs:
           # Create detailed report
           mkdir -p mutation-reports
           
-          # Export mutmut results
-          mutmut results > mutation-reports/raw-results.txt 2>/dev/null || echo "No raw results available"
-          mutmut show > mutation-reports/summary.txt 2>/dev/null || echo "No summary available"
-          mutmut show survived > mutation-reports/survived.txt 2>/dev/null || echo "No survived mutants"
-          mutmut show killed > mutation-reports/killed.txt 2>/dev/null || echo "No killed mutants"
+          # Export mutmut results  
+          mutmut results > mutation-reports/results.txt 2>/dev/null || echo "No results available"
+          
+          # Get sample mutations for each category
+          mutmut show survived 2>/dev/null | head -20 > mutation-reports/survived.txt || echo "No survived mutants"
+          mutmut show killed 2>/dev/null | head -20 > mutation-reports/killed.txt || echo "No killed mutants"
           
           # Create human-readable report
           cat > mutation-reports/README.md << 'EOF'
@@ -204,7 +192,7 @@ jobs:
         if: github.event_name == 'schedule'
         run: |
           . mutation-env/bin/activate
-          
+
           # Create a summary for commit comment
           MUTATION_SUMMARY=$(mutmut summary 2>/dev/null || echo "Mutation testing completed")
           SURVIVED_COUNT=$(mutmut show survived 2>/dev/null | wc -l || echo "0")
