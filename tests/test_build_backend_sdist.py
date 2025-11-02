@@ -981,7 +981,6 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
     # Check if any tar.gz files exist anywhere in temp area
     print("Searching for .tar.gz files in temp area:")
     try:
-
         temp_path = Path(temp_dir)
         tar_files = list(temp_path.glob("**/*.tar.gz"))
         if tar_files:

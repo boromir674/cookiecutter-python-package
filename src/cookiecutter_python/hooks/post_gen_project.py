@@ -149,7 +149,6 @@ TO_DELETE_TEXT: str = 'TO_DELETE'
 def _remove_irrelevant_rendered_folders(gen_project_dir: str):
     """Remove generated docs folders that are not relevant to the selected docs builder."""
 
-
     for folder_to_delete in (
         folder
         for folder in Path(gen_project_dir).iterdir()
