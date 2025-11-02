@@ -196,17 +196,7 @@ jobs:
         id: uv_build
         run: |
           set -o pipefail
-          echo "[DEBUG] Python version: $(python --version)"
-          echo "[DEBUG] UV version: $(uv --version)"
-          echo "[DEBUG] Poetry version: $(python -c 'import poetry.core; print(poetry.core.__version__)' 2>/dev/null || echo 'Not available')"
-          
           uv build --out-dir dist . 2>&1 | tee test_output.log
-          
-          echo "[DEBUG] Build completed, checking dist contents:"
-          ls -la dist/
-          
-          echo "[DEBUG] Checking wheel structure:"
-          unzip -l dist/*.whl | head -20 || echo "Failed to inspect wheel"
 
       - name: Extract Package PEP Version from Wheel
         id: extract_wheel_info
@@ -249,13 +239,38 @@ jobs:
           . check-env/${{ env.VENV_ACTIVATE }}
           uv pip install poetry-core pyroma 'twine >=5.0.0, <6.0.0'
 
-          echo "[DEBUG] Python version in verification env: $(python --version)"
-          echo "[DEBUG] Twine version: $(python -m twine --version)"
-          echo "[DEBUG] Available dist files:"
-          ls -la ../dist/
+          echo "# ENVIRONMENT INFO" >> $GITHUB_STEP_SUMMARY
+          echo "- Python version in verification env: $(python --version)" >> $GITHUB_STEP_SUMMARY
+          echo "- UV version: $(uv --version)" >> $GITHUB_STEP_SUMMARY
+          echo "- Twine version: $(python -m twine --version)" >> $GITHUB_STEP_SUMMARY
           
+          echo "## WHEEL ANALYSIS" >> $GITHUB_STEP_SUMMARY
           echo "[DEBUG] Checking wheel contents with unzip:"
           unzip -l ../dist/*.whl | head -30 || echo "Failed to list wheel contents"
+          
+          echo "[DEBUG] === METADATA EXTRACTION ==="
+          
+          echo "[DEBUG] === METADATA VERSION CHECK ==="
+          METADATA_VERSION=$(unzip -p ../dist/*.whl '*/METADATA' 2>/dev/null | grep '^Metadata-Version:' || echo "Metadata-Version: NOT FOUND")
+          echo "[DEBUG] $METADATA_VERSION" >> $GITHUB_STEP_SUMMARY
+
+          echo "[DEBUG] Raw METADATA content from wheel:"
+          unzip -p ../dist/*.whl '*/METADATA' 2>/dev/null | head -20 || echo "Could not extract METADATA"
+
+          echo '---' >> $GITHUB_STEP_SUMMARY
+          echo "**Raw MEtadata File**" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          unzip -p ../dist/*.whl '*/METADATA' 2>/dev/null >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo '---' >> $GITHUB_STEP_SUMMARY
+
+
+
+          echo "[DEBUG] === NAME/VERSION FIELD CHECK ==="
+          NAME_FIELD=$(unzip -p ../dist/*.whl '*/METADATA' 2>/dev/null | grep '^Name:' || echo "Name: NOT FOUND")
+          VERSION_FIELD=$(unzip -p ../dist/*.whl '*/METADATA' 2>/dev/null | grep '^Version:' || echo "Version: NOT FOUND")
+          echo "[DEBUG] $NAME_FIELD"
+          echo "[DEBUG] $VERSION_FIELD"
 
           # Check .tar.gz file using 'pyroma' command
           echo "[INFO] Running pyroma on the sdist"
