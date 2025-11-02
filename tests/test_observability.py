@@ -37,7 +37,7 @@ def generate_test_project():
         config_file = os.path.join(temp_dir, 'test_config.yaml')
 
         # Generate unique project name to avoid collisions
-        project_name = f'Unit Test Observability Project'
+        project_name = 'Unit Test Observability Project'
 
         # Base configuration
         config = {

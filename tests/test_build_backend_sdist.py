@@ -695,8 +695,8 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
         print(f"  {var}: {value}")
 
     # File system structure
-    print(f"\nFILE SYSTEM STRUCTURE:")
-    print(f"Project root contents (first 20 items):")
+    print("\nFILE SYSTEM STRUCTURE:")
+    print("Project root contents (first 20 items):")
     try:
         items = list(project_path.iterdir())[:20]
         for item in sorted(items):
@@ -718,7 +718,7 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
         project_path / "src" / "cookiecutter_python",
         project_path / "src" / "cookiecutter_python" / "__init__.py",
     ]
-    print(f"\nCRITICAL FILES CHECK:")
+    print("\nCRITICAL FILES CHECK:")
     for file_path in critical_files:
         exists = file_path.exists()
         if exists:
@@ -736,7 +736,7 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
         project_path / ".build-lock",
         project_path / "pyproject.toml.lock",
     ]
-    print(f"\nLOCK FILES CHECK:")
+    print("\nLOCK FILES CHECK:")
     for lock_file in lock_files:
         if lock_file.exists():
             size = lock_file.stat().st_size
@@ -748,7 +748,7 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
             print(f"  {lock_file.relative_to(project_path)}: NOT FOUND")
 
     # Python packages information
-    print(f"\nPYTHON PACKAGES INFO:")
+    print("\nPYTHON PACKAGES INFO:")
     try:
         import subprocess
 
@@ -779,12 +779,12 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
         print(f"  Error getting pip list: {e}")
 
     # Python import paths
-    print(f"\nPYTHON IMPORT PATHS:")
+    print("\nPYTHON IMPORT PATHS:")
     for i, path in enumerate(sys.path):
         print(f"  {i}: {path}")
 
     # Check if our package is importable and get its location
-    print(f"\nPACKAGE IMPORT CHECK:")
+    print("\nPACKAGE IMPORT CHECK:")
     try:
         import cookiecutter_python
 
@@ -795,7 +795,7 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
         print(f"  Error importing cookiecutter_python: {e}")
 
     # Check build tools availability
-    print(f"\nBUILD TOOLS AVAILABILITY:")
+    print("\nBUILD TOOLS AVAILABILITY:")
     build_tools = ["build", "setuptools", "wheel", "hatchling"]
     for tool in build_tools:
         try:
@@ -807,7 +807,7 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
             print(f"  {tool}: ERROR ({e})")
 
     # Setuptools-scm specific debugging
-    print(f"\nSETUPTOOLS-SCM DEBUG:")
+    print("\nSETUPTOOLS-SCM DEBUG:")
     try:
         import setuptools_scm
 
@@ -819,12 +819,12 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
         except Exception as e:
             print(f"  Error getting version from setuptools-scm: {e}")
     except ImportError:
-        print(f"  setuptools_scm: NOT AVAILABLE")
+        print("  setuptools_scm: NOT AVAILABLE")
     except Exception as e:
         print(f"  setuptools_scm: ERROR ({e})")
 
     # Git repository information (important for setuptools-scm)
-    print(f"\nGIT REPOSITORY INFO:")
+    print("\nGIT REPOSITORY INFO:")
     try:
         import subprocess
 
@@ -851,7 +851,7 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
                 )
                 print(f"  Git working directory status: {len(status_lines)} modified files")
                 if status_lines and status_lines[0]:  # Only show if there are actual changes
-                    print(f"  First few changes:")
+                    print("  First few changes:")
                     for line in status_lines[:5]:
                         print(f"    {line}")
             else:
@@ -898,12 +898,12 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
         else:
             print(f"  Git not available: {git_version_result.stderr}")
     except FileNotFoundError:
-        print(f"  Git command not found")
+        print("  Git command not found")
     except Exception as e:
         print(f"  Error checking git: {e}")
 
     # Disk space information
-    print(f"\nDISK SPACE INFO:")
+    print("\nDISK SPACE INFO:")
     try:
         import shutil
 
@@ -919,7 +919,7 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
         print(f"  Error getting disk usage: {e}")
 
     print(f"{'='*80}")
-    print(f"END ENVIRONMENT DEBUG INFO")
+    print("END ENVIRONMENT DEBUG INFO")
     print(f"{'='*80}\n")
 
     # Start timing the build process
@@ -957,7 +957,7 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
     print("=" * 80)
 
     # POST-BUILD FILE SYSTEM ANALYSIS
-    print(f"POST-BUILD FILE SYSTEM ANALYSIS:")
+    print("POST-BUILD FILE SYSTEM ANALYSIS:")
     print(f"Output directory exists: {OUT_DIR.exists()}")
     if OUT_DIR.exists():
         print(f"Output directory is_dir: {OUT_DIR.is_dir()}")
@@ -974,14 +974,13 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
             except Exception as e:
                 print(f"  Error listing output directory: {e}")
         else:
-            print(f"  Output directory is not a directory!")
+            print("  Output directory is not a directory!")
     else:
-        print(f"  Output directory does not exist!")
+        print("  Output directory does not exist!")
 
     # Check if any tar.gz files exist anywhere in temp area
-    print(f"Searching for .tar.gz files in temp area:")
+    print("Searching for .tar.gz files in temp area:")
     try:
-        import glob
 
         temp_path = Path(temp_dir)
         tar_files = list(temp_path.glob("**/*.tar.gz"))
@@ -991,7 +990,7 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
                 size = tar_file.stat().st_size
                 print(f"    {tar_file} ({size} bytes)")
         else:
-            print(f"  No .tar.gz files found in temp area")
+            print("  No .tar.gz files found in temp area")
     except Exception as e:
         print(f"  Error searching for tar.gz files: {e}")
 
@@ -1075,7 +1074,7 @@ def sdist_built_at_runtime_with_build(my_run_subprocess) -> Path:
     # After build, retrieve the tar.gz file
     tar_gz_file = list(OUT_DIR.glob("*.tar.gz"))
 
-    print(f"\nFINAL BUILD ARTIFACTS SUMMARY:")
+    print("\nFINAL BUILD ARTIFACTS SUMMARY:")
     print(f"Found {len(tar_gz_file)} tar.gz files in output directory")
     for i, tar_file in enumerate(tar_gz_file):
         size = tar_file.stat().st_size

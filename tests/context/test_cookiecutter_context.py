@@ -1,11 +1,9 @@
 import datetime
-import tempfile
 import typing as t
 from collections import OrderedDict
 from pathlib import Path
 from unittest.mock import patch
 
-import pytest
 
 
 MY_DIR = Path(__file__).parent
@@ -213,15 +211,15 @@ def test_cookiecutter_generates_context_with_expected_values(
     assert set(_gen_output_og_object.keys()) == {'cookiecutter'}
 
     # VERIFY that generate_context never converts to bool anything
-    assert all([type(x) != bool for x in _gen_output_og_object['cookiecutter'].values()])
+    assert all([type(x) is not bool for x in _gen_output_og_object['cookiecutter'].values()])
     # exclude '_checkout' keys added iunder 'cookiecutter' context key
     assert all(
         [
-            type(v) != bool
+            type(v) is not bool
             for k, v in prod_result['cookiecutter'].items()
             if k not in {'_checkout'}
         ]
-    ), f"Keys {[k for k,v in prod_result['cookiecutter'].items() if type(v) == bool]} got converted to bool unexpectedly!"
+    ), f"Keys {[k for k, v in prod_result['cookiecutter'].items() if type(v) is bool]} got converted to bool unexpectedly!"
 
     # ONLY in no_input = False, then cookiecutter converts to bool the yes/no !
     # very error-prone cookiecutter behavior !!!

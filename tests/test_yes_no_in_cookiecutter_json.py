@@ -8,11 +8,8 @@ in the generated context, specifically:
 """
 
 import json
-import tempfile
 from pathlib import Path
-from unittest.mock import patch
 
-import pytest
 
 
 def test_cookiecutter_context_preserves_choice_variable_types(tmp_path: Path):
