@@ -237,7 +237,7 @@ jobs:
         run: |
           uv venv check-env
           . check-env/${{ env.VENV_ACTIVATE }}
-          uv pip install poetry-core pyroma 'twine >=5.0.0, <6.0.0'
+          uv pip install poetry-core pyroma 'twine >=6.0.0, <7.0.0'
 
           echo "# ENVIRONMENT INFO" >> $GITHUB_STEP_SUMMARY
           echo "- Python version in verification env: $(python --version)" >> $GITHUB_STEP_SUMMARY
