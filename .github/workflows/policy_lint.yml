@@ -136,12 +136,10 @@ jobs:
 
       ## Isort ##
       - name: 'Isort: Require Semantic and Alphabetic order of the Python Imports'
-        if: ${{ matrix.platform != 'windows-latest' }}
         run: tox -e isort -vv -s false
 
       ## Black ##
       - name: 'Black: Require Project Style "opinion" to be followed by the Python Code'
-        if: ${{ matrix.platform != 'windows-latest' }}
         run: tox -e black -vv -s false
 
       ## Ruff ##
@@ -150,7 +148,6 @@ jobs:
 
       ## Pyflakes, Pyroma, McCabe, DodgyRun, Profile Validator ##
       - name: Run tox -e prospector
-        if: ${{ matrix.platform != 'windows-latest' }}
         run: tox -e prospector -vv -s false
 
 
@@ -291,7 +288,6 @@ jobs:
       - run: cat pylint-result.txt
 
       - name: 'Check Pylint Score > ${{ inputs.pylint_threshold }}/10'
-        if: ${{ matrix.platform != 'windows-latest' }}
         run: |
           SCORE=`sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' pylint-result.txt`
           echo "SCORE -> $SCORE"
