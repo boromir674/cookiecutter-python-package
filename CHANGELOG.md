@@ -7,6 +7,11 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 Only Major releases (bumps) contain breaking changes.
 
 
+## [2.7.1] (2025-11-05)
+
+Apply Lint suggestions for `Dockerfile` and `Github Actions` Workflows.
+
+
 ## [2.7.0] (2025-11-02)
 
 The release introduces a complete observability stack 
