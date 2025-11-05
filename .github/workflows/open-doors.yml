@@ -39,7 +39,7 @@ jobs:
           tag: "${{ github.ref }}"
      
       # Fail if the branch is not $RELEASE_BR
-      - if: ${{ steps.release_contains_tag.outputs.retval }} != 'true'
+      - if: steps.release_contains_tag.outputs.retval != 'true'
         run: |
           echo "[ERROR] Pushed tag '${{ github.ref }}' NOT on '${{ env.RELEASE_BR }}' branch!"
           echo "This action should only be run on the ${{ env.RELEASE_BR }} branch!"

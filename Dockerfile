@@ -1,12 +1,13 @@
 # FROM scratch as ENV_SETUP
 # can be ovveriden by --build-arg PY_VERSION=3.9.16
 ARG PY_VERSION=3.12.9
-FROM python:${PY_VERSION}-slim-bullseye as python_slim
+FROM python:${PY_VERSION}-slim-bullseye AS python_slim
 
 # ENV PY_RUNTIME=${PY_VERSION}
 
-FROM python_slim as builder
+FROM python_slim AS builder
 
+WORKDIR /app
 COPY uv.lock pyproject.toml ./
 
 # Install uv
@@ -29,11 +30,11 @@ FROM builder AS docs_live_builder
 RUN uv export --no-dev --frozen --no-emit-project -f requirements-txt -o requirements.txt --extra docslive
 
 
-FROM scratch as source
+FROM scratch AS source
 
 WORKDIR /app
 
-COPY --from=prod_builder requirements.txt .
+COPY --from=prod_builder /app/requirements.txt .
 # Copy Source Code
 # COPY . .
 COPY src src
@@ -43,7 +44,7 @@ COPY LICENSE .
 COPY README.md .
 
 
-FROM python_slim as base_env
+FROM python_slim AS base_env
 
 # Wheels Directory for Distro and its Dependencies (aka requirements)
 ENV DISTRO_WHEELS=/app/dist
@@ -55,7 +56,7 @@ FROM base_env AS build_wheels
 # Essential build tools
 RUN apt-get update && \
 apt-get install -y --no-install-recommends build-essential && \
-pip install -U pip && \
+pip install --no-cache-dir -U pip && \
 apt-get clean && \
 rm -rf /var/lib/apt/lists/*
 
@@ -69,10 +70,9 @@ WORKDIR /app
 COPY --from=source /app .
 
 # Build Wheels for Distro's Dependencies, from /app/requirements.txt file
-RUN pip wheel --wheel-dir "${DISTRO_WHEELS}" -r ./requirements.txt
-
 # Build Wheels for Distro's Package
-RUN uv build --wheel --out-dir "/tmp/build-wheels" && \
+RUN pip wheel --wheel-dir "${DISTRO_WHEELS}" -r ./requirements.txt && \
+    uv build --wheel --out-dir "/tmp/build-wheels" && \
     mv /tmp/build-wheels/*.whl "${DISTRO_WHEELS}"
 
 # Now all wheels are in DISTRO_WHEELS folder
@@ -102,13 +102,13 @@ RUN pip install --no-deps --no-cache-dir --user ./dist/*.whl
 FROM python_slim AS test_dev
 WORKDIR /app
 
-COPY --from=test_builder requirements-test.txt .
+COPY --from=test_builder /app/requirements-test.txt .
 # Install uv for faster test dependencies installation than 'pip install'
 COPY --from=ghcr.io/astral-sh/uv@sha256:2381d6aa60c326b71fd40023f921a0a3b8f91b14d5db6b90402e65a635053709 /uv /uvx /bin/
 
 # Install test dependencies
-RUN uv venv
-RUN uv pip install --no-cache-dir --no-deps -r requirements-test.txt
+RUN uv venv && \
+    uv pip install --no-cache-dir --no-deps -r requirements-test.txt
 
 # Copy Source Code
 COPY src src
@@ -146,7 +146,7 @@ RUN uv pip install --no-deps --no-cache-dir ./dist/*.whl
 
 
 # Install test dependencies (pytest, pytest-object-getter, etc) from pypi
-COPY --from=test_builder requirements-test.txt .
+COPY --from=test_builder /app/requirements-test.txt .
 RUN uv pip install --no-deps -r requirements-test.txt
 
 # Add Pytest, installed in uv controlled venv to PATH
@@ -163,7 +163,7 @@ CMD [ "pytest", "-ra", "tests" ]
 
 
 ###### DOCS BASE ######
-FROM python_slim as docs_base
+FROM python_slim AS docs_base
 WORKDIR /app
 
 # Install libenchant using package manage either apt or apk
@@ -182,13 +182,13 @@ ENV PATH="/root/.local/bin:$PATH"
 
 
 ###### DOCS - Build ######
-FROM docs_base as docs
+FROM docs_base AS docs
 # COPY --from=docs_builder requirements.txt .
 # Install Prod + Docs dependencies
 # RUN pip install --no-cache-dir --user -r requirements.txt
 # Install in Editable Mode, since we don't care about wheels
-RUN pip install --no-cache-dir --user -e .[docs]
-RUN pip install gitpython
+RUN pip install --no-cache-dir --user -e .[docs] && \
+    pip install --no-cache-dir gitpython
 
 # Copy Entrypoint inside the image (required since stage is not last in Dockerfile)
 COPY scripts/sphinx-process.sh /app/scripts/sphinx-process.sh
@@ -203,7 +203,7 @@ COPY scripts/sphinx-process.sh /app/scripts/sphinx-process.sh
 
 
 ## DOCS with Live Dev Server - Build ##
-FROM docs_base as docs_live
+FROM docs_base AS docs_live
 WORKDIR /app
 # COPY --from=docs_live_builder requirements.txt .
 # RUN pip install --no-cache-dir --user -r requirements.txt
