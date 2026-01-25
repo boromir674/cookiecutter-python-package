@@ -65,15 +65,15 @@ def parse_context(config_file: str):
         user_default_context = {}
         user_interpreters = cook_json['interpreters']
 
-    context_defaults = dict(
-        cook_json,
-        **{k: v for k, v in user_default_context.items()},
-        **{k: v[0] for k, v in choices.items() if k not in user_default_context},
-    )
+    # Optimize: Build context_defaults in a single pass
+    context_defaults = dict(cook_json, **user_default_context)
+    for k, v in choices.items():
+        if k not in context_defaults:
+            context_defaults[k] = v[0]
 
     # Render cookiecutter.json again with context to resolve derived fields
     # This ensures derived fields like pkg_name get computed properly
-    template = env.get_template('cookiecutter.json')
+    # Optimize: Reuse template object instead of getting it again
     rendered_with_context = template.render({'cookiecutter': context_defaults})
     resolved_cook_json: t.Mapping[str, t.Any] = json.loads(rendered_with_context)
 

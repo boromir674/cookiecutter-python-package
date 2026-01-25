@@ -31,20 +31,16 @@ class NameExtractor:
         try:
             return self.name_extractor(context_data)
         except KeyError as error:
+            # Optimize: Sort before converting to string, remove unnecessary indent and sort_keys
+            available_vars = ', '.join(str(x) for x in sorted(context_data.keys()))
             raise ContextVariableDoesNotExist(
                 "{msg}: {data}".format(
                     msg="Attempted to retrieve non-existant variable",
                     data=json.dumps(
                         {
                             'variable_name': str(self.name_extractor),
-                            'available_variables': '[{keys}]'.format(
-                                keys=', '.join(
-                                    tuple(sorted([str(x) for x in context_data.keys()]))
-                                ),
-                            ),
+                            'available_variables': f'[{available_vars}]',
                         },
-                        indent=4,
-                        sort_keys=True,
                     ),
                 ),
             ) from error

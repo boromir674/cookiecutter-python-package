@@ -18,6 +18,4 @@ class BaseProxy(Proxy[T], Generic[T]):
                 'keyword_args': {k: str(v) for k, v in kwargs.items()},
                 'positional_args': [str(arg_value) for arg_value in args],
             },
-            indent=4,
-            sort_keys=True,
         )
