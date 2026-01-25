@@ -49,9 +49,9 @@ def load(interface: t.Type[T], module: t.Optional[str] = None) -> t.List[t.Type[
             '{package}.{module}'.format(package=dotted_lib_path, module=module_name)
         )
 
-        for attribute_name in dir(module_object):
-            attribute = getattr(module_object, attribute_name)
-
+        # Optimize: Use vars() instead of dir() + getattr() for better performance
+        # Note: For module objects, vars() returns the same attributes as dir() (excluding builtins)
+        for attribute_name, attribute in vars(module_object).items():
             if (
                 attribute != interface
                 and isclass(attribute)
