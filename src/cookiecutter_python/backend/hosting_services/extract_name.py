@@ -35,7 +35,7 @@ class NameExtractor:
             available_vars = ', '.join(str(x) for x in sorted(context_data.keys()))
             raise ContextVariableDoesNotExist(
                 "{msg}: {data}".format(
-                    msg="Attempted to retrieve non-existant variable",
+                    msg="Attempted to retrieve non-existent variable",
                     data=json.dumps(
                         {
                             'variable_name': str(self.name_extractor),
